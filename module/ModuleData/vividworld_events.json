@@ -1,0 +1,476 @@
+[
+  {
+    "type": "hero_murdered",
+    "headline": "Murder",
+    "origin": "secret",
+    "dramaWeight": 5,
+    "linkedTemplateType": null,
+    "roles": {
+      "victim": "{VICTIM}",
+      "killer": "{KILLER}"
+    },
+    "knowingRoles": [
+      "killer"
+    ],
+    "opinion": [
+      { "about": "killer", "amount": -10 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_HeroMurdered_Who",
+        "text": "{KILLER} murdered {VICTIM} in cold blood",
+        "vars": {
+          "KILLER": "hero:{KILLER}",
+          "VICTIM": "hero:{VICTIM}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_HeroMurdered_Where",
+        "text": "near {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_HeroMurdered_What",
+        "text": "the deed was done in secret and without mercy",
+        "vars": {},
+        "fragility": 3
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_HeroMurdered_Outcome",
+        "text": "the foul crime has cast a grim shadow over the realm",
+        "vars": {},
+        "fragility": 4
+      }
+    ]
+  },
+  {
+    "type": "hero_executed",
+    "headline": "Execution",
+    "origin": "public",
+    "dramaWeight": 5,
+    "linkedTemplateType": null,
+    "roles": {
+      "victim": "{VICTIM}",
+      "killer": "{KILLER}"
+    },
+    "knowingRoles": [],
+    "opinion": [
+      { "about": "killer", "amount": -7 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_HeroExecuted_Who",
+        "text": "{KILLER} formally executed {VICTIM}",
+        "vars": {
+          "KILLER": "hero:{KILLER}",
+          "VICTIM": "hero:{VICTIM}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_HeroExecuted_Where",
+        "text": "at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_HeroExecuted_What",
+        "text": "the headsman's axe severed the noble head before assembled crowds",
+        "vars": {},
+        "fragility": 3
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_HeroExecuted_Outcome",
+        "text": "the execution sent shockwaves across the continent",
+        "vars": {},
+        "fragility": 4
+      }
+    ]
+  },
+  {
+    "type": "hero_died_in_battle",
+    "headline": "Fallen in Battle",
+    "origin": "public",
+    "dramaWeight": 4,
+    "linkedTemplateType": null,
+    "roles": {
+      "victim": "{VICTIM}",
+      "killer": "{KILLER}"
+    },
+    "knowingRoles": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_HeroDiedInBattle_Who",
+        "text": "{VICTIM} was slain in battle by {KILLER}",
+        "vars": {
+          "VICTIM": "hero:{VICTIM}",
+          "KILLER": "hero:{KILLER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_HeroDiedInBattle_Where",
+        "text": "on the field near {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_HeroDiedInBattle_What",
+        "text": "fighting bravely amidst the clash of shields and spears",
+        "vars": {},
+        "fragility": 3
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_HeroDiedInBattle_Outcome",
+        "text": "the warrior met an honorable end on the field of war",
+        "vars": {},
+        "fragility": 4
+      }
+    ]
+  },
+  {
+    "type": "hero_died_naturally",
+    "headline": "Natural Death",
+    "origin": "public",
+    "dramaWeight": 2,
+    "linkedTemplateType": null,
+    "roles": {
+      "victim": "{VICTIM}"
+    },
+    "knowingRoles": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_HeroDiedNaturally_Who",
+        "text": "{VICTIM} passed away peacefully",
+        "vars": {
+          "VICTIM": "hero:{VICTIM}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_HeroDiedNaturally_Where",
+        "text": "at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_HeroDiedNaturally_What",
+        "text": "surrounded by family and kin as life slipped away",
+        "vars": {},
+        "fragility": 3
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_HeroDiedNaturally_Outcome",
+        "text": "mourners paid tribute to a life well-lived",
+        "vars": {},
+        "fragility": 4
+      }
+    ]
+  },
+  {
+    "type": "hero_taken_prisoner",
+    "headline": "Captivity",
+    "origin": "public",
+    "dramaWeight": 4,
+    "linkedTemplateType": null,
+    "roles": {
+      "captor": "{CAPTOR}",
+      "prisoner": "{PRISONER}"
+    },
+    "knowingRoles": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_HeroTakenPrisoner_Who",
+        "text": "{CAPTOR} captured {PRISONER} as a prisoner of war",
+        "vars": {
+          "CAPTOR": "hero:{CAPTOR}",
+          "PRISONER": "hero:{PRISONER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_HeroTakenPrisoner_Where",
+        "text": "near {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_HeroTakenPrisoner_What",
+        "text": "stripped of weapons and placed under close guard",
+        "vars": {},
+        "fragility": 3
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_HeroTakenPrisoner_Outcome",
+        "text": "the captive remains in custody awaiting ransom or release",
+        "vars": {},
+        "fragility": 4
+      }
+    ]
+  },
+  {
+    "type": "heroes_married",
+    "headline": "Marriage",
+    "origin": "public",
+    "dramaWeight": 3,
+    "linkedTemplateType": null,
+    "roles": {
+      "spouse_a": "{SPOUSE_A}",
+      "spouse_b": "{SPOUSE_B}"
+    },
+    "knowingRoles": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_HeroesMarried_Who",
+        "text": "{SPOUSE_A} and {SPOUSE_B} were united in marriage",
+        "vars": {
+          "SPOUSE_A": "hero:{SPOUSE_A}",
+          "SPOUSE_B": "hero:{SPOUSE_B}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_HeroesMarried_Where",
+        "text": "at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_HeroesMarried_What",
+        "text": "vows were exchanged with grand feasting and celebration",
+        "vars": {},
+        "fragility": 3
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_HeroesMarried_Outcome",
+        "text": "the alliance binds two noble lines in enduring friendship",
+        "vars": {},
+        "fragility": 4
+      }
+    ]
+  },
+  {
+    "type": "child_born",
+    "headline": "Birth",
+    "origin": "public",
+    "dramaWeight": 2,
+    "linkedTemplateType": null,
+    "roles": {
+      "mother": "{MOTHER}",
+      "child": "{CHILD}"
+    },
+    "knowingRoles": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_ChildBorn_Who",
+        "text": "{MOTHER} gave birth to a healthy child {CHILD}",
+        "vars": {
+          "MOTHER": "hero:{MOTHER}",
+          "CHILD": "hero:{CHILD}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_ChildBorn_Where",
+        "text": "at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_ChildBorn_What",
+        "text": "the newborn arrived safely after a long labor",
+        "vars": {},
+        "fragility": 3
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_ChildBorn_Outcome",
+        "text": "the clan rejoiced at the blessing of a new heir",
+        "vars": {},
+        "fragility": 4
+      }
+    ]
+  },
+  {
+    "type": "hero_released",
+    "headline": "A prisoner was released",
+    "origin": "public",
+    "dramaWeight": 4,
+    "linkedTemplateType": "hero_taken_prisoner",
+    "roles": {
+      "captor": "{CAPTOR}",
+      "prisoner": "{PRISONER}"
+    },
+    "knowingRoles": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_HeroReleased_Who",
+        "text": "{CAPTOR} set {PRISONER} free",
+        "vars": {
+          "CAPTOR": "hero:{CAPTOR}",
+          "PRISONER": "hero:{PRISONER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_HeroReleased_Where",
+        "text": "near {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_HeroReleased_What",
+        "text": "the terms were settled and the guards stood aside",
+        "vars": {},
+        "fragility": 3
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_HeroReleased_Outcome",
+        "text": "the captive is no longer held",
+        "vars": {},
+        "fragility": 4
+      }
+    ]
+  },
+  {
+    "type": "hero_escaped_captivity",
+    "headline": "A prisoner escaped",
+    "origin": "public",
+    "dramaWeight": 4,
+    "linkedTemplateType": "hero_taken_prisoner",
+    "roles": {
+      "captor": "{CAPTOR}",
+      "prisoner": "{PRISONER}"
+    },
+    "knowingRoles": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_HeroEscaped_Who",
+        "text": "{PRISONER} slipped out of {CAPTOR}'s custody",
+        "vars": {
+          "CAPTOR": "hero:{CAPTOR}",
+          "PRISONER": "hero:{PRISONER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_HeroEscaped_Where",
+        "text": "near {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_HeroEscaped_What",
+        "text": "the guard was thin and the night was long",
+        "vars": {},
+        "fragility": 3
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_HeroEscaped_Outcome",
+        "text": "nobody is quite sure which way he went",
+        "vars": {},
+        "fragility": 4
+      }
+    ]
+  }
+]

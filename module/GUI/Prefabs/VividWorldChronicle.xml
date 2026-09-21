@@ -1,0 +1,99 @@
+<Prefab>
+  <Window>
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+      <Children>
+
+        <!-- Dim the world behind -->
+        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#000000FF" AlphaFactor="0.40" />
+
+        <!-- Main window container -->
+        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="960" SuggestedHeight="700" HorizontalAlignment="Center" VerticalAlignment="Center">
+          <Children>
+
+            <!-- Window background -->
+            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#14100BFF" AlphaFactor="0.97" />
+
+            <!-- Title header -->
+            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="40" VerticalAlignment="Top" MarginLeft="30" MarginTop="20" MarginRight="80" Brush="Popup.Title.Text" Brush.TextHorizontalAlignment="Left" Text="@TitleText" />
+
+            <!-- Close "X" button top right -->
+            <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="34" SuggestedHeight="34" HorizontalAlignment="Right" VerticalAlignment="Top" MarginTop="16" MarginRight="16" Command.Click="ExecuteClose">
+              <Children>
+                <TextWidget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" Brush="Popup.Description.Text" Brush.TextHorizontalAlignment="Center" Text="X" />
+              </Children>
+            </ButtonWidget>
+
+            <!-- Empty state hint -->
+            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Popup.Description.Text" Brush.FontColor="#9AA3B2FF" Brush.TextHorizontalAlignment="Center" Text="@EmptyText" IsVisible="@IsEmpty" />
+
+            <!-- Content list area -->
+            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginTop="70" MarginBottom="70" MarginLeft="30" MarginRight="30">
+              <Children>
+
+                <ScrollablePanel Id="ChronicleScroller" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipRect="ChronicleClip" InnerPanel="ChronicleClip\ChronicleList" VerticalScrollbar="..\ChronicleScrollbar" MouseScrollAxis="Vertical" AutoHideScrollBars="true">
+                  <Children>
+                    <Widget Id="ChronicleClip" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipContents="true">
+                      <Children>
+                        <ListPanel Id="ChronicleList" DataSource="{Entries}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Top" StackLayout.LayoutMethod="VerticalTopToBottom">
+                          <ItemTemplate>
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginBottom="16">
+                              <Children>
+                                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#FFFFFFFF" AlphaFactor="0.04" />
+                                <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="16" MarginRight="16" MarginTop="12" MarginBottom="12" StackLayout.LayoutMethod="VerticalTopToBottom">
+                                  <Children>
+                                    <!-- Header: Headline and Date -->
+                                    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren">
+                                      <Children>
+                                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" MarginRight="180" Brush="Popup.Description.Text" Brush.FontSize="19" Brush.FontColor="#D9C08CFF" Brush.TextHorizontalAlignment="Left" Text="@HeadlineText" />
+                                        <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="160" HorizontalAlignment="Right" VerticalAlignment="Center" Brush="Popup.Description.Text" Brush.FontSize="14" Brush.FontColor="#8E8A80FF" Brush.TextHorizontalAlignment="Right" Text="@DayText" />
+                                      </Children>
+                                    </Widget>
+                                    <!-- Body: Rumor text -->
+                                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="8" MarginBottom="8" Brush="Popup.Description.Text" Brush.FontSize="15" Brush.TextHorizontalAlignment="Left" Text="@BodyText" />
+                                    <!-- Provenance: Hops and Source -->
+                                    <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="HorizontalLeftToRight">
+                                      <Children>
+                                        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Popup.Description.Text" Brush.FontSize="13" Brush.FontColor="#8E8A80FF" Brush.TextHorizontalAlignment="Left" Text="@HopText" />
+                                        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginLeft="8" MarginRight="8" Brush="Popup.Description.Text" Brush.FontSize="13" Brush.FontColor="#8E8A80FF" Brush.TextHorizontalAlignment="Left" Text="·" />
+                                        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Popup.Description.Text" Brush.FontSize="13" Brush.FontColor="#8E8A80FF" Brush.TextHorizontalAlignment="Left" Text="@SourceText" />
+                                      </Children>
+                                    </ListPanel>
+                                  </Children>
+                                </ListPanel>
+                              </Children>
+                            </Widget>
+                          </ItemTemplate>
+                        </ListPanel>
+                      </Children>
+                    </Widget>
+                  </Children>
+                </ScrollablePanel>
+
+                <!-- Scrollbar -->
+                <ScrollbarWidget Id="ChronicleScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="8" HorizontalAlignment="Right" VerticalAlignment="Center" AlignmentAxis="Vertical" Handle="ChronicleScrollbarHandle" MinValue="0" MaxValue="100">
+                  <Children>
+                    <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="2" HorizontalAlignment="Center" Brush="Encyclopedia.Scrollbar.Flat.Bed" />
+                    <BrushWidget Id="ChronicleScrollbarHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="50" HorizontalAlignment="Center" Brush="Encyclopedia.Scrollbar.Flat.Handle" />
+                  </Children>
+                </ScrollbarWidget>
+
+              </Children>
+            </Widget>
+
+            <!-- Bottom close button -->
+            <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="140" SuggestedHeight="42" HorizontalAlignment="Right" VerticalAlignment="Bottom" MarginRight="30" MarginBottom="16" Brush="Popup.Done.Button" Command.Click="ExecuteClose">
+              <Children>
+                <TextWidget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" Brush="Popup.Button.Text" Brush.TextHorizontalAlignment="Center" Text="@CloseText" />
+              </Children>
+            </ButtonWidget>
+
+            <!-- Frame border -->
+            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="frame_9" ExtendLeft="18" ExtendTop="18" ExtendRight="18" ExtendBottom="18" IsEnabled="false" />
+
+          </Children>
+        </Widget>
+
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

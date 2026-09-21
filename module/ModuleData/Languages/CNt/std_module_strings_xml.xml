@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="utf-8"?>
+<base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" type="string">
+  <tags>
+    <tag language="繁體中文" />
+  </tags>
+  <strings>
+    <string id="VividWorld_Dev_KnownEvents" text="(dev) 你知道哪些事？" />
+    <string id="VividWorld_Dev_Contacts" text="(dev) 你現在能接觸到誰？" />
+    <string id="VividWorld_Dev_InjectPublic" text="(dev) 在我們之間生一件公開事" />
+    <string id="VividWorld_Dev_InjectSecret" text="(dev) 在我們之間生一件秘密" />
+    <string id="VividWorld_Dev_Tick24h" text="(dev) 模擬 24 小時傳播" />
+    <string id="VividWorld_Dev_WorldStatus" text="(dev) 世界現況" />
+    <string id="VividWorld_Dev_ReloadConfig" text="(dev) 重載設定" />
+    <string id="VividWorld_Dev_ForceLeak" text="(dev) 強制最新秘密洩漏" />
+    <string id="VividWorld_Dev_ResetMetrics" text="(dev) 重設效能計數器" />
+    <string id="VividWorld_Dev_BoostRelation" text="(dev) 讓這個人更喜歡我" />
+    <string id="VividWorld_Dev_EventRoster" text="(dev) 誰還知道這件事？" />
+    <string id="VividWorld_Dev_EventCatalog" text="(dev) 事件目錄" />
+    <string id="VividWorld_Dev_OpinionShifts" text="(dev) 他聽來的消息改了什麼" />
+
+    <!-- Dialogue and presentation strings -->
+    <string id="VividWorld_AskNews" text="最近路上有什麼消息嗎？" />
+    <string id="VividWorld_AskNothing" text="沒什麼值得一提的事。" />
+    <string id="VividWorld_RecoveryAsk" text="你剛才似乎欲言又止？" />
+    <string id="VividWorld_RetellPrefix" text="事實上，當時我也在場——" />
+    <string id="VividWorld_FactSeparator" text="，" />
+    <string id="VividWorld_SentenceEnd" text="。" />
+    <string id="VividWorld_UnknownSubject" text="某個人" />
+    <string id="VividWorld_UnknownPlace" text="某個地方" />
+
+    <!-- Sample template 1: duel_arranged -->
+    <string id="VividWorld_Fact_DuelArranged_Who" text="{CHALLENGER}向{TARGET}發起了榮譽決鬥" />
+    <string id="VividWorld_Fact_DuelArranged_Where" text="在{SETTLEMENT}的城牆外" />
+    <string id="VividWorld_Fact_DuelArranged_What" text="雙方檢驗了兵器並宣讀了決鬥規矩" />
+    <string id="VividWorld_Fact_DuelArranged_Why" text="事關家族榮譽的爭端" />
+
+    <!-- Sample template 2: tavern_quarrel -->
+    <string id="VividWorld_Fact_TavernQuarrel_Who" text="{INSTIGATOR}與{TARGET}大打出手" />
+    <string id="VividWorld_Fact_TavernQuarrel_Where" text="在{SETTLEMENT}的一間酒館裡" />
+    <string id="VividWorld_Fact_TavernQuarrel_What" text="酒杯橫飛、拔刀相向" />
+    <string id="VividWorld_Fact_TavernQuarrel_Why" text="因為一筆賭債未清" />
+    <string id="VividWorld_Fact_TavernQuarrel_Outcome" text="城鎮衛兵不得不介入制止" />
+
+    <!-- Sample template 3: shared_meal -->
+    <string id="VividWorld_Fact_SharedMeal_Who" text="{HOST}與{GUEST}共進了一頓便飯" />
+    <string id="VividWorld_Fact_SharedMeal_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_SharedMeal_What" text="品嚐當地的美酒與烤肉" />
+    <string id="VividWorld_Fact_SharedMeal_Outcome" text="雙方平靜地道別離去" />
+
+    <!-- Sample template 4: duel -->
+    <string id="VividWorld_Fact_Duel_Who" text="{DUELIST}與{RIVAL}進行了慘烈的決鬥" />
+    <string id="VividWorld_Fact_Duel_Where" text="在{SETTLEMENT}附近" />
+    <string id="VividWorld_Fact_Duel_Context" text="因酒館爭端升級而起" />
+    <string id="VividWorld_Fact_Duel_What" text="刀光劍影直到沙地染紅" />
+    <string id="VividWorld_Fact_Duel_Outcome" text="{DUELIST}擊敗了對手奪得勝利" />
+
+    <!-- Sample template 5: covert_sabotage -->
+    <string id="VividWorld_Fact_CovertSabotage_WhoMastermind" text="{MASTERMIND}" />
+    <string id="VividWorld_Fact_CovertSabotage_WhoTarget" text="{TARGET}" />
+    <string id="VividWorld_Fact_CovertSabotage_WhoAgent" text="{AGENT}" />
+    <string id="VividWorld_Fact_CovertSabotage_When" text="決鬥前兩天" />
+    <string id="VividWorld_Fact_CovertSabotage_Context" text="當時{TARGET}正備戰這場決鬥" />
+    <string id="VividWorld_Fact_CovertSabotage_Why" text="想讓{TARGET}在決鬥前先弱一截" />
+    <string id="VividWorld_Fact_CovertSabotage_What" text="{MASTERMIND}買通{AGENT}對坐騎動手腳" />
+    <string id="VividWorld_Fact_CovertSabotage_Outcome" text="坐騎隔天果然跛了" />
+
+    <!-- Event type headlines -->
+    <string id="VividWorld_EventType_hero_murdered" text="謀殺" />
+    <string id="VividWorld_EventType_hero_executed" text="處決" />
+    <string id="VividWorld_EventType_hero_died_in_battle" text="戰死沙場" />
+    <string id="VividWorld_EventType_hero_died_naturally" text="壽終正寢" />
+    <string id="VividWorld_EventType_hero_taken_prisoner" text="被俘" />
+    <string id="VividWorld_EventType_heroes_married" text="成婚" />
+    <string id="VividWorld_EventType_child_born" text="麟兒誕生" />
+    <string id="VividWorld_EventType_hero_released" text="俘虜獲釋" />
+    <string id="VividWorld_EventType_hero_escaped_captivity" text="俘虜脫逃" />
+    <string id="VividWorld_EventType_seat_dispute_demanded" text="有人當眾爭座位" />
+    <string id="VividWorld_EventType_seat_dispute_endured" text="有人忍下了席間的難堪" />
+    <string id="VividWorld_EventType_seat_dispute_yielded" text="有人讓出了座位" />
+    <string id="VividWorld_EventType_seat_dispute_walked_out" text="有人拂袖離席" />
+    <string id="VividWorld_EventType_advice_given_freely" text="老將傾囊相授" />
+    <string id="VividWorld_EventType_advice_brushed_off" text="討教被打發掉" />
+    <string id="VividWorld_EventType_advice_mocked" text="討教被當眾譏笑" />
+    <string id="VividWorld_EventType_tavern_boast_told" text="酒桌上的吹噓" />
+    <string id="VividWorld_EventType_tavern_confidence" text="酒後說漏的心事" />
+    <string id="VividWorld_EventType_tavern_sour_words" text="酒後的惡言" />
+    <string id="VividWorld_EventType_tavern_good_word" text="酒桌上替人說的公道話" />
+    <string id="VividWorld_EventType_victory_credit_claimed" text="有人把戰功攬到自己身上" />
+    <string id="VividWorld_EventType_victory_credit_deferred" text="有人把戰功讓了出去" />
+    <string id="VividWorld_EventType_victory_credit_belittled" text="戰功被貶低" />
+    <string id="VividWorld_EventType_victory_credit_judged" text="戰功之爭交由主人裁斷" />
+    <string id="VividWorld_EventType_brawl_man_handed_over" text="鬧事的隨從被交了出去" />
+    <string id="VividWorld_EventType_brawl_shielded_own" text="有人護短" />
+    <string id="VividWorld_EventType_brawl_counter_accused" text="鬧事反咬一口" />
+    <string id="VividWorld_EventType_brawl_hushed_up" text="衝突被壓了下來" />
+    <string id="VividWorld_EventType_wager_struck" text="打了一場狩獵賭局" />
+    <string id="VividWorld_EventType_wager_refused" text="狩獵賭局被回絕" />
+    <string id="VividWorld_EventType_wager_secret_stake" text="狩獵賭局有暗盤" />
+
+    <!-- Real event template 1: hero_murdered -->
+    <string id="VividWorld_Fact_HeroMurdered_Who" text="{KILLER}殘忍地謀殺了{VICTIM}" />
+    <string id="VividWorld_Fact_HeroMurdered_Where" text="在{SETTLEMENT}附近" />
+    <string id="VividWorld_Fact_HeroMurdered_What" text="這樁暴行是秘密進行且毫不留情的" />
+    <string id="VividWorld_Fact_HeroMurdered_Outcome" text="這起邪惡的罪行在各界投下了陰影" />
+
+    <!-- Real event template 2: hero_executed -->
+    <string id="VividWorld_Fact_HeroExecuted_Who" text="{KILLER}公開處決了{VICTIM}" />
+    <string id="VividWorld_Fact_HeroExecuted_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_HeroExecuted_What" text="劊子手的利斧在眾目睽睽之下斬落了貴族的頭顱" />
+    <string id="VividWorld_Fact_HeroExecuted_Outcome" text="這場處決震撼了整個大陸" />
+
+    <!-- Real event template 3: hero_died_in_battle -->
+    <string id="VividWorld_Fact_HeroDiedInBattle_Who" text="{VICTIM}在戰場上被{KILLER}陣斬" />
+    <string id="VividWorld_Fact_HeroDiedInBattle_Where" text="在{SETTLEMENT}附近的戰場上" />
+    <string id="VividWorld_Fact_HeroDiedInBattle_What" text="在盾牌與長矛的猛烈交鋒中英勇奮戰" />
+    <string id="VividWorld_Fact_HeroDiedInBattle_Outcome" text="這位戰士在沙場上迎來了光榮的結局" />
+
+    <!-- Real event template 4: hero_died_naturally -->
+    <string id="VividWorld_Fact_HeroDiedNaturally_Who" text="{VICTIM}與世長辭" />
+    <string id="VividWorld_Fact_HeroDiedNaturally_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_HeroDiedNaturally_What" text="在親族的陪伴與哀悼中平靜離世" />
+    <string id="VividWorld_Fact_HeroDiedNaturally_Outcome" text="眾人向這位逝者一生的榮耀致敬" />
+
+    <!-- Real event template 5: hero_taken_prisoner -->
+    <string id="VividWorld_Fact_HeroTakenPrisoner_Who" text="{CAPTOR}俘虜了{PRISONER}" />
+    <string id="VividWorld_Fact_HeroTakenPrisoner_Where" text="在{SETTLEMENT}附近" />
+    <string id="VividWorld_Fact_HeroTakenPrisoner_What" text="繳去兵刃並受到嚴加看管" />
+    <string id="VividWorld_Fact_HeroTakenPrisoner_Outcome" text="俘虜目前仍被拘禁，等待贖金或處置" />
+
+    <!-- Real event template: hero_released -->
+    <string id="VividWorld_Fact_HeroReleased_Who" text="{CAPTOR}放了{PRISONER}" />
+    <string id="VividWorld_Fact_HeroReleased_WhoNoCaptor" text="{PRISONER}已經不在牢裡了" />
+    <string id="VividWorld_Fact_HeroReleased_Where" text="在{SETTLEMENT}附近" />
+    <string id="VividWorld_Fact_HeroReleased_What" text="條件談妥，看守便讓開了" />
+    <string id="VividWorld_Fact_HeroReleased_Outcome" text="那個人已經不再被拘禁" />
+
+    <!-- Real event template: hero_escaped_captivity -->
+    <string id="VividWorld_Fact_HeroEscaped_Who" text="{PRISONER}從{CAPTOR}手裡逃了出來" />
+    <string id="VividWorld_Fact_HeroEscaped_WhoNoCaptor" text="{PRISONER}從牢裡逃了出來" />
+    <string id="VividWorld_Fact_HeroEscaped_Where" text="在{SETTLEMENT}附近" />
+    <string id="VividWorld_Fact_HeroEscaped_What" text="看守稀疏，而夜很長" />
+    <string id="VividWorld_Fact_HeroEscaped_Outcome" text="沒有人說得準他往哪個方向去了" />
+
+    <!-- Real event template 6: heroes_married -->
+    <string id="VividWorld_Fact_HeroesMarried_Who" text="{SPOUSE_A}與{SPOUSE_B}締結了良緣" />
+    <string id="VividWorld_Fact_HeroesMarried_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_HeroesMarried_What" text="在盛大的宴席與眾人祝福中交換了誓言" />
+    <string id="VividWorld_Fact_HeroesMarried_Outcome" text="這段聯姻讓兩個顯赫家族結下了深厚的情誼" />
+
+    <!-- Real event template 7: child_born -->
+    <string id="VividWorld_Fact_ChildBorn_Who" text="{MOTHER}順利誕下了新生兒{CHILD}" />
+    <string id="VividWorld_Fact_ChildBorn_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_ChildBorn_What" text="母子平安，新生兒健康茁壯" />
+    <string id="VividWorld_Fact_ChildBorn_Outcome" text="家族上下皆為新血脈的到來感到無比欣喜" />
+
+    <!-- Situation 1: seat_dispute -->
+    <string id="VividWorld_Fact_SeatDisputeDemanded_Who" text="{SLIGHTED}當眾要{FAVORED}把上座讓出來" />
+    <string id="VividWorld_Fact_SeatDisputeDemanded_Where" text="在{SETTLEMENT}的大廳裡" />
+    <string id="VividWorld_Fact_SeatDisputeDemanded_Why" text="說一家之主不該坐在別家晚輩的下首" />
+    <string id="VividWorld_Fact_SeatDisputeDemanded_Outcome" text="整個大廳一下子安靜下來" />
+    <string id="VividWorld_Fact_SeatDisputeEndured_Who" text="{SLIGHTED}忍下了坐在{FAVORED}下首這口氣" />
+    <string id="VividWorld_Fact_SeatDisputeEndured_Where" text="在{SETTLEMENT}的大廳裡" />
+    <string id="VividWorld_Fact_SeatDisputeEndured_What" text="卻一直記在心裡" />
+    <string id="VividWorld_Fact_SeatDisputeYielded_Who" text="{SLIGHTED}大方地把上座讓給了{FAVORED}" />
+    <string id="VividWorld_Fact_SeatDisputeYielded_Where" text="在{SETTLEMENT}的大廳裡" />
+    <string id="VividWorld_Fact_SeatDisputeYielded_Outcome" text="還舉杯敬了對方" />
+    <string id="VividWorld_Fact_SeatDisputeWalkedOut_Who" text="{SLIGHTED}拂袖離開了{HOST}的宴席" />
+    <string id="VividWorld_Fact_SeatDisputeWalkedOut_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_SeatDisputeWalkedOut_Why" text="寧可走人也不肯坐在{FAVORED}下首" />
+    <string id="VividWorld_Dev_TriggerSituation" text="(dev) 在他身上觸發情境" />
+    <string id="VividWorld_Dev_GrudgeLedger" text="(dev) 他的恩怨帳本" />
+    <string id="VividWorld_Dev_ScanToday" text="(dev) 今天的情境掃描" />
+    <string id="VividWorld_Dev_Snapshots" text="(dev) 快照狀態" />
+
+    <!-- 情境 2：討教兵事 -->
+    <string id="VividWorld_Fact_AdviceGivenFreely_Who" text="{VETERAN}把當年那一仗真正是怎麼打贏的，講給{STUDENT}聽" />
+    <string id="VividWorld_Fact_AdviceGivenFreely_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_AdviceGivenFreely_What" text="連自己當年犯的錯都沒有藏" />
+    <string id="VividWorld_Fact_AdviceBrushedOff_Who" text="{VETERAN}對{STUDENT}只講了幾句場面話" />
+    <string id="VividWorld_Fact_AdviceBrushedOff_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_AdviceBrushedOff_What" text="一杯還沒喝完就把話題帶開了" />
+    <string id="VividWorld_Fact_AdviceMocked_Who" text="{VETERAN}當著滿廳的人拿{STUDENT}請教的事說笑" />
+    <string id="VividWorld_Fact_AdviceMocked_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_AdviceMocked_Why" text="說有些人該先學會坐得住" />
+    <string id="VividWorld_Fact_AdviceMocked_Outcome" text="笑聲一路跟著{STUDENT}出了大廳" />
+
+    <!-- 情境 3：酒後的話 -->
+    <string id="VividWorld_Fact_TavernGoodWord_Who" text="席間有人拿{LISTENER}說嘴，{SPEAKER}當場把話擋了回去" />
+    <string id="VividWorld_Fact_TavernGoodWord_Where" text="在{SETTLEMENT}的酒館裡" />
+    <string id="VividWorld_Fact_TavernGoodWord_What" text="還說酒醒了他也是這句話" />
+    <string id="VividWorld_Fact_TavernBoastTold_Who" text="{SPEAKER}向{LISTENER}吹噓自己的戰功，一杯比一杯誇張" />
+    <string id="VividWorld_Fact_TavernBoastTold_Where" text="在{SETTLEMENT}的酒館裡" />
+    <string id="VividWorld_Fact_TavernBoastTold_What" text="同桌的人誰也懶得去對那個數字" />
+    <string id="VividWorld_Fact_TavernConfidence_Who" text="{SPEAKER}私下對{LISTENER}承認自己的金庫快空了" />
+    <string id="VividWorld_Fact_TavernConfidence_Where" text="在{SETTLEMENT}的酒桌上" />
+    <string id="VividWorld_Fact_TavernConfidence_What" text="還交代這話不要再傳出去" />
+    <string id="VividWorld_Fact_TavernSourWords_Who" text="{SPEAKER}酒後說了一句{LISTENER}記到現在的話" />
+    <string id="VividWorld_Fact_TavernSourWords_Where" text="在{SETTLEMENT}的酒館裡" />
+    <string id="VividWorld_Fact_TavernSourWords_What" text="酒醒之後也沒有收回去" />
+
+    <!-- 情境 4：戰功之爭 -->
+    <string id="VividWorld_Fact_VictoryCreditClaimed_Who" text="{CLAIMANT}當著滿廳的人把上一場勝仗的功勞攬到自己身上" />
+    <string id="VividWorld_Fact_VictoryCreditClaimed_Where" text="在{SETTLEMENT}的大廳裡" />
+    <string id="VividWorld_Fact_VictoryCreditClaimed_Why" text="說{RIVAL}是等到敵陣都垮了才趕到的" />
+    <string id="VividWorld_Fact_VictoryCreditDeferred_Who" text="{CLAIMANT}把上一場勝仗的功勞讓給了{RIVAL}" />
+    <string id="VividWorld_Fact_VictoryCreditDeferred_Where" text="在{SETTLEMENT}的大廳裡" />
+    <string id="VividWorld_Fact_VictoryCreditDeferred_What" text="而滿廳的人本來要敬的是{CLAIMANT}" />
+    <string id="VividWorld_Fact_VictoryCreditBelittled_Who" text="{CLAIMANT}私下跟幾個信得過的人說，上一仗{RIVAL}根本沒出力" />
+    <string id="VividWorld_Fact_VictoryCreditBelittled_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_VictoryCreditBelittled_What" text="而且很小心，從不在{RIVAL}聽得到的地方講" />
+    <string id="VividWorld_Fact_VictoryCreditJudged_Who" text="{HOST}出面裁定了{CLAIMANT}與{RIVAL}爭的那份戰功" />
+    <string id="VividWorld_Fact_VictoryCreditJudged_Where" text="在{SETTLEMENT}的大廳裡" />
+    <string id="VividWorld_Fact_VictoryCreditJudged_Outcome" text="把功勞判給了{RIVAL}" />
+
+    <!-- 情境 5：市集上的衝突 -->
+    <string id="VividWorld_Fact_BrawlManHandedOver_Who" text="{PATRON}把先動手的人交了出去，向{AGGRIEVED}賠了不是" />
+    <string id="VividWorld_Fact_BrawlManHandedOver_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_BrawlManHandedOver_What" text="就在市集上，當著一整條街的人" />
+    <string id="VividWorld_Fact_BrawlShieldedOwn_Who" text="{PATRON}不肯把自己的人交給{AGGRIEVED}" />
+    <string id="VividWorld_Fact_BrawlShieldedOwn_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_BrawlShieldedOwn_Why" text="說自家的人自家管，輪不到別家開口" />
+    <string id="VividWorld_Fact_BrawlCounterAccused_Who" text="{PATRON}當眾說先動手的是{AGGRIEVED}的人" />
+    <string id="VividWorld_Fact_BrawlCounterAccused_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_BrawlCounterAccused_What" text="反過來要{AGGRIEVED}先給個交代" />
+    <string id="VividWorld_Fact_BrawlCounterAccused_Outcome" text="兩家誰也不讓" />
+    <string id="VividWorld_Fact_BrawlHushedUp_Who" text="{AGGRIEVED}與{PATRON}講好把市集那場架壓下去" />
+    <string id="VividWorld_Fact_BrawlHushedUp_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_BrawlHushedUp_What" text="兩家都不會再提這件事" />
+
+    <!-- 情境 6：狩獵賭局 -->
+    <string id="VividWorld_Fact_WagerStruck_Who" text="{CHALLENGER}跟{CHALLENGED}為下一場狩獵打了賭" />
+    <string id="VividWorld_Fact_WagerStruck_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WagerStruck_What" text="旁邊半個大廳的人也跟著下注" />
+    <string id="VividWorld_Fact_WagerRefused_Who" text="{CHALLENGED}不接{CHALLENGER}的賭，還把這事當笑話講" />
+    <string id="VividWorld_Fact_WagerRefused_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WagerRefused_What" text="大廳裡的人笑得有點久" />
+    <string id="VividWorld_Fact_WagerSecretStake_Who" text="{CHALLENGER}跟{CHALLENGED}為下一場狩獵押的不只是銀子" />
+    <string id="VividWorld_Fact_WagerSecretStake_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WagerSecretStake_What" text="押的是什麼，兩個人都不肯講" />
+
+    <!-- Chronicle interface strings -->
+    <string id="VividWorld_Chronicle_Title" text="你聽過的事" />
+    <string id="VividWorld_Chronicle_Empty" text="還沒有人跟你說過什麼。" />
+    <string id="VividWorld_Chronicle_Close" text="關閉" />
+    <string id="VividWorld_Chronicle_Hop" text="傳了 {HOPS} 手" />
+    <string id="VividWorld_Chronicle_HopZero" text="你當時在場" />
+    <string id="VividWorld_Chronicle_SourceUnknown" text="不知道是誰說的" />
+
+    <!-- SNAP1：快照管理 -->
+    <string id="VividWorld_Snapshots_Title" text="Vivid World 快照管理" />
+    <string id="VividWorld_Snapshots_Desc" text="快照是用於還原存檔的傳聞事件，如在存檔存在時刪除快照將會造成 Vivid World 相關功能出現異常。建議僅在存檔已刪除的情況才將其快照刪除。你目前有 {COUNT} 份，佔 {SIZE}。" />
+    <string id="VividWorld_Snapshots_Delete" text="刪除勾選的" />
+    <string id="VividWorld_Snapshots_Cancel" text="取消" />
+    <string id="VividWorld_Snapshots_None" text="目前還沒有快照——每存一次檔就會拍一份。" />
+    <string id="VividWorld_Snapshots_SaveExists" text="存檔存在" />
+    <string id="VividWorld_Snapshots_SaveGone" text="存檔已刪除" />
+    <string id="VividWorld_Snapshots_FolderMissing" text="資料夾不見了" />
+    <string id="VividWorld_Snapshots_FileCount" text="{COUNT} 個檔案" />
+    <string id="VividWorld_Snapshots_Deleted" text="刪掉了 {COUNT} 份快照，釋出 {SIZE}。" />
+    <string id="VividWorld_Snapshots_SomeFailed" text="有 {COUNT} 份刪不掉，詳情見 log.txt。" />
+    <string id="VividWorld_Snapshots_ConfirmTitle" text="這幾份的存檔還在" />
+    <string id="VividWorld_Snapshots_ConfirmText" text="你勾的快照裡有 {COUNT} 份，對應的存檔還在。刪掉之後再讀那些存檔，傳聞就回不到當時的狀態。確定要刪嗎？" />
+    <string id="VividWorld_Snapshots_ConfirmYes" text="還是刪掉" />
+    <string id="VividWorld_Snapshots_ConfirmNo" text="取消" />
+    <string id="VividWorld_Snapshots_SweepTitle" text="清除不再需要的快照" />
+    <string id="VividWorld_Snapshots_SweepText" text="你有 {COUNT} 份快照，它們的存檔都已經刪掉了，佔了 {SIZE}。要現在清掉嗎？" />
+    <string id="VividWorld_Snapshots_SweepYes" text="清除無用快照" />
+    <string id="VividWorld_Snapshots_SweepNo" text="看完整清單…" />
+
+    <!-- MCM1: 遊戲內設定選單字串 -->
+    <string id="VividWorld_MCM_DisplayName" text="Vivid World" />
+
+    <!-- MCM 分組 -->
+    <string id="VividWorld_MCM_Group_General" text="一般" />
+    <string id="VividWorld_MCM_Group_Interface" text="介面" />
+    <string id="VividWorld_MCM_Group_Propagation" text="傳播" />
+    <string id="VividWorld_MCM_Group_Dialogue" text="對話" />
+    <string id="VividWorld_MCM_Group_Consequences" text="後果" />
+    <string id="VividWorld_MCM_Group_Situations" text="情境" />
+    <string id="VividWorld_MCM_Group_Sources" text="消息來源" />
+    <string id="VividWorld_MCM_Group_Persistence" text="存檔" />
+
+    <!-- Group 0: 一般 -->
+    <string id="VividWorld_MCM_Enabled" text="啟用模組" />
+    <string id="VividWorld_MCM_EnabledHint" text="完全開啟或關閉 Vivid World。需要重啟遊戲才能生效。" />
+    <string id="VividWorld_MCM_LogLevel" text="日誌層級" />
+    <string id="VividWorld_MCM_LogLevelHint" text="寫入 log.txt 的除錯日誌詳細程度。平時遊玩建議設為 Info；設為 Warn 或 Error 可縮小日誌檔案大小。" />
+    <string id="VividWorld_MCM_LogTellerTurns" text="記錄傳聞分享詳情" />
+    <string id="VividWorld_MCM_LogTellerTurnsHint" text="將每小時 NPC 挑選傳聞並分享的詳細決策資訊寫入 log.txt。適合排查問題時開啟。" />
+
+    <!-- Group 1: 介面 -->
+    <string id="VividWorld_MCM_ChronicleHotkey" text="「你聽過的事」熱鍵" />
+    <string id="VividWorld_MCM_ChronicleHotkeyHint" text="在大地圖上開啟「你聽過的事」視窗的快捷鍵（例如 Ctrl+L、L）。" />
+    <string id="VividWorld_MCM_SnapshotManagerHotkey" text="快照管理熱鍵" />
+    <string id="VividWorld_MCM_SnapshotManagerHotkeyHint" text="開啟快照管理視窗的快捷鍵（例如 F9）。" />
+    <string id="VividWorld_MCM_ChronicleMaxEntries" text="最多顯示條數" />
+    <string id="VividWorld_MCM_ChronicleMaxEntriesHint" text="「你聽過的事」視窗中最多顯示的近期傳聞筆數。" />
+    <string id="VividWorld_MCM_EncyclopediaLinksEnabled" text="傳聞百科連結" />
+    <string id="VividWorld_MCM_EncyclopediaLinksEnabledHint" text="在傳聞文字中為英雄與聚落名稱加上可點擊的百科全書超連結。" />
+
+    <!-- Group 2: 傳播 -->
+    <string id="VividWorld_MCM_TellersPerHourlyTick" text="每小時講述者上限" />
+    <string id="VividWorld_MCM_TellersPerHourlyTickHint" text="遊戲內每小時最多挑選幾位 NPC 分享傳聞。數值越高，傳聞擴散速度越快。" />
+
+    <!-- Group 3: 對話 -->
+    <string id="VividWorld_MCM_AskRelationGate" text="打聽傳聞好感度門檻" />
+    <string id="VividWorld_MCM_AskRelationGateHint" text="NPC 願意回答你打聽傳聞前，所需的最低個人好感度。" />
+    <string id="VividWorld_MCM_AskWillingnessThreshold" text="打聽意願判定門檻" />
+    <string id="VividWorld_MCM_AskWillingnessThresholdHint" text="領主願不願意回答你的門檻。計分同時看他對你的好感度與他的個性（慷慨與榮譽加分、算計扣分），未達此值就不開口。" />
+    <string id="VividWorld_MCM_NpcVolunteerRelationGate" text="主動分享好感度門檻" />
+    <string id="VividWorld_MCM_NpcVolunteerRelationGateHint" text="NPC 在對話中主動向你透露傳聞所需的最低個人好感度。" />
+    <string id="VividWorld_MCM_CommonerCompatMode" text="平民身分相容模式" />
+    <string id="VividWorld_MCM_CommonerCompatModeHint" text="配合 NaN、Lowborn 這類「平民不應與貴族攀談」的模組。auto ＝偵測到就自動開啟；開啟期間，家族等級未達 1 時不會出現「詢問傳聞」的選項。on ＝一律開啟，off ＝一律關閉。" />
+
+    <!-- Group 4: 後果 -->
+    <string id="VividWorld_MCM_ConsequencesEnabled" text="啟用好感度後果" />
+    <string id="VividWorld_MCM_ConsequencesEnabledHint" text="當 NPC 得知與彼此有關的事件時，改變彼此之間的個人好感度。" />
+    <string id="VividWorld_MCM_BystanderMultiplier" text="旁觀者影響倍率" />
+    <string id="VividWorld_MCM_BystanderMultiplierHint" text="對於非事件直接當事人的旁觀者，其好感度變化的乘數。" />
+    <string id="VividWorld_MCM_MaxAbsoluteDeltaPerHeroPerDay" text="單日好感度變動上限" />
+    <string id="VividWorld_MCM_MaxAbsoluteDeltaPerHeroPerDayHint" text="任何單一英雄單日因傳聞累積的絕對好感度變化總量上限。" />
+    <string id="VividWorld_MCM_ConsequencesLedgerOnly" text="僅記錄帳本（不改原生好感度）" />
+    <string id="VividWorld_MCM_ConsequencesLedgerOnlyHint" text="只在內部計算好感度後果，不將其施加到遊戲原生的英雄好感度上。" />
+
+    <!-- Group 5: 情境 -->
+    <string id="VividWorld_MCM_DailyScanEnabled" text="啟用每日情境掃描" />
+    <string id="VividWorld_MCM_DailyScanEnabledHint" text="每天掃過各個聚落，找出可以讓兩位領主演一場的場合。關掉之後就不會再有自創橋段發生。" />
+    <string id="VividWorld_MCM_SituationsMaxPerDay" text="每日觸發情境上限" />
+    <string id="VividWorld_MCM_SituationsMaxPerDayHint" text="全世界每天預期發生幾場自創橋段。" />
+    <string id="VividWorld_MCM_GrudgesEnabled" text="啟用個人恩怨" />
+    <string id="VividWorld_MCM_GrudgesEnabledHint" text="讓領主之間的衝突留下樑子，記進模組自己的恩怨帳本。關掉之後橋段照樣會演，但不留下任何恩怨。" />
+    <string id="VividWorld_MCM_ClanEscalationThreshold" text="家族衝突恩怨門檻" />
+    <string id="VividWorld_MCM_ClanEscalationThresholdHint" text="個人敵意升級為家族世仇所需的累積恩怨強度門檻。" />
+
+    <!-- Group 6: 消息來源 -->
+    <string id="VividWorld_MCM_SourceHeroKilled" text="英雄死亡事件" />
+    <string id="VividWorld_MCM_SourceHeroKilledHint" text="有領主死亡時產生一則消息，並依死因分為遭謀殺、被處決、戰死與自然死亡。" />
+    <string id="VividWorld_MCM_SourceHeroPrisonerTaken" text="英雄被俘事件" />
+    <string id="VividWorld_MCM_SourceHeroPrisonerTakenHint" text="當領主在戰鬥或突襲後被俘時生成世界事件。" />
+    <string id="VividWorld_MCM_SourceHeroPrisonerReleased" text="英雄釋放與脫逃事件" />
+    <string id="VividWorld_MCM_SourceHeroPrisonerReleasedHint" text="當被俘領主被贖回、釋放或成功逃脫時生成世界事件。" />
+
+    <!-- Group 7: 存檔 -->
+    <string id="VividWorld_MCM_MaxSnapshots" text="最多保留快照數" />
+    <string id="VividWorld_MCM_MaxSnapshotsHint" text="每個戰役最多保留的傳聞系統快照數量。設為 0 表示不自動清除任何快照。" />
+  </strings>
+</base>

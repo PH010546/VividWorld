@@ -1,0 +1,12 @@
+{
+  "configVersion": 1,
+  "enabled": true,
+  "logLevel": "Info",
+  "persistence": {
+    "shardDays": 50,
+    "revertWithSaves": false,
+    "maxSnapshots": 16,
+    "maxPendingIngestChars": 12000,
+    "maxFactsPerEvent": 12
+  }
+}

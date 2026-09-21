@@ -1,0 +1,842 @@
+{
+  "situations": [
+    {
+      "id": "seat_dispute",
+      "trigger": "direct",
+      "weight": 1.0,
+      "decider": "slighted",
+      "minBranchWeight": null,
+      "roles": {
+        "slighted": { },
+        "favored":  { },
+        "host":     { "derived": "settlementOwnerClanLeader", "optional": true }
+      },
+      "conditions": [
+        { "type": "sameSettlement",  "roles": ["slighted", "favored"], "kinds": ["town", "castle"] },
+        { "type": "differentClan",   "a": "slighted", "b": "favored" },
+        { "type": "sameKingdom",     "a": "slighted", "b": "favored" },
+        { "type": "isClanLeader",    "role": "slighted", "value": true },
+        { "type": "isClanLeader",    "role": "favored",  "value": false },
+        { "type": "clanTierCompare", "a": "favored", "op": ">", "b": "slighted" },
+        { "type": "cooldown",        "days": 30 }
+      ],
+      "branches": [
+        {
+          "id": "demand_seat",
+          "base": 1.0,
+          "traits": { "valor": 0.6, "honor": 0.8 },
+          "preconditions": [],
+          "events": [
+            { "type": "seat_dispute_demanded",
+              "bind": { "SLIGHTED": "slighted", "FAVORED": "favored", "SETTLEMENT": "@settlement" } }
+          ],
+          "grudges": [
+            { "from": "favored", "to": "slighted", "amount": -8.0 },
+            { "from": "slighted", "to": "favored", "amount": -5.0 }
+          ]
+        },
+        {
+          "id": "endure",
+          "base": 1.0,
+          "traits": { "calculating": 0.8, "mercy": -0.5 },
+          "preconditions": [],
+          "events": [
+            { "type": "seat_dispute_endured",
+              "bind": { "SLIGHTED": "slighted", "FAVORED": "favored", "SETTLEMENT": "@settlement" } }
+          ],
+          "grudges": [
+            { "from": "slighted", "to": "favored", "amount": -6.0, "ledgerOnly": true }
+          ]
+        },
+        {
+          "id": "yield",
+          "base": 1.0,
+          "traits": { "generosity": 0.7, "mercy": 0.5 },
+          "preconditions": [],
+          "events": [
+            { "type": "seat_dispute_yielded",
+              "bind": { "SLIGHTED": "slighted", "FAVORED": "favored", "SETTLEMENT": "@settlement" } }
+          ],
+          "grudges": [
+            { "from": "favored", "to": "slighted", "amount": 5.0 }
+          ]
+        },
+        {
+          "id": "walk_out",
+          "base": 0.5,
+          "traits": { "honor": 0.6, "calculating": -0.6 },
+          "preconditions": [ { "type": "roleBound", "role": "host" } ],
+          "events": [
+            { "type": "seat_dispute_walked_out",
+              "bind": { "SLIGHTED": "slighted", "FAVORED": "favored", "HOST": "host", "SETTLEMENT": "@settlement" } }
+          ],
+          "grudges": [
+            { "from": "slighted", "to": "favored", "amount": -8.0, "escalate": "clan" },
+            { "from": "host", "to": "slighted", "amount": -6.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "seat_dispute_dev",
+      "trigger": "direct",
+      "devOnly": true,
+      "decider": "slighted",
+      "minBranchWeight": null,
+      "roles": {
+        "slighted": { },
+        "favored":  { },
+        "host":     { "derived": "settlementOwnerClanLeader", "optional": true }
+      },
+      "conditions": [
+        { "type": "sameSettlement",  "roles": ["slighted", "favored"], "kinds": ["town", "castle"] },
+        { "type": "differentClan",   "a": "slighted", "b": "favored" }
+      ],
+      "branches": [
+        {
+          "id": "demand_seat",
+          "base": 1.0,
+          "traits": { "valor": 0.6, "honor": 0.8 },
+          "preconditions": [],
+          "events": [
+            { "type": "seat_dispute_demanded",
+              "bind": { "SLIGHTED": "slighted", "FAVORED": "favored", "SETTLEMENT": "@settlement" } }
+          ],
+          "grudges": [
+            { "from": "favored", "to": "slighted", "amount": -8.0 },
+            { "from": "slighted", "to": "favored", "amount": -5.0 }
+          ]
+        },
+        {
+          "id": "endure",
+          "base": 1.0,
+          "traits": { "calculating": 0.8, "mercy": -0.5 },
+          "preconditions": [],
+          "events": [
+            { "type": "seat_dispute_endured",
+              "bind": { "SLIGHTED": "slighted", "FAVORED": "favored", "SETTLEMENT": "@settlement" } }
+          ],
+          "grudges": [
+            { "from": "slighted", "to": "favored", "amount": -6.0, "ledgerOnly": true }
+          ]
+        },
+        {
+          "id": "yield",
+          "base": 1.0,
+          "traits": { "generosity": 0.7, "mercy": 0.5 },
+          "preconditions": [],
+          "events": [
+            { "type": "seat_dispute_yielded",
+              "bind": { "SLIGHTED": "slighted", "FAVORED": "favored", "SETTLEMENT": "@settlement" } }
+          ],
+          "grudges": [
+            { "from": "favored", "to": "slighted", "amount": 5.0 }
+          ]
+        },
+        {
+          "id": "walk_out",
+          "base": 0.5,
+          "traits": { "honor": 0.6, "calculating": -0.6 },
+          "preconditions": [ { "type": "roleBound", "role": "host" } ],
+          "events": [
+            { "type": "seat_dispute_walked_out",
+              "bind": { "SLIGHTED": "slighted", "FAVORED": "favored", "HOST": "host", "SETTLEMENT": "@settlement" } }
+          ],
+          "grudges": [
+            { "from": "slighted", "to": "favored", "amount": -8.0, "escalate": "clan" },
+            { "from": "host", "to": "slighted", "amount": -6.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "advice_sought",
+      "trigger": "direct",
+      "weight": 2.0,
+      "decider": "veteran",
+      "minBranchWeight": null,
+      "roles": {
+        "student": {},
+        "veteran": {}
+      },
+      "conditions": [
+        {
+          "type": "sameSettlement",
+          "roles": [
+            "student",
+            "veteran"
+          ],
+          "kinds": [
+            "town",
+            "castle"
+          ]
+        },
+        {
+          "type": "differentClan",
+          "a": "student",
+          "b": "veteran"
+        },
+        {
+          "type": "clanTierCompare",
+          "a": "veteran",
+          "op": ">",
+          "b": "student"
+        },
+        {
+          "type": "isClanLeader",
+          "role": "student",
+          "value": true
+        },
+        {
+          "type": "cooldown",
+          "days": 40
+        }
+      ],
+      "branches": [
+        {
+          "id": "teach_freely",
+          "base": 1.0,
+          "traits": {
+            "generosity": 0.8,
+            "honor": 0.4
+          },
+          "preconditions": [],
+          "events": [
+            {
+              "type": "advice_given_freely",
+              "bind": {
+                "STUDENT": "student",
+                "VETERAN": "veteran",
+                "SETTLEMENT": "@settlement"
+              }
+            }
+          ],
+          "grudges": [
+            {
+              "from": "student",
+              "to": "veteran",
+              "amount": 7.0
+            }
+          ]
+        },
+        {
+          "id": "brush_off",
+          "base": 1.0,
+          "traits": {
+            "calculating": 0.7,
+            "generosity": -0.2
+          },
+          "preconditions": [],
+          "events": [
+            {
+              "type": "advice_brushed_off",
+              "bind": {
+                "STUDENT": "student",
+                "VETERAN": "veteran",
+                "SETTLEMENT": "@settlement"
+              }
+            }
+          ],
+          "grudges": [
+            {
+              "from": "student",
+              "to": "veteran",
+              "amount": -3.0,
+              "ledgerOnly": true
+            }
+          ]
+        },
+        {
+          "id": "mock",
+          "base": 0.9,
+          "traits": {
+            "generosity": -0.6,
+            "mercy": -0.4
+          },
+          "preconditions": [],
+          "events": [
+            {
+              "type": "advice_mocked",
+              "bind": {
+                "STUDENT": "student",
+                "VETERAN": "veteran",
+                "SETTLEMENT": "@settlement"
+              }
+            }
+          ],
+          "grudges": [
+            {
+              "from": "student",
+              "to": "veteran",
+              "amount": -8.0
+            },
+            {
+              "from": "veteran",
+              "to": "student",
+              "amount": -2.0,
+              "ledgerOnly": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tavern_words",
+      "trigger": "direct",
+      "weight": 0.4,
+      "decider": "speaker",
+      "minBranchWeight": null,
+      "roles": {
+        "speaker": {},
+        "listener": {}
+      },
+      "conditions": [
+        {
+          "type": "sameSettlement",
+          "roles": [
+            "speaker",
+            "listener"
+          ],
+          "kinds": [
+            "town"
+          ]
+        },
+        {
+          "type": "differentClan",
+          "a": "speaker",
+          "b": "listener"
+        },
+        {
+          "type": "cooldown",
+          "days": 15
+        }
+      ],
+      "branches": [
+        {
+          "id": "good_word",
+          "base": 1.0,
+          "traits": {
+            "honor": 0.5,
+            "mercy": 0.4,
+            "calculating": -0.3
+          },
+          "preconditions": [],
+          "events": [
+            {
+              "type": "tavern_good_word",
+              "bind": {
+                "SPEAKER": "speaker",
+                "LISTENER": "listener",
+                "SETTLEMENT": "@settlement"
+              }
+            }
+          ],
+          "grudges": [
+            {
+              "from": "listener",
+              "to": "speaker",
+              "amount": 5.0
+            }
+          ]
+        },
+        {
+          "id": "boast",
+          "base": 1.0,
+          "traits": {
+            "valor": 0.6,
+            "calculating": -0.3
+          },
+          "preconditions": [],
+          "events": [
+            {
+              "type": "tavern_boast_told",
+              "bind": {
+                "SPEAKER": "speaker",
+                "LISTENER": "listener",
+                "SETTLEMENT": "@settlement"
+              }
+            }
+          ],
+          "grudges": [
+            {
+              "from": "listener",
+              "to": "speaker",
+              "amount": -2.0,
+              "ledgerOnly": true
+            }
+          ]
+        },
+        {
+          "id": "confide",
+          "base": 0.8,
+          "traits": {
+            "honor": 0.4,
+            "calculating": -0.5
+          },
+          "preconditions": [],
+          "events": [
+            {
+              "type": "tavern_confidence",
+              "bind": {
+                "SPEAKER": "speaker",
+                "LISTENER": "listener",
+                "SETTLEMENT": "@settlement"
+              }
+            }
+          ]
+        },
+        {
+          "id": "sour_words",
+          "base": 0.7,
+          "traits": {
+            "honor": -0.6,
+            "mercy": -0.5
+          },
+          "preconditions": [],
+          "events": [
+            {
+              "type": "tavern_sour_words",
+              "bind": {
+                "SPEAKER": "speaker",
+                "LISTENER": "listener",
+                "SETTLEMENT": "@settlement"
+              }
+            }
+          ],
+          "grudges": [
+            {
+              "from": "listener",
+              "to": "speaker",
+              "amount": -6.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "victory_credit",
+      "trigger": "direct",
+      "weight": 0.8,
+      "decider": "claimant",
+      "minBranchWeight": null,
+      "roles": {
+        "claimant": {},
+        "rival": {},
+        "host": {
+          "derived": "settlementOwnerClanLeader",
+          "optional": true
+        }
+      },
+      "conditions": [
+        {
+          "type": "sameSettlement",
+          "roles": [
+            "claimant",
+            "rival"
+          ],
+          "kinds": [
+            "town",
+            "castle"
+          ]
+        },
+        {
+          "type": "differentClan",
+          "a": "claimant",
+          "b": "rival"
+        },
+        {
+          "type": "sameKingdom",
+          "a": "claimant",
+          "b": "rival"
+        },
+        {
+          "type": "cooldown",
+          "days": 25
+        }
+      ],
+      "branches": [
+        {
+          "id": "claim_aloud",
+          "base": 1.0,
+          "traits": {
+            "valor": 0.5,
+            "honor": -0.4
+          },
+          "preconditions": [],
+          "events": [
+            {
+              "type": "victory_credit_claimed",
+              "bind": {
+                "CLAIMANT": "claimant",
+                "RIVAL": "rival",
+                "SETTLEMENT": "@settlement"
+              }
+            }
+          ],
+          "grudges": [
+            {
+              "from": "rival",
+              "to": "claimant",
+              "amount": -7.0
+            },
+            {
+              "from": "claimant",
+              "to": "rival",
+              "amount": -3.0
+            }
+          ]
+        },
+        {
+          "id": "defer",
+          "base": 1.0,
+          "traits": {
+            "generosity": 0.6,
+            "honor": 0.5
+          },
+          "preconditions": [],
+          "events": [
+            {
+              "type": "victory_credit_deferred",
+              "bind": {
+                "CLAIMANT": "claimant",
+                "RIVAL": "rival",
+                "SETTLEMENT": "@settlement"
+              }
+            }
+          ],
+          "grudges": [
+            {
+              "from": "rival",
+              "to": "claimant",
+              "amount": 6.0
+            }
+          ]
+        },
+        {
+          "id": "belittle",
+          "base": 0.8,
+          "traits": {
+            "calculating": 0.7,
+            "honor": -0.5
+          },
+          "preconditions": [],
+          "events": [
+            {
+              "type": "victory_credit_belittled",
+              "bind": {
+                "CLAIMANT": "claimant",
+                "RIVAL": "rival",
+                "SETTLEMENT": "@settlement"
+              }
+            }
+          ]
+        },
+        {
+          "id": "let_the_host_judge",
+          "base": 0.6,
+          "traits": {
+            "honor": 0.5,
+            "calculating": 0.3
+          },
+          "preconditions": [
+            {
+              "type": "roleBound",
+              "role": "host"
+            }
+          ],
+          "events": [
+            {
+              "type": "victory_credit_judged",
+              "bind": {
+                "CLAIMANT": "claimant",
+                "RIVAL": "rival",
+                "HOST": "host",
+                "SETTLEMENT": "@settlement"
+              }
+            }
+          ],
+          "grudges": [
+            {
+              "from": "claimant",
+              "to": "host",
+              "amount": -5.0
+            },
+            {
+              "from": "claimant",
+              "to": "rival",
+              "amount": -4.0
+            },
+            {
+              "from": "rival",
+              "to": "host",
+              "amount": 4.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "market_brawl",
+      "trigger": "direct",
+      "weight": 4.0,
+      "decider": "patron",
+      "minBranchWeight": null,
+      "roles": {
+        "aggrieved": {},
+        "patron": {}
+      },
+      "conditions": [
+        {
+          "type": "sameSettlement",
+          "roles": [
+            "aggrieved",
+            "patron"
+          ],
+          "kinds": [
+            "town",
+            "castle"
+          ]
+        },
+        {
+          "type": "differentClan",
+          "a": "aggrieved",
+          "b": "patron"
+        },
+        {
+          "type": "sameKingdom",
+          "a": "aggrieved",
+          "b": "patron"
+        },
+        {
+          "type": "isClanLeader",
+          "role": "aggrieved",
+          "value": true
+        },
+        {
+          "type": "isClanLeader",
+          "role": "patron",
+          "value": true
+        },
+        {
+          "type": "cooldown",
+          "days": 45
+        }
+      ],
+      "branches": [
+        {
+          "id": "hand_over",
+          "base": 1.0,
+          "traits": {
+            "honor": 0.6,
+            "mercy": 0.5
+          },
+          "preconditions": [],
+          "events": [
+            {
+              "type": "brawl_man_handed_over",
+              "bind": {
+                "AGGRIEVED": "aggrieved",
+                "PATRON": "patron",
+                "SETTLEMENT": "@settlement"
+              }
+            }
+          ],
+          "grudges": [
+            {
+              "from": "aggrieved",
+              "to": "patron",
+              "amount": 6.0
+            }
+          ]
+        },
+        {
+          "id": "shield_own",
+          "base": 1.0,
+          "traits": {
+            "valor": 0.6,
+            "honor": -0.4
+          },
+          "preconditions": [],
+          "events": [
+            {
+              "type": "brawl_shielded_own",
+              "bind": {
+                "AGGRIEVED": "aggrieved",
+                "PATRON": "patron",
+                "SETTLEMENT": "@settlement"
+              }
+            }
+          ],
+          "grudges": [
+            {
+              "from": "aggrieved",
+              "to": "patron",
+              "amount": -7.0,
+              "escalate": "clan"
+            }
+          ]
+        },
+        {
+          "id": "counter_accuse",
+          "base": 0.8,
+          "traits": {
+            "mercy": -0.6,
+            "calculating": 0.5
+          },
+          "preconditions": [],
+          "events": [
+            {
+              "type": "brawl_counter_accused",
+              "bind": {
+                "AGGRIEVED": "aggrieved",
+                "PATRON": "patron",
+                "SETTLEMENT": "@settlement"
+              }
+            }
+          ],
+          "grudges": [
+            {
+              "from": "aggrieved",
+              "to": "patron",
+              "amount": -9.0,
+              "escalate": "clan"
+            },
+            {
+              "from": "patron",
+              "to": "aggrieved",
+              "amount": -3.0
+            }
+          ]
+        },
+        {
+          "id": "hush_it_up",
+          "base": 0.8,
+          "traits": {
+            "calculating": 0.8
+          },
+          "preconditions": [],
+          "events": [
+            {
+              "type": "brawl_hushed_up",
+              "bind": {
+                "AGGRIEVED": "aggrieved",
+                "PATRON": "patron",
+                "SETTLEMENT": "@settlement"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hunt_wager",
+      "trigger": "direct",
+      "weight": 0.5,
+      "decider": "challenged",
+      "minBranchWeight": null,
+      "roles": {
+        "challenger": {},
+        "challenged": {}
+      },
+      "conditions": [
+        {
+          "type": "sameSettlement",
+          "roles": [
+            "challenger",
+            "challenged"
+          ],
+          "kinds": [
+            "town",
+            "castle"
+          ]
+        },
+        {
+          "type": "differentClan",
+          "a": "challenger",
+          "b": "challenged"
+        },
+        {
+          "type": "cooldown",
+          "days": 20
+        }
+      ],
+      "branches": [
+        {
+          "id": "take_the_wager",
+          "base": 1.0,
+          "traits": {
+            "valor": 0.7,
+            "calculating": -0.2
+          },
+          "preconditions": [],
+          "events": [
+            {
+              "type": "wager_struck",
+              "bind": {
+                "CHALLENGER": "challenger",
+                "CHALLENGED": "challenged",
+                "SETTLEMENT": "@settlement"
+              }
+            }
+          ],
+          "grudges": [
+            {
+              "from": "challenged",
+              "to": "challenger",
+              "amount": 3.0
+            },
+            {
+              "from": "challenger",
+              "to": "challenged",
+              "amount": 3.0
+            }
+          ]
+        },
+        {
+          "id": "refuse_and_jest",
+          "base": 0.8,
+          "traits": {
+            "valor": -0.6,
+            "honor": -0.3
+          },
+          "preconditions": [],
+          "events": [
+            {
+              "type": "wager_refused",
+              "bind": {
+                "CHALLENGER": "challenger",
+                "CHALLENGED": "challenged",
+                "SETTLEMENT": "@settlement"
+              }
+            }
+          ],
+          "grudges": [
+            {
+              "from": "challenger",
+              "to": "challenged",
+              "amount": -5.0
+            }
+          ]
+        },
+        {
+          "id": "secret_stake",
+          "base": 0.7,
+          "traits": {
+            "calculating": 0.8
+          },
+          "preconditions": [],
+          "events": [
+            {
+              "type": "wager_secret_stake",
+              "bind": {
+                "CHALLENGER": "challenger",
+                "CHALLENGED": "challenged",
+                "SETTLEMENT": "@settlement"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

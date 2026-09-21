@@ -1,0 +1,26 @@
+{
+  "eventId": "evt_0412_a7f3",
+  "type": "covert_sabotage",
+  "day": 410.0,
+  "origin": "secret",
+  "linkedEventId": "evt_0409_c1e2",
+  "participants": {
+    "mastermind": "Ivan_hero_id",
+    "target": "Boris_hero_id",
+    "agent": "Aldric_hero_id"
+  },
+  "facts": [
+    { "id": "who_mastermind", "category": "WHO",     "text": "Ivan",                        "fragility": 1 },
+    { "id": "who_target",     "category": "WHO",     "text": "Boris",                       "fragility": 1 },
+    { "id": "who_agent",      "category": "WHO",     "text": "流浪者Aldric",                 "fragility": 3 },
+    { "id": "when",           "category": "WHEN",    "text": "決鬥前兩天",                   "fragility": 3 },
+    { "id": "context",        "category": "CONTEXT", "text": "當時Boris即將跟Ivan決鬥",       "fragility": 2, "refersTo": "evt_0409_c1e2" },
+    { "id": "why",            "category": "WHY",     "text": "想讓Boris決鬥前先弱一截",       "fragility": 4 },
+    { "id": "what",           "category": "WHAT",    "text": "Ivan買通Aldric，對坐騎動手腳", "fragility": 2 },
+    { "id": "outcome",        "category": "OUTCOME", "text": "坐騎後來真的跛了",             "fragility": 4 }
+  ],
+  "knownBy": [
+    { "heroId": "Ivan_hero_id",   "hop": 0 },
+    { "heroId": "Aldric_hero_id", "hop": 0 }
+  ]
+}

@@ -1,0 +1,43 @@
+namespace VividWorld.Core.Situations
+{
+    public enum SituationIssueCode
+    {
+        BadJson,
+        MissingId,
+        DuplicateId,
+        BadTrigger,
+        MissingDecider,
+        DeciderIsDerived,
+        InvalidMinBranchWeight,
+        InvalidWeight,
+        InsufficientRoles,
+        UnknownDerivedRole,
+        UnknownConditionType,
+        UnknownRoleInCondition,
+        InvalidConditionOp,
+        InvalidConditionKind,
+        MissingConditionProperty,
+        NoBranches,
+        DuplicateBranchId,
+        InvalidBranchBase,
+        UnknownTraitName,
+        InvalidTraitCoefficient,
+        UnknownPreconditionType,
+        UnknownRoleInPrecondition,
+        NoBranchEvents,
+        MissingEventType,
+        MissingEventBind,
+        UnknownRoleInEventBind,
+        EventTemplateNotFound,
+        DuplicateWithMainCatalog,
+        UnboundNonOptionalPlaceholder,
+        InvalidBindTarget,
+        MissingGrudgeProperty,
+        UnknownRoleInGrudge,
+        GrudgeFromEqualsTo,
+        InvalidGrudgeAmount,
+        InvalidGrudgeEscalate,
+        GrudgeFromNotHop0Knower,
+        UnknownProperty
+    }
+}

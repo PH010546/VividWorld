@@ -1,0 +1,316 @@
+[
+  {
+    "type": "duel_arranged",
+    "origin": "public",
+    "dramaWeight": 3,
+    "linkedEventId": null,
+    "participants": {
+      "challenger": "{MASTERMIND}",
+      "target": "{TARGET}"
+    },
+    "knowingRoles": [],
+    "facts": [
+      {
+        "id": "who_challenger",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_DuelArranged_Who",
+        "text": "{CHALLENGER} challenged {TARGET} to an honorable duel",
+        "vars": {
+          "CHALLENGER": "hero:{MASTERMIND}",
+          "TARGET": "hero:{TARGET}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_DuelArranged_Where",
+        "text": "outside the walls of {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 3
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_DuelArranged_What",
+        "text": "weapons were inspected and rules declared",
+        "vars": {},
+        "fragility": 2
+      },
+      {
+        "id": "why",
+        "category": "WHY",
+        "textId": "VividWorld_Fact_DuelArranged_Why",
+        "text": "over a matter of family honor",
+        "vars": {},
+        "fragility": 4
+      }
+    ]
+  },
+  {
+    "type": "tavern_quarrel",
+    "origin": "public",
+    "dramaWeight": 4,
+    "linkedEventId": null,
+    "participants": {
+      "instigator": "{MASTERMIND}",
+      "target": "{TARGET}"
+    },
+    "knowingRoles": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TavernQuarrel_Who",
+        "text": "{INSTIGATOR} brawled with {TARGET}",
+        "vars": {
+          "INSTIGATOR": "hero:{MASTERMIND}",
+          "TARGET": "hero:{TARGET}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_TavernQuarrel_Where",
+        "text": "in a tavern at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_TavernQuarrel_What",
+        "text": "flinging tankards and drawing blades",
+        "vars": {},
+        "fragility": 2
+      },
+      {
+        "id": "why",
+        "category": "WHY",
+        "textId": "VividWorld_Fact_TavernQuarrel_Why",
+        "text": "over an unpaid gambling debt",
+        "vars": {},
+        "fragility": 4
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_TavernQuarrel_Outcome",
+        "text": "the town watch had to intervene",
+        "vars": {},
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "shared_meal",
+    "origin": "public",
+    "dramaWeight": 1,
+    "linkedEventId": null,
+    "participants": {
+      "host": "{MASTERMIND}",
+      "guest": "{TARGET}"
+    },
+    "knowingRoles": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_SharedMeal_Who",
+        "text": "{HOST} shared a simple meal with {GUEST}",
+        "vars": {
+          "HOST": "hero:{MASTERMIND}",
+          "GUEST": "hero:{TARGET}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_SharedMeal_Where",
+        "text": "at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 3
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_SharedMeal_What",
+        "text": "partaking in local wine and roasted meats",
+        "vars": {},
+        "fragility": 4
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_SharedMeal_Outcome",
+        "text": "both parted in peaceful spirits",
+        "vars": {},
+        "fragility": 5
+      }
+    ]
+  },
+  {
+    "type": "duel",
+    "origin": "public",
+    "dramaWeight": 5,
+    "linkedEventId": "{LINKED_TAVERN_QUARREL}",
+    "participants": {
+      "duelist": "{MASTERMIND}",
+      "rival": "{TARGET}"
+    },
+    "knowingRoles": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_Duel_Who",
+        "text": "{DUELIST} engaged in a bloody duel with {RIVAL}",
+        "vars": {
+          "DUELIST": "hero:{MASTERMIND}",
+          "RIVAL": "hero:{TARGET}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_Duel_Where",
+        "text": "near {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2
+      },
+      {
+        "id": "context",
+        "category": "CONTEXT",
+        "textId": "VividWorld_Fact_Duel_Context",
+        "text": "escalating from the tavern quarrel",
+        "vars": {},
+        "refersTo": "{LINKED_TAVERN_QUARREL}",
+        "fragility": 3
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_Duel_What",
+        "text": "steel clashed until the sands were stained crimson",
+        "vars": {},
+        "fragility": 2
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_Duel_Outcome",
+        "text": "{DUELIST} stood victorious over the fallen rival",
+        "vars": {
+          "DUELIST": "hero:{MASTERMIND}"
+        },
+        "fragility": 1
+      }
+    ]
+  },
+  {
+    "type": "covert_sabotage",
+    "origin": "secret",
+    "dramaWeight": 4,
+    "linkedEventId": "{LINKED_DUEL_ARRANGED}",
+    "participants": {
+      "mastermind": "{MASTERMIND}",
+      "target": "{TARGET}",
+      "agent": "{AGENT}"
+    },
+    "knowingRoles": [ "mastermind", "agent" ],
+    "facts": [
+      {
+        "id": "who_mastermind",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_CovertSabotage_WhoMastermind",
+        "text": "{MASTERMIND}",
+        "vars": {
+          "MASTERMIND": "hero:{MASTERMIND}"
+        },
+        "role": "mastermind",
+        "fragility": 1
+      },
+      {
+        "id": "who_target",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_CovertSabotage_WhoTarget",
+        "text": "{TARGET}",
+        "vars": {
+          "TARGET": "hero:{TARGET}"
+        },
+        "role": "target",
+        "fragility": 1
+      },
+      {
+        "id": "who_agent",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_CovertSabotage_WhoAgent",
+        "text": "{AGENT}",
+        "vars": {
+          "AGENT": "hero:{AGENT}"
+        },
+        "role": "agent",
+        "fragility": 3
+      },
+      {
+        "id": "when",
+        "category": "WHEN",
+        "textId": "VividWorld_Fact_CovertSabotage_When",
+        "text": "two days before the duel",
+        "vars": {},
+        "fragility": 3
+      },
+      {
+        "id": "context",
+        "category": "CONTEXT",
+        "textId": "VividWorld_Fact_CovertSabotage_Context",
+        "text": "while {TARGET} was preparing for the arranged duel",
+        "vars": {
+          "TARGET": "hero:{TARGET}"
+        },
+        "refersTo": "{LINKED_DUEL_ARRANGED}",
+        "fragility": 2
+      },
+      {
+        "id": "why",
+        "category": "WHY",
+        "textId": "VividWorld_Fact_CovertSabotage_Why",
+        "text": "hoping to weaken {TARGET} before the combat",
+        "vars": {
+          "TARGET": "hero:{TARGET}"
+        },
+        "fragility": 4
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_CovertSabotage_What",
+        "text": "{MASTERMIND} bribed {AGENT} to sabotage the steed",
+        "vars": {
+          "MASTERMIND": "hero:{MASTERMIND}",
+          "AGENT": "hero:{AGENT}"
+        },
+        "fragility": 2
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_CovertSabotage_Outcome",
+        "text": "the steed was indeed found lame on the morrow",
+        "vars": {},
+        "fragility": 4
+      }
+    ]
+  }
+]

@@ -1,0 +1,1082 @@
+[
+  {
+    "type": "seat_dispute_demanded",
+    "headline": "A seat at the high table was demanded",
+    "origin": "public",
+    "dramaWeight": 3,
+    "linkedTemplateType": null,
+    "roles": {
+      "slighted": "{SLIGHTED}",
+      "favored": "{FAVORED}"
+    },
+    "knowingRoles": [],
+    "opinion": [
+      { "about": "slighted", "amount": -2 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_SeatDisputeDemanded_Who",
+        "text": "{SLIGHTED} demanded that {FAVORED} give up the seat of honor",
+        "vars": {
+          "SLIGHTED": "hero:{SLIGHTED}",
+          "FAVORED": "hero:{FAVORED}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_SeatDisputeDemanded_Where",
+        "text": "in the hall of {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "why",
+        "category": "WHY",
+        "textId": "VividWorld_Fact_SeatDisputeDemanded_Why",
+        "text": "saying the head of a house should not sit below a lesser member of another",
+        "vars": {},
+        "fragility": 3
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_SeatDisputeDemanded_Outcome",
+        "text": "and the whole hall fell silent",
+        "vars": {},
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "seat_dispute_endured",
+    "headline": "A slight at the table was swallowed",
+    "origin": "secret",
+    "dramaWeight": 3,
+    "linkedTemplateType": null,
+    "roles": {
+      "slighted": "{SLIGHTED}",
+      "favored": "{FAVORED}"
+    },
+    "knowingRoles": [
+      "slighted"
+    ],
+    "opinion": [
+      { "about": "slighted", "amount": 2 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_SeatDisputeEndured_Who",
+        "text": "{SLIGHTED} swallowed the insult of sitting below {FAVORED}",
+        "vars": {
+          "SLIGHTED": "hero:{SLIGHTED}",
+          "FAVORED": "hero:{FAVORED}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_SeatDisputeEndured_Where",
+        "text": "in the hall of {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_SeatDisputeEndured_What",
+        "text": "but has not forgotten it",
+        "vars": {},
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "seat_dispute_yielded",
+    "headline": "A seat was given up",
+    "origin": "public",
+    "dramaWeight": 2,
+    "linkedTemplateType": null,
+    "roles": {
+      "slighted": "{SLIGHTED}",
+      "favored": "{FAVORED}"
+    },
+    "knowingRoles": [],
+    "opinion": [
+      { "about": "slighted", "amount": 4 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_SeatDisputeYielded_Who",
+        "text": "{SLIGHTED} graciously gave the seat of honor to {FAVORED}",
+        "vars": {
+          "SLIGHTED": "hero:{SLIGHTED}",
+          "FAVORED": "hero:{FAVORED}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_SeatDisputeYielded_Where",
+        "text": "in the hall of {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_SeatDisputeYielded_Outcome",
+        "text": "and raised a cup in their honor",
+        "vars": {},
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "seat_dispute_walked_out",
+    "headline": "A lord walked out of the hall",
+    "origin": "public",
+    "dramaWeight": 3,
+    "linkedTemplateType": null,
+    "roles": {
+      "slighted": "{SLIGHTED}",
+      "favored": "{FAVORED}",
+      "host": "{HOST}"
+    },
+    "knowingRoles": [],
+    "opinion": [
+      { "about": "slighted", "amount": -5 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_SeatDisputeWalkedOut_Who",
+        "text": "{SLIGHTED} walked out of {HOST}'s feast",
+        "vars": {
+          "SLIGHTED": "hero:{SLIGHTED}",
+          "HOST": "hero:{HOST}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_SeatDisputeWalkedOut_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "why",
+        "category": "WHY",
+        "textId": "VividWorld_Fact_SeatDisputeWalkedOut_Why",
+        "text": "rather than sit below {FAVORED}",
+        "vars": {
+          "FAVORED": "hero:{FAVORED}"
+        },
+        "fragility": 2
+      }
+    ]
+  },
+  {
+    "type": "advice_given_freely",
+    "headline": "A veteran taught what he knew",
+    "origin": "public",
+    "dramaWeight": 2,
+    "linkedTemplateType": null,
+    "roles": {
+      "student": "{STUDENT}",
+      "veteran": "{VETERAN}"
+    },
+    "knowingRoles": [],
+    "opinion": [
+      { "about": "veteran", "amount": 5 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_AdviceGivenFreely_Who",
+        "text": "{VETERAN} told {STUDENT} how that campaign was really won",
+        "vars": {
+          "VETERAN": "hero:{VETERAN}",
+          "STUDENT": "hero:{STUDENT}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_AdviceGivenFreely_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_AdviceGivenFreely_What",
+        "text": "and held nothing back, down to his own mistakes",
+        "vars": {},
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "advice_brushed_off",
+    "headline": "A request for counsel was brushed off",
+    "origin": "public",
+    "dramaWeight": 2,
+    "linkedTemplateType": null,
+    "roles": {
+      "student": "{STUDENT}",
+      "veteran": "{VETERAN}"
+    },
+    "knowingRoles": [],
+    "opinion": [
+      { "about": "veteran", "amount": -2 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_AdviceBrushedOff_Who",
+        "text": "{VETERAN} gave {STUDENT} nothing but old sayings",
+        "vars": {
+          "VETERAN": "hero:{VETERAN}",
+          "STUDENT": "hero:{STUDENT}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_AdviceBrushedOff_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_AdviceBrushedOff_What",
+        "text": "and changed the subject before the cup was empty",
+        "vars": {},
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "advice_mocked",
+    "headline": "A request for counsel was mocked",
+    "origin": "public",
+    "dramaWeight": 3,
+    "linkedTemplateType": null,
+    "roles": {
+      "student": "{STUDENT}",
+      "veteran": "{VETERAN}"
+    },
+    "knowingRoles": [],
+    "opinion": [
+      { "about": "veteran", "amount": -6 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_AdviceMocked_Who",
+        "text": "{VETERAN} made a joke of {STUDENT}'s questions in front of the hall",
+        "vars": {
+          "VETERAN": "hero:{VETERAN}",
+          "STUDENT": "hero:{STUDENT}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_AdviceMocked_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "why",
+        "category": "WHY",
+        "textId": "VividWorld_Fact_AdviceMocked_Why",
+        "text": "saying some men should first learn to sit still",
+        "vars": {},
+        "fragility": 3
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_AdviceMocked_Outcome",
+        "text": "and the laughter followed {STUDENT} out of the hall",
+        "vars": {
+          "STUDENT": "hero:{STUDENT}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "tavern_boast_told",
+    "headline": "A boast was told over the cups",
+    "origin": "public",
+    "dramaWeight": 1,
+    "linkedTemplateType": null,
+    "roles": {
+      "speaker": "{SPEAKER}",
+      "listener": "{LISTENER}"
+    },
+    "knowingRoles": [],
+    "opinion": [
+      { "about": "speaker", "amount": -3 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TavernBoastTold_Who",
+        "text": "{SPEAKER} boasted to {LISTENER} of deeds that grew with every cup",
+        "vars": {
+          "SPEAKER": "hero:{SPEAKER}",
+          "LISTENER": "hero:{LISTENER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_TavernBoastTold_Where",
+        "text": "in a tavern in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_TavernBoastTold_What",
+        "text": "and nobody at the table troubled to count the bodies",
+        "vars": {},
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "tavern_confidence",
+    "headline": "A confidence was let slip over the cups",
+    "origin": "secret",
+    "dramaWeight": 2,
+    "linkedTemplateType": null,
+    "roles": {
+      "speaker": "{SPEAKER}",
+      "listener": "{LISTENER}"
+    },
+    "knowingRoles": [
+      "speaker",
+      "listener"
+    ],
+    "opinion": [
+      { "about": "speaker", "amount": -4 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TavernConfidence_Who",
+        "text": "{SPEAKER} admitted to {LISTENER} that the coffers are all but empty",
+        "vars": {
+          "SPEAKER": "hero:{SPEAKER}",
+          "LISTENER": "hero:{LISTENER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_TavernConfidence_Where",
+        "text": "over cups in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_TavernConfidence_What",
+        "text": "and asked that it go no further",
+        "vars": {},
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "tavern_sour_words",
+    "headline": "Sour words were spoken over the cups",
+    "origin": "public",
+    "dramaWeight": 3,
+    "linkedTemplateType": null,
+    "roles": {
+      "speaker": "{SPEAKER}",
+      "listener": "{LISTENER}"
+    },
+    "knowingRoles": [],
+    "opinion": [
+      { "about": "speaker", "amount": -5 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TavernSourWords_Who",
+        "text": "{SPEAKER} said something over the cups that {LISTENER} will not forget",
+        "vars": {
+          "SPEAKER": "hero:{SPEAKER}",
+          "LISTENER": "hero:{LISTENER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_TavernSourWords_Where",
+        "text": "in a tavern in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_TavernSourWords_What",
+        "text": "and did not take it back once the wine had worn off",
+        "vars": {},
+        "fragility": 2
+      }
+    ]
+  },
+  {
+    "type": "tavern_good_word",
+    "headline": "A good word was spoken over the cups",
+    "origin": "public",
+    "dramaWeight": 2,
+    "linkedTemplateType": null,
+    "roles": {
+      "speaker": "{SPEAKER}",
+      "listener": "{LISTENER}"
+    },
+    "knowingRoles": [],
+    "opinion": [
+      { "about": "speaker", "amount": 4 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TavernGoodWord_Who",
+        "text": "{SPEAKER} spoke up for {LISTENER} when the table turned on him",
+        "vars": {
+          "SPEAKER": "hero:{SPEAKER}",
+          "LISTENER": "hero:{LISTENER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_TavernGoodWord_Where",
+        "text": "in a tavern in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_TavernGoodWord_What",
+        "text": "and said he would tell them the same sober",
+        "vars": {},
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "victory_credit_claimed",
+    "headline": "The credit for a victory was claimed",
+    "origin": "public",
+    "dramaWeight": 3,
+    "linkedTemplateType": null,
+    "roles": {
+      "claimant": "{CLAIMANT}",
+      "rival": "{RIVAL}"
+    },
+    "knowingRoles": [],
+    "opinion": [
+      { "about": "claimant", "amount": -6 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_VictoryCreditClaimed_Who",
+        "text": "{CLAIMANT} claimed the credit for the last victory in front of the whole hall",
+        "vars": {
+          "CLAIMANT": "hero:{CLAIMANT}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_VictoryCreditClaimed_Where",
+        "text": "in the hall of {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "why",
+        "category": "WHY",
+        "textId": "VividWorld_Fact_VictoryCreditClaimed_Why",
+        "text": "saying {RIVAL} rode up only after the line had already broken",
+        "vars": {
+          "RIVAL": "hero:{RIVAL}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "victory_credit_deferred",
+    "headline": "The credit for a victory was given away",
+    "origin": "public",
+    "dramaWeight": 2,
+    "linkedTemplateType": null,
+    "roles": {
+      "claimant": "{CLAIMANT}",
+      "rival": "{RIVAL}"
+    },
+    "knowingRoles": [],
+    "opinion": [
+      { "about": "claimant", "amount": 6 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_VictoryCreditDeferred_Who",
+        "text": "{CLAIMANT} handed {RIVAL} the credit for the last victory",
+        "vars": {
+          "CLAIMANT": "hero:{CLAIMANT}",
+          "RIVAL": "hero:{RIVAL}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_VictoryCreditDeferred_Where",
+        "text": "in the hall of {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_VictoryCreditDeferred_What",
+        "text": "though the hall had been ready to praise {CLAIMANT} instead",
+        "vars": {
+          "CLAIMANT": "hero:{CLAIMANT}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "victory_credit_belittled",
+    "headline": "A victory was belittled",
+    "origin": "secret",
+    "dramaWeight": 3,
+    "linkedTemplateType": null,
+    "roles": {
+      "claimant": "{CLAIMANT}",
+      "rival": "{RIVAL}"
+    },
+    "knowingRoles": [
+      "claimant"
+    ],
+    "opinion": [
+      { "about": "claimant", "amount": -5 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_VictoryCreditBelittled_Who",
+        "text": "{CLAIMANT} has been telling a few trusted ears that {RIVAL} did nothing in the last battle",
+        "vars": {
+          "CLAIMANT": "hero:{CLAIMANT}",
+          "RIVAL": "hero:{RIVAL}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_VictoryCreditBelittled_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_VictoryCreditBelittled_What",
+        "text": "and is careful never to say it where {RIVAL} might hear",
+        "vars": {
+          "RIVAL": "hero:{RIVAL}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "victory_credit_judged",
+    "headline": "A dispute over credit was put to the host",
+    "origin": "public",
+    "dramaWeight": 3,
+    "linkedTemplateType": null,
+    "roles": {
+      "claimant": "{CLAIMANT}",
+      "rival": "{RIVAL}",
+      "host": "{HOST}"
+    },
+    "knowingRoles": [],
+    "opinion": [
+      { "about": "host", "amount": 3 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_VictoryCreditJudged_Who",
+        "text": "{HOST} settled the quarrel between {CLAIMANT} and {RIVAL} over the last victory",
+        "vars": {
+          "HOST": "hero:{HOST}",
+          "CLAIMANT": "hero:{CLAIMANT}",
+          "RIVAL": "hero:{RIVAL}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_VictoryCreditJudged_Where",
+        "text": "in the hall of {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_VictoryCreditJudged_Outcome",
+        "text": "and gave the credit to {RIVAL}",
+        "vars": {
+          "RIVAL": "hero:{RIVAL}"
+        },
+        "fragility": 2
+      }
+    ]
+  },
+  {
+    "type": "brawl_man_handed_over",
+    "headline": "A retainer was handed over after a brawl",
+    "origin": "public",
+    "dramaWeight": 3,
+    "linkedTemplateType": null,
+    "roles": {
+      "aggrieved": "{AGGRIEVED}",
+      "patron": "{PATRON}"
+    },
+    "knowingRoles": [],
+    "opinion": [
+      { "about": "patron", "amount": 5 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_BrawlManHandedOver_Who",
+        "text": "{PATRON} handed over the man who drew first and made his apology to {AGGRIEVED}",
+        "vars": {
+          "PATRON": "hero:{PATRON}",
+          "AGGRIEVED": "hero:{AGGRIEVED}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_BrawlManHandedOver_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_BrawlManHandedOver_What",
+        "text": "with the whole market square watching",
+        "vars": {},
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "brawl_shielded_own",
+    "headline": "A lord shielded his own after a brawl",
+    "origin": "public",
+    "dramaWeight": 3,
+    "linkedTemplateType": null,
+    "roles": {
+      "aggrieved": "{AGGRIEVED}",
+      "patron": "{PATRON}"
+    },
+    "knowingRoles": [],
+    "opinion": [
+      { "about": "patron", "amount": -4 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_BrawlShieldedOwn_Who",
+        "text": "{PATRON} refused to give up his man to {AGGRIEVED}",
+        "vars": {
+          "PATRON": "hero:{PATRON}",
+          "AGGRIEVED": "hero:{AGGRIEVED}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_BrawlShieldedOwn_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "why",
+        "category": "WHY",
+        "textId": "VividWorld_Fact_BrawlShieldedOwn_Why",
+        "text": "saying his household answers to his house and no other",
+        "vars": {},
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "brawl_counter_accused",
+    "headline": "A brawl ended in counter-accusation",
+    "origin": "public",
+    "dramaWeight": 4,
+    "linkedTemplateType": null,
+    "roles": {
+      "aggrieved": "{AGGRIEVED}",
+      "patron": "{PATRON}"
+    },
+    "knowingRoles": [],
+    "opinion": [
+      { "about": "patron", "amount": -6 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_BrawlCounterAccused_Who",
+        "text": "{PATRON} told the hall it was {AGGRIEVED}'s man who drew first",
+        "vars": {
+          "PATRON": "hero:{PATRON}",
+          "AGGRIEVED": "hero:{AGGRIEVED}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_BrawlCounterAccused_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_BrawlCounterAccused_What",
+        "text": "and demanded an accounting of his own",
+        "vars": {},
+        "fragility": 3
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_BrawlCounterAccused_Outcome",
+        "text": "neither house gave an inch",
+        "vars": {},
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "brawl_hushed_up",
+    "headline": "A brawl was hushed up",
+    "origin": "secret",
+    "dramaWeight": 2,
+    "linkedTemplateType": null,
+    "roles": {
+      "aggrieved": "{AGGRIEVED}",
+      "patron": "{PATRON}"
+    },
+    "knowingRoles": [
+      "aggrieved",
+      "patron"
+    ],
+    "opinion": [
+      { "about": "aggrieved", "amount": -2 },
+      { "about": "patron", "amount": -2 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_BrawlHushedUp_Who",
+        "text": "{AGGRIEVED} and {PATRON} agreed to let the market brawl die quietly",
+        "vars": {
+          "AGGRIEVED": "hero:{AGGRIEVED}",
+          "PATRON": "hero:{PATRON}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_BrawlHushedUp_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_BrawlHushedUp_What",
+        "text": "and neither house will speak of it again",
+        "vars": {},
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "wager_struck",
+    "headline": "A hunting wager was struck",
+    "origin": "public",
+    "dramaWeight": 2,
+    "linkedTemplateType": null,
+    "roles": {
+      "challenger": "{CHALLENGER}",
+      "challenged": "{CHALLENGED}"
+    },
+    "knowingRoles": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WagerStruck_Who",
+        "text": "{CHALLENGER} and {CHALLENGED} struck a wager on the next hunt",
+        "vars": {
+          "CHALLENGER": "hero:{CHALLENGER}",
+          "CHALLENGED": "hero:{CHALLENGED}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WagerStruck_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_WagerStruck_What",
+        "text": "and half the hall put silver on it as well",
+        "vars": {},
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "wager_refused",
+    "headline": "A hunting wager was refused",
+    "origin": "public",
+    "dramaWeight": 2,
+    "linkedTemplateType": null,
+    "roles": {
+      "challenger": "{CHALLENGER}",
+      "challenged": "{CHALLENGED}"
+    },
+    "knowingRoles": [],
+    "opinion": [
+      { "about": "challenged", "amount": -3 }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WagerRefused_Who",
+        "text": "{CHALLENGED} refused {CHALLENGER}'s wager and made a joke of the asking",
+        "vars": {
+          "CHALLENGED": "hero:{CHALLENGED}",
+          "CHALLENGER": "hero:{CHALLENGER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WagerRefused_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_WagerRefused_What",
+        "text": "which the hall laughed at rather too long",
+        "vars": {},
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "wager_secret_stake",
+    "headline": "A hunting wager had a hidden stake",
+    "origin": "secret",
+    "dramaWeight": 2,
+    "linkedTemplateType": null,
+    "roles": {
+      "challenger": "{CHALLENGER}",
+      "challenged": "{CHALLENGED}"
+    },
+    "knowingRoles": [
+      "challenger",
+      "challenged"
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WagerSecretStake_Who",
+        "text": "{CHALLENGER} and {CHALLENGED} put more than silver on the next hunt",
+        "vars": {
+          "CHALLENGER": "hero:{CHALLENGER}",
+          "CHALLENGED": "hero:{CHALLENGED}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WagerSecretStake_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_WagerSecretStake_What",
+        "text": "and neither of them will say what it was",
+        "vars": {},
+        "fragility": 3
+      }
+    ]
+  }
+]

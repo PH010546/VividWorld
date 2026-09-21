@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <GameFolder>C:\Game\Steam\steamapps\common\Mount &amp; Blade II Bannerlord</GameFolder>
+    <!-- MCM 裝在別的地方時覆寫這一個 -->
+    <!-- <McmBinFolder>$(GameFolder)\Modules\Bannerlord.MBOptionScreen\bin\Win64_Shipping_Client</McmBinFolder> -->
+  </PropertyGroup>
+</Project>

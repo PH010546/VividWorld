@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="utf-8"?>
+<base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" type="string">
+  <tags>
+    <tag language="English" />
+  </tags>
+  <strings>
+    <string id="VividWorld_Dev_KnownEvents" text="(dev) What do you know?" />
+    <string id="VividWorld_Dev_Contacts" text="(dev) Who can you reach right now?" />
+    <string id="VividWorld_Dev_InjectPublic" text="(dev) Stage a public incident between us" />
+    <string id="VividWorld_Dev_InjectSecret" text="(dev) Stage a secret between us" />
+    <string id="VividWorld_Dev_Tick24h" text="(dev) Simulate 24h of propagation" />
+    <string id="VividWorld_Dev_WorldStatus" text="(dev) World status" />
+    <string id="VividWorld_Dev_ReloadConfig" text="(dev) Reload config.json" />
+    <string id="VividWorld_Dev_ForceLeak" text="(dev) Force the newest secret to leak" />
+    <string id="VividWorld_Dev_ResetMetrics" text="(dev) Reset performance counters" />
+    <string id="VividWorld_Dev_BoostRelation" text="(dev) Make this person like me more" />
+    <string id="VividWorld_Dev_EventRoster" text="(dev) Who else knows about this?" />
+    <string id="VividWorld_Dev_EventCatalog" text="(dev) Event catalog" />
+    <string id="VividWorld_Dev_OpinionShifts" text="(dev) What the rumors he heard changed" />
+
+    <!-- Dialogue and presentation strings -->
+    <string id="VividWorld_AskNews" text="Any news on the road?" />
+    <string id="VividWorld_AskNothing" text="Nothing worth repeating." />
+    <string id="VividWorld_RecoveryAsk" text="You looked like you were about to say something." />
+    <string id="VividWorld_RetellPrefix" text="I was there, in fact—" />
+    <string id="VividWorld_FactSeparator" text=", " />
+    <string id="VividWorld_SentenceEnd" text="." />
+    <string id="VividWorld_UnknownSubject" text="someone" />
+    <string id="VividWorld_UnknownPlace" text="somewhere" />
+
+    <!-- Sample template 1: duel_arranged -->
+    <string id="VividWorld_Fact_DuelArranged_Who" text="{CHALLENGER} challenged {TARGET} to an honorable duel" />
+    <string id="VividWorld_Fact_DuelArranged_Where" text="outside the walls of {SETTLEMENT}" />
+    <string id="VividWorld_Fact_DuelArranged_What" text="weapons were inspected and rules declared" />
+    <string id="VividWorld_Fact_DuelArranged_Why" text="over a matter of family honor" />
+
+    <!-- Sample template 2: tavern_quarrel -->
+    <string id="VividWorld_Fact_TavernQuarrel_Who" text="{INSTIGATOR} brawled with {TARGET}" />
+    <string id="VividWorld_Fact_TavernQuarrel_Where" text="in a tavern at {SETTLEMENT}" />
+    <string id="VividWorld_Fact_TavernQuarrel_What" text="flinging tankards and drawing blades" />
+    <string id="VividWorld_Fact_TavernQuarrel_Why" text="over an unpaid gambling debt" />
+    <string id="VividWorld_Fact_TavernQuarrel_Outcome" text="the town watch had to intervene" />
+
+    <!-- Sample template 3: shared_meal -->
+    <string id="VividWorld_Fact_SharedMeal_Who" text="{HOST} shared a simple meal with {GUEST}" />
+    <string id="VividWorld_Fact_SharedMeal_Where" text="at {SETTLEMENT}" />
+    <string id="VividWorld_Fact_SharedMeal_What" text="partaking in local wine and roasted meats" />
+    <string id="VividWorld_Fact_SharedMeal_Outcome" text="both parted in peaceful spirits" />
+
+    <!-- Sample template 4: duel -->
+    <string id="VividWorld_Fact_Duel_Who" text="{DUELIST} engaged in a bloody duel with {RIVAL}" />
+    <string id="VividWorld_Fact_Duel_Where" text="near {SETTLEMENT}" />
+    <string id="VividWorld_Fact_Duel_Context" text="escalating from the tavern quarrel" />
+    <string id="VividWorld_Fact_Duel_What" text="steel clashed until the sands were stained crimson" />
+    <string id="VividWorld_Fact_Duel_Outcome" text="{DUELIST} stood victorious over the fallen rival" />
+
+    <!-- Sample template 5: covert_sabotage -->
+    <string id="VividWorld_Fact_CovertSabotage_WhoMastermind" text="{MASTERMIND}" />
+    <string id="VividWorld_Fact_CovertSabotage_WhoTarget" text="{TARGET}" />
+    <string id="VividWorld_Fact_CovertSabotage_WhoAgent" text="{AGENT}" />
+    <string id="VividWorld_Fact_CovertSabotage_When" text="two days before the duel" />
+    <string id="VividWorld_Fact_CovertSabotage_Context" text="while {TARGET} was preparing for the arranged duel" />
+    <string id="VividWorld_Fact_CovertSabotage_Why" text="hoping to weaken {TARGET} before the combat" />
+    <string id="VividWorld_Fact_CovertSabotage_What" text="{MASTERMIND} bribed {AGENT} to sabotage the steed" />
+    <string id="VividWorld_Fact_CovertSabotage_Outcome" text="the steed was indeed found lame on the morrow" />
+
+    <!-- Event type headlines -->
+    <string id="VividWorld_EventType_hero_murdered" text="Murder" />
+    <string id="VividWorld_EventType_hero_executed" text="Execution" />
+    <string id="VividWorld_EventType_hero_died_in_battle" text="Fallen in Battle" />
+    <string id="VividWorld_EventType_hero_died_naturally" text="Natural Death" />
+    <string id="VividWorld_EventType_hero_taken_prisoner" text="Captivity" />
+    <string id="VividWorld_EventType_heroes_married" text="Marriage" />
+    <string id="VividWorld_EventType_child_born" text="Birth" />
+    <string id="VividWorld_EventType_hero_released" text="A prisoner was released" />
+    <string id="VividWorld_EventType_hero_escaped_captivity" text="A prisoner escaped" />
+    <string id="VividWorld_EventType_seat_dispute_demanded" text="A seat at the high table was demanded" />
+    <string id="VividWorld_EventType_seat_dispute_endured" text="A slight at the table was swallowed" />
+    <string id="VividWorld_EventType_seat_dispute_yielded" text="A seat was given up" />
+    <string id="VividWorld_EventType_seat_dispute_walked_out" text="A lord walked out of the hall" />
+    <string id="VividWorld_EventType_advice_given_freely" text="A veteran taught what he knew" />
+    <string id="VividWorld_EventType_advice_brushed_off" text="A request for counsel was brushed off" />
+    <string id="VividWorld_EventType_advice_mocked" text="A request for counsel was mocked" />
+    <string id="VividWorld_EventType_tavern_boast_told" text="A boast was told over the cups" />
+    <string id="VividWorld_EventType_tavern_confidence" text="A confidence was let slip over the cups" />
+    <string id="VividWorld_EventType_tavern_sour_words" text="Sour words were spoken over the cups" />
+    <string id="VividWorld_EventType_tavern_good_word" text="A good word was spoken over the cups" />
+    <string id="VividWorld_EventType_victory_credit_claimed" text="The credit for a victory was claimed" />
+    <string id="VividWorld_EventType_victory_credit_deferred" text="The credit for a victory was given away" />
+    <string id="VividWorld_EventType_victory_credit_belittled" text="A victory was belittled" />
+    <string id="VividWorld_EventType_victory_credit_judged" text="A dispute over credit was put to the host" />
+    <string id="VividWorld_EventType_brawl_man_handed_over" text="A retainer was handed over after a brawl" />
+    <string id="VividWorld_EventType_brawl_shielded_own" text="A lord shielded his own after a brawl" />
+    <string id="VividWorld_EventType_brawl_counter_accused" text="A brawl ended in counter-accusation" />
+    <string id="VividWorld_EventType_brawl_hushed_up" text="A brawl was hushed up" />
+    <string id="VividWorld_EventType_wager_struck" text="A hunting wager was struck" />
+    <string id="VividWorld_EventType_wager_refused" text="A hunting wager was refused" />
+    <string id="VividWorld_EventType_wager_secret_stake" text="A hunting wager had a hidden stake" />
+
+    <!-- Real event template 1: hero_murdered -->
+    <string id="VividWorld_Fact_HeroMurdered_Who" text="{KILLER} murdered {VICTIM} in cold blood" />
+    <string id="VividWorld_Fact_HeroMurdered_Where" text="near {SETTLEMENT}" />
+    <string id="VividWorld_Fact_HeroMurdered_What" text="the deed was done in secret and without mercy" />
+    <string id="VividWorld_Fact_HeroMurdered_Outcome" text="the foul crime has cast a grim shadow over the realm" />
+
+    <!-- Real event template 2: hero_executed -->
+    <string id="VividWorld_Fact_HeroExecuted_Who" text="{KILLER} formally executed {VICTIM}" />
+    <string id="VividWorld_Fact_HeroExecuted_Where" text="at {SETTLEMENT}" />
+    <string id="VividWorld_Fact_HeroExecuted_What" text="the headsman's axe severed the noble head before assembled crowds" />
+    <string id="VividWorld_Fact_HeroExecuted_Outcome" text="the execution sent shockwaves across the continent" />
+
+    <!-- Real event template 3: hero_died_in_battle -->
+    <string id="VividWorld_Fact_HeroDiedInBattle_Who" text="{VICTIM} was slain in battle by {KILLER}" />
+    <string id="VividWorld_Fact_HeroDiedInBattle_Where" text="on the field near {SETTLEMENT}" />
+    <string id="VividWorld_Fact_HeroDiedInBattle_What" text="fighting bravely amidst the clash of shields and spears" />
+    <string id="VividWorld_Fact_HeroDiedInBattle_Outcome" text="the warrior met an honorable end on the field of war" />
+
+    <!-- Real event template 4: hero_died_naturally -->
+    <string id="VividWorld_Fact_HeroDiedNaturally_Who" text="{VICTIM} passed away peacefully" />
+    <string id="VividWorld_Fact_HeroDiedNaturally_Where" text="at {SETTLEMENT}" />
+    <string id="VividWorld_Fact_HeroDiedNaturally_What" text="surrounded by family and kin as life slipped away" />
+    <string id="VividWorld_Fact_HeroDiedNaturally_Outcome" text="mourners paid tribute to a life well-lived" />
+
+    <!-- Real event template 5: hero_taken_prisoner -->
+    <string id="VividWorld_Fact_HeroTakenPrisoner_Who" text="{CAPTOR} captured {PRISONER} as a prisoner of war" />
+    <string id="VividWorld_Fact_HeroTakenPrisoner_Where" text="near {SETTLEMENT}" />
+    <string id="VividWorld_Fact_HeroTakenPrisoner_What" text="stripped of weapons and placed under close guard" />
+    <string id="VividWorld_Fact_HeroTakenPrisoner_Outcome" text="the captive remains in custody awaiting ransom or release" />
+
+    <!-- Real event template: hero_released -->
+    <string id="VividWorld_Fact_HeroReleased_Who" text="{CAPTOR} set {PRISONER} free" />
+    <string id="VividWorld_Fact_HeroReleased_WhoNoCaptor" text="{PRISONER} is out of captivity" />
+    <string id="VividWorld_Fact_HeroReleased_Where" text="near {SETTLEMENT}" />
+    <string id="VividWorld_Fact_HeroReleased_What" text="the terms were settled and the guards stood aside" />
+    <string id="VividWorld_Fact_HeroReleased_Outcome" text="the captive is no longer held" />
+
+    <!-- Real event template: hero_escaped_captivity -->
+    <string id="VividWorld_Fact_HeroEscaped_Who" text="{PRISONER} slipped out of {CAPTOR}'s custody" />
+    <string id="VividWorld_Fact_HeroEscaped_WhoNoCaptor" text="{PRISONER} slipped out of captivity" />
+    <string id="VividWorld_Fact_HeroEscaped_Where" text="near {SETTLEMENT}" />
+    <string id="VividWorld_Fact_HeroEscaped_What" text="the guard was thin and the night was long" />
+    <string id="VividWorld_Fact_HeroEscaped_Outcome" text="nobody is quite sure which way he went" />
+
+    <!-- Real event template 6: heroes_married -->
+    <string id="VividWorld_Fact_HeroesMarried_Who" text="{SPOUSE_A} and {SPOUSE_B} were united in marriage" />
+    <string id="VividWorld_Fact_HeroesMarried_Where" text="at {SETTLEMENT}" />
+    <string id="VividWorld_Fact_HeroesMarried_What" text="vows were exchanged with grand feasting and celebration" />
+    <string id="VividWorld_Fact_HeroesMarried_Outcome" text="the alliance binds two noble lines in enduring friendship" />
+
+    <!-- Real event template 7: child_born -->
+    <string id="VividWorld_Fact_ChildBorn_Who" text="{MOTHER} gave birth to a healthy child {CHILD}" />
+    <string id="VividWorld_Fact_ChildBorn_Where" text="at {SETTLEMENT}" />
+    <string id="VividWorld_Fact_ChildBorn_What" text="the newborn arrived safely after a long labor" />
+    <string id="VividWorld_Fact_ChildBorn_Outcome" text="the clan rejoiced at the blessing of a new heir" />
+
+    <!-- Situation 1: seat_dispute -->
+    <string id="VividWorld_Fact_SeatDisputeDemanded_Who" text="{SLIGHTED} demanded that {FAVORED} give up the seat of honor" />
+    <string id="VividWorld_Fact_SeatDisputeDemanded_Where" text="in the hall of {SETTLEMENT}" />
+    <string id="VividWorld_Fact_SeatDisputeDemanded_Why" text="saying the head of a house should not sit below a lesser member of another" />
+    <string id="VividWorld_Fact_SeatDisputeDemanded_Outcome" text="and the whole hall fell silent" />
+    <string id="VividWorld_Fact_SeatDisputeEndured_Who" text="{SLIGHTED} swallowed the insult of sitting below {FAVORED}" />
+    <string id="VividWorld_Fact_SeatDisputeEndured_Where" text="in the hall of {SETTLEMENT}" />
+    <string id="VividWorld_Fact_SeatDisputeEndured_What" text="but has not forgotten it" />
+    <string id="VividWorld_Fact_SeatDisputeYielded_Who" text="{SLIGHTED} graciously gave the seat of honor to {FAVORED}" />
+    <string id="VividWorld_Fact_SeatDisputeYielded_Where" text="in the hall of {SETTLEMENT}" />
+    <string id="VividWorld_Fact_SeatDisputeYielded_Outcome" text="and raised a cup in their honor" />
+    <string id="VividWorld_Fact_SeatDisputeWalkedOut_Who" text="{SLIGHTED} walked out of {HOST}'s feast" />
+    <string id="VividWorld_Fact_SeatDisputeWalkedOut_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_SeatDisputeWalkedOut_Why" text="rather than sit below {FAVORED}" />
+    <string id="VividWorld_Dev_TriggerSituation" text="(dev) Trigger a situation here" />
+    <string id="VividWorld_Dev_GrudgeLedger" text="(dev) His ledger of grudges" />
+    <string id="VividWorld_Dev_ScanToday" text="(dev) Today's situation scan" />
+    <string id="VividWorld_Dev_Snapshots" text="(dev) Snapshot state" />
+
+    <!-- Situation 2: advice_sought -->
+    <string id="VividWorld_Fact_AdviceGivenFreely_Who" text="{VETERAN} told {STUDENT} how that campaign was really won" />
+    <string id="VividWorld_Fact_AdviceGivenFreely_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_AdviceGivenFreely_What" text="and held nothing back, down to his own mistakes" />
+    <string id="VividWorld_Fact_AdviceBrushedOff_Who" text="{VETERAN} gave {STUDENT} nothing but old sayings" />
+    <string id="VividWorld_Fact_AdviceBrushedOff_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_AdviceBrushedOff_What" text="and changed the subject before the cup was empty" />
+    <string id="VividWorld_Fact_AdviceMocked_Who" text="{VETERAN} made a joke of {STUDENT}'s questions in front of the hall" />
+    <string id="VividWorld_Fact_AdviceMocked_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_AdviceMocked_Why" text="saying some men should first learn to sit still" />
+    <string id="VividWorld_Fact_AdviceMocked_Outcome" text="and the laughter followed {STUDENT} out of the hall" />
+
+    <!-- Situation 3: tavern_words -->
+    <string id="VividWorld_Fact_TavernGoodWord_Who" text="{SPEAKER} spoke up for {LISTENER} when the table turned on him" />
+    <string id="VividWorld_Fact_TavernGoodWord_Where" text="in a tavern in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_TavernGoodWord_What" text="and said he would tell them the same sober" />
+    <string id="VividWorld_Fact_TavernBoastTold_Who" text="{SPEAKER} boasted to {LISTENER} of deeds that grew with every cup" />
+    <string id="VividWorld_Fact_TavernBoastTold_Where" text="in a tavern in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_TavernBoastTold_What" text="and nobody at the table troubled to count the bodies" />
+    <string id="VividWorld_Fact_TavernConfidence_Who" text="{SPEAKER} admitted to {LISTENER} that the coffers are all but empty" />
+    <string id="VividWorld_Fact_TavernConfidence_Where" text="over cups in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_TavernConfidence_What" text="and asked that it go no further" />
+    <string id="VividWorld_Fact_TavernSourWords_Who" text="{SPEAKER} said something over the cups that {LISTENER} will not forget" />
+    <string id="VividWorld_Fact_TavernSourWords_Where" text="in a tavern in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_TavernSourWords_What" text="and did not take it back once the wine had worn off" />
+
+    <!-- Situation 4: victory_credit -->
+    <string id="VividWorld_Fact_VictoryCreditClaimed_Who" text="{CLAIMANT} claimed the credit for the last victory in front of the whole hall" />
+    <string id="VividWorld_Fact_VictoryCreditClaimed_Where" text="in the hall of {SETTLEMENT}" />
+    <string id="VividWorld_Fact_VictoryCreditClaimed_Why" text="saying {RIVAL} rode up only after the line had already broken" />
+    <string id="VividWorld_Fact_VictoryCreditDeferred_Who" text="{CLAIMANT} handed {RIVAL} the credit for the last victory" />
+    <string id="VividWorld_Fact_VictoryCreditDeferred_Where" text="in the hall of {SETTLEMENT}" />
+    <string id="VividWorld_Fact_VictoryCreditDeferred_What" text="though the hall had been ready to praise {CLAIMANT} instead" />
+    <string id="VividWorld_Fact_VictoryCreditBelittled_Who" text="{CLAIMANT} has been telling a few trusted ears that {RIVAL} did nothing in the last battle" />
+    <string id="VividWorld_Fact_VictoryCreditBelittled_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_VictoryCreditBelittled_What" text="and is careful never to say it where {RIVAL} might hear" />
+    <string id="VividWorld_Fact_VictoryCreditJudged_Who" text="{HOST} settled the quarrel between {CLAIMANT} and {RIVAL} over the last victory" />
+    <string id="VividWorld_Fact_VictoryCreditJudged_Where" text="in the hall of {SETTLEMENT}" />
+    <string id="VividWorld_Fact_VictoryCreditJudged_Outcome" text="and gave the credit to {RIVAL}" />
+
+    <!-- Situation 5: market_brawl -->
+    <string id="VividWorld_Fact_BrawlManHandedOver_Who" text="{PATRON} handed over the man who drew first and made his apology to {AGGRIEVED}" />
+    <string id="VividWorld_Fact_BrawlManHandedOver_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_BrawlManHandedOver_What" text="with the whole market square watching" />
+    <string id="VividWorld_Fact_BrawlShieldedOwn_Who" text="{PATRON} refused to give up his man to {AGGRIEVED}" />
+    <string id="VividWorld_Fact_BrawlShieldedOwn_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_BrawlShieldedOwn_Why" text="saying his household answers to his house and no other" />
+    <string id="VividWorld_Fact_BrawlCounterAccused_Who" text="{PATRON} told the hall it was {AGGRIEVED}'s man who drew first" />
+    <string id="VividWorld_Fact_BrawlCounterAccused_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_BrawlCounterAccused_What" text="and demanded an accounting of his own" />
+    <string id="VividWorld_Fact_BrawlCounterAccused_Outcome" text="neither house gave an inch" />
+    <string id="VividWorld_Fact_BrawlHushedUp_Who" text="{AGGRIEVED} and {PATRON} agreed to let the market brawl die quietly" />
+    <string id="VividWorld_Fact_BrawlHushedUp_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_BrawlHushedUp_What" text="and neither house will speak of it again" />
+
+    <!-- Situation 6: hunt_wager -->
+    <string id="VividWorld_Fact_WagerStruck_Who" text="{CHALLENGER} and {CHALLENGED} struck a wager on the next hunt" />
+    <string id="VividWorld_Fact_WagerStruck_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WagerStruck_What" text="and half the hall put silver on it as well" />
+    <string id="VividWorld_Fact_WagerRefused_Who" text="{CHALLENGED} refused {CHALLENGER}'s wager and made a joke of the asking" />
+    <string id="VividWorld_Fact_WagerRefused_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WagerRefused_What" text="which the hall laughed at rather too long" />
+    <string id="VividWorld_Fact_WagerSecretStake_Who" text="{CHALLENGER} and {CHALLENGED} put more than silver on the next hunt" />
+    <string id="VividWorld_Fact_WagerSecretStake_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WagerSecretStake_What" text="and neither of them will say what it was" />
+
+    <!-- Chronicle interface strings -->
+    <string id="VividWorld_Chronicle_Title" text="What you have heard" />
+    <string id="VividWorld_Chronicle_Empty" text="You have not been told anything yet." />
+    <string id="VividWorld_Chronicle_Close" text="Close" />
+    <string id="VividWorld_Chronicle_Hop" text="{HOPS} tellings removed" />
+    <string id="VividWorld_Chronicle_HopZero" text="you were there" />
+    <string id="VividWorld_Chronicle_SourceUnknown" text="from someone" />
+
+    <!-- SNAP1: snapshot manager -->
+    <string id="VividWorld_Snapshots_Title" text="Vivid World Snapshot Manager" />
+    <string id="VividWorld_Snapshots_Desc" text="A snapshot is what Vivid World uses to put the rumors back the way they were when you saved. Delete a snapshot while its save game is still there and Vivid World will start behaving oddly with that save. It is best to delete a snapshot only once its save game is gone. You have {COUNT}, taking up {SIZE}." />
+    <string id="VividWorld_Snapshots_Delete" text="Delete selected" />
+    <string id="VividWorld_Snapshots_Cancel" text="Cancel" />
+    <string id="VividWorld_Snapshots_None" text="No snapshots yet - one is taken every time you save." />
+    <string id="VividWorld_Snapshots_SaveExists" text="save exists" />
+    <string id="VividWorld_Snapshots_SaveGone" text="save deleted" />
+    <string id="VividWorld_Snapshots_FolderMissing" text="folder missing" />
+    <string id="VividWorld_Snapshots_FileCount" text="{COUNT} file(s)" />
+    <string id="VividWorld_Snapshots_Deleted" text="Deleted {COUNT} snapshot(s), freeing {SIZE}." />
+    <string id="VividWorld_Snapshots_SomeFailed" text="{COUNT} could not be deleted - see log.txt." />
+    <string id="VividWorld_Snapshots_ConfirmTitle" text="Those saves are still there" />
+    <string id="VividWorld_Snapshots_ConfirmText" text="{COUNT} of the snapshots you ticked still have their save game. Delete them and those saves can no longer rewind their rumors. Delete anyway?" />
+    <string id="VividWorld_Snapshots_ConfirmYes" text="Delete anyway" />
+    <string id="VividWorld_Snapshots_ConfirmNo" text="Cancel" />
+    <string id="VividWorld_Snapshots_SweepTitle" text="Clear out the snapshots you no longer need" />
+    <string id="VividWorld_Snapshots_SweepText" text="{COUNT} of your snapshots belong to save games you have already deleted, and they are taking up {SIZE}. Clear them out?" />
+    <string id="VividWorld_Snapshots_SweepYes" text="Clear them out" />
+    <string id="VividWorld_Snapshots_SweepNo" text="Show the full list..." />
+
+    <!-- MCM1: in-game settings menu strings -->
+    <string id="VividWorld_MCM_DisplayName" text="Vivid World" />
+
+    <!-- MCM groups -->
+    <string id="VividWorld_MCM_Group_General" text="General" />
+    <string id="VividWorld_MCM_Group_Interface" text="Interface" />
+    <string id="VividWorld_MCM_Group_Propagation" text="Propagation" />
+    <string id="VividWorld_MCM_Group_Dialogue" text="Dialogue" />
+    <string id="VividWorld_MCM_Group_Consequences" text="Consequences" />
+    <string id="VividWorld_MCM_Group_Situations" text="Situations" />
+    <string id="VividWorld_MCM_Group_Sources" text="Event Sources" />
+    <string id="VividWorld_MCM_Group_Persistence" text="Persistence" />
+
+    <!-- Group 0: General -->
+    <string id="VividWorld_MCM_Enabled" text="Enable mod" />
+    <string id="VividWorld_MCM_EnabledHint" text="Enables or disables Vivid World entirely. Requires game restart." />
+    <string id="VividWorld_MCM_LogLevel" text="Log level" />
+    <string id="VividWorld_MCM_LogLevelHint" text="Verbosity of mod logs written to log.txt. Info is recommended for normal play; Warn or Error reduces log file size." />
+    <string id="VividWorld_MCM_LogTellerTurns" text="Log teller turns" />
+    <string id="VividWorld_MCM_LogTellerTurnsHint" text="Writes detailed diagnostic information about hourly rumor propagation choices to log.txt. Useful for troubleshooting." />
+
+    <!-- Group 1: Interface -->
+    <string id="VividWorld_MCM_ChronicleHotkey" text="'What you have heard' hotkey" />
+    <string id="VividWorld_MCM_ChronicleHotkeyHint" text="Hotkey to open the 'What you have heard' window on the campaign map (e.g. Ctrl+L, L)." />
+    <string id="VividWorld_MCM_SnapshotManagerHotkey" text="Snapshot manager hotkey" />
+    <string id="VividWorld_MCM_SnapshotManagerHotkeyHint" text="Hotkey to open the snapshot manager window (e.g. F9)." />
+    <string id="VividWorld_MCM_ChronicleMaxEntries" text="Max entries shown" />
+    <string id="VividWorld_MCM_ChronicleMaxEntriesHint" text="Maximum number of recent rumor entries shown in the 'What you have heard' window." />
+    <string id="VividWorld_MCM_EncyclopediaLinksEnabled" text="Encyclopedia links in rumors" />
+    <string id="VividWorld_MCM_EncyclopediaLinksEnabledHint" text="Enables clickable links to hero and settlement encyclopedia pages within rumor text." />
+
+    <!-- Group 2: Propagation -->
+    <string id="VividWorld_MCM_TellersPerHourlyTick" text="Tellers per hourly tick" />
+    <string id="VividWorld_MCM_TellersPerHourlyTickHint" text="Maximum number of NPCs picked to share rumors every in-game hour. Higher values increase rumor spread speed." />
+
+    <!-- Group 3: Dialogue -->
+    <string id="VividWorld_MCM_AskRelationGate" text="Ask rumor relation gate" />
+    <string id="VividWorld_MCM_AskRelationGateHint" text="Minimum relation required before an NPC is willing to answer your inquiries about news." />
+    <string id="VividWorld_MCM_AskWillingnessThreshold" text="Ask willingness threshold" />
+    <string id="VividWorld_MCM_AskWillingnessThresholdHint" text="The threshold a lord must clear before he will answer you. The score weighs his opinion of you together with his character (generosity and honour add, a calculating nature subtracts)." />
+    <string id="VividWorld_MCM_NpcVolunteerRelationGate" text="Volunteer relation gate" />
+    <string id="VividWorld_MCM_NpcVolunteerRelationGateHint" text="Minimum relation required for an NPC to voluntarily offer news during conversation." />
+    <string id="VividWorld_MCM_CommonerCompatMode" text="Commoner-deference mode" />
+    <string id="VividWorld_MCM_CommonerCompatModeHint" text="Works alongside mods such as NaN and Lowborn that stop commoners addressing nobles. auto = enable on detection; while enabled, the option to ask for news is hidden below clan tier 1. on = always, off = never." />
+
+    <!-- Group 4: Consequences -->
+    <string id="VividWorld_MCM_ConsequencesEnabled" text="Enable relation consequences" />
+    <string id="VividWorld_MCM_ConsequencesEnabledHint" text="Enables personal relation changes between NPCs when they learn about events involving each other." />
+    <string id="VividWorld_MCM_BystanderMultiplier" text="Bystander impact multiplier" />
+    <string id="VividWorld_MCM_BystanderMultiplierHint" text="Multiplies relation changes for bystanders who are not direct participants in an event." />
+    <string id="VividWorld_MCM_MaxAbsoluteDeltaPerHeroPerDay" text="Max daily relation delta" />
+    <string id="VividWorld_MCM_MaxAbsoluteDeltaPerHeroPerDayHint" text="Maximum total absolute relation change any single hero can accumulate from rumors in a single day." />
+    <string id="VividWorld_MCM_ConsequencesLedgerOnly" text="Ledger only (no native relation changes)" />
+    <string id="VividWorld_MCM_ConsequencesLedgerOnlyHint" text="Calculates relation consequences internally without applying them to native game hero relations." />
+
+    <!-- Group 5: Situations -->
+    <string id="VividWorld_MCM_DailyScanEnabled" text="Enable daily situation scan" />
+    <string id="VividWorld_MCM_DailyScanEnabledHint" text="Scans the settlements each day for occasions where two lords can play out a scene. Disabling this stops authored scenes from occurring." />
+    <string id="VividWorld_MCM_SituationsMaxPerDay" text="Max situations triggered per day" />
+    <string id="VividWorld_MCM_SituationsMaxPerDayHint" text="How many authored scenes are expected to occur worldwide each day." />
+    <string id="VividWorld_MCM_GrudgesEnabled" text="Enable personal grudges" />
+    <string id="VividWorld_MCM_GrudgesEnabledHint" text="Lets conflicts between lords leave a score behind in the mod's own grudge ledger. Scenes still play out when disabled, but leave nothing behind." />
+    <string id="VividWorld_MCM_ClanEscalationThreshold" text="Clan escalation grudge threshold" />
+    <string id="VividWorld_MCM_ClanEscalationThresholdHint" text="Accumulated grudge intensity required before personal hostility escalates into an inter-clan feud." />
+
+    <!-- Group 6: Event Sources -->
+    <string id="VividWorld_MCM_SourceHeroKilled" text="Hero deaths" />
+    <string id="VividWorld_MCM_SourceHeroKilledHint" text="Produces news when a lord dies, distinguished by cause into murder, execution, death in battle and natural death." />
+    <string id="VividWorld_MCM_SourceHeroPrisonerTaken" text="Hero captures" />
+    <string id="VividWorld_MCM_SourceHeroPrisonerTakenHint" text="Generates world events when lords are captured following battles or raids." />
+    <string id="VividWorld_MCM_SourceHeroPrisonerReleased" text="Hero releases and escapes" />
+    <string id="VividWorld_MCM_SourceHeroPrisonerReleasedHint" text="Generates world events when captured lords are ransomed, released, or escape captivity." />
+
+    <!-- Group 7: Persistence -->
+    <string id="VividWorld_MCM_MaxSnapshots" text="Max saved snapshots" />
+    <string id="VividWorld_MCM_MaxSnapshotsHint" text="Maximum number of rumor system snapshots retained per campaign. 0 keeps all snapshots without automatic pruning." />
+  </strings>
+</base>

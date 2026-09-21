@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>10.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <!-- 預設值；每台機器用 Directory.Build.props.user 覆寫 -->
+    <GameFolder>C:\Game\Steam\steamapps\common\Mount &amp; Blade II Bannerlord</GameFolder>
+    <!-- Mod Configuration Menu (MCM v5) -->
+    <McmBinFolder>$(GameFolder)\Modules\Bannerlord.MBOptionScreen\bin\Win64_Shipping_Client</McmBinFolder>
+  </PropertyGroup>
+  <Import Project="$(MSBuildThisFileDirectory)Directory.Build.props.user"
+          Condition="Exists('$(MSBuildThisFileDirectory)Directory.Build.props.user')" />
+</Project>
