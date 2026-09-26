@@ -8,7 +8,7 @@ And you can be part of it.
 
 *[繁體中文](README.md)*
 
-> **This is a beta (v0.9.1).**
+> **This is a beta (v0.9.2).**
 > The underlying machinery is complete and has seen live play; the content is still being expanded.
 > See the Roadmap at the end of this document for what remains.
 
@@ -67,14 +67,22 @@ but only so far — it is never wiped clean.
 ## Encountering it in play
 
 **Asking.** In conversation with any lord, the menu gains the line *"Any news on the road?"* He relates
-what he knows, or answers *"Nothing worth repeating."* if he has nothing. **Getting nothing out of a
+what he knows; when he has nothing for you, he tells you why: he would rather not say, has heard
+nothing lately, cannot quite recall, what he heard is out of date, or you have surely heard it already. **Getting nothing out of a
 stranger is normal** — whether he will speak depends on his opinion of you together with his character
 (generosity and honour incline him to share; a calculating nature keeps him silent). Below the
 threshold, nothing is forthcoming. This is by design.
 
-**Being told.** A lord will sometimes open by relating news he has heard, unprompted. Should another
+**Being told.** A lord will sometimes open by relating news he has heard, unprompted. One on good terms
+with you tells the whole story; one you are merely acquainted with gives you the gist. Should another
 installed mod take over the greeting entirely, the menu gains the fallback line *"You looked like you
 were about to say something."*
+
+**Rumor mode.** In the Vivid World page of the game's settings, the top of the *Dialogue* group offers
+Auto, Casual and Realistic; a change takes effect immediately. Casual: anyone who does not dislike you
+may bring up rumors, and even a commoner may ask. Realistic: a lord must think somewhat well of you
+before he brings them up. Auto (the default): Realistic when a mod such as NaN or Lowborn is detected,
+Casual otherwise.
 
 **Reviewing what you have heard.** Press **Ctrl+L** for *What you have heard*, which lists every piece
 of news that has reached you so far, marked with how many tellings removed it is and who told you.
@@ -138,8 +146,9 @@ English and **Traditional Chinese** only at present. Further translations are we
 ## Compatibility
 
 **Mods of the "commoners do not address nobles" kind** (NaN, Lowborn and similar) are detected, upon
-which the mod enters a compatibility mode that restricts *asking* for news to clan tier 1 and above.
+which a rumor mode of Auto switches to Realistic, restricting *asking* for news to clan tier 1 and above.
 **At clan tier 0 you will get nothing out of anyone** — this is deliberate deference to those mods.
+To let a commoner ask anyway, set the rumor mode to Casual.
 
 **Mods that take over the greeting:** some mods claim a lord's opening line in its entirety, leaving
 this mod no opening. In that case the dialogue menu gains the line *"You looked like you were about to

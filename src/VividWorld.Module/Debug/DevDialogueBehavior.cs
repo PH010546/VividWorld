@@ -6,9 +6,11 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using System.IO;
 using VividWorld.Campaign;
 using VividWorld.Core.Config;
 using VividWorld.Core.Diagnostics;
+using VividWorld.Core.Dialogue;
 using VividWorld.Core.Events;
 using VividWorld.Core.Grudges;
 using VividWorld.Core.Ingest;
@@ -254,6 +256,26 @@ namespace VividWorld.Debug
                 Consequence_OpinionShifts,
                 DevDialoguePriority);
 
+            // 18. (dev) Why do I hear so little?
+            starter.AddPlayerLine(
+                "vividworld_dev_why_hear_few",
+                TokenHeroMainOptions,
+                TokenDevResult,
+                "{=VividWorld_Dev_WhyHearFew}(dev) Why do I hear so little?",
+                Condition_AlwaysAvailable,
+                Consequence_WhyHearFew,
+                DevDialoguePriority);
+
+            // 19. (dev) What happens if I talk to everyone right now?
+            starter.AddPlayerLine(
+                "vividworld_dev_preview_talk_all",
+                TokenHeroMainOptions,
+                TokenDevResult,
+                "{=VividWorld_Dev_PreviewTalkAll}(dev) What happens if I talk to everyone right now?",
+                Condition_AlwaysAvailable,
+                Consequence_PreviewTalkAll,
+                DevDialoguePriority);
+
             // Shared return line to main options. Condition MUST be null so the dev subtree always has an unconditional exit edge.
             starter.AddDialogLine(
                 "vividworld_dev_result_line",
@@ -265,7 +287,7 @@ namespace VividWorld.Debug
                 100,
                 null);
 
-            ModLog.Info("Registered 17 developer dialogue lines on hero_main_options.");
+            ModLog.Info("Registered 19 developer dialogue lines on hero_main_options.");
         }
 
         private static void SetResult(string line)
@@ -1109,6 +1131,69 @@ namespace VividWorld.Debug
             catch (Exception ex)
             {
                 ModLog.Error("Dev opinion shifts failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_WhyHearFew()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var tally = _dialogs?.ListenTally;
+                string filePath = !string.IsNullOrEmpty(_campaignId)
+                    ? VividWorldPaths.ListenTallyFile(_campaignId!)
+                    : "(no campaign id)";
+
+                if (tally == null)
+                {
+                    string emptyMsg = $"Listen tally is not active or empty. File: {filePath}";
+                    InformationManager.DisplayMessage(new InformationMessage(emptyMsg));
+                    ModLog.Info($"[DevDialogue] {emptyMsg}");
+                    Finish("(dev) listen tally empty or inactive");
+                    return;
+                }
+
+                int currentDay = (int)CampaignTime.Now.ToDays;
+                string report = ListenTallyLogFormatter.FormatDevReport(tally, currentDay, filePath);
+                InformationManager.DisplayMessage(new InformationMessage(report));
+                ModLog.Info($"[DevDialogue]\n{report}");
+
+                string summary = $"Listen tally: {tally.Days.Count} day(s) recorded, file: {Path.GetFileName(filePath)}";
+                Finish(summary);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev why hear few failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_PreviewTalkAll()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                if (_dialogs == null)
+                {
+                    Finish("(dev) rumor dialog behavior unavailable");
+                    return;
+                }
+
+                var result = _dialogs.RunPreview(includeHeroDetails: true);
+                string summary = ListenPreviewLogFormatter.FormatSummary(result, includeTopNames: true);
+                string table = ListenPreviewLogFormatter.FormatHeroTable(result);
+
+                InformationManager.DisplayMessage(new InformationMessage(summary));
+                ModLog.Info($"[DevDialogue]\n{summary}");
+                ModLog.Info($"[DevDialogue]\n{table}");
+
+                string shortSummary = $"(dev) preview: {result.TotalNetworkCount} heroes in network | {result.ElapsedMilliseconds}ms - see log.txt for full table";
+                Finish(shortSummary);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev preview talk all failed", ex);
                 Finish("(dev) failed - see log.txt");
             }
         }

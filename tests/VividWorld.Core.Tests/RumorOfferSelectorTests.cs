@@ -282,6 +282,7 @@ namespace VividWorld.Core.Tests
         {
             var (selector, _, cfg) = CreateSelector();
             // 預設 cfg.Dialogue: NpcVolunteerRelationGate = 30, VolunteerCooldownDays = 3.0, MaxVolunteersPerDay = 1
+            cfg.Dialogue.CasualChatRelationGate = 30;
 
             // 閘門 1: 好感度
             var lowRelation = new HeroSocialProfile
@@ -658,6 +659,7 @@ namespace VividWorld.Core.Tests
         {
             var (selector, _, cfg) = CreateSelector();
             cfg.Dialogue.NpcVolunteerRelationGate = 25;
+            cfg.Dialogue.CasualChatRelationGate = 20;
             cfg.Dialogue.VolunteerCooldownDays = 4.0;
             cfg.Dialogue.MaxVolunteersPerDay = 2;
 

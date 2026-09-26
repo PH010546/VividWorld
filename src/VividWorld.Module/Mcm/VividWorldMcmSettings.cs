@@ -66,26 +66,26 @@ namespace VividWorld.Mcm
 
         // ── Group 3: Dialogue ───────────────────────────────────────────────────────
 
-        [SettingPropertyInteger("{=VividWorld_MCM_AskRelationGate}Ask rumor relation gate", -100, 100, "0", Order = 0, RequireRestart = false,
+        [SettingPropertyInteger("{=VividWorld_MCM_AskRelationGate}Ask rumor relation gate", -100, 100, "0", Order = 2, RequireRestart = false,
             HintText = "{=VividWorld_MCM_AskRelationGateHint}Minimum relation required before an NPC is willing to answer your inquiries about news.")]
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Dialogue}Dialogue", GroupOrder = 3)]
         public int AskRelationGate { get; set; } = 0;
 
-        [SettingPropertyFloatingInteger("{=VividWorld_MCM_AskWillingnessThreshold}Ask willingness threshold", -20f, 40f, "0.0", Order = 1, RequireRestart = false,
+        [SettingPropertyFloatingInteger("{=VividWorld_MCM_AskWillingnessThreshold}Ask willingness threshold", -20f, 40f, "0.0", Order = 3, RequireRestart = false,
             HintText = "{=VividWorld_MCM_AskWillingnessThresholdHint}The threshold a lord must clear before he will answer you. The score weighs his opinion of you together with his character (generosity and honour add, a calculating nature subtracts).")]
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Dialogue}Dialogue", GroupOrder = 3)]
         public float AskWillingnessThreshold { get; set; } = 5.0f;
 
 
-        [SettingPropertyInteger("{=VividWorld_MCM_NpcVolunteerRelationGate}Volunteer relation gate", -100, 100, "0", Order = 3, RequireRestart = false,
-            HintText = "{=VividWorld_MCM_NpcVolunteerRelationGateHint}Minimum relation required for an NPC to voluntarily offer news during conversation.")]
+        [SettingPropertyInteger("{=VividWorld_MCM_NpcVolunteerRelationGate}Full-story relation gate", -100, 100, "0", Order = 1, RequireRestart = false,
+            HintText = "{=VividWorld_MCM_NpcVolunteerRelationGateHint}When someone brings up a rumor on their own, they tell the full story if their relation with you is at least this value. Below it, but at or above the Rumor mode threshold (Casual 0, Realistic 10), they only give you the gist. Your spouse, companions and clan members always tell the full story. If you set this lower than the Rumor mode threshold, this value wins.")]
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Dialogue}Dialogue", GroupOrder = 3)]
         public int NpcVolunteerRelationGate { get; set; } = 30;
 
-        [SettingPropertyDropdown("{=VividWorld_MCM_CommonerCompatMode}Commoner-deference mode", Order = 4, RequireRestart = false,
-            HintText = "{=VividWorld_MCM_CommonerCompatModeHint}Works alongside mods such as NaN and Lowborn that stop commoners addressing nobles. auto = enable on detection; while enabled, the option to ask for news is hidden below clan tier 1. on = always, off = never.")]
+        [SettingPropertyDropdown("{=VividWorld_MCM_VolunteerMode}Rumor mode", Order = 0, RequireRestart = false,
+            HintText = "{=VividWorld_MCM_VolunteerModeHint}Auto: Realistic when a commoner mod such as Not-a-Noble or Lowborn is detected, otherwise Casual. Casual: anyone who doesn't dislike you may bring up rumors, and even a commoner may ask. Realistic: a lord must have relation 10 or higher to bring them up; with a commoner mod installed, you need clan tier 1 to ask. Takes effect right away; no need to reload.")]
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Dialogue}Dialogue", GroupOrder = 3)]
-        public Dropdown<string> CommonerCompatMode { get; set; } = new Dropdown<string>(McmChoiceLists.CommonerCompatModes, 0);
+        public Dropdown<string> VolunteerMode { get; set; } = new Dropdown<string>(McmChoiceLists.VolunteerModes, 0);
 
         // ── Group 4: Consequences ───────────────────────────────────────────────────
 

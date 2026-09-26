@@ -24,6 +24,12 @@ namespace VividWorld.Core.Dialogue
             }
         }
 
+        /// <summary>
+        /// 不推進日期，只回答「那一天用了幾次」。預演（LISTEN1b）不准改狀態，
+        /// 而 Count 要等下一次 Advance 才歸零——換日那一刻直接讀 Count 會讀到昨天的數字。
+        /// </summary>
+        public int CountOn(double day) => BucketOf(day) == _lastDayBucket ? Count : 0;
+
         public void Increment()
         {
             Count++;

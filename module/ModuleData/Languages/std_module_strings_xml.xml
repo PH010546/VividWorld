@@ -17,10 +17,17 @@
     <string id="VividWorld_Dev_EventRoster" text="(dev) Who else knows about this?" />
     <string id="VividWorld_Dev_EventCatalog" text="(dev) Event catalog" />
     <string id="VividWorld_Dev_OpinionShifts" text="(dev) What the rumors he heard changed" />
+    <string id="VividWorld_Dev_WhyHearFew" text="(dev) Why do I hear so little?" />
+    <string id="VividWorld_Dev_PreviewTalkAll" text="(dev) What happens if I talk to everyone right now?" />
 
     <!-- Dialogue and presentation strings -->
     <string id="VividWorld_AskNews" text="Any news on the road?" />
     <string id="VividWorld_AskNothing" text="Nothing worth repeating." />
+    <string id="VividWorld_AskRefuseUnwilling" text="That's not something I'd care to discuss." />
+    <string id="VividWorld_AskRefuseNothingHeard" text="I haven't heard any news lately." />
+    <string id="VividWorld_AskRefuseForgotten" text="Someone mentioned something... I can't quite recall what." />
+    <string id="VividWorld_AskRefuseOutdated" text="Whatever I heard is likely no longer the case." />
+    <string id="VividWorld_AskRefusePlayerKnows" text="Whatever I know, you've surely heard already." />
     <string id="VividWorld_RecoveryAsk" text="You looked like you were about to say something." />
     <string id="VividWorld_RetellPrefix" text="I was there, in fact—" />
     <string id="VividWorld_FactSeparator" text=", " />
@@ -307,10 +314,14 @@
     <string id="VividWorld_MCM_AskRelationGateHint" text="Minimum relation required before an NPC is willing to answer your inquiries about news." />
     <string id="VividWorld_MCM_AskWillingnessThreshold" text="Ask willingness threshold" />
     <string id="VividWorld_MCM_AskWillingnessThresholdHint" text="The threshold a lord must clear before he will answer you. The score weighs his opinion of you together with his character (generosity and honour add, a calculating nature subtracts)." />
-    <string id="VividWorld_MCM_NpcVolunteerRelationGate" text="Volunteer relation gate" />
-    <string id="VividWorld_MCM_NpcVolunteerRelationGateHint" text="Minimum relation required for an NPC to voluntarily offer news during conversation." />
-    <string id="VividWorld_MCM_CommonerCompatMode" text="Commoner-deference mode" />
-    <string id="VividWorld_MCM_CommonerCompatModeHint" text="Works alongside mods such as NaN and Lowborn that stop commoners addressing nobles. auto = enable on detection; while enabled, the option to ask for news is hidden below clan tier 1. on = always, off = never." />
+    <string id="VividWorld_MCM_NpcVolunteerRelationGate" text="Full-story relation gate" />
+    <string id="VividWorld_MCM_NpcVolunteerRelationGateHint" text="When someone brings up a rumor on their own, they tell the full story if their relation with you is at least this value. Below it, but at or above the Rumor mode threshold (Casual 0, Realistic 10), they only give you the gist. Your spouse, companions and clan members always tell the full story. If you set this lower than the Rumor mode threshold, this value wins." />
+    <string id="VividWorld_MCM_VolunteerMode" text="Rumor mode" />
+    <string id="VividWorld_MCM_VolunteerModeHint" text="Auto: Realistic when a commoner mod such as Not-a-Noble or Lowborn is detected, otherwise Casual. Casual: anyone who doesn't dislike you may bring up rumors, and even a commoner may ask. Realistic: a lord must have relation 10 or higher to bring them up; with a commoner mod installed, you need clan tier 1 to ask. Takes effect right away; no need to reload." />
+    <string id="VividWorld_MCM_VolunteerMode_Auto" text="Auto" />
+    <string id="VividWorld_MCM_VolunteerMode_Casual" text="Casual" />
+    <string id="VividWorld_MCM_VolunteerMode_Realistic" text="Realistic" />
+    <string id="VividWorld_ModeNotice_ModsSeparator" text=", " />
 
     <!-- Group 4: Consequences -->
     <string id="VividWorld_MCM_ConsequencesEnabled" text="Enable relation consequences" />
@@ -343,5 +354,17 @@
     <!-- Group 7: Persistence -->
     <string id="VividWorld_MCM_MaxSnapshots" text="Max saved snapshots" />
     <string id="VividWorld_MCM_MaxSnapshotsHint" text="Maximum number of rumor system snapshots retained per campaign. 0 keeps all snapshots without automatic pruning." />
+
+    <!-- Mode Notice (LISTEN1d) -->
+    <string id="VividWorld_ModeNotice_Title" text="Vivid World" />
+    <string id="VividWorld_ModeNotice_Button" text="Understood" />
+    <string id="VividWorld_ModeNotice_PopupRealistic_Mcm" text="We detected {MODS}. Mods like these make it hard for a commoner to approach the nobility, so Vivid World has switched itself to Realistic mode: a lord needs to think well of you (relation 10 or higher) before he brings up the news of the land. If you would rather everyone be willing to chat, open Vivid World's settings in MCM and set &quot;Rumor mode&quot; to &quot;Casual&quot;." />
+    <string id="VividWorld_ModeNotice_PopupRealistic_NoMcm" text="We detected {MODS}. Mods like these make it hard for a commoner to approach the nobility, so Vivid World has switched itself to Realistic mode: a lord needs to think well of you (relation 10 or higher) before he brings up the news of the land. If you would rather everyone be willing to chat, open config.json and set &quot;volunteerMode&quot; to &quot;casual&quot;." />
+    <string id="VividWorld_ModeNotice_PopupCasual_Mcm" text="Vivid World is now running: what happens across the land passes by word of mouth among lords and wanderers. When you talk with them, anyone who doesn't dislike you may bring up something they've heard, and the closer you are, the fuller the story. For a more realistic feel (only those who like you will chat), open Vivid World's settings in MCM and set &quot;Rumor mode&quot; to &quot;Realistic&quot;." />
+    <string id="VividWorld_ModeNotice_PopupCasual_NoMcm" text="Vivid World is now running: what happens across the land passes by word of mouth among lords and wanderers. When you talk with them, anyone who doesn't dislike you may bring up something they've heard, and the closer you are, the fuller the story. For a more realistic feel (only those who like you will chat), open config.json and set &quot;volunteerMode&quot; to &quot;realistic&quot;." />
+    <string id="VividWorld_ModeNotice_MessageRealistic_Mcm" text="Vivid World: rumor mode is Realistic ({MODS} detected); change it in MCM." />
+    <string id="VividWorld_ModeNotice_MessageRealistic_NoMcm" text="Vivid World: rumor mode is Realistic ({MODS} detected); change it in config.json." />
+    <string id="VividWorld_ModeNotice_MessageCasual_Mcm" text="Vivid World: rumor mode is Casual; change it in MCM." />
+    <string id="VividWorld_ModeNotice_MessageCasual_NoMcm" text="Vivid World: rumor mode is Casual; change it in config.json." />
   </strings>
 </base>

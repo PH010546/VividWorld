@@ -130,6 +130,11 @@ namespace VividWorld
                 if (TaleWorlds.CampaignSystem.Campaign.Current.ConversationManager?.IsConversationInProgress == true) return;
                 if (Mission.Current != null) return;
 
+                if (_activeBehavior.HasPendingModeNotice)
+                {
+                    _activeBehavior.ExecutePendingModeNotice();
+                }
+
                 bool snapshotDown = _snapshotKey.IsPressed();
                 if (snapshotDown && !_snapshotKeyWasDown)
                 {

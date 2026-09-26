@@ -15,28 +15,89 @@ namespace VividWorld.Core.Dialogue
         private readonly RumorEngine _engine;
         private readonly string _playerHeroId;
 
-        public RumorOfferSelector(VividWorldConfig cfg, RumorEngine engine, string playerHeroId)
+        public RumorMode Mode { get; set; } = RumorMode.Casual;
+
+        public RumorOfferSelector(VividWorldConfig cfg, RumorEngine engine, string playerHeroId, RumorMode? mode = null)
         {
             _config = cfg ?? throw new ArgumentNullException(nameof(cfg));
             _engine = engine ?? throw new ArgumentNullException(nameof(engine));
             _playerHeroId = playerHeroId ?? string.Empty;
+            if (mode.HasValue)
+            {
+                Mode = mode.Value;
+            }
+            else
+            {
+                Mode = RumorModeResolver.Resolve(_config.Dialogue.VolunteerMode, null).Mode;
+            }
         }
 
         public RumorEngine Engine => _engine;
 
-        /// <summary>主動講述三個閘的**唯一**計算處（規格 §5.1、§7 行 1291-1293）。
+        /// <summary>依傳聞模式決定的閒聊好感門檻（規格 §12.2、卡片 LISTEN1d）。</summary>
+        public int ChatRelationGate => Mode == RumorMode.Casual
+            ? _config.Dialogue.CasualChatRelationGate
+            : _config.Dialogue.RealisticChatRelationGate;
+
+        /// <summary>
+        /// 計算傳聞到達玩家時的落點手數（單一真相來源，規格 §12.3、卡片 LISTEN1d §14(6)）。
+        /// 算式：min(TellerHop + 1 + GistExtraHops, max(TellerHop + 1, MaxHopFor(evt)))。
+        /// 完整版固定為 TellerHop + 1。
+        /// </summary>
+        public static int ComputeLandingHop(int tellerHop, int maxHop, VolunteerTier tier, int gistExtraHops)
+        {
+            if (tier == VolunteerTier.Gist)
+            {
+                int directHop = tellerHop + 1;
+                int gistHop = directHop + Math.Max(0, gistExtraHops);
+                int ceiling = Math.Max(directHop, maxHop);
+                return Math.Min(gistHop, ceiling);
+            }
+            return tellerHop + 1;
+        }
+
+        /// <summary>實例輔助函式：取得指定事件在該層級下的落點手數。</summary>
+        public int ComputeLandingHop(WorldEvent evt, int tellerHop, VolunteerTier tier)
+        {
+            int maxHop = _engine.MaxHopFor(evt);
+            return ComputeLandingHop(tellerHop, maxHop, tier, _config.Dialogue.GistExtraHops);
+        }
+
+        /// <summary>主動講述三個閘的**唯一**計算處（規格 §5.1、§7 行 1291-1293、LISTEN1d）。
         /// `WillVolunteer` 只回答「行不行」，`DecideOnVolunteer` 還要回答「是哪一個閘擋的」——
         /// 兩者都只准呼叫這裡。閘的述詞寫兩份，正是 M6a-fix2 那個 C-1 的成因。</summary>
         private VolunteerRefusal EvaluateVolunteerGates(HeroSocialProfile? teller, double day,
-                                                        int volunteersAlreadyToday, out bool isCloseKin)
+                                                        int volunteersAlreadyToday,
+                                                        out bool isCloseKin,
+                                                        out VolunteerTier tier,
+                                                        out int chatGate,
+                                                        out int fullGate)
         {
             var d = _config.Dialogue;
             isCloseKin = d.NpcVolunteerAlwaysForCloseKin &&
                          (teller?.IsPlayerSpouse == true || teller?.IsPlayerCompanion == true || teller?.IsPlayerClanMember == true);
+            fullGate = d.NpcVolunteerRelationGate;
+            chatGate = ChatRelationGate;
 
-            // 1. 好感度或近親/夥伴
-            if (teller == null || !(teller.RelationWithPlayer >= d.NpcVolunteerRelationGate || isCloseKin))
+            // 1. 好感度或近親/夥伴（兩層門檻：完整 vs 大概）
+            if (teller == null)
             {
+                tier = VolunteerTier.None;
+                return VolunteerRefusal.RelationGate;
+            }
+
+            int relation = teller.RelationWithPlayer;
+            if (relation >= fullGate || isCloseKin)
+            {
+                tier = VolunteerTier.Full;
+            }
+            else if (relation >= chatGate)
+            {
+                tier = VolunteerTier.Gist;
+            }
+            else
+            {
+                tier = VolunteerTier.None;
                 return VolunteerRefusal.RelationGate;
             }
 
@@ -57,7 +118,7 @@ namespace VividWorld.Core.Dialogue
 
         public bool WillVolunteer(HeroSocialProfile teller, double day, int volunteersAlreadyToday)
         {
-            return EvaluateVolunteerGates(teller, day, volunteersAlreadyToday, out _) == VolunteerRefusal.None;
+            return EvaluateVolunteerGates(teller, day, volunteersAlreadyToday, out _, out _, out _, out _) == VolunteerRefusal.None;
         }
 
         /// <summary>詢問意願的**唯一**計算處（規格 §7）。
@@ -94,12 +155,15 @@ namespace VividWorld.Core.Dialogue
         {
             var d = _config.Dialogue;
             int relation = teller?.RelationWithPlayer ?? 0;
-            var gate = EvaluateVolunteerGates(teller, day, volunteersAlreadyToday, out bool isCloseKin);
+            var gate = EvaluateVolunteerGates(teller, day, volunteersAlreadyToday,
+                out bool isCloseKin, out VolunteerTier tier, out int chatGate, out int fullGate);
 
             var decision = new VolunteerDecision
             {
                 Relation = relation,
-                RelationGate = d.NpcVolunteerRelationGate,
+                RelationGate = fullGate,
+                ChatRelationGate = chatGate,
+                Tier = tier,
                 IsCloseKin = isCloseKin,
                 Day = day,
                 LastVolunteeredDay = teller?.LastVolunteeredDay ?? -1.0,
@@ -123,45 +187,24 @@ namespace VividWorld.Core.Dialogue
                 return decision;
             }
 
-            var eligible = new List<RumorCandidate>();
-            foreach (var c in candidates)
+            var classification = ClassifyCandidates(teller, candidates, day, tier);
+            decision.FilteredNotVisible = classification.FilteredNotVisible;
+            decision.FilteredFutureTimeline = classification.FilteredFutureTimeline;
+            decision.FilteredPlayerKnows = classification.FilteredPlayerKnows;
+            decision.FilteredOther = classification.FilteredOther;
+            foreach (var note in classification.FilterNotes)
             {
-                var rejection = Evaluate(teller, c, day, out string note);
-                switch (rejection)
-                {
-                    case CandidateRejection.None:
-                        eligible.Add(c);
-                        break;
-
-                    case CandidateRejection.NotVisible:
-                        decision.FilteredNotVisible++;
-                        break;
-
-                    case CandidateRejection.FutureTimeline:
-                        decision.FilteredFutureTimeline++;
-                        break;
-
-                    case CandidateRejection.RetellDisabled:
-                    case CandidateRejection.RetellNotCloser:
-                    case CandidateRejection.RetellNoNewFacts:
-                        decision.FilteredPlayerKnows++;
-                        if (!string.IsNullOrEmpty(note)) decision.FilterNotes.Add(note);
-                        break;
-
-                    default:
-                        decision.FilteredOther++;
-                        break;
-                }
+                decision.FilterNotes.Add(note);
             }
 
-            if (eligible.Count == 0)
+            if (classification.Eligible.Count == 0)
             {
                 decision.Refusal = VolunteerRefusal.AllCandidatesFiltered;
                 return decision;
             }
 
             decision.Refusal = VolunteerRefusal.None;
-            decision.Offer = CreateBestOffer(teller, eligible, day);
+            decision.Offer = CreateBestOffer(teller, classification.Eligible, day, tier);
             return decision;
         }
 
@@ -202,25 +245,63 @@ namespace VividWorld.Core.Dialogue
                 return decision;
             }
 
+            var classification = ClassifyCandidates(teller, candidates, day, VolunteerTier.Full);
+            decision.FilteredNotVisible = classification.FilteredNotVisible;
+            decision.FilteredFutureTimeline = classification.FilteredFutureTimeline;
+            decision.FilteredPlayerKnows = classification.FilteredPlayerKnows;
+            decision.FilteredOther = classification.FilteredOther;
+            foreach (var note in classification.FilterNotes)
+            {
+                decision.FilterNotes.Add(note);
+            }
+
+            if (classification.Eligible.Count == 0)
+            {
+                decision.Refusal = AskRefusal.AllCandidatesFiltered;
+                return decision;
+            }
+
+            decision.Refusal = AskRefusal.None;
+            decision.Offer = CreateBestOffer(teller, classification.Eligible, day, VolunteerTier.Full);
+            return decision;
+        }
+
+        public RumorOffer? SelectOnAsk(HeroSocialProfile teller, IReadOnlyList<RumorCandidate> candidates, double day)
+        {
+            return DecideOnAsk(teller, candidates, day).Offer;
+        }
+
+        /// <summary>
+        /// 候選清單的分類與過濾（LISTEN1b 抽出）。
+        /// 把所有候選按四大原因過濾，回傳合格候選清單與各項過濾計數。
+        /// DecideOnVolunteer 與 DecideOnAsk 皆呼叫此方法。
+        /// </summary>
+        public CandidateClassification ClassifyCandidates(HeroSocialProfile teller, IReadOnlyList<RumorCandidate>? candidates, double day, VolunteerTier tier = VolunteerTier.Full)
+        {
+            var classification = new CandidateClassification();
+            if (teller == null || candidates == null || candidates.Count == 0)
+            {
+                return classification;
+            }
+
             // 每一則候選都必須落進四個桶的其中一個：合格、秘密未洩漏、玩家已知、其他。
-            // 這一行是本卡的重點——診斷行印出來的數字要加得起來，
+            // 診斷行印出來的數字要加得起來，
             // 「三則全被濾掉，其中一則是因為玩家已知」這種話會讓人去追不存在的第二個原因。
-            var eligible = new List<RumorCandidate>();
             foreach (var c in candidates)
             {
-                var rejection = Evaluate(teller, c, day, out string note);
+                var rejection = Evaluate(teller, c, day, tier, out string note);
                 switch (rejection)
                 {
                     case CandidateRejection.None:
-                        eligible.Add(c);
+                        classification.Eligible.Add(c);
                         break;
 
                     case CandidateRejection.NotVisible:
-                        decision.FilteredNotVisible++;
+                        classification.FilteredNotVisible++;
                         break;
 
                     case CandidateRejection.FutureTimeline:
-                        decision.FilteredFutureTimeline++;
+                        classification.FilteredFutureTimeline++;
                         break;
 
                     // 三種都是「玩家已知」，桶維持一個（數字跟以往對得起來），
@@ -229,31 +310,18 @@ namespace VividWorld.Core.Dialogue
                     case CandidateRejection.RetellDisabled:
                     case CandidateRejection.RetellNotCloser:
                     case CandidateRejection.RetellNoNewFacts:
-                        decision.FilteredPlayerKnows++;
-                        if (!string.IsNullOrEmpty(note)) decision.FilterNotes.Add(note);
+                        classification.FilteredPlayerKnows++;
+                        if (!string.IsNullOrEmpty(note)) classification.FilterNotes.Add(note);
                         break;
 
                     // 候選壞掉、或講述者自己不知情——理論上進不了候選，但別讓它消失
                     default:
-                        decision.FilteredOther++;
+                        classification.FilteredOther++;
                         break;
                 }
             }
 
-            if (eligible.Count == 0)
-            {
-                decision.Refusal = AskRefusal.AllCandidatesFiltered;
-                return decision;
-            }
-
-            decision.Refusal = AskRefusal.None;
-            decision.Offer = CreateBestOffer(teller, eligible, day);
-            return decision;
-        }
-
-        public RumorOffer? SelectOnAsk(HeroSocialProfile teller, IReadOnlyList<RumorCandidate> candidates, double day)
-        {
-            return DecideOnAsk(teller, candidates, day).Offer;
+            return classification;
         }
 
         public double Score(RumorCandidate candidate, double day)
@@ -284,7 +352,7 @@ namespace VividWorld.Core.Dialogue
             return baseScore * (isRetell ? d.ScoreRetellMultiplier : 1.0);
         }
 
-        private RumorOffer CreateBestOffer(HeroSocialProfile teller, List<RumorCandidate> eligible, double day)
+        private RumorOffer CreateBestOffer(HeroSocialProfile teller, List<RumorCandidate> eligible, double day, VolunteerTier tier = VolunteerTier.Full)
         {
             // 確定性排序：Score 降序 -> Day 降序 -> EventId 升序 (字典序)
             var sorted = eligible.OrderByDescending(c => Score(c, day))
@@ -294,9 +362,10 @@ namespace VividWorld.Core.Dialogue
 
             var best = sorted[0];
             bool isRetell = best.PlayerExistingHop.HasValue;
-            int resultingPlayerHop = best.TellerHop + 1;
+            int resultingPlayerHop = ComputeLandingHop(best.Event, best.TellerHop, tier);
             var retainedFacts = _engine.FactsAtHop(best.Event, resultingPlayerHop, teller.HeroId);
-            var composed = RumorTextComposer.Compose(best.Event, retainedFacts, _config.Presentation, isRetell: isRetell);
+            bool isEyewitnessRetell = isRetell && best.TellerHop == 0;
+            var composed = RumorTextComposer.Compose(best.Event, retainedFacts, _config.Presentation, isRetell: isEyewitnessRetell);
 
             return new RumorOffer
             {
@@ -311,7 +380,7 @@ namespace VividWorld.Core.Dialogue
 
         /// <summary>候選資格的**唯一**判定處：`DecideOnAsk` 與 `DecideOnVolunteer` 都只准呼叫它。
         /// 同一個述詞有兩份定義，正是 M6a-fix2 那個 C-1 的成因。</summary>
-        private CandidateRejection Evaluate(HeroSocialProfile teller, RumorCandidate candidate, double day, out string note)
+        private CandidateRejection Evaluate(HeroSocialProfile teller, RumorCandidate candidate, double day, VolunteerTier tier, out string note)
         {
             note = string.Empty;
             if (candidate?.Event == null) return CandidateRejection.EventMissing;
@@ -342,15 +411,16 @@ namespace VividWorld.Core.Dialogue
                 return CandidateRejection.RetellDisabled;
             }
 
-            // TellerHop + 1 < PlayerExistingHop
-            if (candidate.TellerHop + 1 >= playerHop)
+            int newHop = ComputeLandingHop(evt, candidate.TellerHop, tier);
+
+            // TellerHop + 1 < PlayerExistingHop (or landing hop < PlayerExistingHop)
+            if (newHop >= playerHop)
             {
-                note = $"{evt.EventId}: teller is at hop {candidate.TellerHop}, so retelling lands the player at hop {candidate.TellerHop + 1} - no closer than the hop {playerHop} they already have";
+                note = $"{evt.EventId}: teller is at hop {candidate.TellerHop}, so retelling lands the player at hop {newHop} - no closer than the hop {playerHop} they already have";
                 return CandidateRejection.RetellNotCloser;
             }
 
             // 檢查新碎片：newFactIds \ knownFactIds ≠ ∅
-            int newHop = candidate.TellerHop + 1;
             var newFacts = _engine.FactsAtHop(evt, newHop, teller.HeroId);
             var newFactIds = new HashSet<string>(newFacts.Select(f => f.Id));
 

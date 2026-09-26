@@ -4,10 +4,17 @@ using System.Collections.Generic;
 
 namespace VividWorld.Core.Dialogue
 {
+    public enum VolunteerTier
+    {
+        None = 0,
+        Full,
+        Gist
+    }
+
     public enum VolunteerRefusal
     {
         None,                  // 有提案
-        RelationGate,          // RelationWithPlayer < NpcVolunteerRelationGate (且非近親)
+        RelationGate,          // RelationWithPlayer < gate (且非近親)
         Cooldown,              // day - LastVolunteeredDay < VolunteerCooldownDays
         DailyCap,              // volunteersAlreadyToday >= MaxVolunteersPerDay
         NoKnownEvents,         // 候選清單是空的
@@ -19,8 +26,15 @@ namespace VividWorld.Core.Dialogue
         public VolunteerRefusal Refusal { get; set; }
         public RumorOffer? Offer { get; set; }
 
+        public VolunteerTier Tier { get; set; } = VolunteerTier.None;
         public int Relation { get; set; }
         public int RelationGate { get; set; }
+        public int FullRelationGate
+        {
+            get => RelationGate;
+            set => RelationGate = value;
+        }
+        public int ChatRelationGate { get; set; }
         public bool IsCloseKin { get; set; }
 
         public double Day { get; set; }
@@ -92,32 +106,36 @@ namespace VividWorld.Core.Dialogue
                     {
                         lastStr = "last never";
                     }
-                    return $"{prefix} told {offer.EventId} hop {offer.TellerHop}->{offer.ResultingPlayerHop} score {offer.Score:F2} | rel {decision.Relation} >= {decision.RelationGate}, {lastStr}, {decision.VolunteersToday}/{decision.MaxVolunteersPerDay} today";
+                    string tierStr = decision.Tier == VolunteerTier.Gist ? "gist" : "full";
+                    return $"{prefix} told {offer.EventId} hop {offer.TellerHop}->{offer.ResultingPlayerHop} score {offer.Score:F2} | tier {tierStr} (chat gate {decision.ChatRelationGate}, full gate {decision.RelationGate}), {(decision.IsCloseKin && decision.Tier != VolunteerTier.Gist ? $"rel {decision.Relation} (close kin)" : $"rel {decision.Relation} >= {(decision.Tier == VolunteerTier.Gist ? decision.ChatRelationGate : decision.RelationGate)}")}, {lastStr}, {decision.VolunteersToday}/{decision.MaxVolunteersPerDay} today";
                 }
 
                 case VolunteerRefusal.RelationGate:
                 {
                     string kinStr = decision.IsCloseKin ? "(close kin)" : "(not close kin)";
-                    return $"{prefix} silent - relation {decision.Relation} < gate {decision.RelationGate} {kinStr} | {knownStr}";
+                    return $"{prefix} silent - relation {decision.Relation} < gate {decision.RelationGate} {kinStr} (chat gate {decision.ChatRelationGate}, full gate {decision.RelationGate}) | {knownStr}";
                 }
 
                 case VolunteerRefusal.Cooldown:
                 {
                     double diff = decision.Day - decision.LastVolunteeredDay;
-                    return $"{prefix} silent - cooldown {diff:F1}d < {decision.CooldownDays:F1} (last {decision.LastVolunteeredDay:F1}) | rel {decision.Relation}";
+                    string tierStr = decision.Tier == VolunteerTier.Gist ? "gist" : (decision.Tier == VolunteerTier.Full ? "full" : "none");
+                    return $"{prefix} silent - cooldown {diff:F1}d < {decision.CooldownDays:F1} (last {decision.LastVolunteeredDay:F1}) | rel {decision.Relation} (tier {tierStr}, chat gate {decision.ChatRelationGate}, full gate {decision.RelationGate})";
                 }
 
                 case VolunteerRefusal.DailyCap:
                 {
                     string lastPart = !string.IsNullOrEmpty(lastVolunteerDesc) ? $" (last: {lastVolunteerDesc})" : "";
-                    return $"{prefix} silent - daily cap {decision.VolunteersToday}/{decision.MaxVolunteersPerDay} already used today{lastPart}";
+                    string tierStr = decision.Tier == VolunteerTier.Gist ? "gist" : (decision.Tier == VolunteerTier.Full ? "full" : "none");
+                    return $"{prefix} silent - daily cap {decision.VolunteersToday}/{decision.MaxVolunteersPerDay} already used today{lastPart} | tier {tierStr} (chat gate {decision.ChatRelationGate}, full gate {decision.RelationGate})";
                 }
 
                 case VolunteerRefusal.NoKnownEvents:
                     // 走到這裡是「候選一個都沒有」，而候選已經把遺忘與過時濾掉了
                     // （`RumorDialogBehavior.BuildCandidates`）。印「knows nothing」會把
                     // 「全部忘光了」講成「從來沒聽過」，所以這裡也要帶上 knownStr。
-                    return $"{prefix} silent - no topic left | {knownStr} | rel {decision.Relation}";
+                    string noTopicTierStr = decision.Tier == VolunteerTier.Gist ? "gist" : (decision.Tier == VolunteerTier.Full ? "full" : "none");
+                    return $"{prefix} silent - no topic left | {knownStr} | rel {decision.Relation} (tier {noTopicTierStr}, chat gate {decision.ChatRelationGate}, full gate {decision.RelationGate})";
 
                 case VolunteerRefusal.AllCandidatesFiltered:
                 {
@@ -143,7 +161,8 @@ namespace VividWorld.Core.Dialogue
                     string notes = decision.FilterNotes != null && decision.FilterNotes.Count > 0
                         ? Environment.NewLine + "    " + string.Join(Environment.NewLine + "    ", decision.FilterNotes)
                         : "";
-                    return $"{prefix} silent - all {decision.CandidateCount} {candidateUnit} filtered{detail} | rel {decision.Relation}{notes}";
+                    string filtTierStr = decision.Tier == VolunteerTier.Gist ? "gist" : (decision.Tier == VolunteerTier.Full ? "full" : "none");
+                    return $"{prefix} silent - all {decision.CandidateCount} {candidateUnit} filtered{detail} | rel {decision.Relation} (tier {filtTierStr}, chat gate {decision.ChatRelationGate}, full gate {decision.RelationGate}){notes}";
                 }
 
                 default:

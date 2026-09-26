@@ -19,6 +19,7 @@ namespace VividWorld.Core.Config
         public double LogFlushEverySeconds { get; set; } = 5.0;
         public bool MetricsEnabled { get; set; } = false;
         public int DevRelationBoost { get; set; } = 20;
+        public bool ListenTally { get; set; } = true;
 
         [JsonExtensionData]
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();

@@ -108,6 +108,10 @@ namespace VividWorld.Core.Tests
             Assert.Equal(105, cfg.Dialogue.NpcLinePriority);
             Assert.Equal("hero_main_options", cfg.Dialogue.PlayerLineInputToken);
             Assert.Equal(105, cfg.Dialogue.PlayerLinePriority);
+            Assert.Equal("auto", cfg.Dialogue.VolunteerMode);
+            Assert.Equal(0, cfg.Dialogue.CasualChatRelationGate);
+            Assert.Equal(10, cfg.Dialogue.RealisticChatRelationGate);
+            Assert.Equal(2, cfg.Dialogue.GistExtraHops);
 
             // Presentation
             Assert.Equal(50, cfg.Presentation.ChronicleMaxEntries);
@@ -202,6 +206,7 @@ namespace VividWorld.Core.Tests
             Assert.False(cfg.Debug.MetricsEnabled);
             Assert.Equal(20, cfg.Debug.DevRelationBoost);
             Assert.False(cfg.Debug.LogTellerTurns);   // 發行前改成 false
+            Assert.True(cfg.Debug.ListenTally);
 
             // Memory
             Assert.Equal(new[] { 0.05, 0.05, 0.1, 0.2, 0.4 }, cfg.Memory.InterestFloors.OtherByDrama);
@@ -637,6 +642,25 @@ namespace VividWorld.Core.Tests
             Assert.Equal(8, (int?)result.Merged.SelectToken("persistence.shardCacheIdleFlushes"));
             Assert.Equal(100, (int?)result.Merged.SelectToken("persistence.shardDays"));
             Assert.Equal(0, (int?)result.Merged.SelectToken("persistence.maxSnapshots"));
+        }
+
+        [Fact]
+        public void ConfigMerge_AddsListenTally_WhenMissing_AndDefaultsToTrue()
+        {
+            var oldJson = @"{
+  ""debug"": {
+    ""metricsEnabled"": true
+  }
+}";
+            var existingJObj = Newtonsoft.Json.Linq.JObject.Parse(oldJson);
+            var canonical = new VividWorldConfig().Normalize();
+            var canonicalJObj = Newtonsoft.Json.Linq.JObject.Parse(VividJson.Write(canonical));
+
+            var result = ConfigMerge.AddMissingKeys(existingJObj, canonicalJObj);
+
+            Assert.Contains("debug.listenTally", result.AddedPaths);
+            Assert.True((bool?)result.Merged.SelectToken("debug.listenTally"));
+            Assert.True((bool?)result.Merged.SelectToken("debug.metricsEnabled"));
         }
     }
 }

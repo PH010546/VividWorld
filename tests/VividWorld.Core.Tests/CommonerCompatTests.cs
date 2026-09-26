@@ -73,10 +73,21 @@ namespace VividWorld.Core.Tests
 
             var on = Cfg();
             on.CommonerCompatMode = "on";
+            on.VolunteerMode = "realistic";
             var onState = CommonerCompat.Resolve(on, new string[0]);
             Assert.True(onState.Active);
             Assert.Equal(155, onState.NpcLinePriority);
             Assert.Equal(1, onState.AskMinClanTier);
+
+            // LISTEN1d：強制 on 只管優先權；「問」的氏族等級跟著傳聞模式走。
+            // 自動模式只看真的載進來的模組——什麼都沒偵測到 ⇒ 暢玩 ⇒ 等級 0，而且偵測名單不能被塞進假名字（它會出現在彈窗裡）。
+            var onAuto = Cfg();
+            onAuto.CommonerCompatMode = "on";
+            var onAutoState = CommonerCompat.Resolve(onAuto, new string[0]);
+            Assert.True(onAutoState.Active);
+            Assert.Equal(155, onAutoState.NpcLinePriority);
+            Assert.Equal(0, onAutoState.AskMinClanTier);
+            Assert.Empty(onAutoState.RumorModeResult!.DetectedModules);
         }
 
         [Fact]
@@ -138,6 +149,55 @@ namespace VividWorld.Core.Tests
 
             string noClan = CommonerCompat.FormatBlocked("Volunteer", "拉斯", "lord_5_131", -1, state.VolunteerMinClanTier, state);
             Assert.Contains("player clan tier none < 0", noClan);
+        }
+
+        [Fact]
+        public void ModeChangedAtRuntime_ReappliesModeAndAskGate_WithoutTouchingPriority()
+        {
+            var cfg = Cfg();
+            var state = CommonerCompat.Resolve(cfg, new[] { "NaN", "Lowborn" });
+            Assert.Equal(RumorMode.Realistic, state.RumorMode);
+            Assert.Equal(1, state.AskMinClanTier);
+            Assert.False(CommonerCompat.IsRumorModeStale(state, cfg));
+
+            cfg.VolunteerMode = "casual";
+            Assert.True(CommonerCompat.IsRumorModeStale(state, cfg));
+
+            CommonerCompat.ApplyRumorMode(state, cfg);
+            Assert.Equal(RumorMode.Casual, state.RumorMode);
+            Assert.Equal("forced by config", state.RumorModeResult!.Reason);
+            Assert.Equal(0, state.AskMinClanTier);
+            Assert.Equal(155, state.NpcLinePriority);
+            Assert.False(CommonerCompat.IsRumorModeStale(state, cfg));
+
+            // 換回自動：偵測名單沿用讀檔時的那一份
+            cfg.VolunteerMode = "auto";
+            CommonerCompat.ApplyRumorMode(state, cfg);
+            Assert.Equal(RumorMode.Realistic, state.RumorMode);
+            Assert.Contains("detected NaN, Lowborn", state.RumorModeResult!.Reason);
+            Assert.Equal(1, state.AskMinClanTier);
+        }
+
+        [Fact]
+        public void ModeChangedAtRuntime_WithoutCommonerMod_NeverAddsAskGate()
+        {
+            var cfg = Cfg();
+            var state = CommonerCompat.Resolve(cfg, new[] { "TaleWorlds.CampaignSystem" });
+            Assert.Equal(RumorMode.Casual, state.RumorMode);
+
+            cfg.VolunteerMode = "realistic";
+            CommonerCompat.ApplyRumorMode(state, cfg);
+            Assert.Equal(RumorMode.Realistic, state.RumorMode);
+            Assert.Equal(0, state.AskMinClanTier);
+        }
+
+        [Fact]
+        public void StaleCheck_IgnoresCaseAndSurroundingSpaces()
+        {
+            var cfg = Cfg();
+            var state = CommonerCompat.Resolve(cfg, new string[0]);
+            cfg.VolunteerMode = " AUTO ";
+            Assert.False(CommonerCompat.IsRumorModeStale(state, cfg));
         }
 
         [Fact]

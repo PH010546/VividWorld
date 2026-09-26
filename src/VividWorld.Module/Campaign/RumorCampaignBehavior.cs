@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.GameState;
+using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.ModuleManager;
 using VividWorld.Api;
 using VividWorld.Core.Config;
 using VividWorld.Core.Diagnostics;
@@ -33,6 +36,8 @@ namespace VividWorld.Campaign
         internal WorldEventStore? WorldEventStore => _eventStore;
         internal HeroLookup? HeroLookup => _heroLookup;
         internal PlayerHeardLogStore? PlayerHeardLog { get; private set; }
+        private bool _pendingModeNotice;
+        internal bool HasPendingModeNotice => _pendingModeNotice;
         private int _tickCursor;
         private string _tickCursorHeroId = string.Empty;
         private string _pendingIngestJson = string.Empty;
@@ -297,7 +302,18 @@ namespace VividWorld.Campaign
                     var offerSelector = new RumorOfferSelector(_config, _engine, playerHeroId);
                     _dialogs.Initialize(offerSelector, _store, _index, _knownBy, _traitLookup, _heroLookup, _campaignId, stamper, PlayerHeardLog);
                     _dialogs.RegisterDialogues(starter);
+
+                    var compat = _dialogs.CompatState;
+                    // 閒聊門檻只准由選擇器決定（它的 Mode 在 RegisterDialogues 裡已經照相容判定設好），不在這裡再寫一份。
+                    int chatGate = offerSelector.ChatRelationGate;
+                    int fullGate = _config.Dialogue.NpcVolunteerRelationGate;
+                    int gistHops = _config.Dialogue.GistExtraHops;
+                    int askClanTier = compat?.AskMinClanTier ?? 0;
+                    var modeResult = compat?.RumorModeResult ?? RumorModeResolver.Resolve(_config.Dialogue.VolunteerMode, compat?.DetectedModules);
+                    ModLog.Info(RumorModeResolver.FormatModeLine(modeResult, chatGate, fullGate, gistHops, askClanTier));
                 }
+
+                _pendingModeNotice = true;
 
                 if (_eventStore != null && _heroLookup != null && _traitLookup != null)
                 {
@@ -311,6 +327,11 @@ namespace VividWorld.Campaign
                 }
 
                 ModLog.Info($"VividWorld session launched for campaign {_campaignId}.");
+
+                if (_config.Debug.DebugDialogueEnabled && _dialogs != null)
+                {
+                    _dialogs.RunAndLogPreview("on load");
+                }
             }
             catch (Exception ex)
             {
@@ -424,6 +445,18 @@ namespace VividWorld.Campaign
 
                 double day = CampaignTime.Now.ToDays;
                 _scheduler?.DailyTick(day);
+
+                if (_config.Debug.ListenTally && _dialogs?.ListenTally != null)
+                {
+                    int reportDay = Math.Max(0, (int)day - 1);
+                    var dayTally = _dialogs.ListenTally.GetDay(reportDay);
+                    ModLog.Info(ListenTallyLogFormatter.FormatDailyLine(reportDay, dayTally));
+                }
+
+                if (_config.Debug.DebugDialogueEnabled && _dialogs != null)
+                {
+                    _dialogs.RunAndLogPreview("daily");
+                }
             }
             catch (Exception ex)
             {
@@ -646,10 +679,160 @@ namespace VividWorld.Campaign
                         ModLog.Warn(PlayerHeardLogFormatter.FormatWriteFailed());
                     }
                 }
+
+                _dialogs?.SaveListenTally();
             }
             catch (Exception ex)
             {
                 ModLog.Error("Error during Flush", ex);
+            }
+        }
+
+        private static string GetModuleDisplayName(string dllBaseName)
+        {
+            try
+            {
+                string targetDll = dllBaseName.Trim() + ".dll";
+                var modules = TaleWorlds.ModuleManager.ModuleHelper.GetModules(m => true);
+                if (modules != null)
+                {
+                    foreach (var mod in modules)
+                    {
+                        if (mod?.SubModules != null)
+                        {
+                            foreach (var sm in mod.SubModules)
+                            {
+                                if (string.Equals(sm?.DLLName, targetDll, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    if (!string.IsNullOrWhiteSpace(mod.Name))
+                                    {
+                                        return mod.Name.Trim();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn($"Failed to resolve module display name for '{dllBaseName}': {ex.Message}");
+            }
+            return dllBaseName;
+        }
+
+        /// <summary>讀檔時左下角那行模式訊息的顏色：淺綠（#90EE90，2026-09-26 指定；帳本 D-87）。</summary>
+        private static readonly Color ModeNoticeMessageColor = new Color(0.565f, 0.933f, 0.565f, 1f);
+
+        internal void ExecutePendingModeNotice()
+        {
+            if (!_pendingModeNotice) return;
+            if (!(Game.Current?.GameStateManager?.ActiveState is MapState)) return;
+            _pendingModeNotice = false;
+
+            try
+            {
+                var compat = _dialogs.CompatState;
+                var modeResult = compat?.RumorModeResult ?? RumorModeResolver.Resolve(_config.Dialogue.VolunteerMode, compat?.DetectedModules);
+                var actualMode = modeResult.Mode;
+                var detectedModules = compat?.DetectedModules ?? CommonerCompat.GetEffectiveCommonerModules(_config.Dialogue.CommonerCompatModules);
+
+                var lastRecord = ModeNotice.Load(VividWorldPaths.ModeNoticeFile);
+                var action = ModeNotice.Evaluate(_config.Dialogue.VolunteerMode, actualMode, detectedModules, lastRecord);
+
+                string lastDesc = lastRecord != null
+                    ? $"{lastRecord.Mode} (detected: {string.Join(", ", lastRecord.Detected)})"
+                    : "none";
+
+                if (action == ModeNoticeAction.None)
+                {
+                    ModLog.Info($"Mode notice: skipped - configuredMode '{_config.Dialogue.VolunteerMode}' is explicit (forced by config).");
+                    return;
+                }
+
+                // Resolve module display names
+                // 分隔符放在字串表裡（中文「、」、英文「, 」），不猜語言名稱——
+                // 遊戲回報的語言名稱是「繁體中文」這種在地化字樣，比對英文關鍵字猜不到。
+                string separator = new TextObject("{=VividWorld_ModeNotice_ModsSeparator}, ").ToString();
+                if (separator == ",") separator = ", ";   // 字串表載入若把結尾空白吃掉，補回來
+
+                var displayNames = (detectedModules ?? Enumerable.Empty<string>())
+                    .Select(GetModuleDisplayName)
+                    .ToList();
+                string modsStr = string.Join(separator, displayNames);
+
+                bool isMcmBound = VividWorld.Mcm.McmBridge.IsBound;
+
+                if (action == ModeNoticeAction.Popup)
+                {
+                    TextObject textObj;
+                    if (actualMode == RumorMode.Realistic)
+                    {
+                        textObj = isMcmBound
+                            ? new TextObject("{=VividWorld_ModeNotice_PopupRealistic_Mcm}We detected {MODS}. Mods like these make it hard for a commoner to approach the nobility, so Vivid World has switched itself to Realistic mode: a lord needs to think well of you (relation 10 or higher) before he brings up the news of the land. If you would rather everyone be willing to chat, open Vivid World's settings in MCM and set \"Rumor mode\" to \"Casual\".")
+                            : new TextObject("{=VividWorld_ModeNotice_PopupRealistic_NoMcm}We detected {MODS}. Mods like these make it hard for a commoner to approach the nobility, so Vivid World has switched itself to Realistic mode: a lord needs to think well of you (relation 10 or higher) before he brings up the news of the land. If you would rather everyone be willing to chat, open config.json and set \"volunteerMode\" to \"casual\".");
+                        textObj.SetTextVariable("MODS", modsStr);
+                    }
+                    else
+                    {
+                        textObj = isMcmBound
+                            ? new TextObject("{=VividWorld_ModeNotice_PopupCasual_Mcm}Vivid World is now running: what happens across the land passes by word of mouth among lords and wanderers. When you talk with them, anyone who doesn't dislike you may bring up something they've heard, and the closer you are, the fuller the story. For a more realistic feel (only those who like you will chat), open Vivid World's settings in MCM and set \"Rumor mode\" to \"Realistic\".")
+                            : new TextObject("{=VividWorld_ModeNotice_PopupCasual_NoMcm}Vivid World is now running: what happens across the land passes by word of mouth among lords and wanderers. When you talk with them, anyone who doesn't dislike you may bring up something they've heard, and the closer you are, the fuller the story. For a more realistic feel (only those who like you will chat), open config.json and set \"volunteerMode\" to \"realistic\".");
+                    }
+
+                    var titleObj = new TextObject("{=VividWorld_ModeNotice_Title}Vivid World");
+                    var buttonObj = new TextObject("{=VividWorld_ModeNotice_Button}Understood");
+
+                    var inquiry = new InquiryData(
+                        titleText: titleObj.ToString(),
+                        text: textObj.ToString(),
+                        isAffirmativeOptionShown: true,
+                        isNegativeOptionShown: false,
+                        affirmativeText: buttonObj.ToString(),
+                        negativeText: string.Empty,
+                        affirmativeAction: null,
+                        negativeAction: null,
+                        soundEventPath: string.Empty,
+                        expireTime: 0f,
+                        timeoutAction: null,
+                        isAffirmativeOptionEnabled: null,
+                        isNegativeOptionEnabled: null);
+
+                    InformationManager.ShowInquiry(inquiry, pauseGameActiveState: true, prioritize: false);
+
+                    var newRecord = new ModeNoticeRecord
+                    {
+                        Mode = actualMode.ToString().ToLowerInvariant(),
+                        Detected = detectedModules != null ? new List<string>(detectedModules) : new List<string>()
+                    };
+                    ModeNotice.Save(VividWorldPaths.ModeNoticeFile, newRecord);
+
+                    ModLog.Info($"Mode notice: popup shown - mode {actualMode.ToString().ToLowerInvariant()} (detected: {string.Join(", ", detectedModules ?? Enumerable.Empty<string>())}) [last: {lastDesc}]");
+                }
+                else if (action == ModeNoticeAction.Message)
+                {
+                    TextObject msgObj;
+                    if (actualMode == RumorMode.Realistic)
+                    {
+                        msgObj = isMcmBound
+                            ? new TextObject("{=VividWorld_ModeNotice_MessageRealistic_Mcm}Vivid World: rumor mode is Realistic ({MODS} detected); change it in MCM.")
+                            : new TextObject("{=VividWorld_ModeNotice_MessageRealistic_NoMcm}Vivid World: rumor mode is Realistic ({MODS} detected); change it in config.json.");
+                        msgObj.SetTextVariable("MODS", modsStr);
+                    }
+                    else
+                    {
+                        msgObj = isMcmBound
+                            ? new TextObject("{=VividWorld_ModeNotice_MessageCasual_Mcm}Vivid World: rumor mode is Casual; change it in MCM.")
+                            : new TextObject("{=VividWorld_ModeNotice_MessageCasual_NoMcm}Vivid World: rumor mode is Casual; change it in config.json.");
+                    }
+
+                    InformationManager.DisplayMessage(new InformationMessage(msgObj.ToString(), ModeNoticeMessageColor));
+                    ModLog.Info($"Mode notice: message displayed - {msgObj.ToString()} [last matches: {lastDesc}]");
+                }
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Error executing mode notice", ex);
             }
             finally
             {

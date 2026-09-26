@@ -33,6 +33,39 @@ namespace VividWorld.Dialogue
         private PlayerHeardLogStore? _playerHeardLog;
         internal PlayerHeardLogStore? PlayerHeardLog => _playerHeardLog;
 
+        private ListenTallyStore? _listenTallyStore;
+        private ListenTally? _listenTally;
+        internal ListenTally? ListenTally => _listenTally;
+
+        // LISTEN1 每場對話追蹤
+        private string? _currentConversationPartnerId;
+        private string? _currentConversationPartnerName;
+        private int _currentConversationRelation;
+        private bool _currentConversationEligible;
+        private bool _currentConversationPartnerKnown;
+        private bool _currentConversationIsNoHero;
+
+        private bool _volunteerCommonerBlocked;
+        private bool _volunteerLordAttackBlocked;
+        private VolunteerDecision? _volunteerDecision;
+        private int _volunteerKnownCount;
+        private int _volunteerForgottenCount;
+        private int _volunteerOutdatedCount;
+        private int _volunteerMissRivalCount = -1;
+        private bool _volunteerToldDelivered;
+
+        private bool _askAsked;
+        private bool _askTold;
+        private bool _askShown;
+        private bool _askBlockedCommonerTier;
+        private AskDecision? _cachedAskDecision;
+        private int _cachedAskKnownCount;
+        private int _cachedAskForgottenCount;
+        private int _cachedAskOutdatedCount;
+
+        private bool _recoveryShown;
+        private bool _recoveryUsed;
+
         private readonly DailyCounter _volunteersCounter = new DailyCounter();
         private readonly Dictionary<string, double> _lastVolunteeredDays = new Dictionary<string, double>(StringComparer.Ordinal);
         private string? _lastVolunteerDesc;
@@ -86,14 +119,49 @@ namespace VividWorld.Dialogue
         private bool _consequenceHookInstalled;
         private const int MaxRouteEntries = 24;
 
-        // 「平民不該跟貴族攀談」相容模式（規格 §9.2.1）。註冊時解一次，之後不變。
+        // 「平民不該跟貴族攀談」相容模式（規格 §9.2.1）。註冊時解一次；只有傳聞模式那一部分
+        // 會在選單改了之後重算（SyncRumorModeWithConfig，LISTEN1e）。
         private CommonerCompatState _compat = new CommonerCompatState { Reason = "not resolved yet (dialogues not registered)" };
+        public CommonerCompatState CompatState => _compat;
+
+        /// <summary>
+        /// 選單改了傳聞模式就在這裡接上，不必重新讀檔（LISTEN1e，feature spec §13）。
+        /// 主動講、補救、玩家問三個條件，以及預演與 dev 狀態行的開頭都先叫它；沒改就只比一次字串。
+        /// 只重算模式與「問」的氏族閘——優先權在對話行註冊時就定了，彈窗與訊息只在讀檔時。
+        /// </summary>
+        private void SyncRumorModeWithConfig()
+        {
+            try
+            {
+                // 對話行還沒註冊（沒算過）時由 RegisterDialogues 負責，不在這裡搶先算。
+                if (_offerSelector == null || _compat.RumorModeConfiguredAs == null) return;
+                var d = _config.Dialogue;
+                if (!CommonerCompat.IsRumorModeStale(_compat, d)) return;
+
+                string before = _compat.RumorModeConfiguredAs;
+                CommonerCompat.ApplyRumorMode(_compat, d);
+                _offerSelector.Mode = _compat.RumorMode;
+
+                ModLog.Info($"Rumor mode: changed in settings '{before}' -> '{d.VolunteerMode}', applied now without reload");
+                if (_compat.RumorModeResult != null)
+                {
+                    ModLog.Info(RumorModeResolver.FormatModeLine(_compat.RumorModeResult, _offerSelector.ChatRelationGate,
+                        d.NpcVolunteerRelationGate, d.GistExtraHops, _compat.AskMinClanTier));
+                }
+                ModLog.Flush();
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Error syncing rumor mode with config", ex);
+            }
+        }
 
         /// <summary>dev「世界現況」用：設定解成了什麼 ➕ 玩家氏族現在的 Tier ➕ 現在擋不擋。</summary>
         public string CompatStatusLine
         {
             get
             {
+                SyncRumorModeWithConfig();
                 string baseLine = CommonerCompat.FormatRegistration(
                     _compat, _config.Dialogue.NpcLineInputToken, _config.Dialogue.NpcLinePriority);
                 int tier = PlayerClanTier();
@@ -164,7 +232,44 @@ namespace VividWorld.Dialogue
             _stamper = stamper;
             _playerHeardLog = playerHeardLog;
             LoadVolunteers();
+            if (!string.IsNullOrEmpty(_campaignId))
+            {
+                _listenTallyStore = new ListenTallyStore(VividWorldPaths.ListenTallyFile(_campaignId!));
+                if (_config.Debug.ListenTally)
+                {
+                    _listenTally = _listenTallyStore.Load();
+                    if (_listenTallyStore.LastLoadError != null)
+                    {
+                        ModLog.Warn($"ListenTally: could not read {_listenTallyStore.FilePath} ({_listenTallyStore.LastLoadError}) - starting from 0; the next save will overwrite it.");
+                    }
+                    else
+                    {
+                        ModLog.Info($"ListenTally: loaded {_listenTally.Days.Count} day(s) from {_listenTallyStore.FilePath}.");
+                    }
+                }
+            }
             _ready = true;
+        }
+
+        public void SaveListenTally()
+        {
+            if (!_config.Debug.ListenTally || _listenTally == null || _listenTallyStore == null)
+            {
+                return;
+            }
+
+            try
+            {
+                bool ok = _listenTallyStore.Save(_listenTally);
+                if (!ok)
+                {
+                    ModLog.Warn("ListenTally: failed to save listen_tally.json.");
+                }
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Error saving ListenTally", ex);
+            }
         }
 
         public override void RegisterEvents()
@@ -187,6 +292,7 @@ namespace VividWorld.Dialogue
 
             try
             {
+                RecordConversationTally(characters);
                 InvalidateOfferCache();
                 ResetConversationDiagnostics();
             }
@@ -259,6 +365,33 @@ namespace VividWorld.Dialogue
             _deliveredVolunteerThisConversation = false;
             _recoveryOfferedLogged = false;
 
+            _currentConversationPartnerId = null;
+            _currentConversationPartnerName = null;
+            _currentConversationRelation = 0;
+            _currentConversationEligible = false;
+            _currentConversationPartnerKnown = false;
+            _currentConversationIsNoHero = false;
+            _volunteerCommonerBlocked = false;
+            _volunteerLordAttackBlocked = false;
+            _volunteerDecision = null;
+            _volunteerKnownCount = 0;
+            _volunteerForgottenCount = 0;
+            _volunteerOutdatedCount = 0;
+            _volunteerMissRivalCount = -1;
+            _volunteerToldDelivered = false;
+
+            _askAsked = false;
+            _askTold = false;
+            _askShown = false;
+            _askBlockedCommonerTier = false;
+            _cachedAskDecision = null;
+            _cachedAskKnownCount = 0;
+            _cachedAskForgottenCount = 0;
+            _cachedAskOutdatedCount = 0;
+
+            _recoveryShown = false;
+            _recoveryUsed = false;
+
             // 路線先留一份給 dev 工具，再清空給下一場用。
             if (_chosenThisConversation.Count > 0)
             {
@@ -270,6 +403,181 @@ namespace VividWorld.Dialogue
             EnsureConsequenceHook();
         }
 
+        private void RecordPartnerInfo(Hero? hero)
+        {
+            if (hero == null) return;
+            if (_currentConversationPartnerKnown) return;
+
+            _currentConversationPartnerId = hero.StringId;
+            _currentConversationPartnerName = hero.Name?.ToString() ?? hero.StringId;
+            _currentConversationRelation = Hero.MainHero != null ? (int)hero.GetRelation(Hero.MainHero) : 0;
+            _currentConversationEligible = _traitLookup != null && Eligibility.IsEligible(_traitLookup, hero.StringId);
+            _currentConversationIsNoHero = false;
+            _currentConversationPartnerKnown = true;
+        }
+
+        private void RecordNonHeroPartnerInfo(CharacterObject character)
+        {
+            if (character == null) return;
+            if (_currentConversationPartnerKnown) return;
+
+            _currentConversationPartnerId = character.StringId ?? "unknown";
+            _currentConversationPartnerName = character.Name?.ToString() ?? character.StringId ?? "unknown";
+            _currentConversationRelation = 0;
+            _currentConversationEligible = false;
+            _currentConversationIsNoHero = true;
+            _currentConversationPartnerKnown = true;
+        }
+
+        private void RecordConversationTally(IEnumerable<CharacterObject>? characters)
+        {
+            if (!_currentConversationPartnerKnown)
+            {
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null && characters != null)
+                {
+                    hero = characters.Select(c => c.HeroObject).FirstOrDefault(h => h != null && h != Hero.MainHero);
+                }
+                if (hero != null)
+                {
+                    RecordPartnerInfo(hero);
+                }
+                else
+                {
+                    CharacterObject? character = CharacterObject.OneToOneConversationCharacter;
+                    if (character == null && characters != null)
+                    {
+                        character = characters.FirstOrDefault(c => c != CharacterObject.PlayerCharacter);
+                    }
+                    if (character != null)
+                    {
+                        RecordNonHeroPartnerInfo(character);
+                    }
+                    else
+                    {
+                        _currentConversationEligible = false;
+                        _currentConversationIsNoHero = true;
+                        _currentConversationPartnerId = "unknown";
+                        _currentConversationPartnerName = "unknown";
+                        _currentConversationPartnerKnown = true;
+                    }
+                }
+            }
+
+            if (!_currentConversationEligible)
+            {
+                string reason;
+                string tallyKey;
+                if (_currentConversationIsNoHero)
+                {
+                    reason = "not a hero";
+                    tallyKey = ListenTallyKeys.NotInNetworkNoHero;
+                }
+                else
+                {
+                    var h = _heroLookup?.Get(_currentConversationPartnerId ?? string.Empty);
+                    reason = EligibilityLabel.GetRejectionReason(h, _traitLookup) ?? "ineligible";
+                    tallyKey = ListenTallyKeys.NotInNetwork;
+                }
+
+                string notInNetworkMsg = $"Listen: {_currentConversationPartnerName} ({_currentConversationPartnerId}) not in network - {reason}";
+                if (_config.Debug.ListenTally)
+                {
+                    notInNetworkMsg += $" | tally: {tallyKey}";
+                }
+                ModLog.Info(notInNetworkMsg);
+            }
+
+            if (_listenTally == null || !_config.Debug.ListenTally) return;
+
+            int day = (int)CampaignTime.Now.ToDays;
+            var dayTally = _listenTally.GetOrCreateDay(day);
+
+            int remembered = Math.Max(0, _volunteerKnownCount - _volunteerForgottenCount - _volunteerOutdatedCount);
+            dayTally.RecordPartner(_currentConversationPartnerId, _currentConversationRelation, _volunteerKnownCount, remembered);
+
+            int rivalCount = _volunteerMissRivalCount;
+            if (!_volunteerConditionRan && rivalCount < 0 && _currentConversationEligible)
+            {
+                var scan = ScanTokenContention();
+                rivalCount = scan.RivalCount;
+            }
+
+            string volunteerKey = ListenTallyClassifier.ClassifyVolunteer(
+                _currentConversationEligible,
+                _volunteerConditionRan,
+                rivalCount,
+                _volunteerCommonerBlocked,
+                _volunteerLordAttackBlocked,
+                _volunteerDecision,
+                _volunteerKnownCount,
+                _volunteerForgottenCount,
+                _volunteerOutdatedCount,
+                _volunteerToldDelivered);
+
+            dayTally.Increment(volunteerKey);
+            if (string.Equals(volunteerKey, ListenTallyKeys.NotInNetwork, StringComparison.Ordinal) && _currentConversationIsNoHero)
+            {
+                dayTally.Increment(ListenTallyKeys.NotInNetworkNoHero);
+            }
+
+            if (string.Equals(volunteerKey, ListenTallyKeys.VolunteerFiltered, StringComparison.Ordinal) && _volunteerDecision != null)
+            {
+                if (_volunteerDecision.FilteredNotVisible > 0)
+                {
+                    dayTally.Increment(ListenTallyKeys.VolunteerFilteredSecret, _volunteerDecision.FilteredNotVisible);
+                }
+                if (_volunteerDecision.FilteredFutureTimeline > 0)
+                {
+                    dayTally.Increment(ListenTallyKeys.VolunteerFilteredFuture, _volunteerDecision.FilteredFutureTimeline);
+                }
+                if (_volunteerDecision.FilteredPlayerKnows > 0)
+                {
+                    dayTally.Increment(ListenTallyKeys.VolunteerFilteredPlayerKnows, _volunteerDecision.FilteredPlayerKnows);
+                }
+                if (_volunteerDecision.FilteredOther > 0)
+                {
+                    dayTally.Increment(ListenTallyKeys.VolunteerFilteredOther, _volunteerDecision.FilteredOther);
+                }
+            }
+
+            if (_askAsked)
+            {
+                dayTally.Increment(ListenTallyKeys.AskAsked);
+                if (_askTold)
+                {
+                    dayTally.Increment(ListenTallyKeys.AskTold);
+                }
+                else if (_cachedAskDecision != null)
+                {
+                    string askKey = ListenTallyClassifier.ClassifyAsk(
+                        true, false, _cachedAskDecision, _cachedAskKnownCount, _cachedAskForgottenCount, _cachedAskOutdatedCount);
+                    if (!string.IsNullOrEmpty(askKey) && !string.Equals(askKey, ListenTallyKeys.AskTold, StringComparison.Ordinal))
+                    {
+                        dayTally.Increment(askKey);
+                    }
+                }
+            }
+
+            if (_askShown)
+            {
+                dayTally.Increment(ListenTallyKeys.AskShown);
+            }
+            if (_askBlockedCommonerTier)
+            {
+                dayTally.Increment(ListenTallyKeys.AskBlockedCommonerTier);
+            }
+
+            if (_recoveryShown)
+            {
+                dayTally.Increment(ListenTallyKeys.RecoveryShown);
+            }
+            if (_recoveryUsed)
+            {
+                dayTally.Increment(ListenTallyKeys.RecoveryUsed);
+            }
+        }
+
         public void RegisterDialogues(CampaignGameStarter starter)
         {
             if (starter == null) return;
@@ -279,6 +587,10 @@ namespace VividWorld.Dialogue
             // 哪一套優先權要看他實際裝了什麼（規格 §9.2.1，帳本 D-43／X-17／L-22）。
             // 用「執行期真的載進來的組件」而不是 Modules\ 資料夾：資料夾在、啟動器沒勾選是常態。
             _compat = CommonerCompat.Resolve(d, LoadedAssemblyNames());
+            if (_offerSelector != null)
+            {
+                _offerSelector.Mode = _compat.RumorMode;
+            }
             ModLog.Info(CommonerCompat.FormatRegistration(_compat, d.NpcLineInputToken, d.NpcLinePriority));
 
             // ── §5.1 NPC 主動開口講傳聞（M6b）──
@@ -311,6 +623,17 @@ namespace VividWorld.Dialogue
                 HasAskOfferCondition,
                 OnAskAnswered,
                 110,
+                null);
+
+            // ── §11 問傳聞被拒時，依原因回不同的話（LISTEN1c，決策 0053）──
+            starter.AddDialogLine(
+                "vividworld_ask_refuse",
+                "vividworld_ask_answer",
+                "hero_main_options",
+                "{=!}{VIVIDWORLD_ASK_REFUSAL}",
+                HasAskRefusalLineCondition,
+                OnAskRefused,
+                105,
                 null);
 
             // vividworld_ask_nothing 的 condition 必須是 null（硬性禁令）。
@@ -555,6 +878,7 @@ namespace VividWorld.Dialogue
                 // 引擎真的把這條拿出來評估了。在每一道早退之前記，
                 // 才區別得出「被壓過」與「評估了但不講」（帳本 L-22）。
                 _volunteerConditionRan = true;
+                SyncRumorModeWithConfig();
 
                 // 1. _ready 且所有相依都已 Initialize → 否則 false（不記日誌，這是啟動期）
                 if (!_ready || _offerSelector == null || _store == null || _index == null ||
@@ -569,6 +893,7 @@ namespace VividWorld.Dialogue
                 {
                     return false;
                 }
+                RecordPartnerInfo(hero);
 
                 // 3. 對方過 Eligibility.IsEligible → 否則 false
                 if (!Eligibility.IsEligible(_traitLookup, hero.StringId))
@@ -675,8 +1000,15 @@ namespace VividWorld.Dialogue
                         _lastVolunteerSessionInfo = $"{tellerName} ({hero.StringId}) told {_cachedVolunteerOffer.EventId} at day {day:F1}";
 
                         _deliveredVolunteerThisConversation = true;
+                        _volunteerToldDelivered = true;
 
-                        ModLog.Info($"Rumor delivered to player: event {_cachedVolunteerOffer.EventId} (hop {_cachedVolunteerOffer.ResultingPlayerHop}, isRetell={_cachedVolunteerOffer.IsRetell}) from {hero.Name}");
+                        string tierStr = _volunteerDecision?.Tier == VolunteerTier.Gist ? "gist" : "full";
+                        string deliveredMsg = $"Rumor delivered to player: event {_cachedVolunteerOffer.EventId} ({tierStr}, hop {_cachedVolunteerOffer.ResultingPlayerHop}, isRetell={_cachedVolunteerOffer.IsRetell}) from {hero.Name}";
+                        if (_config.Debug.ListenTally)
+                        {
+                            deliveredMsg += $" | tally: {ListenTallyKeys.VolunteerTold}";
+                        }
+                        ModLog.Info(deliveredMsg);
                         ModLog.Info($"  text shown: \"{_renderedVolunteerTextPlain ?? _renderedVolunteerText}\"");
                     }
                 }
@@ -698,6 +1030,8 @@ namespace VividWorld.Dialogue
         {
             try
             {
+                SyncRumorModeWithConfig();
+
                 // 1. 基本相依檢查
                 if (!_ready || _offerSelector == null || _store == null || _index == null ||
                     _knownBy == null || _traitLookup == null || _heroLookup == null)
@@ -707,6 +1041,7 @@ namespace VividWorld.Dialogue
 
                 var hero = Hero.OneToOneConversationHero;
                 if (hero == null || !hero.IsAlive) return false;
+                RecordPartnerInfo(hero);
 
                 if (!Eligibility.IsEligible(_traitLookup, hero.StringId)) return false;
 
@@ -747,7 +1082,13 @@ namespace VividWorld.Dialogue
                 if (!_recoveryOfferedLogged)
                 {
                     _recoveryOfferedLogged = true;
-                    ModLog.Info($"Volunteer recovery: offered {hero.Name} ({hero.StringId}) rumor {_cachedVolunteerOffer.EventId} - bypassed by {culprit ?? "unknown route"}");
+                    _recoveryShown = true;
+                    string recMsg = $"Volunteer recovery: offered {hero.Name} ({hero.StringId}) rumor {_cachedVolunteerOffer.EventId} - bypassed by {culprit ?? "unknown route"}";
+                    if (_config.Debug.ListenTally)
+                    {
+                        recMsg += $" | tally: {ListenTallyKeys.RecoveryShown}";
+                    }
+                    ModLog.Info(recMsg);
                     ModLog.Flush();
                 }
 
@@ -787,8 +1128,15 @@ namespace VividWorld.Dialogue
                         _lastVolunteerSessionInfo = $"{tellerName} ({hero.StringId}) told {_cachedVolunteerOffer.EventId} at day {day:F1} (via recovery)";
 
                         _deliveredVolunteerThisConversation = true;
+                        _recoveryUsed = true;
 
-                        ModLog.Info($"Rumor delivered to player (via recovery): event {_cachedVolunteerOffer.EventId} (hop {_cachedVolunteerOffer.ResultingPlayerHop}, isRetell={_cachedVolunteerOffer.IsRetell}) from {hero.Name}");
+                        string tierStr = _volunteerDecision?.Tier == VolunteerTier.Gist ? "gist" : "full";
+                        string recDeliveredMsg = $"Rumor delivered to player (via recovery): event {_cachedVolunteerOffer.EventId} ({tierStr}, hop {_cachedVolunteerOffer.ResultingPlayerHop}, isRetell={_cachedVolunteerOffer.IsRetell}) from {hero.Name}";
+                        if (_config.Debug.ListenTally)
+                        {
+                            recDeliveredMsg += $" | tally: {ListenTallyKeys.RecoveryUsed}";
+                        }
+                        ModLog.Info(recDeliveredMsg);
                         ModLog.Info($"  text shown: \"{_renderedVolunteerTextPlain ?? _renderedVolunteerText}\"");
                     }
                 }
@@ -817,14 +1165,22 @@ namespace VividWorld.Dialogue
             _cachedVolunteerEvent = null;
             _cachedHasVolunteerOffer = false;
 
+            RecordPartnerInfo(hero);
+
             // 相容模式的氏族 Tier 閘（規格 §9.2.1）。放在記憶化之內，理由與下面那道守衛一樣：
             // 一場對話一行，不是一次評估一行。主動講這邊預設不擋（門檻 0）。
             int playerTier = PlayerClanTier();
             if (CommonerCompat.BlocksVolunteer(_compat, playerTier))
             {
-                ModLog.Info(CommonerCompat.FormatBlocked(
+                _volunteerCommonerBlocked = true;
+                string blockMsg = CommonerCompat.FormatBlocked(
                     "Volunteer", hero.Name?.ToString() ?? hero.StringId, hero.StringId,
-                    playerTier, _compat.VolunteerMinClanTier, _compat));
+                    playerTier, _compat.VolunteerMinClanTier, _compat);
+                if (_config.Debug.ListenTally)
+                {
+                    blockMsg += $" | tally: {ListenTallyKeys.VolunteerBlockedCommonerTier}";
+                }
+                ModLog.Info(blockMsg);
                 return;
             }
 
@@ -833,8 +1189,14 @@ namespace VividWorld.Dialogue
             // 放在記憶化之內，是為了讓它跟其他理由一樣「一場對話一行」，而不是每次評估都印。
             if (Helpers.HeroHelper.WillLordAttack())
             {
-                ModLog.Info(VolunteerDecision.FormatLordAboutToAttack(
-                    hero.Name?.ToString() ?? hero.StringId, hero.StringId));
+                _volunteerLordAttackBlocked = true;
+                string atkMsg = VolunteerDecision.FormatLordAboutToAttack(
+                    hero.Name?.ToString() ?? hero.StringId, hero.StringId);
+                if (_config.Debug.ListenTally)
+                {
+                    atkMsg += $" | tally: {ListenTallyKeys.VolunteerBlockedLordAttack}";
+                }
+                ModLog.Info(atkMsg);
                 return;
             }
 
@@ -856,6 +1218,11 @@ namespace VividWorld.Dialogue
             var knownEventIds = _knownBy!.EventsKnownBy(hero.StringId, day);
             int knownCount = knownEventIds?.Count ?? 0;
 
+            _volunteerDecision = decision;
+            _volunteerKnownCount = knownCount;
+            _volunteerForgottenCount = forgottenEvents.Count;
+            _volunteerOutdatedCount = outdatedEvents.Count;
+
             string logLine = VolunteerDecision.FormatLog(
                 hero.Name?.ToString() ?? hero.StringId,
                 hero.StringId,
@@ -863,6 +1230,17 @@ namespace VividWorld.Dialogue
                 knownCount,
                 _lastVolunteerDesc,
                 forgottenEvents.Count);
+
+            if (_config.Debug.ListenTally)
+            {
+                // 選到消息時這一刻還沒講出口：真正落在哪一格要等講出口那一行（`tally: volunteer.told`），
+                // 沒講出口就在對話結束時記成 chosenNotDelivered。這裡不能先印成 chosenNotDelivered。
+                string tallyKey = decision.Offer != null
+                    ? $"{ListenTallyKeys.VolunteerTold} when spoken"
+                    : ListenTallyClassifier.ClassifyVolunteer(
+                        true, true, 0, false, false, decision, knownCount, forgottenEvents.Count, outdatedEvents.Count, false);
+                logLine += $" | tally: {tallyKey}";
+            }
 
             ModLog.Info(logLine);
 
@@ -890,14 +1268,18 @@ namespace VividWorld.Dialogue
         {
             try
             {
+                SyncRumorModeWithConfig();
+
                 var hero = Hero.OneToOneConversationHero;
                 if (hero == null || !hero.IsAlive) return false;
+                RecordPartnerInfo(hero);
 
                 // 相容模式：還沒成氏族的平民連問都不該問得出口（規格 §9.2.1）。
                 // NaN 自己封鎖外交（`lord_politics_request`）與任務（`issue_offer`）的那一層就是 Tier == 0（X-17）。
                 int playerTier = PlayerClanTier();
                 if (CommonerCompat.BlocksAsk(_compat, playerTier))
                 {
+                    _askBlockedCommonerTier = true;
                     if (!_commonerGateReported)
                     {
                         _commonerGateReported = true;
@@ -911,6 +1293,8 @@ namespace VividWorld.Dialogue
                     ReportVolunteerMissIfAny(hero);
                     return false;
                 }
+
+                _askShown = true;
 
                 // 這裡是 `hero_main_options`，在對話鏈上一定晚於 `lord_start`。
                 // 走到這一步而 NpcVolunteersCondition 連一次都沒被呼叫，就只有一種可能：
@@ -980,6 +1364,7 @@ namespace VividWorld.Dialogue
             if (!Eligibility.IsEligible(_traitLookup, hero.StringId)) return;
 
             _volunteerMissReported = true;
+            RecordPartnerInfo(hero);
 
             string tellerName = hero.Name?.ToString() ?? hero.StringId;
             string token = _config.Dialogue.NpcLineInputToken;
@@ -988,6 +1373,7 @@ namespace VividWorld.Dialogue
             // 先掃一次再決定怎麼講。帳本 L-24：舊版不管掃出什麼都寫「被別人壓過」，
             // 結果下一行的掃描結果就是「nothing outranks」——同一時間戳的兩行互相矛盾。
             var scan = ScanTokenContention();
+            _volunteerMissRivalCount = scan.RivalCount;
             string cause;
             if (scan.RivalCount > 0)
             {
@@ -1051,7 +1437,15 @@ namespace VividWorld.Dialogue
                 recoveryNote = "recovery option not offered (not a bypassed route)";
             }
 
-            ModLog.Warn($"Volunteer {tellerName} ({hero.StringId}): line not evaluated in this conversation - {cause}. {recoveryNote}.");
+            string missMsg = $"Volunteer {tellerName} ({hero.StringId}): line not evaluated in this conversation - {cause}. {recoveryNote}.";
+            if (_config.Debug.ListenTally)
+            {
+                string missTally = scan.RivalCount > 0
+                    ? ListenTallyKeys.VolunteerNotEvaluatedTokenLost
+                    : ListenTallyKeys.VolunteerNotEvaluatedStartNotReached;
+                missMsg += $" | tally: {missTally}";
+            }
+            ModLog.Warn(missMsg);
 
             // 這一場實際走過的路線。**每次失誤都印**（不吃 `_tokenContentionReported` 的限制）——
             // 它每一場都不一樣，而同一個 token 上有誰是一整個 session 不變的事。
@@ -1204,6 +1598,7 @@ namespace VividWorld.Dialogue
         {
             try
             {
+                _askAsked = true;
                 EnsureOfferCached();
                 if (_cachedHasOffer && _cachedOffer != null)
                 {
@@ -1243,7 +1638,15 @@ namespace VividWorld.Dialogue
                         string tellerName = hero.Name?.ToString() ?? hero.StringId;
                         ApplyOfferAndRecord(_cachedOffer, _cachedEvent, hero.StringId, day, tellerName);
 
-                        ModLog.Info($"Rumor delivered to player: event {_cachedOffer.EventId} (hop {_cachedOffer.ResultingPlayerHop}, isRetell={_cachedOffer.IsRetell}) from {hero.Name}");
+                        _askAsked = true;
+                        _askTold = true;
+
+                        string askMsg = $"Rumor delivered to player: event {_cachedOffer.EventId} (hop {_cachedOffer.ResultingPlayerHop}, isRetell={_cachedOffer.IsRetell}) from {hero.Name}";
+                        if (_config.Debug.ListenTally)
+                        {
+                            askMsg += $" | tally: {ListenTallyKeys.AskTold}";
+                        }
+                        ModLog.Info(askMsg);
                         ModLog.Info($"  text shown: \"{_renderedAskTextPlain ?? _renderedAskText}\"");
                     }
                 }
@@ -1261,6 +1664,78 @@ namespace VividWorld.Dialogue
             }
         }
 
+        private bool HasAskRefusalLineCondition()
+        {
+            try
+            {
+                EnsureOfferCached();
+                if (_cachedAskDecision == null || _cachedAskDecision.Offer != null)
+                {
+                    return false;
+                }
+
+                var kind = AskRefusalLine.Choose(
+                    _cachedAskDecision,
+                    _cachedAskKnownCount,
+                    _cachedAskForgottenCount,
+                    _cachedAskOutdatedCount);
+
+                if (kind == AskRefusalLineKind.Other)
+                {
+                    return false;
+                }
+
+                string? key = AskRefusalLine.GetStringKey(kind);
+                string? fallback = AskRefusalLine.GetEnglishFallback(kind);
+                if (string.IsNullOrEmpty(key) || fallback == null)
+                {
+                    return false;
+                }
+
+                // 先渲染成玩家語言的字串再注入，跟 HasAskOfferCondition 同一個多載（規格 §9.2，已驗證）。
+                string text = new TextObject("{=" + key + "}" + fallback).ToString();
+                MBTextManager.SetTextVariable("VIVIDWORLD_ASK_REFUSAL", text, false);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Error in HasAskRefusalLineCondition", ex);
+                return false;
+            }
+        }
+
+        private void OnAskRefused()
+        {
+            try
+            {
+                var hero = Hero.OneToOneConversationHero;
+                string heroName = hero?.Name?.ToString() ?? hero?.StringId ?? "unknown";
+                string heroId = hero?.StringId ?? "unknown";
+
+                var kind = AskRefusalLine.Choose(
+                    _cachedAskDecision,
+                    _cachedAskKnownCount,
+                    _cachedAskForgottenCount,
+                    _cachedAskOutdatedCount);
+                string key = AskRefusalLine.GetStringKey(kind) ?? "(unknown)";
+                string logLine = AskRefusalLine.FormatRefusedLog(
+                    heroName, heroId, key, _cachedAskDecision,
+                    _cachedAskKnownCount, _cachedAskForgottenCount, _cachedAskOutdatedCount);
+                ModLog.Info(logLine);
+
+                _askAsked = true;
+                InvalidateOfferCache();
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Error in OnAskRefused", ex);
+            }
+            finally
+            {
+                ModLog.Flush();
+            }
+        }
+
         /// <summary>
         /// 回答「沒什麼值得說的」之後也要讓快取失效。
         /// 少了這一步，同一場對話裡對同一個人再問一次會直接命中 EnsureOfferCached 的
@@ -1271,6 +1746,16 @@ namespace VividWorld.Dialogue
         {
             try
             {
+                var hero = Hero.OneToOneConversationHero;
+                string heroName = hero?.Name?.ToString() ?? hero?.StringId ?? "unknown";
+                string heroId = hero?.StringId ?? "unknown";
+
+                bool offerRenderedEmpty = _cachedOffer != null;
+                string reason = AskRefusalLine.FormatFallbackReason(_cachedAskDecision, offerRenderedEmpty);
+                string logLine = AskRefusalLine.FormatFallbackLog(heroName, heroId, reason);
+                ModLog.Info(logLine);
+
+                _askAsked = true;
                 InvalidateOfferCache();
             }
             catch (Exception ex)
@@ -1306,6 +1791,7 @@ namespace VividWorld.Dialogue
                 return;
             }
 
+            RecordPartnerInfo(hero);
             _cachedHeroId = hero.StringId;
             _cacheValid = true;
             _cachedOffer = null;
@@ -1328,6 +1814,11 @@ namespace VividWorld.Dialogue
             var knownEventIds = _knownBy.EventsKnownBy(hero.StringId, day);
             int knownCount = knownEventIds?.Count ?? 0;
 
+            _cachedAskDecision = decision;
+            _cachedAskKnownCount = knownCount;
+            _cachedAskForgottenCount = forgottenEvents.Count;
+            _cachedAskOutdatedCount = outdatedEvents.Count;
+
             string logLine = AskDecision.FormatLog(
                 hero.Name?.ToString() ?? hero.StringId,
                 hero.StringId,
@@ -1337,6 +1828,17 @@ namespace VividWorld.Dialogue
                 profile.Traits.Generosity,
                 profile.Traits.Honor,
                 profile.Traits.Calculating);
+
+            if (_config.Debug.ListenTally)
+            {
+                // 有東西可講時 ClassifyAsk(told: false) 會落到最後的預設分支（ask.filtered）——
+                // 那是錯的標籤。講出口那一行會印 `tally: ask.told`。
+                string askTally = decision.Offer != null
+                    ? $"{ListenTallyKeys.AskTold} when spoken"
+                    : ListenTallyClassifier.ClassifyAsk(
+                        true, false, decision, knownCount, forgottenEvents.Count, outdatedEvents.Count);
+                logLine += $" | tally: {askTally}";
+            }
 
             ModLog.Info(logLine);
 
@@ -1442,6 +1944,18 @@ namespace VividWorld.Dialogue
             out List<(string EventId, double ForgetDay)> forgottenEvents,
             out List<(string EventId, double OutdatedDay)> outdatedEvents)
         {
+            return BuildCandidates(teller, day, out forgottenEvents, out outdatedEvents, stampIfNeeded: true, out _);
+        }
+
+        private List<RumorCandidate> BuildCandidates(
+            Hero teller,
+            double day,
+            out List<(string EventId, double ForgetDay)> forgottenEvents,
+            out List<(string EventId, double OutdatedDay)> outdatedEvents,
+            bool stampIfNeeded,
+            out int unstampedCount)
+        {
+            unstampedCount = 0;
             forgottenEvents = new List<(string EventId, double ForgetDay)>();
             outdatedEvents = new List<(string EventId, double OutdatedDay)>();
             var result = new List<RumorCandidate>();
@@ -1460,13 +1974,21 @@ namespace VividWorld.Dialogue
                 var evt = _store.Load(eventId, _index);
                 if (evt == null) continue;
 
-                if (_stamper != null && _stamper.EnsureStamped(evt))
+                if (stampIfNeeded)
                 {
-                    _store.Upsert(evt);
+                    if (_stamper != null && _stamper.EnsureStamped(evt))
+                    {
+                        _store.Upsert(evt);
+                    }
                 }
 
                 var tellerEntry = evt.EntryFor(teller.StringId);
                 if (tellerEntry == null) continue;
+
+                if (!stampIfNeeded && tellerEntry.Interest == null)
+                {
+                    unstampedCount++;
+                }
 
                 if (Forgetting.IsForgotten(evt, tellerEntry, day, playerHeroId, _config.Memory))
                 {
@@ -1506,6 +2028,86 @@ namespace VividWorld.Dialogue
             }
 
             return result;
+        }
+
+        public ListenPreviewResult RunPreview(bool includeHeroDetails = false)
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            SyncRumorModeWithConfig();
+            if (!_ready || _offerSelector == null || _store == null || _index == null ||
+                _knownBy == null || _traitLookup == null || _heroLookup == null)
+            {
+                return new ListenPreviewResult();
+            }
+
+            double day = CampaignTime.Now.ToDays;
+            int playerClanTier = PlayerClanTier();
+            // 不能呼叫 Advance（預演不改狀態），也不能直接讀 Count：它要等下一次 Advance 才歸零。
+            int volunteersToday = _volunteersCounter.CountOn(day);
+
+            var persons = new List<ListenPreviewPerson>();
+            int totalUnstamped = 0;
+
+            var heroes = _heroLookup.AllAlive;
+            foreach (var h in heroes)
+            {
+                if (h == null || !h.IsAlive || h == Hero.MainHero) continue;
+                if (!Eligibility.IsEligible(_traitLookup, h.StringId)) continue;
+
+                var profile = BuildSocialProfile(h);
+                var candidates = BuildCandidates(h, day, out var forgotten, out var outdated, stampIfNeeded: false, out int unstamped);
+                totalUnstamped += unstamped;
+
+                var knownIds = _knownBy.EventsKnownBy(h.StringId, day);
+                int knownCount = knownIds?.Count ?? 0;
+
+                persons.Add(new ListenPreviewPerson
+                {
+                    HeroId = h.StringId,
+                    HeroName = h.Name?.ToString() ?? h.StringId,
+                    IsLord = h.IsLord,
+                    Profile = profile,
+                    Candidates = candidates,
+                    KnownCount = knownCount,
+                    ForgottenCount = forgotten.Count,
+                    OutdatedCount = outdated.Count,
+                    UnstampedCount = unstamped
+                });
+            }
+
+            var result = ListenPreviewAggregator.Generate(
+                _offerSelector,
+                _compat,
+                playerClanTier,
+                volunteersToday,
+                day,
+                _config.Dialogue,
+                persons,
+                includeHeroDetails: includeHeroDetails);
+
+            // 判定（DecideOnVolunteer／DecideOnAsk）跑在 Generate 裡，耗時要把它算進去。
+            sw.Stop();
+            result.ElapsedMilliseconds = sw.ElapsedMilliseconds;
+            result.UnstampedEntriesCount = totalUnstamped;
+            return result;
+        }
+
+        public void RunAndLogPreview(string trigger)
+        {
+            try
+            {
+                var result = RunPreview(includeHeroDetails: false);
+                string summary = ListenPreviewLogFormatter.FormatSummary(result, includeTopNames: false, trigger: trigger);
+                ModLog.Info(summary);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Error running Listen Preview", ex);
+            }
+            finally
+            {
+                ModLog.Flush();
+            }
         }
     }
 }

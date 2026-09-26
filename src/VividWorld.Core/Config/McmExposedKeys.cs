@@ -61,7 +61,7 @@ namespace VividWorld.Core.Config
                 new McmExposedKey("dialogue.askRelationGate", McmKeyKind.Int, -100, 100),
                 new McmExposedKey("dialogue.askWillingnessThreshold", McmKeyKind.Double, -20.0, 40.0),
                 new McmExposedKey("dialogue.npcVolunteerRelationGate", McmKeyKind.Int, -100, 100),
-                new McmExposedKey("dialogue.commonerCompatMode", McmKeyKind.Dropdown, choices: new[] { "auto", "on", "off" }),
+                new McmExposedKey("dialogue.volunteerMode", McmKeyKind.Dropdown, choices: new[] { "auto", "casual", "realistic" }),
 
                 // Group 4: Consequences
                 new McmExposedKey("consequences.enabled", McmKeyKind.Bool),
@@ -116,8 +116,8 @@ namespace VividWorld.Core.Config
                     return cfg.Dialogue.AskWillingnessThreshold;
                 case "dialogue.npcVolunteerRelationGate":
                     return cfg.Dialogue.NpcVolunteerRelationGate;
-                case "dialogue.commonerCompatMode":
-                    return cfg.Dialogue.CommonerCompatMode;
+                case "dialogue.volunteerMode":
+                    return cfg.Dialogue.VolunteerMode;
                 case "consequences.enabled":
                     return cfg.Consequences.Enabled;
                 case "consequences.bystanderMultiplier":
@@ -232,8 +232,8 @@ namespace VividWorld.Core.Config
                         case "logLevel":
                             cfg.LogLevel = sVal;
                             return true;
-                        case "dialogue.commonerCompatMode":
-                            cfg.Dialogue.CommonerCompatMode = sVal;
+                        case "dialogue.volunteerMode":
+                            cfg.Dialogue.VolunteerMode = sVal;
                             return true;
                         default:
                             return false;

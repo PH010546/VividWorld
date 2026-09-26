@@ -273,6 +273,22 @@ namespace VividWorld.Core.Config
             Dialogue.ScoreDetail    = Clamp(Dialogue.ScoreDetail,    0.0, 100.0);
             Dialogue.ScoreRelevance = Clamp(Dialogue.ScoreRelevance, 0.0, 100.0);
 
+            // 傳聞模式（feature-LISTEN1/spec.md §12，LISTEN1d）
+            Dialogue.GistExtraHops = Math.Max(0, Dialogue.GistExtraHops);
+            string vMode = (Dialogue.VolunteerMode ?? string.Empty).Trim();
+            if (string.Equals(vMode, "casual", StringComparison.OrdinalIgnoreCase))
+            {
+                Dialogue.VolunteerMode = "casual";
+            }
+            else if (string.Equals(vMode, "realistic", StringComparison.OrdinalIgnoreCase))
+            {
+                Dialogue.VolunteerMode = "realistic";
+            }
+            else
+            {
+                Dialogue.VolunteerMode = "auto";
+            }
+
             // Presentation
             Presentation.ChronicleMaxEntries = Math.Max(1, Presentation.ChronicleMaxEntries);
             if (Presentation.FactOrder == null || Presentation.FactOrder.Length == 0)

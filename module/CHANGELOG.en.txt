@@ -1,5 +1,14 @@
 Vivid World changelog
 
+v0.9.2
+Passing on news heard from others no longer starts with "I was there, in fact"; only a participant or eyewitness says that now.
+New rumor mode at the top of the "Dialogue" group in MCM: Auto, Casual or Realistic. Changes take effect immediately.
+Casual: anyone who does not dislike you may bring up rumors, even early in a new game; close acquaintances tell the whole story, others only the gist. Commoners can ask too.
+Realistic: a lord must think somewhat well of you before bringing up rumors; with mods such as Not-a-Noble or Lowborn, your clan needs tier 1 before you can ask.
+Auto (default): Realistic when mods such as Not-a-Noble or Lowborn are detected, Casual otherwise. A window explains it the first time; after that, each load shows the current mode at the bottom left.
+When someone has no news for you, they now say why: they would rather not say, have heard nothing lately, cannot recall, the news is out of date, or you have surely heard it already.
+Existing campaigns can be continued as they are; no settings need to be changed. The rumor mode defaults to Auto and can be changed in MCM.
+
 v0.9.1
 The chronicle (Ctrl+L) is fixed: it used to show only one entry, and names could appear as a string of code. Every entry now displays properly.
 Names of people and places in the chronicle are now clickable and open their encyclopedia page.

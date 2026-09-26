@@ -17,10 +17,17 @@
     <string id="VividWorld_Dev_EventRoster" text="(dev) 誰還知道這件事？" />
     <string id="VividWorld_Dev_EventCatalog" text="(dev) 事件目錄" />
     <string id="VividWorld_Dev_OpinionShifts" text="(dev) 他聽來的消息改了什麼" />
+    <string id="VividWorld_Dev_WhyHearFew" text="(dev) 為什麼我聽得少？" />
+    <string id="VividWorld_Dev_PreviewTalkAll" text="(dev) 現在跟每個人談會怎樣？" />
 
     <!-- Dialogue and presentation strings -->
     <string id="VividWorld_AskNews" text="最近路上有什麼消息嗎？" />
     <string id="VividWorld_AskNothing" text="沒什麼值得一提的事。" />
+    <string id="VividWorld_AskRefuseUnwilling" text="這種事，我不方便多說。" />
+    <string id="VividWorld_AskRefuseNothingHeard" text="最近沒聽到什麼消息。" />
+    <string id="VividWorld_AskRefuseForgotten" text="好像聽誰提過些什麼……一時想不起來了。" />
+    <string id="VividWorld_AskRefuseOutdated" text="我聽說的那些，現在大概都不是那麼回事了。" />
+    <string id="VividWorld_AskRefusePlayerKnows" text="我知道的，你應該都聽說了。" />
     <string id="VividWorld_RecoveryAsk" text="你剛才似乎欲言又止？" />
     <string id="VividWorld_RetellPrefix" text="事實上，當時我也在場——" />
     <string id="VividWorld_FactSeparator" text="，" />
@@ -307,10 +314,14 @@
     <string id="VividWorld_MCM_AskRelationGateHint" text="NPC 願意回答你打聽傳聞前，所需的最低個人好感度。" />
     <string id="VividWorld_MCM_AskWillingnessThreshold" text="打聽意願判定門檻" />
     <string id="VividWorld_MCM_AskWillingnessThresholdHint" text="領主願不願意回答你的門檻。計分同時看他對你的好感度與他的個性（慷慨與榮譽加分、算計扣分），未達此值就不開口。" />
-    <string id="VividWorld_MCM_NpcVolunteerRelationGate" text="主動分享好感度門檻" />
-    <string id="VividWorld_MCM_NpcVolunteerRelationGateHint" text="NPC 在對話中主動向你透露傳聞所需的最低個人好感度。" />
-    <string id="VividWorld_MCM_CommonerCompatMode" text="平民身分相容模式" />
-    <string id="VividWorld_MCM_CommonerCompatModeHint" text="配合 NaN、Lowborn 這類「平民不應與貴族攀談」的模組。auto ＝偵測到就自動開啟；開啟期間，家族等級未達 1 時不會出現「詢問傳聞」的選項。on ＝一律開啟，off ＝一律關閉。" />
+    <string id="VividWorld_MCM_NpcVolunteerRelationGate" text="完整分享好感度門檻" />
+    <string id="VividWorld_MCM_NpcVolunteerRelationGateHint" text="NPC 主動聊起傳聞時，對你的好感度達到這個值就講完整的來龍去脈；沒達到、但達到傳聞模式的門檻（暢玩 0、寫實 10）時，只講個大概。配偶、同伴與家族成員一律講完整版。設得比傳聞模式的門檻低時，以這一格為準。" />
+    <string id="VividWorld_MCM_VolunteerMode" text="傳聞模式" />
+    <string id="VividWorld_MCM_VolunteerModeHint" text="自動：偵測到 Not-a-Noble、Lowborn 這類平民身分模組時用寫實，否則用暢玩。暢玩：不討厭你的人就可能主動聊起傳聞，平民也能開口打聽。寫實：好感度 10 以上才會主動聊；裝了平民身分模組時，家族等級要到 1 才能開口打聽。改了馬上生效，不必重新讀檔。" />
+    <string id="VividWorld_MCM_VolunteerMode_Auto" text="自動" />
+    <string id="VividWorld_MCM_VolunteerMode_Casual" text="暢玩" />
+    <string id="VividWorld_MCM_VolunteerMode_Realistic" text="寫實" />
+    <string id="VividWorld_ModeNotice_ModsSeparator" text="、" />
 
     <!-- Group 4: 後果 -->
     <string id="VividWorld_MCM_ConsequencesEnabled" text="啟用好感度後果" />
@@ -343,5 +354,17 @@
     <!-- Group 7: 存檔 -->
     <string id="VividWorld_MCM_MaxSnapshots" text="最多保留快照數" />
     <string id="VividWorld_MCM_MaxSnapshotsHint" text="每個戰役最多保留的傳聞系統快照數量。設為 0 表示不自動清除任何快照。" />
+
+    <!-- 模式通知 (LISTEN1d) -->
+    <string id="VividWorld_ModeNotice_Title" text="Vivid World" />
+    <string id="VividWorld_ModeNotice_Button" text="知道了" />
+    <string id="VividWorld_ModeNotice_PopupRealistic_Mcm" text="偵測到你安裝了 {MODS}。這類模組讓平民很難接近貴族，所以 Vivid World 已自動改用「寫實模式」：領主對你的好感度要到 10 以上，才會主動跟你聊起各地的傳聞。想讓大家都願意跟你閒聊，可以到 MCM 的 Vivid World 設定，把「傳聞模式」改成「暢玩」。" />
+    <string id="VividWorld_ModeNotice_PopupRealistic_NoMcm" text="偵測到你安裝了 {MODS}。這類模組讓平民很難接近貴族，所以 Vivid World 已自動改用「寫實模式」：領主對你的好感度要到 10 以上，才會主動跟你聊起各地的傳聞。想讓大家都願意跟你閒聊，可以打開 config.json，把 &quot;volunteerMode&quot; 改成 &quot;casual&quot;。" />
+    <string id="VividWorld_ModeNotice_PopupCasual_Mcm" text="Vivid World 已經開始運作：各地發生的事，會在領主和流浪者之間口耳相傳。跟他們說話時，不討厭你的人可能會主動提起聽來的消息；交情越好，講得越完整。想要更寫實（對你有好感的人才會聊），可以到 MCM 的 Vivid World 設定，把「傳聞模式」改成「寫實」。" />
+    <string id="VividWorld_ModeNotice_PopupCasual_NoMcm" text="Vivid World 已經開始運作：各地發生的事，會在領主和流浪者之間口耳相傳。跟他們說話時，不討厭你的人可能會主動提起聽來的消息；交情越好，講得越完整。想要更寫實（對你有好感的人才會聊），可以打開 config.json，把 &quot;volunteerMode&quot; 改成 &quot;realistic&quot;。" />
+    <string id="VividWorld_ModeNotice_MessageRealistic_Mcm" text="Vivid World：傳聞模式為寫實（偵測到 {MODS}），可在 MCM 調整。" />
+    <string id="VividWorld_ModeNotice_MessageRealistic_NoMcm" text="Vivid World：傳聞模式為寫實（偵測到 {MODS}），可在 config.json 調整。" />
+    <string id="VividWorld_ModeNotice_MessageCasual_Mcm" text="Vivid World：傳聞模式為暢玩，可在 MCM 調整。" />
+    <string id="VividWorld_ModeNotice_MessageCasual_NoMcm" text="Vivid World：傳聞模式為暢玩，可在 config.json 調整。" />
   </strings>
 </base>

@@ -16,6 +16,7 @@ namespace VividWorld.Mcm
     internal static class McmBridge
     {
         private static bool _bound;
+        public static bool IsBound => _bound;
         private static int _failures;
         private static int _bindAttempts;
         private static DateTime _nextAttemptUtc = DateTime.MinValue;
@@ -254,7 +255,7 @@ namespace VividWorld.Mcm
                 case "dialogue.askRelationGate": return s.AskRelationGate;
                 case "dialogue.askWillingnessThreshold": return (double)s.AskWillingnessThreshold;
                 case "dialogue.npcVolunteerRelationGate": return s.NpcVolunteerRelationGate;
-                case "dialogue.commonerCompatMode": return SelectedOf(s.CommonerCompatMode);
+                case "dialogue.volunteerMode": return VolunteerModeOf(s.VolunteerMode);
                 case "consequences.enabled": return s.ConsequencesEnabled;
                 case "consequences.bystanderMultiplier": return (double)s.BystanderMultiplier;
                 case "consequences.maxAbsoluteDeltaPerHeroPerDay": return (double)s.MaxAbsoluteDeltaPerHeroPerDay;
@@ -311,15 +312,19 @@ namespace VividWorld.Mcm
             PushKey("dialogue.askRelationGate", () => s.AskRelationGate = live.Dialogue.AskRelationGate);
             PushKey("dialogue.askWillingnessThreshold", () => s.AskWillingnessThreshold = (float)live.Dialogue.AskWillingnessThreshold);
             PushKey("dialogue.npcVolunteerRelationGate", () => s.NpcVolunteerRelationGate = live.Dialogue.NpcVolunteerRelationGate);
-            PushKey("dialogue.commonerCompatMode", () =>
+            PushKey("dialogue.volunteerMode", () =>
             {
-                if (s.CommonerCompatMode != null)
+                // 選單上顯示「自動／暢玩／寫實」（MCM 直接顯示選項字串本身，帳本 X-39），
+                // 存進 config.json 的是 auto／casual／realistic——兩者靠「第幾項」對應，見 VolunteerModeOf。
+                int index = McmChoiceLists.IndexOf(McmChoiceLists.VolunteerModes, live.Dialogue.VolunteerMode, 0);
+                var labels = McmChoiceLists.VolunteerModeLabels();
+                if (s.VolunteerMode != null && HasLabels(s.VolunteerMode, labels))
                 {
-                    s.CommonerCompatMode.SelectedIndex = McmChoiceLists.IndexOf(McmChoiceLists.CommonerCompatModes, live.Dialogue.CommonerCompatMode, 0);
+                    s.VolunteerMode.SelectedIndex = index;
                 }
                 else
                 {
-                    s.CommonerCompatMode = new Dropdown<string>(McmChoiceLists.CommonerCompatModes, McmChoiceLists.IndexOf(McmChoiceLists.CommonerCompatModes, live.Dialogue.CommonerCompatMode, 0));
+                    s.VolunteerMode = new Dropdown<string>(labels, index);
                 }
             });
             PushKey("consequences.enabled", () => s.ConsequencesEnabled = live.Consequences.Enabled);
@@ -347,9 +352,9 @@ namespace VividWorld.Mcm
                 s.LogLevel = new Dropdown<string>(McmChoiceLists.LogLevels, 2);
                 repaired = true;
             }
-            if (s.CommonerCompatMode == null)
+            if (s.VolunteerMode == null)
             {
-                s.CommonerCompatMode = new Dropdown<string>(McmChoiceLists.CommonerCompatModes, 0);
+                s.VolunteerMode = new Dropdown<string>(McmChoiceLists.VolunteerModeLabels(), 0);
                 repaired = true;
             }
             if (s.ChronicleHotkey == null)
@@ -375,6 +380,34 @@ namespace VividWorld.Mcm
             catch { return null; }
         }
 
+        /// <summary>傳聞模式的下拉顯示的是在地化標籤，值要照「第幾項」換回 auto／casual／realistic。</summary>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static string? VolunteerModeOf(Dropdown<string>? dropdown)
+        {
+            try
+            {
+                if (dropdown == null) return null;
+                int i = dropdown.SelectedIndex;
+                return i >= 0 && i < McmChoiceLists.VolunteerModes.Length ? McmChoiceLists.VolunteerModes[i] : null;
+            }
+            catch { return null; }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static bool HasLabels(Dropdown<string> dropdown, string[] labels)
+        {
+            try
+            {
+                if (dropdown.Count != labels.Length) return false;
+                for (int i = 0; i < labels.Length; i++)
+                {
+                    if (!string.Equals(dropdown[i], labels[i], StringComparison.Ordinal)) return false;
+                }
+                return true;
+            }
+            catch { return false; }
+        }
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static string MenuSignature(VividWorldMcmSettings s)
         {
@@ -390,7 +423,7 @@ namespace VividWorld.Mcm
                 s.AskRelationGate,
                 s.AskWillingnessThreshold.ToString("R", CultureInfo.InvariantCulture),
                 s.NpcVolunteerRelationGate,
-                SelectedOf(s.CommonerCompatMode),
+                VolunteerModeOf(s.VolunteerMode),
                 s.ConsequencesEnabled,
                 s.BystanderMultiplier.ToString("R", CultureInfo.InvariantCulture),
                 s.MaxAbsoluteDeltaPerHeroPerDay.ToString("R", CultureInfo.InvariantCulture),
@@ -419,7 +452,7 @@ namespace VividWorld.Mcm
                 live.Dialogue.AskRelationGate,
                 live.Dialogue.AskWillingnessThreshold.ToString("R", CultureInfo.InvariantCulture),
                 live.Dialogue.NpcVolunteerRelationGate,
-                live.Dialogue.CommonerCompatMode,
+                live.Dialogue.VolunteerMode,
                 live.Consequences.Enabled,
                 live.Consequences.BystanderMultiplier.ToString("R", CultureInfo.InvariantCulture),
                 live.Consequences.MaxAbsoluteDeltaPerHeroPerDay.ToString("R", CultureInfo.InvariantCulture),

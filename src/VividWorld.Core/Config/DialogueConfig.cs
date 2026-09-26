@@ -58,6 +58,19 @@ namespace VividWorld.Core.Config
         /// 預設 0＝不擋：領主開口不是玩家攀談，而且那條路徑本來就要求好感 ≥ 30。</summary>
         public int CommonerCompatVolunteerMinClanTier { get; set; } = 0;
 
+        // ── 傳聞模式（feature-LISTEN1/spec.md §12，LISTEN1d）──
+        /// <summary>"auto"（偵測到平民身分模組＝寫實，否則暢玩）、"casual"、"realistic"。</summary>
+        public string VolunteerMode { get; set; } = "auto";
+
+        /// <summary>暢玩模式：好感度高於或等於此值時，NPC 主動講「大概」（降手數）。預設 0。</summary>
+        public int CasualChatRelationGate { get; set; } = 0;
+
+        /// <summary>寫實模式：好感度高於或等於此值時，NPC 主動講「大概」（降手數）。預設 10。</summary>
+        public int RealisticChatRelationGate { get; set; } = 10;
+
+        /// <summary>「大概」比完整版多降幾手（上限為事件最大手數）。預設 2。</summary>
+        public int GistExtraHops { get; set; } = 2;
+
         [JsonExtensionData]
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
     }

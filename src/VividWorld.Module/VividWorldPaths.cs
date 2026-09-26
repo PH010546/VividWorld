@@ -14,6 +14,7 @@ namespace VividWorld
         internal static string LogFile => Path.Combine(ConfigDirectory, "log.txt");
 
         internal static string ConfigFile         => Path.Combine(ConfigDirectory, "config.json");
+        internal static string ModeNoticeFile     => Path.Combine(ConfigDirectory, "mode_notice.json");
         internal static string ReadmeFile         => Path.Combine(ConfigDirectory, "_README.txt");
         internal static string CampaignsDirectory => Path.Combine(ConfigDirectory, "campaigns");
 
@@ -31,5 +32,8 @@ namespace VividWorld
 
         internal static string PlayerHeardFile(string campaignId) =>
             Path.Combine(CampaignDirectory(campaignId), "player_heard.json");
+
+        internal static string ListenTallyFile(string campaignId) =>
+            Path.Combine(CampaignDirectory(campaignId), "listen_tally.json");
     }
 }

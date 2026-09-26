@@ -12,6 +12,8 @@ namespace VividWorld.Campaign
 
         internal int KingdomScanCountToday { get; private set; }
 
+        internal IEnumerable<Hero> AllAlive => (IEnumerable<Hero>?)Hero.AllAliveHeroes ?? _byId.Values;
+
         internal Hero? Get(string stringId)
         {
             if (string.IsNullOrEmpty(stringId)) return null;
