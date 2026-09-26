@@ -583,7 +583,7 @@ namespace VividWorld.Debug
                 string? compatInfo = _dialogs?.CompatStatusLine;
                 string? recoveryInfo = _dialogs?.VolunteerRecoveryStatusLine;
                 var route = _dialogs?.LastConversationRoute;
-                string report = DevReport.FormatWorldStatus(_scheduler, _eventStore, _config, _rollbackCount, _rollbackMaxDay, _launchDay, volToday, maxVol, lastVol, compatInfo, route, recoveryInfo, _realEvents, _eventStore.Stamper, _sessionState, _campaignId);
+                string report = DevReport.FormatWorldStatus(_scheduler, _eventStore, _config, _rollbackCount, _rollbackMaxDay, _launchDay, volToday, maxVol, lastVol, compatInfo, route, recoveryInfo, _realEvents, _eventStore.Stamper, _sessionState, _campaignId, _dialogs?.PlayerHeardLog);
                 InformationManager.DisplayMessage(new InformationMessage(report));
                 ModLog.Info($"[DevDialogue]\n{report}");
 

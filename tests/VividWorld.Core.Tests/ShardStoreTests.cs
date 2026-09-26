@@ -293,5 +293,124 @@ namespace VividWorld.Core.Tests
                 }
             }
         }
+
+        #region MF3c ShardCache Tests
+
+        [Fact]
+        public void ShardCache_WhenKIsTwo_StaysAfterFirstFlush_AndIsReleasedAfterSecondFlush()
+        {
+            var writer = new FailingFileWriter();
+            var store = new EventShardStore("events", 100, writer, idleFlushesBeforeRelease: 2);
+
+            store.Upsert(CreateSampleEvent("e_day50", 50));
+            Assert.Equal(1, store.CachedShardCount);
+            Assert.Equal(1, store.CachedEventCount);
+
+            // 第一次沖寫：目前(1) - 最後碰到(0) = 1 < 2，仍在快取
+            store.Flush();
+            Assert.Equal(1, store.CachedShardCount);
+            Assert.Equal(1, store.CachedEventCount);
+            Assert.Equal(0, store.ReleasedTotal);
+            Assert.Empty(store.LastReleased);
+
+            // 第二次沖寫：目前(2) - 最後碰到(0) = 2 >= 2，放掉
+            store.Flush();
+            Assert.Equal(0, store.CachedShardCount);
+            Assert.Equal(0, store.CachedEventCount);
+            Assert.Equal(1, store.ReleasedTotal);
+            Assert.Equal(new[] { "d0000-0099" }, store.LastReleased);
+
+            // 第三次沖寫：無分片可放
+            store.Flush();
+            Assert.Equal(0, store.CachedShardCount);
+            Assert.Equal(1, store.ReleasedTotal);
+            Assert.Empty(store.LastReleased);
+        }
+
+        [Fact]
+        public void ShardCache_DirtyShard_IsNotReleasedEvenWhenIdle()
+        {
+            var writer = new FailingFileWriter();
+            var store = new EventShardStore("events", 100, writer, idleFlushesBeforeRelease: 2);
+
+            store.Upsert(CreateSampleEvent("e_day50", 50));
+
+            // 第一次 Flush 前注入失敗：寫入分片失敗，分片保持為 dirty
+            writer.FailOn("d0000-0099", FileOp.WriteAllText, 1);
+            store.Flush(); // flushCount = 1
+
+            // 第二次 Flush 前再次注入失敗
+            writer.FailOn("d0000-0099", FileOp.WriteAllText, 1);
+            store.Flush(); // flushCount = 2, 差值 >= 2 但分片為髒，不放
+
+            Assert.Equal(1, store.CachedShardCount);
+            Assert.Equal(0, store.ReleasedTotal);
+            Assert.Empty(store.LastReleased);
+        }
+
+        [Fact]
+        public void ShardCache_WhenKIsZero_NeverReleases()
+        {
+            var writer = new FailingFileWriter();
+            var store = new EventShardStore("events", 100, writer, idleFlushesBeforeRelease: 0);
+
+            store.Upsert(CreateSampleEvent("e_day50", 50));
+
+            for (int i = 0; i < 10; i++)
+            {
+                store.Flush();
+            }
+
+            Assert.Equal(1, store.CachedShardCount);
+            Assert.Equal(1, store.CachedEventCount);
+            Assert.Equal(0, store.ReleasedTotal);
+            Assert.Empty(store.LastReleased);
+        }
+
+        [Fact]
+        public void ShardCache_AfterRelease_LoadReadsFromDiskWithIdenticalContent()
+        {
+            var writer = new FailingFileWriter();
+            var store = new EventShardStore("events", 100, writer, idleFlushesBeforeRelease: 2);
+
+            store.Upsert(CreateSampleEvent("e_day50", 50));
+            store.Flush();
+            store.Flush();
+
+            Assert.Equal(0, store.CachedShardCount);
+
+            var loaded = store.Load("e_day50", null);
+            Assert.NotNull(loaded);
+            Assert.Equal("e_day50", loaded!.EventId);
+            Assert.Equal(50, loaded.Day);
+            Assert.Equal(1, store.CachedShardCount);
+        }
+
+        [Fact]
+        public void ShardCache_UpsertIntoReleasedShard_PreservesExistingEventsOnDisk()
+        {
+            var writer = new FailingFileWriter();
+            var store = new EventShardStore("events", 100, writer, idleFlushesBeforeRelease: 2);
+
+            store.Upsert(CreateSampleEvent("e_day50", 50));
+            store.Flush();
+            store.Flush();
+
+            Assert.Equal(0, store.CachedShardCount);
+
+            // Upsert 到已被放掉的分片中
+            store.Upsert(CreateSampleEvent("e_day60", 60));
+            store.Flush();
+
+            var loaded1 = store.Load("e_day50", null);
+            var loaded2 = store.Load("e_day60", null);
+
+            Assert.NotNull(loaded1);
+            Assert.NotNull(loaded2);
+            Assert.Equal("e_day50", loaded1!.EventId);
+            Assert.Equal("e_day60", loaded2!.EventId);
+        }
+
+        #endregion
     }
 }

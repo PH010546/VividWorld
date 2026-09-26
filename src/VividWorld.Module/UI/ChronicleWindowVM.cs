@@ -134,7 +134,13 @@ namespace VividWorld.UI
                 _dayText = "Day " + entry.Day.ToString("0.0", CultureInfo.InvariantCulture);
             }
 
-            _bodyText = FallbackTextRenderer.Render(entry.Body, cfg);
+            bool linksEnabled = cfg?.EncyclopediaLinksEnabled ?? true;
+            var renderResult = FallbackTextRenderer.RenderBoth(entry.Body, cfg);
+            _bodyText = linksEnabled ? renderResult.DisplayText : renderResult.PlainText;
+            if (!linksEnabled && _bodyText.IndexOf("<a ", StringComparison.Ordinal) >= 0)
+            {
+                ModLog.Warn($"Chronicle: body of {entry.EventId} still carries link markup while encyclopedia links are disabled.");
+            }
 
             if (!string.IsNullOrEmpty(entry.SourceHeroId))
             {
@@ -235,6 +241,11 @@ namespace VividWorld.UI
                     OnPropertyChangedWithValue(value, nameof(HopText));
                 }
             }
+        }
+
+        public void ExecuteLink(string link)
+        {
+            ChronicleWindowManager.OpenLink(link);
         }
     }
 }

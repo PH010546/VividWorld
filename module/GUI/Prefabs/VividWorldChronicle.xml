@@ -36,32 +36,27 @@
                       <Children>
                         <ListPanel Id="ChronicleList" DataSource="{Entries}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Top" StackLayout.LayoutMethod="VerticalTopToBottom">
                           <ItemTemplate>
-                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginBottom="16">
+                            <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" MarginBottom="16" Sprite="BlankWhiteSquare_9" Color="#FFFFFF0A">
                               <Children>
-                                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#FFFFFFFF" AlphaFactor="0.04" />
-                                <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="16" MarginRight="16" MarginTop="12" MarginBottom="12" StackLayout.LayoutMethod="VerticalTopToBottom">
+                                <!-- Header: Headline and Date -->
+                                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="16" MarginRight="16" MarginTop="12">
                                   <Children>
-                                    <!-- Header: Headline and Date -->
-                                    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren">
-                                      <Children>
-                                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" MarginRight="180" Brush="Popup.Description.Text" Brush.FontSize="19" Brush.FontColor="#D9C08CFF" Brush.TextHorizontalAlignment="Left" Text="@HeadlineText" />
-                                        <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="160" HorizontalAlignment="Right" VerticalAlignment="Center" Brush="Popup.Description.Text" Brush.FontSize="14" Brush.FontColor="#8E8A80FF" Brush.TextHorizontalAlignment="Right" Text="@DayText" />
-                                      </Children>
-                                    </Widget>
-                                    <!-- Body: Rumor text -->
-                                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="8" MarginBottom="8" Brush="Popup.Description.Text" Brush.FontSize="15" Brush.TextHorizontalAlignment="Left" Text="@BodyText" />
-                                    <!-- Provenance: Hops and Source -->
-                                    <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="HorizontalLeftToRight">
-                                      <Children>
-                                        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Popup.Description.Text" Brush.FontSize="13" Brush.FontColor="#8E8A80FF" Brush.TextHorizontalAlignment="Left" Text="@HopText" />
-                                        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginLeft="8" MarginRight="8" Brush="Popup.Description.Text" Brush.FontSize="13" Brush.FontColor="#8E8A80FF" Brush.TextHorizontalAlignment="Left" Text="·" />
-                                        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Popup.Description.Text" Brush.FontSize="13" Brush.FontColor="#8E8A80FF" Brush.TextHorizontalAlignment="Left" Text="@SourceText" />
-                                      </Children>
-                                    </ListPanel>
+                                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" MarginRight="180" Brush="Popup.Description.Text" Brush.FontSize="19" Brush.FontColor="#D9C08CFF" Brush.TextHorizontalAlignment="Left" Text="@HeadlineText" />
+                                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="160" HorizontalAlignment="Right" VerticalAlignment="Center" Brush="Popup.Description.Text" Brush.FontSize="14" Brush.FontColor="#8E8A80FF" Brush.TextHorizontalAlignment="Right" Text="@DayText" />
+                                  </Children>
+                                </Widget>
+                                <!-- Body: Rumor text -->
+                                <RichTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="16" MarginRight="16" MarginTop="8" MarginBottom="8" Brush="VividWorld.Chronicle.Body.Text" Brush.FontSize="15" Brush.TextHorizontalAlignment="Left" Text="@BodyText" Command.LinkClick="ExecuteLink" Command.LinkAlternateClick="ExecuteLink" />
+                                <!-- Provenance: Hops and Source -->
+                                <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="16" MarginRight="16" MarginBottom="12" StackLayout.LayoutMethod="HorizontalLeftToRight">
+                                  <Children>
+                                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Popup.Description.Text" Brush.FontSize="13" Brush.FontColor="#8E8A80FF" Brush.TextHorizontalAlignment="Left" Text="@HopText" />
+                                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginLeft="8" MarginRight="8" Brush="Popup.Description.Text" Brush.FontSize="13" Brush.FontColor="#8E8A80FF" Brush.TextHorizontalAlignment="Left" Text="·" />
+                                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Popup.Description.Text" Brush.FontSize="13" Brush.FontColor="#8E8A80FF" Brush.TextHorizontalAlignment="Left" Text="@SourceText" />
                                   </Children>
                                 </ListPanel>
                               </Children>
-                            </Widget>
+                            </ListPanel>
                           </ItemTemplate>
                         </ListPanel>
                       </Children>

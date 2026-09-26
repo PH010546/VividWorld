@@ -22,6 +22,8 @@ namespace VividWorld.Core.Dialogue
             _playerHeroId = playerHeroId ?? string.Empty;
         }
 
+        public RumorEngine Engine => _engine;
+
         /// <summary>主動講述三個閘的**唯一**計算處（規格 §5.1、§7 行 1291-1293）。
         /// `WillVolunteer` 只回答「行不行」，`DecideOnVolunteer` 還要回答「是哪一個閘擋的」——
         /// 兩者都只准呼叫這裡。閘的述詞寫兩份，正是 M6a-fix2 那個 C-1 的成因。</summary>

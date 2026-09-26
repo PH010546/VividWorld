@@ -25,6 +25,10 @@ namespace VividWorld.Api
 
         internal static WorldEventStore? Store { get; set; }
 
+        /// <summary>
+        /// 查詢指定事件的完整 JSON。
+        /// 查無此事件、秘密未走漏、或存檔時被清掉的事件查到 null。
+        /// </summary>
         public static string? GetEventJson(string eventId)
         {
             if (Store == null || string.IsNullOrEmpty(eventId)) return null;

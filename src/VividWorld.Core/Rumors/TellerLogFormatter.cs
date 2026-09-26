@@ -261,5 +261,13 @@ namespace VividWorld.Core.Rumors
                 excludedStr,
                 inactiveCount);
         }
+
+        public static string FormatRebuilt(int n, int k)
+        {
+            return string.Format(CultureInfo.InvariantCulture,
+                "Teller ring: rebuilt with {0} teller(s) from the index, {1} knower(s) left out because they forgot everything they knew",
+                n, k);
+        }
     }
 }
+

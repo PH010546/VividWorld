@@ -25,11 +25,6 @@ namespace VividWorld.Presentation
                 ModLog.Warn);
         }
 
-        internal static string Render(ComposedRumor r, PresentationConfig? cfg)
-        {
-            return RenderBoth(r, cfg).DisplayText;
-        }
-
         /// <summary>
         /// 把 <c>TextId</c> 查成**還帶著 <c>{VAR}</c> 佔位符**的樣板文字（帳本 D-49、L-26）。
         ///

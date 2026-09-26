@@ -1,0 +1,9 @@
+<Brushes>
+  <!-- 紀事本文。外觀照 Popup.Description.Text，但要繼承 Info.Text 才有 Link.Hero／Link.Settlement 等連結配色
+       （RichTextWidget 找不到 <a style="…"> 同名的樣式就用 Default，帳本 D-80）。 -->
+  <Brush Name="VividWorld.Chronicle.Body.Text" BaseBrush="Info.Text" Font="FiraSansExtraCondensed-Regular" TextHorizontalAlignment="Left">
+    <Styles>
+      <Style Name="Default" FontColor="#F1E9DAFF" TextGlowColor="#000000FF" TextOutlineColor="#000000FF" TextOutlineAmount="0" TextGlowRadius="0" TextBlur="0" FontSize="20" />
+    </Styles>
+  </Brush>
+</Brushes>

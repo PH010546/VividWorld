@@ -12,6 +12,7 @@ using VividWorld.Core.Dialogue;
 using VividWorld.Core.Events;
 using VividWorld.Core.Grudges;
 using VividWorld.Core.Persistence;
+using VividWorld.Core.Presentation;
 using VividWorld.Core.Rumors;
 using VividWorld.Core.Util;
 using VividWorld.Debug;
@@ -31,6 +32,7 @@ namespace VividWorld.Campaign
         internal RumorEngine? RumorEngine => _engine;
         internal WorldEventStore? WorldEventStore => _eventStore;
         internal HeroLookup? HeroLookup => _heroLookup;
+        internal PlayerHeardLogStore? PlayerHeardLog { get; private set; }
         private int _tickCursor;
         private string _tickCursorHeroId = string.Empty;
         private string _pendingIngestJson = string.Empty;
@@ -169,8 +171,9 @@ namespace VividWorld.Campaign
 
                 string eventsDir = VividWorldPaths.EventsDirectory(_campaignId);
                 var writer = new SystemFileWriter();
-                _store = new EventShardStore(eventsDir, _config.Persistence.ShardDays, writer);
+                _store = new EventShardStore(eventsDir, _config.Persistence.ShardDays, writer, _config.Persistence.ShardCacheIdleFlushes);
                 _index = _store.LoadIndex();
+                ModLog.Info($"Event index: {_store.LastLoadNote}, {_index.Count} entries");
 
                 _launchDay = CampaignTime.Now.ToDays;
                 var (rollbackCount, rollbackMaxDay) = StoreTimeline.EventsAfter(_index, _launchDay);
@@ -217,13 +220,31 @@ namespace VividWorld.Campaign
                 stamper.SetStore(_eventStore);
                 _scheduler = new RumorPropagationScheduler(_config, _eventStore, _engine, _knownBy, _heroLookup, _traitLookup, stamper);
                 stamper.SetEngineAndScheduler(_engine, _scheduler);
-                _scheduler.RebuildFrom(_index);
+                _scheduler.RebuildFrom(_index, _launchDay);
+                ModLog.Info(TellerLogFormatter.FormatRebuilt(_scheduler.TellerRingCount, _scheduler.RebuildSkippedForgotten));
                 // 游標要在講述者輪重建**之後**才還原：TellerRing.Cursor 在 Count == 0 時一律歸零，
                 // 而且要對回「同一個人」而不是同一個位置（§7.3.1）
                 RestoreTickCursor();
 
                 _eventStore.SetScheduler(_scheduler);
                 _eventStore.MarkIndexLoaded();
+
+                string heardPath = VividWorldPaths.PlayerHeardFile(_campaignId);
+                PlayerHeardLog = new PlayerHeardLogStore(heardPath, writer);
+                var heardLoad = PlayerHeardLog.Load();
+                if (heardLoad.Status == PlayerHeardLoadStatus.FileUnreadable && !string.IsNullOrEmpty(heardLoad.ExceptionMessage))
+                {
+                    ModLog.Warn($"Player heard-log unreadable: {heardLoad.ExceptionMessage} - " + (heardLoad.SetAsidePath != null
+                        ? $"moved it to {System.IO.Path.GetFileName(heardLoad.SetAsidePath)} and started empty"
+                        : "could not move it aside, the next flush will overwrite it"));
+                }
+                var heardBackfill = PlayerHeardLog.Backfill(
+                    _index,
+                    playerHeroId,
+                    id => _store.Load(id, _index),
+                    (evt, entry) => PlayerKnownFacts.Of(evt, entry, _engine),
+                    _launchDay);
+                ModLog.Info(PlayerHeardLogFormatter.FormatLoad(heardLoad.Count, heardLoad.How, heardBackfill));
 
                 string markerFile = VividWorldPaths.CampaignMarkerFile(_campaignId);
                 if (!writer.Exists(markerFile))
@@ -274,7 +295,7 @@ namespace VividWorld.Campaign
                 if (_engine != null && _store != null && _index != null && _knownBy != null && _traitLookup != null && _heroLookup != null)
                 {
                     var offerSelector = new RumorOfferSelector(_config, _engine, playerHeroId);
-                    _dialogs.Initialize(offerSelector, _store, _index, _knownBy, _traitLookup, _heroLookup, _campaignId, stamper);
+                    _dialogs.Initialize(offerSelector, _store, _index, _knownBy, _traitLookup, _heroLookup, _campaignId, stamper, PlayerHeardLog);
                     _dialogs.RegisterDialogues(starter);
                 }
 
@@ -440,6 +461,85 @@ namespace VividWorld.Campaign
             string token = _pendingSnapshotToken;
             _pendingSnapshotToken = string.Empty;
 
+            if (_config.Persistence.PurgeForgottenEvents)
+            {
+                try
+                {
+                    using (DevMetrics.Measure("purge"))
+                    {
+                        bool heardFlushed = PlayerHeardLog?.Flush() ?? true;
+                        if (PlayerHeardLog != null && PlayerHeardLog.IsDirty)
+                        {
+                            ModLog.Warn(EventPurgeLogFormatter.FormatSkippedHeardLogDirty(saveName));
+                        }
+                        else if (_store != null && _index != null)
+                        {
+                            double today = CampaignTime.Now.ToDays;
+                            string playerHeroId = _eventStore?.PlayerHeroId ?? Hero.MainHero?.StringId ?? "player";
+                            double? situationMinAgeDays = null;
+                            var catalog = SituationCatalogStore.Catalog;
+                            if (!string.IsNullOrEmpty(SituationCatalogStore.ActiveFilePath) && catalog != null && catalog.Situations.Count > 0)
+                            {
+                                situationMinAgeDays = catalog.MaxCooldownDays();
+                            }
+
+                            var plan = EventPurgePlanner.Plan(
+                                _index,
+                                today,
+                                playerHeroId,
+                                _config.Memory,
+                                situationMinAgeDays,
+                                id => PlayerHeardLog?.Contains(id) ?? false);
+
+                            if (plan.PlayerNotLoggedEventIds.Count > 0)
+                            {
+                                ModLog.Warn(EventPurgeLogFormatter.FormatPlayerNotLoggedWarn(
+                                    plan.PlayerNotLoggedEventIds.Count,
+                                    plan.PlayerNotLoggedEventIds));
+                            }
+
+                            var sw = System.Diagnostics.Stopwatch.StartNew();
+                            var (removedCount, touchedShards) = _store.Remove(plan.PurgeEventIds);
+                            sw.Stop();
+
+                            foreach (var id in plan.PurgeEventIds)
+                            {
+                                _knownBy?.Remove(id);
+                                _scheduler?.ForgetEvent(id);
+                            }
+
+                            ModLog.Info(EventPurgeLogFormatter.FormatSummary(
+                                saveName, today, plan, situationMinAgeDays, touchedShards, sw.ElapsedMilliseconds));
+
+                            int detailCount = 0;
+                            foreach (var purged in plan.PurgedEvents)
+                            {
+                                if (detailCount < 30)
+                                {
+                                    ModLog.Info(EventPurgeLogFormatter.FormatDetail(
+                                        purged.EventId, purged.Type, purged.Day, purged.Why));
+                                    detailCount++;
+                                }
+                                else
+                                {
+                                    int more = plan.PurgedEvents.Count - 30;
+                                    ModLog.Info(string.Format(CultureInfo.InvariantCulture, "  ... and {0} more", more));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Error("Error during OnSaveOver purge", ex);
+                }
+            }
+            else
+            {
+                ModLog.Info(EventPurgeLogFormatter.FormatSkippedDisabled(saveName));
+            }
+
             try
             {
                 Flush();
@@ -528,6 +628,24 @@ namespace VividWorld.Campaign
             try
             {
                 _eventStore?.Flush();
+                if (_store != null && _store.LastReleased.Count > 0)
+                {
+                    ModLog.Info(ShardCacheLogFormatter.FormatReleased(
+                        _store.LastReleased.Count,
+                        _config.Persistence.ShardCacheIdleFlushes,
+                        _store.LastReleased,
+                        _store.CachedShardCount,
+                        _store.CachedEventCount));
+                }
+
+                if (PlayerHeardLog != null)
+                {
+                    bool ok = PlayerHeardLog.Flush();
+                    if (!ok)
+                    {
+                        ModLog.Warn(PlayerHeardLogFormatter.FormatWriteFailed());
+                    }
+                }
             }
             catch (Exception ex)
             {

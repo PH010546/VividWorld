@@ -323,7 +323,8 @@ namespace VividWorld.Debug
             RealEventSourceBehavior? realEvents = null,
             MemoryStamper? stamper = null,
             SnapshotSessionState? sessionState = null,
-            string? campaignId = null)
+            string? campaignId = null,
+            PlayerHeardLogStore? playerHeardLog = null)
         {
             double daysInYear = CampaignTime.DaysInYear;
             double scale = daysInYear > 0 ? (daysInYear / CalendarScaling.NativeDaysInYear) : 1.0;
@@ -621,6 +622,53 @@ namespace VividWorld.Debug
                 config.Persistence.MaxSnapshots,
                 sessionState?.LastTake,
                 sessionState?.LastRestore));
+
+            if (playerHeardLog != null)
+            {
+                int n = playerHeardLog.Count;
+                int v = playerHeardLog.VisibleEntries(currentDay).Count();
+                int h = playerHeardLog.HiddenFutureCount(currentDay);
+                if (h > 0)
+                {
+                    sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                        "- Player heard-log: {0} on file, {1} visible today, {2} hidden from a future timeline",
+                        n, v, h));
+                }
+                else
+                {
+                    sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                        "- Player heard-log: {0} on file, {1} visible today",
+                        n, v));
+                }
+            }
+
+            if (store?.Index != null)
+            {
+                double today = CampaignTime.Now.ToDays;
+                string playerHeroId = store.PlayerHeroId;
+                double? situationMinAgeDays = null;
+                var catalog = SituationCatalogStore.Catalog;
+                if (!string.IsNullOrEmpty(SituationCatalogStore.ActiveFilePath) && catalog != null && catalog.Situations.Count > 0)
+                {
+                    situationMinAgeDays = catalog.MaxCooldownDays();
+                }
+
+                var purgePlan = EventPurgePlanner.Plan(
+                    store.Index,
+                    today,
+                    playerHeroId,
+                    config.Memory,
+                    situationMinAgeDays,
+                    id => playerHeardLog?.Contains(id) ?? false);
+
+                sb.AppendLine(EventPurgeLogFormatter.FormatWorldStatusPreview(purgePlan, situationMinAgeDays));
+            }
+
+            int shardCacheM = store?.ShardStore?.CachedShardCount ?? 0;
+            int shardCacheE = store?.ShardStore?.CachedEventCount ?? 0;
+            int shardCacheR = store?.ShardStore?.ReleasedTotal ?? 0;
+            int shardCacheK = config?.Persistence?.ShardCacheIdleFlushes ?? 0;
+            sb.AppendLine(ShardCacheLogFormatter.FormatWorldStatus(shardCacheM, shardCacheE, shardCacheR, shardCacheK));
 
             // 上一場對話真正走過的路線（帳本 D-50／L-25／X-19）。主動講那條掛在 `lord_start`，
             // 而 `lord_start` 不是每一場都會走到——路線裡沒有它，就是被別人從 `start` 帶走了。

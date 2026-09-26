@@ -82,6 +82,19 @@ namespace VividWorld.Core.Config
             Persistence.MaxFactsPerEvent = Math.Max(1, Persistence.MaxFactsPerEvent);
             Persistence.MaxPendingIngestChars = Math.Max(0, Math.Min(31000, Persistence.MaxPendingIngestChars));
 
+            int origIdleFlushes = Persistence.ShardCacheIdleFlushes;
+            Persistence.ShardCacheIdleFlushes = Math.Max(0, Math.Min(1000, origIdleFlushes));
+            if (Persistence.ShardCacheIdleFlushes != origIdleFlushes && notices != null)
+            {
+                notices.Add(new ClampNotice
+                {
+                    Key = "persistence.shardCacheIdleFlushes",
+                    Requested = origIdleFlushes,
+                    Applied = Persistence.ShardCacheIdleFlushes,
+                    AllowedRange = "0..1000"
+                });
+            }
+
             // Retention
             if (string.Equals(Retention.Policy, "Probabilistic", StringComparison.OrdinalIgnoreCase))
             {

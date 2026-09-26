@@ -139,5 +139,22 @@ namespace VividWorld.Core.Persistence
                 list.Add(eventId);
             }
         }
+
+        public void Remove(string eventId)
+        {
+            if (string.IsNullOrEmpty(eventId)) return;
+
+            _eventDay.Remove(eventId);
+
+            foreach (var list in _eventsKnownBy.Values)
+            {
+                list.Remove(eventId);
+            }
+
+            foreach (var list in _eventsAbout.Values)
+            {
+                list.Remove(eventId);
+            }
+        }
     }
 }

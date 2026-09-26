@@ -5,6 +5,7 @@ namespace VividWorld.Core.Presentation
         public string EventId = string.Empty;
         public string EventType = string.Empty;
         public double Day;
+        public double LearnedDay;
         public int PlayerHop;
         public string? SourceHeroId;
         public string? LinkedEventId;

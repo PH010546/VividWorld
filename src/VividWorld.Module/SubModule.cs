@@ -114,6 +114,15 @@ namespace VividWorld
                     return;
                 }
 
+                if (ChronicleWindowManager.ReturnTracker.State != EncyclopediaReturnState.Idle)
+                {
+                    TickEncyclopediaReturnTracker();
+                    if (ChronicleWindowManager.IsOpen)
+                    {
+                        return;
+                    }
+                }
+
                 if (_config == null || _activeBehavior == null) return;
                 if (TaleWorlds.CampaignSystem.Campaign.Current == null) return;   // VividWorld.Campaign 命名空間會蓋掉短名字
                 if (SnapshotManagerScreen.IsOpen) return;
@@ -145,27 +154,90 @@ namespace VividWorld
             }
         }
 
+        private static void TickEncyclopediaReturnTracker()
+        {
+            if (TaleWorlds.CampaignSystem.Campaign.Current == null)
+            {
+                ChronicleWindowManager.ReturnTracker.Cancel("campaign ended");
+                ModLog.Info(ChronicleLogFormatter.FormatNotReopening("campaign ended"));
+                return;
+            }
+
+            if (Mission.Current != null)
+            {
+                ChronicleWindowManager.ReturnTracker.Cancel("a mission started");
+                ModLog.Info(ChronicleLogFormatter.FormatNotReopening("a mission started"));
+                return;
+            }
+
+            if (TaleWorlds.CampaignSystem.Campaign.Current.ConversationManager?.IsConversationInProgress == true)
+            {
+                ChronicleWindowManager.ReturnTracker.Cancel("a conversation started");
+                ModLog.Info(ChronicleLogFormatter.FormatNotReopening("a conversation started"));
+                return;
+            }
+
+            bool chronicleDown = _chronicleKey.IsPressed();
+            if (chronicleDown && !_chronicleKeyWasDown)
+            {
+                _chronicleKeyWasDown = chronicleDown;
+                ChronicleWindowManager.ReturnTracker.Cancel("the player reopened it");
+                ModLog.Info(ChronicleLogFormatter.FormatNotReopening("the player reopened it"));
+                OpenChronicleWindow();
+                return;
+            }
+
+            bool? isEncyclopediaOpen = null;
+            try
+            {
+                var mapScreen = SandBox.View.Map.MapScreen.Instance;
+                var encyclopediaView = mapScreen?.EncyclopediaScreenManager;
+                isEncyclopediaOpen = encyclopediaView?.IsEncyclopediaOpen;
+            }
+            catch (Exception ex)
+            {
+                string reason = "error: " + ex.Message;
+                ChronicleWindowManager.ReturnTracker.Cancel(reason);
+                ModLog.Info(ChronicleLogFormatter.FormatNotReopening(reason));
+                return;
+            }
+
+            var action = ChronicleWindowManager.ReturnTracker.Step(isEncyclopediaOpen, out var stepReason);
+            if (ChronicleWindowManager.ReturnTracker.JustOpened)
+            {
+                ModLog.Info(ChronicleLogFormatter.FormatEncyclopediaOpened(ChronicleWindowManager.ReturnTracker.OpenedAfterFrames));
+                ModLog.Flush();
+            }
+
+            if (action == EncyclopediaReturnAction.Reopen)
+            {
+                ModLog.Info(ChronicleLogFormatter.FormatEncyclopediaClosedReopening());
+                _chronicleKeyWasDown = _chronicleKey.IsPressed();
+                OpenChronicleWindow();
+            }
+            else if (action == EncyclopediaReturnAction.GaveUp)
+            {
+                ModLog.Info(ChronicleLogFormatter.FormatNotReopening(stepReason ?? ChronicleWindowManager.ReturnTracker.LastReason ?? "unknown"));
+                ModLog.Flush();
+            }
+        }
+
         private static void OpenChronicleWindow()
         {
             try
             {
                 if (_config == null || _activeBehavior == null) return;
-                var store = _activeBehavior.WorldEventStore;
-                var engine = _activeBehavior.RumorEngine;
-                var knownBy = _activeBehavior.KnownByIndex;
+                var heardLog = _activeBehavior.PlayerHeardLog;
                 var heroLookup = _activeBehavior.HeroLookup;
-                if (store == null || engine == null || knownBy == null) return;
+                if (heardLog == null) return;
 
                 string playerId = Hero.MainHero?.StringId ?? "player";
                 double currentDay = TaleWorlds.CampaignSystem.Campaign.Current != null ? CampaignTime.Now.ToDays : 0.0;
                 int maxEntries = _config.Presentation?.ChronicleMaxEntries ?? 50;
 
                 var provider = new ChronicleProvider(
-                    engine,
-                    knownBy,
-                    store.Load,
+                    heardLog,
                     EventCatalogStore.TemplateByType,
-                    playerId,
                     _config.Presentation ?? new PresentationConfig());
 
                 var entries = provider.ForPlayer(maxEntries, currentDay, out var stats);
@@ -175,7 +247,7 @@ namespace VividWorld
                 ModLog.Flush();
 
                 var vm = new ChronicleWindowVM(entries, _config.Presentation, heroLookup);
-                ChronicleWindowManager.Open(vm);
+                ChronicleWindowManager.Open(vm, _config.Presentation);
             }
             catch (Exception ex)
             {
@@ -200,6 +272,7 @@ namespace VividWorld
         {
             try
             {
+                ChronicleWindowManager.ReturnTracker.Cancel("campaign ended");
                 ChronicleWindowManager.Close();
                 _activeBehavior?.Flush();
                 _activeBehavior = null;

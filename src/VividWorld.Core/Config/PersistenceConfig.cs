@@ -24,6 +24,16 @@ namespace VividWorld.Core.Config
         /// </summary>
         public bool HardlinkSnapshots { get; set; } = true;
 
+        /// <summary>
+        /// MF3b：存檔時刪除沒有 NPC 記得的舊事件。預設 true。
+        /// </summary>
+        public bool PurgeForgottenEvents { get; set; } = true;
+
+        /// <summary>
+        /// MF3c：幾次沖寫沒被碰過的分片就從記憶體放掉。0 ＝ 永不放。預設 8。
+        /// </summary>
+        public int ShardCacheIdleFlushes { get; set; } = 8;
+
         [JsonExtensionData]
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
     }

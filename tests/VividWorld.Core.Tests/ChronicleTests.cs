@@ -22,17 +22,37 @@ namespace VividWorld.Core.Tests
     {
         private const string PlayerHeroId = "hero_player";
 
-        private static (RumorEngine engine, KnownByIndex knownBy, PresentationConfig cfg) CreateTestContext()
+        private static PlayerHeardLogStore CreateLogStoreWithEntries(params PlayerHeardEntry[] entries)
         {
-            var config = new VividWorldConfig();
-            var rng = new SplitMix64Rng();
-            var traitLookup = new FakeHeroTraitLookup();
-            var channel = new FakePropagationChannel();
-            var retention = FactRetentionPolicies.Create(config, rng, 12345L);
-            var embellishment = NullEmbellishmentPolicy.Instance;
-            var engine = new RumorEngine(config, retention, embellishment, channel, traitLookup, rng, 12345L, PlayerHeroId);
-            var knownBy = new KnownByIndex();
-            return (engine, knownBy, config.Presentation);
+            var writer = new FailingFileWriter();
+            var log = new PlayerHeardLog { Entries = entries.ToList() };
+            writer.WriteAllText("player_heard.json", VividJson.Write(log));
+            var store = new PlayerHeardLogStore("player_heard.json", writer);
+            store.Load();
+            return store;
+        }
+
+        private static PlayerHeardEntry CreateHeardEntry(
+            string eventId,
+            string type = "duel",
+            double day = 10.0,
+            int hop = 1,
+            string? sourceHeroId = "hero_source",
+            string? linkedEventId = null,
+            IEnumerable<Fact>? facts = null,
+            double learnedDay = 0.0)
+        {
+            return new PlayerHeardEntry
+            {
+                EventId = eventId,
+                Type = type,
+                Day = day,
+                LearnedDay = learnedDay,
+                PlayerHop = hop,
+                SourceHeroId = sourceHeroId,
+                LinkedEventId = linkedEventId,
+                Facts = facts?.Select(f => f.Clone()).ToList() ?? new List<Fact>()
+            };
         }
 
         private static WorldEvent CreateEvent(
@@ -74,24 +94,11 @@ namespace VividWorld.Core.Tests
         [Fact]
         public void ForPlayer_OnlyReturnsEventsKnownByPlayer()
         {
-            var (engine, knownBy, cfg) = CreateTestContext();
-            var store = new Dictionary<string, WorldEvent>();
+            var cfg = new PresentationConfig();
+            var heardEntry = CreateHeardEntry("evt_known", day: 10.0);
+            var logStore = CreateLogStoreWithEntries(heardEntry);
 
-            var evtKnown = CreateEvent("evt_known", day: 10.0);
-            evtKnown.KnownBy.Add(new KnownByEntry { HeroId = PlayerHeroId, Hop = 1, LearnedDay = 10.0 });
-            store["evt_known"] = evtKnown;
-            knownBy.NoteKnower(PlayerHeroId, "evt_known", 10.0);
-
-            for (int i = 1; i <= 3; i++)
-            {
-                string otherId = "evt_other_" + i;
-                var evtOther = CreateEvent(otherId, day: 10.0);
-                evtOther.KnownBy.Add(new KnownByEntry { HeroId = "hero_other", Hop = 1, LearnedDay = 10.0 });
-                store[otherId] = evtOther;
-                knownBy.NoteKnower("hero_other", otherId, 10.0);
-            }
-
-            var provider = new ChronicleProvider(engine, knownBy, id => store.TryGetValue(id, out var e) ? e : null, PlayerHeroId, cfg);
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
             var result = provider.ForPlayer(50, 20.0, out var stats);
 
             Assert.Single(result);
@@ -104,21 +111,16 @@ namespace VividWorld.Core.Tests
         [Fact]
         public void ForPlayer_WithKnownFactIds_BodyMatchesExactFactIds_NotHopZero()
         {
-            var (engine, knownBy, cfg) = CreateTestContext();
-            var store = new Dictionary<string, WorldEvent>();
-
-            var evt = CreateEvent("evt_facts", factCount: 5);
-            evt.KnownBy.Add(new KnownByEntry
+            var cfg = new PresentationConfig();
+            var facts = new List<Fact>
             {
-                HeroId = PlayerHeroId,
-                Hop = 2,
-                LearnedDay = 10.0,
-                KnownFactIds = new List<string> { "fact_0", "fact_3" }
-            });
-            store["evt_facts"] = evt;
-            knownBy.NoteKnower(PlayerHeroId, "evt_facts", 10.0);
+                new Fact { Id = "fact_0", Category = FactCategory.What, TextId = "VividWorld_Fact_Test_0", Text = "fact text 0" },
+                new Fact { Id = "fact_3", Category = FactCategory.What, TextId = "VividWorld_Fact_Test_3", Text = "fact text 3" }
+            };
+            var heardEntry = CreateHeardEntry("evt_facts", facts: facts);
+            var logStore = CreateLogStoreWithEntries(heardEntry);
 
-            var provider = new ChronicleProvider(engine, knownBy, id => store[id], PlayerHeroId, cfg);
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
             var result = provider.ForPlayer(50, 20.0, out _);
 
             Assert.Single(result);
@@ -133,27 +135,20 @@ namespace VividWorld.Core.Tests
         [Fact]
         public void ForPlayer_WithNullKnownFactIds_FallsBackToFactsAtHopWithPlayerHop()
         {
-            var (engine, knownBy, cfg) = CreateTestContext();
-            var store = new Dictionary<string, WorldEvent>();
-
-            var evt = CreateEvent("evt_null_facts", factCount: 5);
-            evt.KnownBy.Add(new KnownByEntry
+            var cfg = new PresentationConfig();
+            var facts = new List<Fact>
             {
-                HeroId = PlayerHeroId,
-                Hop = 1,
-                SourceHeroId = "hero_source",
-                LearnedDay = 10.0,
-                KnownFactIds = null
-            });
-            store["evt_null_facts"] = evt;
-            knownBy.NoteKnower(PlayerHeroId, "evt_null_facts", 10.0);
+                new Fact { Id = "fact_0", Category = FactCategory.What, TextId = "VividWorld_Fact_Test_0", Text = "fact text 0" },
+                new Fact { Id = "fact_1", Category = FactCategory.What, TextId = "VividWorld_Fact_Test_1", Text = "fact text 1" }
+            };
+            var heardEntry = CreateHeardEntry("evt_null_facts", hop: 1, sourceHeroId: "hero_source", facts: facts);
+            var logStore = CreateLogStoreWithEntries(heardEntry);
 
-            var provider = new ChronicleProvider(engine, knownBy, id => store[id], PlayerHeroId, cfg);
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
             var result = provider.ForPlayer(50, 20.0, out _);
 
             Assert.Single(result);
-            var expectedFacts = engine.FactsAtHop(evt, 1, "hero_source");
-            Assert.Equal(expectedFacts.Count, result[0].Body.Parts.Count);
+            Assert.Equal(2, result[0].Body.Parts.Count);
             Assert.Equal("hero_source", result[0].SourceHeroId);
             Assert.Equal(1, result[0].PlayerHop);
         }
@@ -162,21 +157,16 @@ namespace VividWorld.Core.Tests
         [Fact]
         public void ForPlayer_DistortionCarriedToChronicle_WhenPlayerAtHigherHop()
         {
-            var (engine, knownBy, cfg) = CreateTestContext();
-            var store = new Dictionary<string, WorldEvent>();
-
-            var evt = CreateEvent("evt_distorted", factCount: 5);
-            evt.KnownBy.Add(new KnownByEntry
+            var cfg = new PresentationConfig();
+            var facts = new List<Fact>
             {
-                HeroId = PlayerHeroId,
-                Hop = 3,
-                SourceHeroId = "hero_teller",
-                LearnedDay = 10.0
-            });
-            store["evt_distorted"] = evt;
-            knownBy.NoteKnower(PlayerHeroId, "evt_distorted", 10.0);
+                new Fact { Id = "fact_0", Category = FactCategory.What, TextId = "VividWorld_Fact_Test_0", Text = "fact text 0" },
+                new Fact { Id = "fact_1", Category = FactCategory.What, TextId = "VividWorld_Fact_Test_1", Text = "fact text 1" }
+            };
+            var heardEntry = CreateHeardEntry("evt_distorted", hop: 3, sourceHeroId: "hero_teller", facts: facts);
+            var logStore = CreateLogStoreWithEntries(heardEntry);
 
-            var provider = new ChronicleProvider(engine, knownBy, id => store[id], PlayerHeroId, cfg);
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
             var result = provider.ForPlayer(50, 20.0, out _);
 
             Assert.Single(result);
@@ -187,39 +177,27 @@ namespace VividWorld.Core.Tests
         [Fact]
         public void ForPlayer_UnleakedSecretDoesNotAppear_EvenIfPlayerInKnownBy()
         {
-            var (engine, knownBy, cfg) = CreateTestContext();
-            var store = new Dictionary<string, WorldEvent>();
+            var cfg = new PresentationConfig();
+            // 未洩漏的秘密在寫入紀錄時被排除，紀錄庫中為空
+            var logStore = CreateLogStoreWithEntries();
 
-            var secretEvt = CreateEvent("evt_secret", origin: EventOrigin.Secret, isLeaked: false);
-            secretEvt.KnownBy.Add(new KnownByEntry { HeroId = PlayerHeroId, Hop = 0, LearnedDay = 10.0 });
-            store["evt_secret"] = secretEvt;
-            knownBy.NoteKnower(PlayerHeroId, "evt_secret", 10.0);
-
-            var provider = new ChronicleProvider(engine, knownBy, id => store[id], PlayerHeroId, cfg);
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
             var result = provider.ForPlayer(50, 20.0, out var stats);
 
             Assert.Empty(result);
-            Assert.Equal(1, stats.TotalKnown);
+            Assert.Equal(0, stats.TotalKnown);
             Assert.Equal(0, stats.Returned);
-            // 被丟掉的要數得出來，否則 log 那一行加起來對不上總數
-            Assert.Equal(1, stats.SkippedSecret);
-            Assert.Equal(stats.TotalKnown,
-                stats.Returned + stats.SkippedNoShard + stats.SkippedNoEntry + stats.SkippedSecret);
         }
 
         // 6. 洩漏之後同一則會出現
         [Fact]
         public void ForPlayer_LeakedSecretAppears()
         {
-            var (engine, knownBy, cfg) = CreateTestContext();
-            var store = new Dictionary<string, WorldEvent>();
+            var cfg = new PresentationConfig();
+            var heardEntry = CreateHeardEntry("evt_secret_leaked", hop: 1, day: 10.0);
+            var logStore = CreateLogStoreWithEntries(heardEntry);
 
-            var secretEvt = CreateEvent("evt_secret_leaked", origin: EventOrigin.Secret, isLeaked: true);
-            secretEvt.KnownBy.Add(new KnownByEntry { HeroId = PlayerHeroId, Hop = 1, LearnedDay = 10.0 });
-            store["evt_secret_leaked"] = secretEvt;
-            knownBy.NoteKnower(PlayerHeroId, "evt_secret_leaked", 10.0);
-
-            var provider = new ChronicleProvider(engine, knownBy, id => store[id], PlayerHeroId, cfg);
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
             var result = provider.ForPlayer(50, 20.0, out var stats);
 
             Assert.Single(result);
@@ -231,49 +209,32 @@ namespace VividWorld.Core.Tests
         [Fact]
         public void ForPlayer_HidesFutureEvents_AndCountsHiddenFuture()
         {
-            var (engine, knownBy, cfg) = CreateTestContext();
-            var store = new Dictionary<string, WorldEvent>();
+            var cfg = new PresentationConfig();
+            var evtPast = CreateHeardEntry("evt_past", day: 50.0);
+            var evtFuture = CreateHeardEntry("evt_future", day: 150.0);
+            var logStore = CreateLogStoreWithEntries(evtPast, evtFuture);
 
-            var evtPast = CreateEvent("evt_past", day: 50.0);
-            evtPast.KnownBy.Add(new KnownByEntry { HeroId = PlayerHeroId, Hop = 1, LearnedDay = 50.0 });
-            store["evt_past"] = evtPast;
-            knownBy.NoteKnower(PlayerHeroId, "evt_past", 50.0);
-
-            var evtFuture = CreateEvent("evt_future", day: 150.0);
-            evtFuture.KnownBy.Add(new KnownByEntry { HeroId = PlayerHeroId, Hop = 1, LearnedDay = 150.0 });
-            store["evt_future"] = evtFuture;
-            knownBy.NoteKnower(PlayerHeroId, "evt_future", 150.0);
-
-            var provider = new ChronicleProvider(engine, knownBy, id => store[id], PlayerHeroId, cfg);
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
             var result = provider.ForPlayer(50, 100.0, out var stats);
 
             Assert.Single(result);
             Assert.Equal("evt_past", result[0].EventId);
             Assert.Equal(1, stats.HiddenFuture);
-            Assert.Equal(1, stats.TotalKnown);
+            Assert.Equal(2, stats.TotalKnown);
         }
 
-        // 8. 排序：新到舊；同一天用 EventId 當第二鍵，同一份資料跑兩次順序相同
+        // 8. 排序：LearnedDay 新到舊；同一天照事件 Day 新到舊；同一天用 EventId 當第三鍵，同一份資料跑兩次順序相同
         [Fact]
-        public void ForPlayer_SortsDescendingByDay_ThenOrdinalByEventId()
+        public void ForPlayer_SortsDescendingByLearnedDay_ThenDay_ThenOrdinalByEventId()
         {
-            var (engine, knownBy, cfg) = CreateTestContext();
-            var store = new Dictionary<string, WorldEvent>();
+            var cfg = new PresentationConfig();
+            var e1 = CreateHeardEntry("evt_day10", day: 10.0, learnedDay: 20.0);
+            var e2 = CreateHeardEntry("evt_day30_b", day: 30.0, learnedDay: 40.0);
+            var e3 = CreateHeardEntry("evt_day30_a", day: 30.0, learnedDay: 40.0);
+            var e4 = CreateHeardEntry("evt_day05", day: 5.0, learnedDay: 10.0);
+            var logStore = CreateLogStoreWithEntries(e1, e2, e3, e4);
 
-            void AddEvt(string id, double day)
-            {
-                var e = CreateEvent(id, day: day);
-                e.KnownBy.Add(new KnownByEntry { HeroId = PlayerHeroId, Hop = 1, LearnedDay = day });
-                store[id] = e;
-                knownBy.NoteKnower(PlayerHeroId, id, day);
-            }
-
-            AddEvt("evt_day10", 10.0);
-            AddEvt("evt_day30_b", 30.0);
-            AddEvt("evt_day30_a", 30.0);
-            AddEvt("evt_day05", 5.0);
-
-            var provider = new ChronicleProvider(engine, knownBy, id => store[id], PlayerHeroId, cfg);
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
             var run1 = provider.ForPlayer(50, 100.0, out _);
             var run2 = provider.ForPlayer(50, 100.0, out _);
 
@@ -287,23 +248,111 @@ namespace VividWorld.Core.Tests
             Assert.Equal(run1.Select(e => e.EventId), run2.Select(e => e.EventId));
         }
 
+        // 8a. LearnedDay 不同時照 LearnedDay 降序排序
+        [Fact]
+        public void ForPlayer_SortsDescendingByLearnedDay_WhenLearnedDaysDiffer()
+        {
+            var cfg = new PresentationConfig();
+            var e1 = CreateHeardEntry("evt_heard_earlier", day: 50.0, learnedDay: 20.0);
+            var e2 = CreateHeardEntry("evt_heard_later", day: 10.0, learnedDay: 30.0);
+            var logStore = CreateLogStoreWithEntries(e1, e2);
+
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
+            var result = provider.ForPlayer(50, 100.0, out _);
+
+            Assert.Equal(2, result.Count);
+            Assert.Equal("evt_heard_later", result[0].EventId);
+            Assert.Equal("evt_heard_earlier", result[1].EventId);
+        }
+
+        // 8b. LearnedDay 相同時照事件日期 Day 降序排序
+        [Fact]
+        public void ForPlayer_SortsDescendingByDay_WhenLearnedDaysEqual()
+        {
+            var cfg = new PresentationConfig();
+            var e1 = CreateHeardEntry("evt_older_event", day: 10.0, learnedDay: 25.0);
+            var e2 = CreateHeardEntry("evt_newer_event", day: 20.0, learnedDay: 25.0);
+            var logStore = CreateLogStoreWithEntries(e1, e2);
+
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
+            var result = provider.ForPlayer(50, 100.0, out _);
+
+            Assert.Equal(2, result.Count);
+            Assert.Equal("evt_newer_event", result[0].EventId);
+            Assert.Equal("evt_older_event", result[1].EventId);
+        }
+
+        // 8c. LearnedDay 與事件日期 Day 皆相同時，照 EventId Ordinal 升序排序
+        [Fact]
+        public void ForPlayer_SortsOrdinalByEventId_WhenLearnedDayAndDayEqual()
+        {
+            var cfg = new PresentationConfig();
+            var e1 = CreateHeardEntry("evt_z", day: 10.0, learnedDay: 20.0);
+            var e2 = CreateHeardEntry("evt_a", day: 10.0, learnedDay: 20.0);
+            var e3 = CreateHeardEntry("evt_m", day: 10.0, learnedDay: 20.0);
+            var logStore = CreateLogStoreWithEntries(e1, e2, e3);
+
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
+            var result = provider.ForPlayer(50, 100.0, out _);
+
+            Assert.Equal(3, result.Count);
+            Assert.Equal("evt_a", result[0].EventId);
+            Assert.Equal("evt_m", result[1].EventId);
+            Assert.Equal("evt_z", result[2].EventId);
+        }
+
+        // 8d. 一則事件日期較舊、但比較晚聽到的，排在前面
+        [Fact]
+        public void ForPlayer_OlderEventHeardLater_RanksFirst()
+        {
+            var cfg = new PresentationConfig();
+            var eOlder = CreateHeardEntry("evt_old_rumor", day: 5.0, learnedDay: 50.0);
+            var eNewer = CreateHeardEntry("evt_new_fresh", day: 40.0, learnedDay: 40.0);
+            var logStore = CreateLogStoreWithEntries(eOlder, eNewer);
+
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
+            var result = provider.ForPlayer(50, 60.0, out _);
+
+            Assert.Equal(2, result.Count);
+            Assert.Equal("evt_old_rumor", result[0].EventId);
+            Assert.Equal("evt_new_fresh", result[1].EventId);
+            Assert.Equal(50.0, result[0].LearnedDay);
+            Assert.Equal(40.0, result[1].LearnedDay);
+        }
+
+        // 8e. 截上限後留下的是最晚聽到的事件（截掉最先聽到的）
+        [Fact]
+        public void ForPlayer_CapsAtMaxEntries_KeepsLatestHeardEntries()
+        {
+            var cfg = new PresentationConfig();
+            var eEarliest = CreateHeardEntry("evt_heard_day10", day: 10.0, learnedDay: 10.0);
+            var eMid = CreateHeardEntry("evt_heard_day20", day: 20.0, learnedDay: 20.0);
+            var eLatest = CreateHeardEntry("evt_heard_day30", day: 5.0, learnedDay: 30.0);
+            var logStore = CreateLogStoreWithEntries(eEarliest, eMid, eLatest);
+
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
+            var result = provider.ForPlayer(2, 50.0, out var stats);
+
+            Assert.Equal(2, result.Count);
+            Assert.Equal(2, stats.Returned);
+            Assert.Equal(3, stats.TotalKnown);
+            Assert.Equal("evt_heard_day30", result[0].EventId);
+            Assert.Equal("evt_heard_day20", result[1].EventId);
+            Assert.DoesNotContain(result, e => e.EventId == "evt_heard_day10");
+        }
+
         // 9. maxEntries 夾取；maxEntries = 0 當 1；stats.Returned 對得上
         [Fact]
         public void ForPlayer_CapsAtMaxEntries_ClampsZeroToOne_ReportsReturnedCount()
         {
-            var (engine, knownBy, cfg) = CreateTestContext();
-            var store = new Dictionary<string, WorldEvent>();
-
+            var cfg = new PresentationConfig();
+            var entries = new List<PlayerHeardEntry>();
             for (int i = 0; i < 5; i++)
             {
-                string id = "evt_" + i;
-                var e = CreateEvent(id, day: 10.0 + i);
-                e.KnownBy.Add(new KnownByEntry { HeroId = PlayerHeroId, Hop = 1, LearnedDay = e.Day });
-                store[id] = e;
-                knownBy.NoteKnower(PlayerHeroId, id, e.Day);
+                entries.Add(CreateHeardEntry("evt_" + i, day: 10.0 + i));
             }
-
-            var provider = new ChronicleProvider(engine, knownBy, id => store[id], PlayerHeroId, cfg);
+            var logStore = CreateLogStoreWithEntries(entries.ToArray());
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
 
             var resultCap3 = provider.ForPlayer(3, 100.0, out var stats3);
             Assert.Equal(3, resultCap3.Count);
@@ -315,67 +364,49 @@ namespace VividWorld.Core.Tests
             Assert.Equal(1, stats0.Returned);
         }
 
-        // 10. load 回 null => 那一則跳過、SkippedNoShard ＋1、其餘照常回傳
+        // 10. 事件已經不在了，紀錄裡的照樣顯示（MF3a 關鍵契約）
         [Fact]
-        public void ForPlayer_WhenShardLoadReturnsNull_SkipsEvent_IncrementsSkippedNoShard()
+        public void ForPlayer_WhenEventShardNoLongerExists_StillDisplaysFromHeardLog()
         {
-            var (engine, knownBy, cfg) = CreateTestContext();
-            var store = new Dictionary<string, WorldEvent>();
+            var cfg = new PresentationConfig();
+            var heardEntry = CreateHeardEntry("evt_deleted", day: 10.0);
+            var logStore = CreateLogStoreWithEntries(heardEntry);
 
-            var e1 = CreateEvent("evt_1", day: 10.0);
-            e1.KnownBy.Add(new KnownByEntry { HeroId = PlayerHeroId, Hop = 1, LearnedDay = 10.0 });
-            store["evt_1"] = e1;
-            knownBy.NoteKnower(PlayerHeroId, "evt_1", 10.0);
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
+            var result = provider.ForPlayer(50, 20.0, out var stats);
 
-            // evt_missing is in index, but load returns null
-            knownBy.NoteKnower(PlayerHeroId, "evt_missing", 15.0);
-
-            var e2 = CreateEvent("evt_2", day: 20.0);
-            e2.KnownBy.Add(new KnownByEntry { HeroId = PlayerHeroId, Hop = 1, LearnedDay = 20.0 });
-            store["evt_2"] = e2;
-            knownBy.NoteKnower(PlayerHeroId, "evt_2", 20.0);
-
-            var provider = new ChronicleProvider(engine, knownBy, id => store.TryGetValue(id, out var e) ? e : null, PlayerHeroId, cfg);
-            var result = provider.ForPlayer(50, 100.0, out var stats);
-
-            Assert.Equal(2, result.Count);
-            Assert.Equal(1, stats.SkippedNoShard);
-            Assert.Equal(3, stats.TotalKnown);
+            Assert.Single(result);
+            Assert.Equal("evt_deleted", result[0].EventId);
+            Assert.Equal(1, stats.TotalKnown);
+            Assert.Equal(1, stats.Returned);
         }
 
-        // 11. 分片裡沒有玩家那筆 => SkippedNoEntry ＋1
+        // 11. 紀錄中玩家的事件完整回傳
         [Fact]
-        public void ForPlayer_WhenShardMissingPlayerEntry_SkipsEvent_IncrementsSkippedNoEntry()
+        public void ForPlayer_ReturnsPlayerRecordedEvents()
         {
-            var (engine, knownBy, cfg) = CreateTestContext();
-            var store = new Dictionary<string, WorldEvent>();
+            var cfg = new PresentationConfig();
+            var e1 = CreateHeardEntry("evt_recorded", day: 10.0);
+            var logStore = CreateLogStoreWithEntries(e1);
 
-            var e1 = CreateEvent("evt_no_player_entry", day: 10.0);
-            // Notice: player is NOT in evt_no_player_entry.KnownBy
-            store["evt_no_player_entry"] = e1;
-            knownBy.NoteKnower(PlayerHeroId, "evt_no_player_entry", 10.0);
-
-            var provider = new ChronicleProvider(engine, knownBy, id => store[id], PlayerHeroId, cfg);
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
             var result = provider.ForPlayer(50, 100.0, out var stats);
 
-            Assert.Empty(result);
-            Assert.Equal(1, stats.SkippedNoEntry);
+            Assert.Single(result);
+            Assert.Equal("evt_recorded", result[0].EventId);
             Assert.Equal(1, stats.TotalKnown);
+            Assert.Equal(1, stats.Returned);
         }
 
         // 12. Body.Parts 為空的事件照樣回傳一列
         [Fact]
         public void ForPlayer_EventWithEmptyParts_StillReturned()
         {
-            var (engine, knownBy, cfg) = CreateTestContext();
-            var store = new Dictionary<string, WorldEvent>();
+            var cfg = new PresentationConfig();
+            var heardEntry = CreateHeardEntry("evt_empty_parts", facts: Array.Empty<Fact>());
+            var logStore = CreateLogStoreWithEntries(heardEntry);
 
-            var evt = CreateEvent("evt_empty_parts", factCount: 0);
-            evt.KnownBy.Add(new KnownByEntry { HeroId = PlayerHeroId, Hop = 1, LearnedDay = 10.0 });
-            store["evt_empty_parts"] = evt;
-            knownBy.NoteKnower(PlayerHeroId, "evt_empty_parts", 10.0);
-
-            var provider = new ChronicleProvider(engine, knownBy, id => store[id], PlayerHeroId, cfg);
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
             var result = provider.ForPlayer(50, 100.0, out var stats);
 
             Assert.Single(result);
@@ -388,15 +419,11 @@ namespace VividWorld.Core.Tests
         [Fact]
         public void ForPlayer_HeadlineTextId_AlwaysPrefixedWithEventType()
         {
-            var (engine, knownBy, cfg) = CreateTestContext();
-            var store = new Dictionary<string, WorldEvent>();
+            var cfg = new PresentationConfig();
+            var heardEntry = CreateHeardEntry("evt_headline", type: "custom_type", day: 10.0);
+            var logStore = CreateLogStoreWithEntries(heardEntry);
 
-            var evt = CreateEvent("evt_headline", type: "custom_type", day: 10.0);
-            evt.KnownBy.Add(new KnownByEntry { HeroId = PlayerHeroId, Hop = 1, LearnedDay = 10.0 });
-            store["evt_headline"] = evt;
-            knownBy.NoteKnower(PlayerHeroId, "evt_headline", 10.0);
-
-            var provider = new ChronicleProvider(engine, knownBy, id => store[id], PlayerHeroId, cfg);
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
             var result = provider.ForPlayer(50, 100.0, out _);
 
             Assert.Single(result);
@@ -407,21 +434,13 @@ namespace VividWorld.Core.Tests
         [Fact]
         public void ForPlayer_WhenTemplateHasNoHeadline_HeadlineFallbackEqualsType()
         {
-            var (engine, knownBy, cfg) = CreateTestContext();
-            var store = new Dictionary<string, WorldEvent>();
+            var cfg = new PresentationConfig();
+            var heardEntry = CreateHeardEntry("evt_no_tmpl", type: "unregistered_type", day: 10.0);
+            var logStore = CreateLogStoreWithEntries(heardEntry);
 
-            var evt = CreateEvent("evt_no_tmpl", type: "unregistered_type", day: 10.0);
-            evt.KnownBy.Add(new KnownByEntry { HeroId = PlayerHeroId, Hop = 1, LearnedDay = 10.0 });
-            store["evt_no_tmpl"] = evt;
-            knownBy.NoteKnower(PlayerHeroId, "evt_no_tmpl", 10.0);
-
-            // templateByType returns null or template with null headline
             var provider = new ChronicleProvider(
-                engine,
-                knownBy,
-                id => store[id],
+                logStore,
                 type => new EventTemplate { Type = type, Headline = null },
-                PlayerHeroId,
                 cfg);
 
             var result = provider.ForPlayer(50, 100.0, out _);
@@ -434,15 +453,11 @@ namespace VividWorld.Core.Tests
         [Fact]
         public void ForPlayer_DayLabelAndSourceHeroName_AreEmptyAndNullFromCore()
         {
-            var (engine, knownBy, cfg) = CreateTestContext();
-            var store = new Dictionary<string, WorldEvent>();
+            var cfg = new PresentationConfig();
+            var heardEntry = CreateHeardEntry("evt_core_dto", day: 10.0, hop: 1, sourceHeroId: "hero_source");
+            var logStore = CreateLogStoreWithEntries(heardEntry);
 
-            var evt = CreateEvent("evt_core_dto", day: 10.0);
-            evt.KnownBy.Add(new KnownByEntry { HeroId = PlayerHeroId, Hop = 1, SourceHeroId = "hero_source", LearnedDay = 10.0 });
-            store["evt_core_dto"] = evt;
-            knownBy.NoteKnower(PlayerHeroId, "evt_core_dto", 10.0);
-
-            var provider = new ChronicleProvider(engine, knownBy, id => store[id], PlayerHeroId, cfg);
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
             var result = provider.ForPlayer(50, 100.0, out _);
 
             Assert.Single(result);
@@ -458,40 +473,19 @@ namespace VividWorld.Core.Tests
             {
                 TotalKnown = 41,
                 Returned = 37,
-                HiddenFuture = 0,
-                SkippedNoShard = 3,
-                SkippedNoEntry = 1,
-                SkippedSecret = 0
+                HiddenFuture = 0
             };
 
             string lineData = ChronicleLogFormatter.FormatOpen("main_hero", 91143.1, statsData, 50);
             Assert.Equal(
-                "Chronicle opened for main_hero on day 91143.1: 37 shown of 41 known (max 50), hidden future 0, skipped 4 (no shard 3, no player entry 1, unleaked secret 0)",
+                "Chronicle opened for main_hero on day 91143.1: 37 shown of 41 heard (max 50), hidden future 0",
                 lineData);
-
-            // 秘密也要出現在明細裡，而且總數要加得起來
-            var statsSecret = new ChronicleStats
-            {
-                TotalKnown = 10,
-                Returned = 7,
-                HiddenFuture = 0,
-                SkippedNoShard = 1,
-                SkippedNoEntry = 0,
-                SkippedSecret = 2
-            };
-
-            string lineSecret = ChronicleLogFormatter.FormatOpen("main_hero", 91143.1, statsSecret, 50);
-            Assert.Equal(
-                "Chronicle opened for main_hero on day 91143.1: 7 shown of 10 known (max 50), hidden future 0, skipped 3 (no shard 1, no player entry 0, unleaked secret 2)",
-                lineSecret);
 
             var statsEmpty = new ChronicleStats
             {
                 TotalKnown = 0,
                 Returned = 0,
-                HiddenFuture = 0,
-                SkippedNoShard = 0,
-                SkippedNoEntry = 0
+                HiddenFuture = 0
             };
 
             string lineEmpty = ChronicleLogFormatter.FormatOpen("main_hero", 91143.1, statsEmpty, 50);
@@ -725,19 +719,15 @@ namespace VividWorld.Core.Tests
             Assert.Contains("nothing known yet (0 known)", line);
         }
 
-        // 24. ChronicleProvider 簡便建構子（5個參數）正確運作
+        // 24. ChronicleProvider 建構子正確運作
         [Fact]
-        public void ChronicleProvider_ConvenienceConstructor_Succeeds()
+        public void ChronicleProvider_Constructor_Succeeds()
         {
-            var (engine, knownBy, cfg) = CreateTestContext();
-            var store = new Dictionary<string, WorldEvent>();
+            var cfg = new PresentationConfig();
+            var heardEntry = CreateHeardEntry("evt_5arg", day: 10.0);
+            var logStore = CreateLogStoreWithEntries(heardEntry);
 
-            var evt = CreateEvent("evt_5arg", day: 10.0);
-            evt.KnownBy.Add(new KnownByEntry { HeroId = PlayerHeroId, Hop = 1, LearnedDay = 10.0 });
-            store["evt_5arg"] = evt;
-            knownBy.NoteKnower(PlayerHeroId, "evt_5arg", 10.0);
-
-            var provider = new ChronicleProvider(engine, knownBy, id => store[id], PlayerHeroId, cfg);
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
             var result = provider.ForPlayer(50, 20.0, out _);
 
             Assert.Single(result);
@@ -747,24 +737,14 @@ namespace VividWorld.Core.Tests
 
         // 25. 引擎不在時**不得**退回事件的完整碎片集合——那是 hop 0 的全知版本
         [Fact]
-        public void ForPlayer_WithoutEngine_ReturnsNoFacts_NotTheWholeEvent()
+        public void PlayerKnownFacts_Of_WithoutEngine_ReturnsNoFacts_NotTheWholeEvent()
         {
-            var (_, knownBy, cfg) = CreateTestContext();
-            var store = new Dictionary<string, WorldEvent>();
-
             var evt = CreateEvent("evt_no_engine", day: 10.0);
-            // KnownFactIds 為 null ⇒ 走「依手數重算」那條路，而那條路需要引擎
-            evt.KnownBy.Add(new KnownByEntry { HeroId = PlayerHeroId, Hop = 3, LearnedDay = 10.0, KnownFactIds = null });
-            store["evt_no_engine"] = evt;
-            knownBy.NoteKnower(PlayerHeroId, "evt_no_engine", 10.0);
+            var playerEntry = new KnownByEntry { HeroId = PlayerHeroId, Hop = 3, LearnedDay = 10.0, KnownFactIds = null };
 
-            var provider = new ChronicleProvider(null!, knownBy, id => store[id], PlayerHeroId, cfg);
-            var result = provider.ForPlayer(50, 20.0, out _);
+            var facts = PlayerKnownFacts.Of(evt, playerEntry, null);
 
-            Assert.Single(result);
-            Assert.Equal("evt_no_engine", result[0].EventId);
-            // 只剩標題，不准把整包碎片交出去
-            Assert.Empty(result[0].Body.Parts);
+            Assert.Empty(facts);
             Assert.NotEmpty(evt.Facts);
         }
 
@@ -794,8 +774,6 @@ namespace VividWorld.Core.Tests
             var stats = new ChronicleStats();
             Assert.Equal(0, stats.TotalKnown);
             Assert.Equal(0, stats.HiddenFuture);
-            Assert.Equal(0, stats.SkippedNoShard);
-            Assert.Equal(0, stats.SkippedNoEntry);
             Assert.Equal(0, stats.Returned);
         }
 
@@ -803,22 +781,11 @@ namespace VividWorld.Core.Tests
         [Fact]
         public void ForPlayer_SourceHeroIdAndLinkedEventId_PropagatedToChronicleEntry()
         {
-            var (engine, knownBy, cfg) = CreateTestContext();
-            var store = new Dictionary<string, WorldEvent>();
+            var cfg = new PresentationConfig();
+            var heardEntry = CreateHeardEntry("evt_linked", day: 10.0, hop: 2, sourceHeroId: "hero_messenger", linkedEventId: "evt_origin");
+            var logStore = CreateLogStoreWithEntries(heardEntry);
 
-            var evt = CreateEvent("evt_linked", day: 10.0);
-            evt.LinkedEventId = "evt_origin";
-            evt.KnownBy.Add(new KnownByEntry
-            {
-                HeroId = PlayerHeroId,
-                Hop = 2,
-                SourceHeroId = "hero_messenger",
-                LearnedDay = 10.0
-            });
-            store["evt_linked"] = evt;
-            knownBy.NoteKnower(PlayerHeroId, "evt_linked", 10.0);
-
-            var provider = new ChronicleProvider(engine, knownBy, id => store[id], PlayerHeroId, cfg);
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
             var result = provider.ForPlayer(50, 20.0, out _);
 
             Assert.Single(result);
@@ -831,21 +798,11 @@ namespace VividWorld.Core.Tests
         [Fact]
         public void ForPlayer_PlayerHopZero_RetainsHopZero()
         {
-            var (engine, knownBy, cfg) = CreateTestContext();
-            var store = new Dictionary<string, WorldEvent>();
+            var cfg = new PresentationConfig();
+            var heardEntry = CreateHeardEntry("evt_hop0", day: 10.0, hop: 0, sourceHeroId: null);
+            var logStore = CreateLogStoreWithEntries(heardEntry);
 
-            var evt = CreateEvent("evt_hop0", day: 10.0);
-            evt.KnownBy.Add(new KnownByEntry
-            {
-                HeroId = PlayerHeroId,
-                Hop = 0,
-                SourceHeroId = null,
-                LearnedDay = 10.0
-            });
-            store["evt_hop0"] = evt;
-            knownBy.NoteKnower(PlayerHeroId, "evt_hop0", 10.0);
-
-            var provider = new ChronicleProvider(engine, knownBy, id => store[id], PlayerHeroId, cfg);
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
             var result = provider.ForPlayer(50, 20.0, out _);
 
             Assert.Single(result);
@@ -857,20 +814,13 @@ namespace VividWorld.Core.Tests
         [Fact]
         public void ForPlayer_WhenTemplateHasHeadline_HeadlineFallbackPrefersTemplateHeadline()
         {
-            var (engine, knownBy, cfg) = CreateTestContext();
-            var store = new Dictionary<string, WorldEvent>();
-
-            var evt = CreateEvent("evt_tmpl_headline", type: "wager_struck", day: 10.0);
-            evt.KnownBy.Add(new KnownByEntry { HeroId = PlayerHeroId, Hop = 1, LearnedDay = 10.0 });
-            store["evt_tmpl_headline"] = evt;
-            knownBy.NoteKnower(PlayerHeroId, "evt_tmpl_headline", 10.0);
+            var cfg = new PresentationConfig();
+            var heardEntry = CreateHeardEntry("evt_tmpl_headline", type: "wager_struck", day: 10.0);
+            var logStore = CreateLogStoreWithEntries(heardEntry);
 
             var provider = new ChronicleProvider(
-                engine,
-                knownBy,
-                id => store[id],
+                logStore,
                 type => new EventTemplate { Type = type, Headline = "A hunting wager was struck" },
-                PlayerHeroId,
                 cfg);
 
             var result = provider.ForPlayer(50, 20.0, out _);
@@ -884,8 +834,9 @@ namespace VividWorld.Core.Tests
         [Fact]
         public void ForPlayer_WhenNoEventsKnown_ReturnsEmptyList()
         {
-            var (engine, knownBy, cfg) = CreateTestContext();
-            var provider = new ChronicleProvider(engine, knownBy, id => null, PlayerHeroId, cfg);
+            var cfg = new PresentationConfig();
+            var logStore = CreateLogStoreWithEntries();
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
 
             var result = provider.ForPlayer(50, 20.0, out var stats);
 
@@ -898,42 +849,177 @@ namespace VividWorld.Core.Tests
         [Fact]
         public void ForPlayer_HandlesMixedPublicSecretAndFutureEvents()
         {
-            var (engine, knownBy, cfg) = CreateTestContext();
-            var store = new Dictionary<string, WorldEvent>();
+            var cfg = new PresentationConfig();
+            var e1 = CreateHeardEntry("evt_pub_valid", type: "duel", day: 20.0);
+            var e3 = CreateHeardEntry("evt_sec_leaked", type: "murder", day: 30.0);
+            var e4 = CreateHeardEntry("evt_future", type: "duel", day: 999.0);
+            var logStore = CreateLogStoreWithEntries(e1, e3, e4);
 
-            // 1. Valid public event
-            var e1 = CreateEvent("evt_pub_valid", type: "duel", day: 20.0);
-            e1.KnownBy.Add(new KnownByEntry { HeroId = PlayerHeroId, Hop = 1, LearnedDay = 20.0 });
-            store["evt_pub_valid"] = e1;
-            knownBy.NoteKnower(PlayerHeroId, "evt_pub_valid", 20.0);
-
-            // 2. Secret unleaked event (invisible)
-            var e2 = CreateEvent("evt_sec_unleaked", type: "murder", day: 25.0, origin: EventOrigin.Secret, isLeaked: false);
-            e2.KnownBy.Add(new KnownByEntry { HeroId = PlayerHeroId, Hop = 0, LearnedDay = 25.0 });
-            store["evt_sec_unleaked"] = e2;
-            knownBy.NoteKnower(PlayerHeroId, "evt_sec_unleaked", 25.0);
-
-            // 3. Secret leaked event (visible)
-            var e3 = CreateEvent("evt_sec_leaked", type: "murder", day: 30.0, origin: EventOrigin.Secret, isLeaked: true);
-            e3.KnownBy.Add(new KnownByEntry { HeroId = PlayerHeroId, Hop = 1, LearnedDay = 30.0 });
-            store["evt_sec_leaked"] = e3;
-            knownBy.NoteKnower(PlayerHeroId, "evt_sec_leaked", 30.0);
-
-            // 4. Future event (hidden)
-            var e4 = CreateEvent("evt_future", type: "duel", day: 999.0);
-            e4.KnownBy.Add(new KnownByEntry { HeroId = PlayerHeroId, Hop = 1, LearnedDay = 999.0 });
-            store["evt_future"] = e4;
-            knownBy.NoteKnower(PlayerHeroId, "evt_future", 999.0);
-
-            var provider = new ChronicleProvider(engine, knownBy, id => store[id], PlayerHeroId, cfg);
+            var provider = new ChronicleProvider(logStore, _ => null, cfg);
             var result = provider.ForPlayer(50, 50.0, out var stats);
 
             Assert.Equal(2, result.Count);
             Assert.Equal("evt_sec_leaked", result[0].EventId);
             Assert.Equal("evt_pub_valid", result[1].EventId);
             Assert.Equal(1, stats.HiddenFuture);
-            Assert.Equal(3, stats.TotalKnown); // KnownBy excludes future at currentDay=50
+            Assert.Equal(3, stats.TotalKnown);
             Assert.Equal(2, stats.Returned);
+        }
+
+        #endregion
+
+        #region 1b. 排版日誌測試 (MF3a-fix1)
+
+        // 33. 清單元件未找到：verdict 為 "list widget not found"，列出 0 列
+        [Fact]
+        public void ChronicleLogFormatter_FormatLayout_ListWidgetNotFound_ProducesExpectedVerdict()
+        {
+            var output = ChronicleLogFormatter.FormatLayout(
+                frame: 1,
+                entryCount: 3,
+                viewportHeight: 500.0,
+                rows: null,
+                listWidgetFound: false,
+                out var verdict);
+
+            Assert.Equal("list widget not found", verdict);
+            Assert.Equal(
+                "Chronicle layout (frame 1): 0 row widget(s) for 3 entry(ies), viewport height 500; list widget not found",
+                output);
+        }
+
+        // 34. 列數與項目數不符：verdict 為 "row count mismatch"，列出實際擁有的列
+        [Fact]
+        public void ChronicleLogFormatter_FormatLayout_RowCountMismatch_ProducesExpectedVerdict()
+        {
+            var rows = new List<ChronicleRowLayout>
+            {
+                new ChronicleRowLayout(y: 0, height: 40, visible: true),
+                new ChronicleRowLayout(y: 40, height: 40, visible: true)
+            };
+
+            var output = ChronicleLogFormatter.FormatLayout(
+                frame: 2,
+                entryCount: 3,
+                viewportHeight: 600.0,
+                rows: rows,
+                listWidgetFound: true,
+                out var verdict);
+
+            Assert.Equal("row count mismatch", verdict);
+            var expected = "Chronicle layout (frame 2): 2 row widget(s) for 3 entry(ies), viewport height 600; row count mismatch\n" +
+                           "  row 0: y 0, height 40, visible true\n" +
+                           "  row 1: y 40, height 40, visible true";
+            Assert.Equal(expected, output);
+        }
+
+        // 35. 包含高度 <= 0.5 的列：verdict 為 "zero-height row(s): {indices}"
+        [Fact]
+        public void ChronicleLogFormatter_FormatLayout_ZeroHeightRows_ProducesExpectedVerdict()
+        {
+            var rows = new List<ChronicleRowLayout>
+            {
+                new ChronicleRowLayout(y: 0, height: 50, visible: true),
+                new ChronicleRowLayout(y: 50, height: 0.4, visible: true),
+                new ChronicleRowLayout(y: 50, height: 0.0, visible: false)
+            };
+
+            var output = ChronicleLogFormatter.FormatLayout(
+                frame: 3,
+                entryCount: 3,
+                viewportHeight: 600.0,
+                rows: rows,
+                listWidgetFound: true,
+                out var verdict);
+
+            Assert.Equal("zero-height row(s): 1, 2", verdict);
+            var expected = "Chronicle layout (frame 3): 3 row widget(s) for 3 entry(ies), viewport height 600; zero-height row(s): 1, 2\n" +
+                           "  row 0: y 0, height 50, visible true\n" +
+                           "  row 1: y 50, height 0, visible true\n" +
+                           "  row 2: y 50, height 0, visible false";
+            Assert.Equal(expected, output);
+        }
+
+        // 36. 重疊列：verdict 為 "overlapping rows: {i}&{i+1}"
+        [Fact]
+        public void ChronicleLogFormatter_FormatLayout_OverlappingRows_ProducesExpectedVerdict()
+        {
+            var rows = new List<ChronicleRowLayout>
+            {
+                new ChronicleRowLayout(y: 0, height: 50, visible: true),
+                new ChronicleRowLayout(y: 40, height: 50, visible: true),
+                new ChronicleRowLayout(y: 80, height: 50, visible: true)
+            };
+
+            var output = ChronicleLogFormatter.FormatLayout(
+                frame: 4,
+                entryCount: 3,
+                viewportHeight: 600.0,
+                rows: rows,
+                listWidgetFound: true,
+                out var verdict);
+
+            Assert.Equal("overlapping rows: 0&1, 1&2", verdict);
+            var expected = "Chronicle layout (frame 4): 3 row widget(s) for 3 entry(ies), viewport height 600; overlapping rows: 0&1, 1&2\n" +
+                           "  row 0: y 0, height 50, visible true\n" +
+                           "  row 1: y 40, height 50, visible true\n" +
+                           "  row 2: y 80, height 50, visible true";
+            Assert.Equal(expected, output);
+        }
+
+        // 37. 排版正常：verdict 為 "ok"，格式逐字吻合
+        [Fact]
+        public void ChronicleLogFormatter_FormatLayout_Ok_ProducesExpectedVerdict()
+        {
+            var rows = new List<ChronicleRowLayout>
+            {
+                new ChronicleRowLayout(y: 0, height: 50, visible: true),
+                new ChronicleRowLayout(y: 66, height: 50, visible: true)
+            };
+
+            var output = ChronicleLogFormatter.FormatLayout(
+                frame: 1,
+                entryCount: 2,
+                viewportHeight: 800.0,
+                rows: rows,
+                listWidgetFound: true,
+                out var verdict);
+
+            Assert.Equal("ok", verdict);
+            var expected = "Chronicle layout (frame 1): 2 row widget(s) for 2 entry(ies), viewport height 800; ok\n" +
+                           "  row 0: y 0, height 50, visible true\n" +
+                           "  row 1: y 66, height 50, visible true";
+            Assert.Equal(expected, output);
+        }
+
+        // 38. 超過 10 列時：只印前 10 列並加上 "  ... and {n} more"
+        [Fact]
+        public void ChronicleLogFormatter_FormatLayout_MoreThan10Rows_TruncatesAt10AndPrintsMore()
+        {
+            var rows = new List<ChronicleRowLayout>();
+            for (int i = 0; i < 15; i++)
+            {
+                rows.Add(new ChronicleRowLayout(y: i * 60, height: 50, visible: true));
+            }
+
+            var output = ChronicleLogFormatter.FormatLayout(
+                frame: 5,
+                entryCount: 15,
+                viewportHeight: 1000.0,
+                rows: rows,
+                listWidgetFound: true,
+                out var verdict);
+
+            Assert.Equal("ok", verdict);
+            Assert.Contains("  row 0: y 0, height 50, visible true", output);
+            Assert.Contains("  row 9: y 540, height 50, visible true", output);
+            Assert.Contains("  ... and 5 more", output);
+            Assert.DoesNotContain("row 10:", output);
+            Assert.DoesNotContain("row 14:", output);
+
+            // 總行數應為 1 (標題) + 10 (列) + 1 (... and 5 more) = 12 行
+            var lines = output.Split('\n');
+            Assert.Equal(12, lines.Length);
         }
 
         #endregion

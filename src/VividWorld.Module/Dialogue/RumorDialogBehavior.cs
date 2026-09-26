@@ -12,6 +12,7 @@ using VividWorld.Core.Dialogue;
 using VividWorld.Core.Events;
 using VividWorld.Core.Memory;
 using VividWorld.Core.Persistence;
+using VividWorld.Core.Presentation;
 using VividWorld.Core.Rumors;
 using VividWorld.Presentation;
 
@@ -29,6 +30,8 @@ namespace VividWorld.Dialogue
         private MemoryStamper? _stamper;
         private string? _campaignId;
         private bool _ready;
+        private PlayerHeardLogStore? _playerHeardLog;
+        internal PlayerHeardLogStore? PlayerHeardLog => _playerHeardLog;
 
         private readonly DailyCounter _volunteersCounter = new DailyCounter();
         private readonly Dictionary<string, double> _lastVolunteeredDays = new Dictionary<string, double>(StringComparer.Ordinal);
@@ -148,7 +151,8 @@ namespace VividWorld.Dialogue
             GameTraitLookup traitLookup,
             HeroLookup heroLookup,
             string? campaignId = null,
-            MemoryStamper? stamper = null)
+            MemoryStamper? stamper = null,
+            PlayerHeardLogStore? playerHeardLog = null)
         {
             _offerSelector = offerSelector ?? throw new ArgumentNullException(nameof(offerSelector));
             _store = store ?? throw new ArgumentNullException(nameof(store));
@@ -158,6 +162,7 @@ namespace VividWorld.Dialogue
             _heroLookup = heroLookup ?? throw new ArgumentNullException(nameof(heroLookup));
             _campaignId = campaignId;
             _stamper = stamper;
+            _playerHeardLog = playerHeardLog;
             LoadVolunteers();
             _ready = true;
         }
@@ -611,6 +616,42 @@ namespace VividWorld.Dialogue
             }
         }
 
+        private void ApplyOfferAndRecord(RumorOffer offer, WorldEvent evt, string tellerHeroId, double day, string tellerName)
+        {
+            if (_offerSelector == null || _store == null) return;
+
+            _offerSelector.ApplyOffer(offer, evt, tellerHeroId, day);
+            _store.Upsert(evt);
+
+            // 反向索引也要跟上，否則要等下次載入 KnownByIndex 才看得到玩家知道這則
+            // （(dev) 世界現況會說 known events: 0，同一份日誌的 "player already knows" 卻說相反的話）。
+            string? playerHeroId = Hero.MainHero?.StringId;
+            if (!string.IsNullOrEmpty(playerHeroId))
+            {
+                _knownBy?.NoteKnower(playerHeroId!, offer.EventId, evt.Day);
+            }
+
+            if (_playerHeardLog != null && !string.IsNullOrEmpty(playerHeroId))
+            {
+                var playerEntry = evt.EntryFor(playerHeroId!);
+                if (playerEntry != null)
+                {
+                    bool isUpdate = _playerHeardLog.Contains(offer.EventId);
+                    var facts = PlayerKnownFacts.Of(evt, playerEntry, _offerSelector.Engine);
+                    bool recorded = _playerHeardLog.Record(evt, playerEntry, facts, day);
+                    if (recorded)
+                    {
+                        ModLog.Info(PlayerHeardLogFormatter.FormatTold(
+                            isUpdate,
+                            offer.EventId,
+                            playerEntry.Hop,
+                            facts.Count,
+                            tellerName));
+                    }
+                }
+            }
+        }
+
         private void OnRumorDelivered()
         {
             try
@@ -625,18 +666,11 @@ namespace VividWorld.Dialogue
                         double day = CampaignTime.Now.ToDays;
                         VolunteerRecoveryGate.ConsumeQuotaAndCooldown(_volunteersCounter, _lastVolunteeredDays, hero.StringId, day);
 
-                        _offerSelector.ApplyOffer(_cachedVolunteerOffer, _cachedVolunteerEvent, hero.StringId, day);
-                        _store.Upsert(_cachedVolunteerEvent);
-
-                        string? playerHeroId = Hero.MainHero?.StringId;
-                        if (!string.IsNullOrEmpty(playerHeroId))
-                        {
-                            _knownBy?.NoteKnower(playerHeroId!, _cachedVolunteerOffer.EventId, _cachedVolunteerEvent.Day);
-                        }
+                        string tellerName = hero.Name?.ToString() ?? hero.StringId;
+                        ApplyOfferAndRecord(_cachedVolunteerOffer, _cachedVolunteerEvent, hero.StringId, day, tellerName);
 
                         SaveVolunteers();
 
-                        string tellerName = hero.Name?.ToString() ?? hero.StringId;
                         _lastVolunteerDesc = $"{tellerName} {_cachedVolunteerOffer.EventId}";
                         _lastVolunteerSessionInfo = $"{tellerName} ({hero.StringId}) told {_cachedVolunteerOffer.EventId} at day {day:F1}";
 
@@ -744,18 +778,11 @@ namespace VividWorld.Dialogue
                         double day = CampaignTime.Now.ToDays;
                         VolunteerRecoveryGate.ConsumeQuotaAndCooldown(_volunteersCounter, _lastVolunteeredDays, hero.StringId, day);
 
-                        _offerSelector.ApplyOffer(_cachedVolunteerOffer, _cachedVolunteerEvent, hero.StringId, day);
-                        _store.Upsert(_cachedVolunteerEvent);
-
-                        string? playerHeroId = Hero.MainHero?.StringId;
-                        if (!string.IsNullOrEmpty(playerHeroId))
-                        {
-                            _knownBy?.NoteKnower(playerHeroId!, _cachedVolunteerOffer.EventId, _cachedVolunteerEvent.Day);
-                        }
+                        string tellerName = hero.Name?.ToString() ?? hero.StringId;
+                        ApplyOfferAndRecord(_cachedVolunteerOffer, _cachedVolunteerEvent, hero.StringId, day, tellerName);
 
                         SaveVolunteers();
 
-                        string tellerName = hero.Name?.ToString() ?? hero.StringId;
                         _lastVolunteerDesc = $"{tellerName} {_cachedVolunteerOffer.EventId}";
                         _lastVolunteerSessionInfo = $"{tellerName} ({hero.StringId}) told {_cachedVolunteerOffer.EventId} at day {day:F1} (via recovery)";
 
@@ -1213,18 +1240,8 @@ namespace VividWorld.Dialogue
                     if (hero != null)
                     {
                         double day = CampaignTime.Now.ToDays;
-                        _offerSelector.ApplyOffer(_cachedOffer, _cachedEvent, hero.StringId, day);
-                        _store.Upsert(_cachedEvent);
-
-                        // 反向索引也要跟上。少了這一行，玩家問到的傳聞只進得了磁碟與記憶體裡的事件物件，
-                        // KnownByIndex 要等下次載入才看得到 ⇒ (dev) 世界現況會一直說玩家 known events: 0，
-                        // 同一份日誌裡的 "player already knows" 卻說相反的話。傳播路徑早就這樣做了
-                        // （RumorPropagationScheduler／WorldEventStore 都呼叫 NoteKnower），只有對話路徑漏掉。
-                        string? playerHeroId = Hero.MainHero?.StringId;
-                        if (!string.IsNullOrEmpty(playerHeroId))
-                        {
-                            _knownBy?.NoteKnower(playerHeroId!, _cachedOffer.EventId, _cachedEvent!.Day);
-                        }
+                        string tellerName = hero.Name?.ToString() ?? hero.StringId;
+                        ApplyOfferAndRecord(_cachedOffer, _cachedEvent, hero.StringId, day, tellerName);
 
                         ModLog.Info($"Rumor delivered to player: event {_cachedOffer.EventId} (hop {_cachedOffer.ResultingPlayerHop}, isRetell={_cachedOffer.IsRetell}) from {hero.Name}");
                         ModLog.Info($"  text shown: \"{_renderedAskTextPlain ?? _renderedAskText}\"");

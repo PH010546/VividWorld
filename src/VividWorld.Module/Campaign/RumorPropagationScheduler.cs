@@ -56,6 +56,7 @@ namespace VividWorld.Campaign
         internal RumorEngine Engine => _engine;
 
         internal int TellerRingCount => _tellers.Count;
+        internal int RebuildSkippedForgotten { get; private set; }
         internal bool IsInTellerRing(string heroId) => _tellers.Contains(heroId);
         internal bool IsActiveEvent(string eventId) => _activeRingSet.Contains(eventId);
 
@@ -103,6 +104,13 @@ namespace VividWorld.Campaign
             }
         }
 
+        internal void ForgetEvent(string eventId)
+        {
+            if (string.IsNullOrEmpty(eventId)) return;
+            RemoveActive(eventId);
+            _secretWatch.Remove(eventId);
+        }
+
         private void AddKnowersToTellers(IEnumerable<string>? heroIds)
         {
             if (heroIds == null) return;
@@ -116,12 +124,11 @@ namespace VividWorld.Campaign
             }
         }
 
-        internal void RebuildFrom(RumorIndex index)
+        internal void RebuildFrom(RumorIndex index, double today)
         {
             _activeRing.Clear();
             _activeRingSet.Clear();
             _secretWatch.Clear();
-            var tellerIds = new List<string>();
             string playerId = _store.PlayerHeroId;
 
             if (index != null)
@@ -138,19 +145,12 @@ namespace VividWorld.Campaign
                     else
                     {
                         AddActive(entry.EventId);
-                        if (entry.KnownByHeroIds != null)
-                        {
-                            foreach (var hId in entry.KnownByHeroIds)
-                            {
-                                if (!string.IsNullOrEmpty(hId) && !string.Equals(hId, playerId, StringComparison.Ordinal))
-                                {
-                                    tellerIds.Add(hId);
-                                }
-                            }
-                        }
                     }
                 }
             }
+
+            var (tellerIds, skippedForgotten) = TellerRoster.Collect(index, today, playerId, _config.Memory);
+            RebuildSkippedForgotten = skippedForgotten;
 
             _tellers.Rebuild(tellerIds);
             _dailyRelationBudget.Reset();

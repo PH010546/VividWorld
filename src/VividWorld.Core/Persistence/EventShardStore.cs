@@ -22,15 +22,33 @@ namespace VividWorld.Core.Persistence
 
         private readonly Dictionary<string, List<WorldEvent>> _shardCache = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> _dirtyShards = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, int> _lastTouchedFlush = new(StringComparer.OrdinalIgnoreCase);
+        private int _flushCount;
         private RumorIndex? _currentIndex;
         private bool _indexDirty;
 
-        public EventShardStore(string eventsFolder, int shardDays, IFileWriter writer)
+        public string LastLoadNote { get; private set; } = string.Empty;
+        public int IdleFlushesBeforeRelease { get; }
+        public int CachedShardCount => _shardCache.Count;
+        public int CachedEventCount => _shardCache.Values.Sum(list => list?.Count ?? 0);
+        public int ReleasedTotal { get; private set; }
+        public IReadOnlyList<string> LastReleased { get; private set; } = Array.Empty<string>();
+
+        public EventShardStore(string eventsFolder, int shardDays, IFileWriter writer, int idleFlushesBeforeRelease = 0)
         {
             _eventsFolder = eventsFolder ?? throw new ArgumentNullException(nameof(eventsFolder));
             _writer = writer ?? throw new ArgumentNullException(nameof(writer));
             _shardDays = shardDays <= 0 ? 1 : shardDays;
+            IdleFlushesBeforeRelease = idleFlushesBeforeRelease < 0 ? 0 : idleFlushesBeforeRelease;
             _indexPath = Path.Combine(_eventsFolder, "_index.json");
+        }
+
+        private void TouchShard(string shardKey)
+        {
+            if (!string.IsNullOrEmpty(shardKey))
+            {
+                _lastTouchedFlush[shardKey] = _flushCount;
+            }
         }
 
         public RumorIndex LoadIndex()
@@ -43,25 +61,34 @@ namespace VividWorld.Core.Persistence
                     var parsed = VividJson.Read<RumorIndex>(json!);
                     if (parsed != null)
                     {
+                        if (parsed.FormatVersion < RumorIndex.CurrentFormatVersion)
+                        {
+                            LastLoadNote = $"rebuilt from shards: index format {parsed.FormatVersion} < {RumorIndex.CurrentFormatVersion}";
+                            return RebuildIndexFromShards();
+                        }
+
                         parsed.RebuildLookup();
                         _currentIndex = parsed;
                         _indexDirty = false;
+                        LastLoadNote = $"read _index.json (format {parsed.FormatVersion})";
                         return parsed;
                     }
                 }
 
                 // 檔案不存在、讀不到、或 VividJson.Read 回傳 null → 從分片重建
+                LastLoadNote = "rebuilt from shards: _index.json missing or unreadable";
                 return RebuildIndexFromShards();
             }
             catch
             {
+                LastLoadNote = "rebuilt from shards: _index.json missing or unreadable";
                 return RebuildIndexFromShards();
             }
         }
 
         private RumorIndex RebuildIndexFromShards()
         {
-            var newIndex = new RumorIndex();
+            var newIndex = new RumorIndex { FormatVersion = RumorIndex.CurrentFormatVersion };
             try
             {
                 var files = _writer.ListFiles(_eventsFolder, "d*.json");
@@ -80,6 +107,7 @@ namespace VividWorld.Core.Persistence
                     if (!string.IsNullOrEmpty(shardKey))
                     {
                         _shardCache[shardKey] = events;
+                        TouchShard(shardKey);
                     }
 
                     foreach (var evt in events)
@@ -162,13 +190,18 @@ namespace VividWorld.Core.Persistence
                     foreach (var kvp in _shardCache)
                     {
                         var found = kvp.Value.Find(e => e != null && e.EventId == eventId);
-                        if (found != null) return found;
+                        if (found != null)
+                        {
+                            TouchShard(kvp.Key);
+                            return found;
+                        }
                     }
                     return null;
                 }
 
                 if (_shardCache.TryGetValue(shardKey!, out var cachedEvents))
                 {
+                    TouchShard(shardKey!);
                     return cachedEvents.Find(e => e != null && e.EventId == eventId);
                 }
 
@@ -180,6 +213,7 @@ namespace VividWorld.Core.Persistence
                 if (events == null) return null;
 
                 _shardCache[shardKey!] = events;
+                TouchShard(shardKey!);
                 return events.Find(e => e != null && e.EventId == eventId);
             }
             catch
@@ -195,6 +229,7 @@ namespace VividWorld.Core.Persistence
                 if (evt == null || string.IsNullOrEmpty(evt.EventId)) return;
 
                 var shardKey = ShardKey.For(evt.Day, _shardDays);
+                TouchShard(shardKey);
                 if (!_shardCache.TryGetValue(shardKey, out var events))
                 {
                     var shardPath = Path.Combine(_eventsFolder, $"{shardKey}.json");
@@ -282,11 +317,99 @@ namespace VividWorld.Core.Persistence
                         _indexDirty = false;
                     }
                 }
+
+                _flushCount++;
+
+                if (IdleFlushesBeforeRelease > 0)
+                {
+                    var released = new List<string>();
+                    var cachedKeys = new List<string>(_shardCache.Keys);
+                    foreach (var shardKey in cachedKeys)
+                    {
+                        if (_dirtyShards.Contains(shardKey))
+                        {
+                            continue;
+                        }
+
+                        int lastTouched = _lastTouchedFlush.TryGetValue(shardKey, out int t) ? t : 0;
+                        if (_flushCount - lastTouched >= IdleFlushesBeforeRelease)
+                        {
+                            _shardCache.Remove(shardKey);
+                            _lastTouchedFlush.Remove(shardKey);
+                            released.Add(shardKey);
+                        }
+                    }
+
+                    released.Sort(StringComparer.OrdinalIgnoreCase);
+                    LastReleased = released;
+                    ReleasedTotal += released.Count;
+                }
+                else
+                {
+                    LastReleased = Array.Empty<string>();
+                }
             }
             catch
             {
                 // 絕不拋出例外
             }
+        }
+
+        public (int RemovedCount, int TouchedShards) Remove(IReadOnlyCollection<string> eventIds)
+        {
+            if (eventIds == null || eventIds.Count == 0) return (0, 0);
+
+            var targetIndex = _currentIndex ?? LoadIndex();
+            var touchedShards = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            int removedCount = 0;
+
+            foreach (var eventId in eventIds)
+            {
+                if (string.IsNullOrEmpty(eventId)) continue;
+
+                var entry = targetIndex.Find(eventId);
+                string? shardKey = entry?.ShardKey;
+
+                if (string.IsNullOrEmpty(shardKey))
+                {
+                    foreach (var kvp in _shardCache)
+                    {
+                        if (kvp.Value.Any(e => e != null && e.EventId == eventId))
+                        {
+                            shardKey = kvp.Key;
+                            break;
+                        }
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(shardKey))
+                {
+                    if (!_shardCache.TryGetValue(shardKey!, out var cachedEvents))
+                    {
+                        var shardPath = Path.Combine(_eventsFolder, $"{shardKey}.json");
+                        var content = _writer.ReadAllText(shardPath);
+                        cachedEvents = (!string.IsNullOrEmpty(content) ? ReadShardEvents(content!) : null) ?? new List<WorldEvent>();
+                        _shardCache[shardKey!] = cachedEvents;
+                    }
+
+                    TouchShard(shardKey!);
+
+                    int count = cachedEvents.RemoveAll(e => e != null && e.EventId == eventId);
+                    if (count > 0)
+                    {
+                        _dirtyShards.Add(shardKey!);
+                        touchedShards.Add(shardKey!);
+                        removedCount += count;
+                    }
+                }
+
+                if (targetIndex.Remove(eventId))
+                {
+                    _indexDirty = true;
+                }
+            }
+
+            return (removedCount, touchedShards.Count);
         }
     }
 }

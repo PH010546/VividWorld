@@ -11,7 +11,7 @@ namespace VividWorld.Core.Presentation
         public const string RetellPrefixTextId = "VividWorld_RetellPrefix";
         public const string RetellPrefixFallback = "I was there, in fact—";
 
-        public static ComposedRumor Compose(WorldEvent evt, IReadOnlyList<Fact> retained,
+        public static ComposedRumor Compose(IReadOnlyList<Fact> retained,
                                             PresentationConfig cfg, bool isRetell = false)
         {
             if (retained == null || retained.Count == 0)
@@ -56,6 +56,12 @@ namespace VividWorld.Core.Presentation
                 PrefixTextId = isRetell ? RetellPrefixTextId : null,
                 PrefixFallback = isRetell ? RetellPrefixFallback : null
             };
+        }
+
+        public static ComposedRumor Compose(WorldEvent evt, IReadOnlyList<Fact> retained,
+                                            PresentationConfig cfg, bool isRetell = false)
+        {
+            return Compose(retained, cfg, isRetell);
         }
     }
 }

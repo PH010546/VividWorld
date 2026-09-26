@@ -8,7 +8,7 @@ And you can be part of it.
 
 *[繁體中文](README.md)*
 
-> **This is a beta (v0.9.0).**
+> **This is a beta (v0.9.1).**
 > The underlying machinery is complete and has seen live play; the content is still being expanded.
 > See the Roadmap at the end of this document for what remains.
 

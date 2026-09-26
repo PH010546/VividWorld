@@ -94,10 +94,13 @@ namespace VividWorld.Core.Tests
         [Fact]
         public void Compose_NeverReturnsAString()
         {
-            var method = typeof(RumorTextComposer).GetMethod("Compose");
-            Assert.NotNull(method);
-            Assert.Equal(typeof(ComposedRumor), method!.ReturnType);
-            Assert.NotEqual(typeof(string), method.ReturnType);
+            var methods = typeof(RumorTextComposer).GetMethods().Where(m => m.Name == "Compose").ToList();
+            Assert.NotEmpty(methods);
+            foreach (var method in methods)
+            {
+                Assert.Equal(typeof(ComposedRumor), method.ReturnType);
+                Assert.NotEqual(typeof(string), method.ReturnType);
+            }
         }
     }
 }

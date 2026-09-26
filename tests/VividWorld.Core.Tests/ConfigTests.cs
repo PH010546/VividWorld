@@ -122,6 +122,8 @@ namespace VividWorld.Core.Tests
             Assert.Equal(0, cfg.Persistence.MaxSnapshots);   // SNAP1：0 = 不限份數，由玩家用遊戲內的管理工具刪
             Assert.Equal(24000, cfg.Persistence.MaxPendingIngestChars);
             Assert.Equal(24, cfg.Persistence.MaxFactsPerEvent);
+            Assert.True(cfg.Persistence.PurgeForgottenEvents);
+            Assert.Equal(8, cfg.Persistence.ShardCacheIdleFlushes);
 
             // Consequences
             Assert.True(cfg.Consequences.Enabled);
@@ -583,6 +585,58 @@ namespace VividWorld.Core.Tests
             Assert.Equal(0.35, (double?)result.Merged.SelectToken("consequences.bystanderMultiplier"));
             Assert.Equal(6.0, (double?)result.Merged.SelectToken("consequences.maxAbsoluteDeltaPerHeroPerDay"));
             Assert.False((bool?)result.Merged.SelectToken("consequences.ledgerOnly"));
+        }
+
+        [Fact]
+        public void Config_Normalize_ClampsShardCacheIdleFlushes_BetweenZeroAndOneThousand()
+        {
+            var cfgUnder = new VividWorldConfig
+            {
+                Persistence = { ShardCacheIdleFlushes = -5 }
+            };
+            var noticesUnder = new List<ClampNotice>();
+            cfgUnder.Normalize(noticesUnder);
+            Assert.Equal(0, cfgUnder.Persistence.ShardCacheIdleFlushes);
+            Assert.Contains(noticesUnder, n => n.Key == "persistence.shardCacheIdleFlushes");
+
+            var cfgOver = new VividWorldConfig
+            {
+                Persistence = { ShardCacheIdleFlushes = 2000 }
+            };
+            var noticesOver = new List<ClampNotice>();
+            cfgOver.Normalize(noticesOver);
+            Assert.Equal(1000, cfgOver.Persistence.ShardCacheIdleFlushes);
+            Assert.Contains(noticesOver, n => n.Key == "persistence.shardCacheIdleFlushes");
+
+            var cfgValid = new VividWorldConfig
+            {
+                Persistence = { ShardCacheIdleFlushes = 12 }
+            };
+            var noticesValid = new List<ClampNotice>();
+            cfgValid.Normalize(noticesValid);
+            Assert.Equal(12, cfgValid.Persistence.ShardCacheIdleFlushes);
+            Assert.DoesNotContain(noticesValid, n => n.Key == "persistence.shardCacheIdleFlushes");
+        }
+
+        [Fact]
+        public void ConfigMerge_AddsShardCacheIdleFlushes_WhenMissing_AndDefaultsToEight()
+        {
+            var oldJson = @"{
+  ""persistence"": {
+    ""shardDays"": 100,
+    ""maxSnapshots"": 0
+  }
+}";
+            var existingJObj = Newtonsoft.Json.Linq.JObject.Parse(oldJson);
+            var canonical = new VividWorldConfig().Normalize();
+            var canonicalJObj = Newtonsoft.Json.Linq.JObject.Parse(VividJson.Write(canonical));
+
+            var result = ConfigMerge.AddMissingKeys(existingJObj, canonicalJObj);
+
+            Assert.Contains("persistence.shardCacheIdleFlushes", result.AddedPaths);
+            Assert.Equal(8, (int?)result.Merged.SelectToken("persistence.shardCacheIdleFlushes"));
+            Assert.Equal(100, (int?)result.Merged.SelectToken("persistence.shardDays"));
+            Assert.Equal(0, (int?)result.Merged.SelectToken("persistence.maxSnapshots"));
         }
     }
 }

@@ -278,5 +278,6 @@ namespace VividWorld.Campaign
         internal KnownByIndex KnownBy => _knownBy;
         internal GrudgeIndex Grudges => _grudges;
         internal IHeroTraitLookup Traits => _traits;
+        internal EventShardStore ShardStore => _store;
     }
 }

@@ -15,11 +15,23 @@
 param(
     [string]$GameFolder = 'C:\Game\Steam\steamapps\common\Mount & Blade II Bannerlord',
     [string]$OutDir,
-    [switch]$SkipBuild
+    [switch]$SkipBuild,
+    # 試打包用：略過「只准在主分支、沒有未提交改動」的檢查。要搭配 -OutDir，不准寫進預設的 dist\
+    [switch]$SkipReleaseCheck
 )
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
+
+# ── 0. 只准從主分支、乾淨的工作資料夾打包 ───────────────────────────
+if ($SkipReleaseCheck) {
+    if (-not $OutDir) { Write-Error '-SkipReleaseCheck 必須搭配 -OutDir：試打包不准寫進預設的 dist\，免得蓋掉正式的發行包' }
+    Write-Warning '略過發佈檢查（-SkipReleaseCheck）：這一份不是正式發行包'
+} else {
+    . (Join-Path $PSScriptRoot 'release-guard.ps1')
+    Assert-ReleaseTree -RepoRoot $repoRoot
+}
+
 if (-not $OutDir) { $OutDir = Join-Path $repoRoot 'dist' }
 
 # 自動偵測本機使用者的 .dotnet SDK（同 deploy.ps1：避免系統層級那支沒有 SDK 的 dotnet.exe 搶先）
@@ -46,6 +58,26 @@ if ($moduleId -like '*.Dev') { Write-Error "SubModule.xml 的 Id 是 '$moduleId'
 # 其餘以 . 切開後逐段 Convert.ToInt32 ⇒ 帶後綴的 "v0.9.0-beta" 會丟例外（帳本 D-74）。
 if ($version -notmatch '^[abevd](\d+)\.(\d+)\.(\d+)(\.\d+)?$') {
     Write-Error "版本號 '$version' 原生解析不了。格式必須是 v0.9.0 這種純數字（帳本 D-74）"
+}
+
+# 更新紀錄：這一版要有自己那一節，「尚未發佈」要已經清空（決策 0035）。
+# 在建置之前擋，免得建完才發現少了它。出貨的那份拿掉空的「尚未發佈」標題。
+$changelogs = @(
+    @{ File = 'CHANGELOG.md';    Pending = '## 尚未發佈' },
+    @{ File = 'CHANGELOG.en.md'; Pending = '## Unreleased' }
+)
+foreach ($log in $changelogs) {
+    $path = Join-Path $repoRoot $log.File
+    if (-not (Test-Path $path)) { Write-Error "找不到 $($log.File)" }
+    $text = [System.IO.File]::ReadAllText($path, [System.Text.Encoding]::UTF8)
+    if ($text -notmatch ('(?m)^## ' + [regex]::Escape($version) + '(\s|$)')) {
+        Write-Error "$($log.File) 沒有 '## $version' 這一節 —— 先把「$($log.Pending)」底下的條目歸到這一版"
+    }
+    $pending = [regex]::Match($text, '(?ms)^' + [regex]::Escape($log.Pending) + '[ \t]*\r?$(.*?)(?=^## |\z)')
+    if ($pending.Success -and $pending.Groups[1].Value.Trim()) {
+        Write-Error "$($log.File) 的「$($log.Pending)」底下還有條目 —— 發佈前要歸到 '## $version'"
+    }
+    $log.Shipped = if ($pending.Success) { $text.Remove($pending.Index, $pending.Length) } else { $text }
 }
 
 Write-Host "打包 $moduleName ($moduleId) $version" -ForegroundColor Cyan
@@ -122,6 +154,10 @@ foreach ($doc in @('README.md', 'README.en.md', 'LICENSE')) {
     $src = Join-Path $repoRoot $doc
     if (Test-Path $src) { Copy-Item $src $stageRoot -Force }
 }
+$utf8NoBom = New-Object System.Text.UTF8Encoding $false
+foreach ($log in $changelogs) {
+    [System.IO.File]::WriteAllText((Join-Path $stageRoot $log.File), $log.Shipped, $utf8NoBom)
+}
 
 # ── 7. 自我檢查 ──────────────────────────────────────────────────────
 $problems = @()
@@ -129,12 +165,15 @@ foreach ($dll in $dlls) {
     if (-not (Test-Path (Join-Path $stageBin $dll))) { $problems += "缺少 bin\Win64_Shipping_Client\$dll" }
 }
 foreach ($required in @('SubModule.xml',
+                        'CHANGELOG.md',
+                        'CHANGELOG.en.md',
                         'ModuleData\vividworld_events.json',
                         'ModuleData\vividworld_situations.json',
                         'ModuleData\vividworld_situation_events.json',
                         'ModuleData\Languages\std_module_strings_xml.xml',
                         'ModuleData\Languages\CNt\std_module_strings_xml.xml',
-                        'GUI\Prefabs\VividWorldChronicle.xml')) {
+                        'GUI\Prefabs\VividWorldChronicle.xml',
+                        'GUI\Brushes\VividWorldChronicle.xml')) {
     if (-not (Test-Path (Join-Path $stageRoot $required))) { $problems += "缺少 $required" }
 }
 $leftovers = Get-ChildItem $stageRoot -Recurse -Force -Filter '.gitkeep' -ErrorAction SilentlyContinue

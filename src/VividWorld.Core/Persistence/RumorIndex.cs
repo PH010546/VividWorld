@@ -9,6 +9,9 @@ namespace VividWorld.Core.Persistence
 {
     public sealed class RumorIndex
     {
+        public const int CurrentFormatVersion = 1;
+        public int FormatVersion { get; set; }
+
         public List<RumorIndexEntry> Entries { get; set; } = new();
 
         [JsonExtensionData]

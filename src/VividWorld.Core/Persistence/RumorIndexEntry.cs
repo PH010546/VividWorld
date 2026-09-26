@@ -25,12 +25,28 @@ namespace VividWorld.Core.Persistence
         public string? SituationId { get; set; }
         public bool HasGrudges { get; set; }
 
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public Dictionary<string, double>? ForgetDays { get; set; }
+
         [JsonExtensionData]
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
 
         public static RumorIndexEntry From(WorldEvent evt, int shardDays)
         {
             if (evt == null) throw new ArgumentNullException(nameof(evt));
+
+            Dictionary<string, double>? forgetDays = null;
+            if (evt.KnownBy != null)
+            {
+                foreach (var k in evt.KnownBy)
+                {
+                    if (k != null && !string.IsNullOrEmpty(k.HeroId) && k.ForgetDay.HasValue)
+                    {
+                        forgetDays ??= new Dictionary<string, double>(StringComparer.Ordinal);
+                        forgetDays[k.HeroId] = k.ForgetDay.Value;
+                    }
+                }
+            }
 
             return new RumorIndexEntry
             {
@@ -54,7 +70,8 @@ namespace VividWorld.Core.Persistence
                     .ToList() ?? new List<string>(),
                 LinkedEventId = evt.LinkedEventId,
                 SituationId = evt.SituationId,
-                HasGrudges = evt.KnownBy?.Any(k => k.RelationImpacts != null && k.RelationImpacts.Count > 0) ?? false
+                HasGrudges = evt.KnownBy?.Any(k => k.RelationImpacts != null && k.RelationImpacts.Count > 0) ?? false,
+                ForgetDays = forgetDays
             };
         }
     }

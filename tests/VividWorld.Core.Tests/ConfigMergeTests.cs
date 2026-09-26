@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using VividWorld.Core.Config;
+using VividWorld.Core.Persistence;
 using Xunit;
 
 namespace VividWorld.Core.Tests
@@ -129,6 +130,26 @@ namespace VividWorld.Core.Tests
             Assert.Contains("debug.metricsEnabled", result.AddedPaths);
             Assert.DoesNotContain("debug.somethingFromTheFuture", result.AddedPaths);
             Assert.DoesNotContain("futureTopLevel", result.AddedPaths);
+        }
+
+        [Fact]
+        public void Merge_AddsPersistencePurgeForgottenEvents_PreservingExistingPersistenceValues()
+        {
+            var existingJson = @"{
+                ""persistence"": {
+                    ""shardDays"": 150
+                }
+            }";
+
+            var canonical = JObject.Parse(VividJson.Write(new VividWorldConfig()));
+
+            var existing = JObject.Parse(existingJson);
+            var result = ConfigMerge.AddMissingKeys(existing, canonical);
+
+            Assert.Contains("persistence.purgeForgottenEvents", result.AddedPaths);
+            Assert.NotNull(result.Merged["persistence"]);
+            Assert.Equal(150, (int)result.Merged["persistence"]!["shardDays"]!);
+            Assert.True((bool)result.Merged["persistence"]!["purgeForgottenEvents"]!);
         }
     }
 }
