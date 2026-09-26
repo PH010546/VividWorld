@@ -1,0 +1,11 @@
+Vivid World changelog
+
+v0.9.1
+The chronicle (Ctrl+L) is fixed: it used to show only one entry, and names could appear as a string of code. Every entry now displays properly.
+Names of people and places in the chronicle are now clickable and open their encyclopedia page.
+The chronicle now shows the news you heard most recently at the top, and news you have heard stays there.
+On long campaigns, the mod's disk and memory use no longer just keeps growing.
+Existing campaigns can be continued as they are; no settings need to be changed.
+
+v0.9.0
+First public beta.

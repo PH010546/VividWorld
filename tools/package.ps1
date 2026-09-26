@@ -60,8 +60,8 @@ if ($version -notmatch '^[abevd](\d+)\.(\d+)\.(\d+)(\.\d+)?$') {
     Write-Error "版本號 '$version' 原生解析不了。格式必須是 v0.9.0 這種純數字（帳本 D-74）"
 }
 
-# 更新紀錄：這一版要有自己那一節，「尚未發佈」要已經清空（決策 0035）。
-# 在建置之前擋，免得建完才發現少了它。出貨的那份拿掉空的「尚未發佈」標題。
+# 開發者版更新紀錄（GitHub 上那兩份，不出貨）：這一版要有自己那一節，「尚未發佈」要已經清空（決策 0046）。
+# 在建置之前擋，免得建完才發現少了它。
 $changelogs = @(
     @{ File = 'CHANGELOG.md';    Pending = '## 尚未發佈' },
     @{ File = 'CHANGELOG.en.md'; Pending = '## Unreleased' }
@@ -77,7 +77,22 @@ foreach ($log in $changelogs) {
     if ($pending.Success -and $pending.Groups[1].Value.Trim()) {
         Write-Error "$($log.File) 的「$($log.Pending)」底下還有條目 —— 發佈前要歸到 '## $version'"
     }
-    $log.Shipped = if ($pending.Success) { $text.Remove($pending.Index, $pending.Length) } else { $text }
+}
+
+# 玩家版更新紀錄（決策 0046）：發行包附的是這兩份，Nexus 的 changelog 欄也貼這兩份。
+# 純文字、一行一個段落：要有「v<版本>」自成一行的那一節，而且不准出現 Markdown 符號。
+$playerLogs = @('CHANGELOG.txt', 'CHANGELOG.en.txt')
+foreach ($name in $playerLogs) {
+    $path = Join-Path $repoRoot "module\$name"
+    if (-not (Test-Path $path)) { Write-Error "找不到 module\$name（玩家版更新紀錄，決策 0046）" }
+    $lines = [System.IO.File]::ReadAllLines($path, [System.Text.Encoding]::UTF8)
+    if (-not ($lines | Where-Object { $_.Trim() -eq $version })) {
+        Write-Error "module\$name 沒有 '$version' 這一節 —— 發版前要寫玩家版（一行一個段落）"
+    }
+    $md = @($lines | Where-Object { $_ -match '^\s*(#|[-*+] |\d+\. |>)' -or $_ -match '\*\*|`|\[[^\]]*\]\(' })
+    if ($md.Count -gt 0) {
+        Write-Error ("module\$name 出現 Markdown 符號（玩家版只寫純文字）：`n  " + ($md -join "`n  "))
+    }
 }
 
 Write-Host "打包 $moduleName ($moduleId) $version" -ForegroundColor Cyan
@@ -154,9 +169,9 @@ foreach ($doc in @('README.md', 'README.en.md', 'LICENSE')) {
     $src = Join-Path $repoRoot $doc
     if (Test-Path $src) { Copy-Item $src $stageRoot -Force }
 }
-$utf8NoBom = New-Object System.Text.UTF8Encoding $false
-foreach ($log in $changelogs) {
-    [System.IO.File]::WriteAllText((Join-Path $stageRoot $log.File), $log.Shipped, $utf8NoBom)
+# 更新紀錄附玩家版（決策 0046）；根目錄的 CHANGELOG.md 是給 GitHub 上的開發者看的，不出貨
+foreach ($name in $playerLogs) {
+    Copy-Item (Join-Path $repoRoot "module\$name") $stageRoot -Force
 }
 
 # ── 7. 自我檢查 ──────────────────────────────────────────────────────
@@ -165,8 +180,8 @@ foreach ($dll in $dlls) {
     if (-not (Test-Path (Join-Path $stageBin $dll))) { $problems += "缺少 bin\Win64_Shipping_Client\$dll" }
 }
 foreach ($required in @('SubModule.xml',
-                        'CHANGELOG.md',
-                        'CHANGELOG.en.md',
+                        'CHANGELOG.txt',
+                        'CHANGELOG.en.txt',
                         'ModuleData\vividworld_events.json',
                         'ModuleData\vividworld_situations.json',
                         'ModuleData\vividworld_situation_events.json',
