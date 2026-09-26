@@ -131,7 +131,7 @@ namespace VividWorld.Core.Tests
         [Fact]
         public void FormatSkippedRestore_AllReasons_MatchDocumentedText()
         {
-            Assert.Equal("Snapshot restore skipped: this save carries no snapshot token (it was saved before M7).",
+            Assert.Equal("Snapshot restore skipped: this save carries no snapshot token (it was saved before snapshots existed).",
                 SnapshotLogFormatter.FormatSkippedRestore(SnapshotOutcome.NoToken, ""));
 
             Assert.Equal("Snapshot restore skipped: no snapshot folder for token 4f2a1c9e - it was pruned, or the folder was deleted by hand.",
@@ -311,7 +311,7 @@ namespace VividWorld.Core.Tests
 
             Assert.DoesNotContain("new campaign", formatted);
             Assert.Contains(
-                "  this session:    no revert (this save carries no snapshot token (it was saved before M7))",
+                "  this session:    no revert (this save carries no snapshot token (it was saved before snapshots existed))",
                 formatted);
         }
 

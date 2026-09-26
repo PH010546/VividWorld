@@ -12,7 +12,7 @@
     <DependedModule Id="Sandbox" />
     <DependedModule Id="StoryMode" />
   </DependedModules>
-  <!-- BLSE／BUTR 的社群相依中繼資料。原生讀模組清單時完全不看這一段（帳本 D-75），
+  <!-- BLSE／BUTR 的社群相依中繼資料。原生讀模組清單時完全不看這一段（已反編譯確認），
        它的作用是讓啟動器告訴玩家「這個模組是對著哪一版遊戲建的」。
        版本取自官方模組自己的 SubModule.xml（Modules\Native 與 Modules\Sandbox 皆 v1.4.8）。 -->
   <DependedModuleMetadatas>

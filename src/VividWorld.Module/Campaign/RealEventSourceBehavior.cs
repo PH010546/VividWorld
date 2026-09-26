@@ -68,7 +68,7 @@ namespace VividWorld.Campaign
             CampaignEvents.BeforeHeroesMarried.AddNonSerializedListener(this, OnHeroesMarried);
             CampaignEvents.OnGivenBirthEvent.AddNonSerializedListener(this, OnGivenBirth);
             CampaignEvents.HeroPrisonerReleased.AddNonSerializedListener(this, OnHeroPrisonerReleased);
-            ModLog.Info("RealEventSourceBehavior.RegisterEvents: subscribed to 5 campaign events (ledger D-52, D-62).");
+            ModLog.Info("RealEventSourceBehavior.RegisterEvents: subscribed to 5 campaign events.");
         }
 
         public override void SyncData(IDataStore dataStore)

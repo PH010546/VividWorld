@@ -146,7 +146,13 @@ Comments cite an internal engineering spec (`§4`, `§6.7.4`) and an internal ve
 (`D-73`, `S-18`, `L-45`). Those two documents are part of the project's private working notes and
 are not published here. You do not need them to contribute — the citation is there so a maintainer
 can trace where a decision came from. `D` means it was confirmed by decompiling the game, `S` that
-it was read out of shipped source, `L` that it was observed in a real campaign.
+it was read out of shipped source, `L` that it was observed in a real campaign, `X` that it was
+confirmed by decompiling another mod.
+
+Older comments also carry internal work-item labels (`M6b`, `SE2`, `MF3a`, `LISTEN1d`) and decision
+numbers (`decision 0017`). They mark when and why a piece was written and can be ignored. New code
+no longer adds them: a comment should explain its reason in full, with a spec or ledger citation, if
+any, only at the end. Log messages carry no citations at all.
 
 ---
 

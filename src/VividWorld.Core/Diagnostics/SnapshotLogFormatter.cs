@@ -100,7 +100,7 @@ namespace VividWorld.Core.Diagnostics
             switch (outcome)
             {
                 case SnapshotOutcome.NoToken:
-                    return "this save carries no snapshot token (it was saved before M7)";
+                    return "this save carries no snapshot token (it was saved before snapshots existed)";
                 case SnapshotOutcome.SnapshotMissing:
                     return $"no snapshot folder for token {t8} - it was pruned, or the folder was deleted by hand";
                 case SnapshotOutcome.SnapshotEmpty:

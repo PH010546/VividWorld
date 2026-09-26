@@ -155,7 +155,7 @@ namespace VividWorld.Campaign
                 _scheduler.TickCursor,
                 ringSize,
                 string.IsNullOrEmpty(_tickCursorHeroId)
-                    ? "the save has no teller id (saved before MF1b-fix1)"
+                    ? "the save has no teller id (saved by a version that stored only the position)"
                     : _tickCursorHeroId + " is no longer in the ring"));
         }
 
@@ -191,7 +191,7 @@ namespace VividWorld.Campaign
                     ModLog.Warn(string.Format(CultureInfo.InvariantCulture,
                         "Event store is ahead of the save: {0} events dated after day {1:F1} (max {2:F1}).\n" +
                         "      Snapshot revert {3}.\n" +
-                        "      Those events are still in the store, but every reader hides them until the date catches up (spec 2.2.1); nothing was deleted.",
+                        "      Those events are still in the store, but every reader hides them until the date catches up; nothing was deleted.",
                         _rollbackCount, _launchDay, _rollbackMaxDay, verdict));
                 }
 
@@ -355,15 +355,15 @@ namespace VividWorld.Campaign
                 string verdict;
                 if (string.Equals(lang, "English", StringComparison.OrdinalIgnoreCase))
                 {
-                    verdict = "INCONCLUSIVE (English returns fallback by design, ledger D-07)";
+                    verdict = "INCONCLUSIVE (English returns the fallback text by design)";
                 }
                 else if (!string.Equals(result, "VW_PROBE_FALLBACK", StringComparison.Ordinal))
                 {
-                    verdict = "D-09 HOLDS";
+                    verdict = "OK - runtime-built string keys are localized";
                 }
                 else
                 {
-                    verdict = "D-09 FAILS - see spec 9.5 fallback plan";
+                    verdict = "FAILED - runtime-built string keys are not localized, rumor text will fall back to English";
                 }
 
                 ModLog.Info($"localization probe: language={lang}  result=\"{result}\"  => {verdict}");

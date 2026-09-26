@@ -274,7 +274,7 @@
     <string id="VividWorld_Snapshots_SweepYes" text="清除無用快照" />
     <string id="VividWorld_Snapshots_SweepNo" text="看完整清單…" />
 
-    <!-- MCM1: 遊戲內設定選單字串 -->
+    <!-- 遊戲內設定選單字串 -->
     <string id="VividWorld_MCM_DisplayName" text="Vivid World" />
 
     <!-- MCM 分組 -->
@@ -355,7 +355,7 @@
     <string id="VividWorld_MCM_MaxSnapshots" text="最多保留快照數" />
     <string id="VividWorld_MCM_MaxSnapshotsHint" text="每個戰役最多保留的傳聞系統快照數量。設為 0 表示不自動清除任何快照。" />
 
-    <!-- 模式通知 (LISTEN1d) -->
+    <!-- 模式通知 -->
     <string id="VividWorld_ModeNotice_Title" text="Vivid World" />
     <string id="VividWorld_ModeNotice_Button" text="知道了" />
     <string id="VividWorld_ModeNotice_PopupRealistic_Mcm" text="偵測到你安裝了 {MODS}。這類模組讓平民很難接近貴族，所以 Vivid World 已自動改用「寫實模式」：領主對你的好感度要到 10 以上，才會主動跟你聊起各地的傳聞。想讓大家都願意跟你閒聊，可以到 MCM 的 Vivid World 設定，把「傳聞模式」改成「暢玩」。" />

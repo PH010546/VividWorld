@@ -713,7 +713,7 @@ namespace VividWorld.Debug
                 "player: {0} ({1})", playerName, playerId));
             sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
                 "  known events: {0}  (as participant {1}, told by an NPC {2})", knownCount, participantCount, toldByNpcCount));
-            sb.AppendLine("      ^ only \"told by an NPC\" is bound by the §6.6 invariant; participation is not (§6.6.0)");
+            sb.AppendLine("      ^ the player only hears news when an NPC tells him; events he took part in he knows first-hand");
             sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
                 "  events about you: {0}", aboutCount));
             sb.AppendLine();

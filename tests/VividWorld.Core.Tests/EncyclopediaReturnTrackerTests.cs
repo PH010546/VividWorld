@@ -182,7 +182,7 @@ namespace VividWorld.Core.Tests
         public void ChronicleLogFormatter_FormatLinkQueued_MatchesVerbatim()
         {
             string line = ChronicleLogFormatter.FormatLinkQueued("hero:lord_4_6");
-            Assert.Equal("Chronicle link: hero:lord_4_6 clicked - handled on the next application tick (not inside the widget's own update, ledger D-81).", line);
+            Assert.Equal("Chronicle link: hero:lord_4_6 clicked - handled on the next application tick (not inside the widget's own update).", line);
         }
 
         [Fact]

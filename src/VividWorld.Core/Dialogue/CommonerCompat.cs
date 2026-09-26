@@ -200,7 +200,7 @@ namespace VividWorld.Core.Dialogue
             }
 
             return $"Commoner compat: ON [{state.Reason}] - volunteer line on '{inputToken}' raised {vanillaPriority} -> {state.NpcLinePriority} " +
-                   $"(must outrank NaN's nan_peasant_greeting at 150, ledger X-17). " +
+                   $"(must outrank NaN's nan_peasant_greeting at 150). " +
                    $"Clan-tier gates: asking needs tier >= {state.AskMinClanTier}, volunteering needs tier >= {state.VolunteerMinClanTier} " +
                    "(a lord speaking up is not the player accosting him; that path has its own relation gates, see the Rumor mode line).";
         }

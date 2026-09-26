@@ -36,6 +36,7 @@ Every release states three things:
   with a daily summary line; on load and once a day it also previews "what would happen if you talked to everyone in the network now".
   Two new developer dialogue lines: "(dev) Why do I hear so little?" and "(dev) What happens if I talk to everyone right now?".
   Existing campaigns can simply be continued: the tally starts from the update. `debug.listenTally` is added automatically (default `true`; `false` turns it off).
+- **Log messages no longer carry internal references**: a dozen or so lines in `log.txt` ended with tags such as `ledger X-17` that point to private working notes; they now keep only the explanation (the localization self-check line now says OK or FAILED and why). Existing campaigns can simply be continued, no config changes needed.
 
 ## v0.9.1
 

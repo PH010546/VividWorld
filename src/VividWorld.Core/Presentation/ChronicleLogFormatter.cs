@@ -118,7 +118,7 @@ namespace VividWorld.Core.Presentation
         public static string FormatLinkQueued(string link)
         {
             return string.Format(CultureInfo.InvariantCulture,
-                "Chronicle link: {0} clicked - handled on the next application tick (not inside the widget's own update, ledger D-81).",
+                "Chronicle link: {0} clicked - handled on the next application tick (not inside the widget's own update).",
                 link);
         }
 

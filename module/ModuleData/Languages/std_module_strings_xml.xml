@@ -253,7 +253,7 @@
     <string id="VividWorld_Chronicle_HopZero" text="you were there" />
     <string id="VividWorld_Chronicle_SourceUnknown" text="from someone" />
 
-    <!-- SNAP1: snapshot manager -->
+    <!-- snapshot manager -->
     <string id="VividWorld_Snapshots_Title" text="Vivid World Snapshot Manager" />
     <string id="VividWorld_Snapshots_Desc" text="A snapshot is what Vivid World uses to put the rumors back the way they were when you saved. Delete a snapshot while its save game is still there and Vivid World will start behaving oddly with that save. It is best to delete a snapshot only once its save game is gone. You have {COUNT}, taking up {SIZE}." />
     <string id="VividWorld_Snapshots_Delete" text="Delete selected" />
@@ -274,7 +274,7 @@
     <string id="VividWorld_Snapshots_SweepYes" text="Clear them out" />
     <string id="VividWorld_Snapshots_SweepNo" text="Show the full list..." />
 
-    <!-- MCM1: in-game settings menu strings -->
+    <!-- in-game settings menu strings -->
     <string id="VividWorld_MCM_DisplayName" text="Vivid World" />
 
     <!-- MCM groups -->
@@ -355,7 +355,7 @@
     <string id="VividWorld_MCM_MaxSnapshots" text="Max saved snapshots" />
     <string id="VividWorld_MCM_MaxSnapshotsHint" text="Maximum number of rumor system snapshots retained per campaign. 0 keeps all snapshots without automatic pruning." />
 
-    <!-- Mode Notice (LISTEN1d) -->
+    <!-- Mode Notice -->
     <string id="VividWorld_ModeNotice_Title" text="Vivid World" />
     <string id="VividWorld_ModeNotice_Button" text="Understood" />
     <string id="VividWorld_ModeNotice_PopupRealistic_Mcm" text="We detected {MODS}. Mods like these make it hard for a commoner to approach the nobility, so Vivid World has switched itself to Realistic mode: a lord needs to think well of you (relation 10 or higher) before he brings up the news of the land. If you would rather everyone be willing to chat, open Vivid World's settings in MCM and set &quot;Rumor mode&quot; to &quot;Casual&quot;." />

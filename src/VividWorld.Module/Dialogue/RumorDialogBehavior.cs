@@ -323,7 +323,7 @@ namespace VividWorld.Dialogue
                 ModLog.Info(
                     $"Volunteer: offer cache invalidated mid-conversation, but the '{_config.Dialogue.NpcLineInputToken}' " +
                     "greeting state has already been passed in this conversation - a recomputed offer can only be " +
-                    "spoken the next time a conversation is started (ledger L-24).");
+                    "spoken the next time a conversation is started.");
                 ModLog.Flush();
             }
 
@@ -694,7 +694,7 @@ namespace VividWorld.Dialogue
 
             ModLog.Info($"Registered rumor dialogue lines: volunteer on {d.NpcLineInputToken} (priority {_compat.NpcLinePriority}), ask on {d.PlayerLineInputToken} (priority {d.PlayerLinePriority})."
                 + (_config.Debug.DebugDialogueEnabled
-                    ? $" Start-token probe on 'start' (priority {StartProbePriority}, never selectable) - ledger L-25."
+                    ? $" Start-token probe on 'start' (priority {StartProbePriority}, never selectable)."
                     : " Start-token probe off (debugDialogueEnabled = false)."));
         }
 
@@ -746,7 +746,7 @@ namespace VividWorld.Dialogue
                 _consequenceHookInstalled = true;
                 _hookedManager = manager;
                 ModLog.Info("Conversation route: subscribed to ConversationManager.ConsequenceRunned - "
-                            + "every line the engine actually picks is now recorded for the current conversation (ledger D-50).");
+                            + "every line the engine actually picks is now recorded for the current conversation.");
             }
             catch (Exception ex)
             {
@@ -1378,7 +1378,7 @@ namespace VividWorld.Dialogue
             if (scan.RivalCount > 0)
             {
                 cause = $"another dialog line won token '{token}' before ours (ours: priority {prio}); " +
-                        "no gate refused, our condition was never called (ledger D-43/L-22)";
+                        "no gate refused, our condition was never called";
             }
             else if (scan.RivalCount == 0)
             {

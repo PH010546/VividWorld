@@ -81,7 +81,7 @@ namespace VividWorld
             starter.AddBehavior(realEvents);
             starter.AddBehavior(situationScan);
 
-            ModLog.Info("Registered 5 campaign behaviors on the game starter (see ledger D-38).");
+            ModLog.Info("Registered 5 campaign behaviors on the game starter.");
             ModLog.Flush();
         }
 

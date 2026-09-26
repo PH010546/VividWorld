@@ -359,7 +359,7 @@ namespace VividWorld.Core.Persistence
                 {
                     Outcome = SnapshotOutcome.NoToken,
                     Token = token ?? string.Empty,
-                    Reason = "this save carries no snapshot token (it was saved before M7)",
+                    Reason = "this save carries no snapshot token (it was saved before snapshots existed)",
                     ElapsedMs = sw.Elapsed.TotalMilliseconds
                 };
             }
