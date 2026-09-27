@@ -1010,6 +1010,7 @@ namespace VividWorld.Dialogue
                         }
                         ModLog.Info(deliveredMsg);
                         ModLog.Info($"  text shown: \"{_renderedVolunteerTextPlain ?? _renderedVolunteerText}\"");
+                        LogDeliveredPrefix(_cachedVolunteerOffer);
                     }
                 }
             }
@@ -1138,6 +1139,7 @@ namespace VividWorld.Dialogue
                         }
                         ModLog.Info(recDeliveredMsg);
                         ModLog.Info($"  text shown: \"{_renderedVolunteerTextPlain ?? _renderedVolunteerText}\"");
+                        LogDeliveredPrefix(_cachedVolunteerOffer);
                     }
                 }
             }
@@ -1648,6 +1650,7 @@ namespace VividWorld.Dialogue
                         }
                         ModLog.Info(askMsg);
                         ModLog.Info($"  text shown: \"{_renderedAskTextPlain ?? _renderedAskText}\"");
+                        LogDeliveredPrefix(_cachedOffer);
                     }
                 }
             }
@@ -2018,16 +2021,33 @@ namespace VividWorld.Dialogue
                     }
                 }
 
+                string? linkedId = evt.LinkedEventId;
+                bool isCorrection = !string.IsNullOrEmpty(linkedId) &&
+                    ((_playerHeardLog != null && _playerHeardLog.Contains(linkedId!)) ||
+                     (_knownBy != null && _knownBy.EventsKnownBy(playerHeroId, day).Contains(linkedId!)));
+
                 result.Add(new RumorCandidate
                 {
                     Event = evt,
                     TellerHop = tellerEntry.Hop,
                     PlayerExistingHop = playerEntry?.Hop,
-                    InvolvesHeroPlayerCaresAbout = involvesCared
+                    InvolvesHeroPlayerCaresAbout = involvesCared,
+                    SourceHeroId = tellerEntry.SourceHeroId,
+                    IsCorrection = isCorrection
                 });
             }
 
             return result;
+        }
+
+        private static void LogDeliveredPrefix(RumorOffer? offer)
+        {
+            if (offer == null) return;
+            var prefix = offer.Prefix;
+            string prefixKind = prefix?.Kind.ToString() ?? "None";
+            bool hasSource = !string.IsNullOrEmpty(offer.SourceHeroId);
+            string roleSuffix = !string.IsNullOrEmpty(offer.SpeakerRole) ? $", speakerRole={offer.SpeakerRole}" : string.Empty;
+            ModLog.Info($"  prefix: {prefixKind} (hop={offer.TellerHop}, hasSource={hasSource}, isRetell={offer.IsRetell}, isCorrection={offer.IsCorrection}{roleSuffix})");
         }
 
         public ListenPreviewResult RunPreview(bool includeHeroDetails = false)

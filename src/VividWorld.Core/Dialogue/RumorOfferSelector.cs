@@ -14,14 +14,24 @@ namespace VividWorld.Core.Dialogue
         private readonly VividWorldConfig _config;
         private readonly RumorEngine _engine;
         private readonly string _playerHeroId;
+        private readonly Func<string, VividWorld.Core.Catalog.EventTemplate?>? _getTemplate;
+        private readonly IHeroTraitLookup? _traits;
 
         public RumorMode Mode { get; set; } = RumorMode.Casual;
 
-        public RumorOfferSelector(VividWorldConfig cfg, RumorEngine engine, string playerHeroId, RumorMode? mode = null)
+        public RumorOfferSelector(
+            VividWorldConfig cfg,
+            RumorEngine engine,
+            string playerHeroId,
+            RumorMode? mode = null,
+            Func<string, VividWorld.Core.Catalog.EventTemplate?>? getTemplate = null,
+            IHeroTraitLookup? traits = null)
         {
             _config = cfg ?? throw new ArgumentNullException(nameof(cfg));
             _engine = engine ?? throw new ArgumentNullException(nameof(engine));
             _playerHeroId = playerHeroId ?? string.Empty;
+            _getTemplate = getTemplate ?? _engine.TemplateProvider;
+            _traits = traits ?? _engine.Traits;
             if (mode.HasValue)
             {
                 Mode = mode.Value;
@@ -314,6 +324,13 @@ namespace VividWorld.Core.Dialogue
                         if (!string.IsNullOrEmpty(note)) classification.FilterNotes.Add(note);
                         break;
 
+                    // 當事人自己不講（selfTell）或事件型別已停用（retired），算進既有的 filtered 計數並寫 FilterNotes
+                    case CandidateRejection.WontTellOwn:
+                    case CandidateRejection.RetiredType:
+                        classification.FilteredOther++;
+                        if (!string.IsNullOrEmpty(note)) classification.FilterNotes.Add(note);
+                        break;
+
                     // 候選壞掉、或講述者自己不知情——理論上進不了候選，但別讓它消失
                     default:
                         classification.FilteredOther++;
@@ -364,8 +381,9 @@ namespace VividWorld.Core.Dialogue
             bool isRetell = best.PlayerExistingHop.HasValue;
             int resultingPlayerHop = ComputeLandingHop(best.Event, best.TellerHop, tier);
             var retainedFacts = _engine.FactsAtHop(best.Event, resultingPlayerHop, teller.HeroId);
-            bool isEyewitnessRetell = isRetell && best.TellerHop == 0;
-            var composed = RumorTextComposer.Compose(best.Event, retainedFacts, _config.Presentation, isRetell: isEyewitnessRetell);
+            bool isParticipant = best.Event.RoleOf(teller.HeroId) != null;
+            var prefix = RumorPrefixSelector.SelectPrefix(best.TellerHop, best.SourceHeroId, isRetell, best.IsCorrection, isParticipant);
+            var composed = RumorTextComposer.Compose(best.Event, retainedFacts, _config.Presentation, prefix, teller.HeroId);
 
             return new RumorOffer
             {
@@ -374,7 +392,11 @@ namespace VividWorld.Core.Dialogue
                 ResultingPlayerHop = resultingPlayerHop,
                 Composed = composed,
                 IsRetell = isRetell,
-                Score = Score(best, day)
+                IsCorrection = best.IsCorrection,
+                SourceHeroId = best.SourceHeroId,
+                Prefix = prefix,
+                Score = Score(best, day),
+                SpeakerRole = composed.SpeakerRole
             };
         }
 
@@ -395,6 +417,24 @@ namespace VividWorld.Core.Dialogue
 
             // 講述者必須知情
             if (!evt.IsKnownBy(teller.HeroId)) return CandidateRejection.TellerDoesNotKnow;
+
+            // 停用的事件型別：已存下來的也不再傳，事件資料保留
+            if (_getTemplate != null && VividWorld.Core.Catalog.RetiredTypeEvaluator.IsRetired(evt, _getTemplate))
+            {
+                note = $"{evt.EventId}: retired type";
+                return CandidateRejection.RetiredType;
+            }
+
+            // 當事人自己不講（selfTell）
+            if (_getTemplate != null)
+            {
+                var selfTell = VividWorld.Core.Catalog.SelfTellEvaluator.Evaluate(evt, teller.HeroId, _getTemplate, _traits);
+                if (!selfTell.CanTell)
+                {
+                    note = $"{evt.EventId}: {selfTell.ReasonText}";
+                    return CandidateRejection.WontTellOwn;
+                }
+            }
 
             // 玩家未知 -> 合格
             if (!candidate.PlayerExistingHop.HasValue)

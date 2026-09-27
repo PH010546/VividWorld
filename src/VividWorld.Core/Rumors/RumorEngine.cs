@@ -19,6 +19,7 @@ namespace VividWorld.Core.Rumors
         private readonly IDeterministicRng _rng;
         private readonly long _campaignSeed;
         private readonly string _playerHeroId;
+        private readonly Func<string, VividWorld.Core.Catalog.EventTemplate?>? _getTemplate;
 
         public RumorEngine(VividWorldConfig config,
                            IFactRetentionPolicy retention,
@@ -27,7 +28,8 @@ namespace VividWorld.Core.Rumors
                            IHeroTraitLookup traits,
                            IDeterministicRng rng,
                            long campaignSeed,
-                           string playerHeroId)
+                           string playerHeroId,
+                           Func<string, VividWorld.Core.Catalog.EventTemplate?>? getTemplate = null)
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _retention = retention ?? throw new ArgumentNullException(nameof(retention));
@@ -37,7 +39,11 @@ namespace VividWorld.Core.Rumors
             _rng = rng ?? throw new ArgumentNullException(nameof(rng));
             _campaignSeed = campaignSeed;
             _playerHeroId = playerHeroId ?? string.Empty;
+            _getTemplate = getTemplate;
         }
+
+        public IHeroTraitLookup Traits => _traits;
+        public Func<string, VividWorld.Core.Catalog.EventTemplate?>? TemplateProvider => _getTemplate;
 
         public int MaxHopFor(WorldEvent evt)
         {
@@ -118,7 +124,7 @@ namespace VividWorld.Core.Rumors
             int maxHop = MaxHopFor(evt);
 
             var candidates = evt.KnownBy
-                .Where(k => TellerEligibility.Check(evt, k.HeroId, day, maxHop, _playerHeroId, _config, _traits) == TellReason.Ok)
+                .Where(k => TellerEligibility.Check(evt, k.HeroId, day, maxHop, _playerHeroId, _config, _traits, _getTemplate) == TellReason.Ok)
                 .ToList();
 
             if (candidates.Count == 0)
@@ -147,10 +153,10 @@ namespace VividWorld.Core.Rumors
                 {
                     if (evt == null) continue;
                     int maxHop = MaxHopFor(evt);
-                    var reason = TellerEligibility.Check(evt, tellerHeroId, day, maxHop, _playerHeroId, _config, _traits);
+                    var reason = TellerEligibility.Check(evt, tellerHeroId, day, maxHop, _playerHeroId, _config, _traits, _getTemplate, out string? detail);
                     if (reason != TellReason.Ok)
                     {
-                        exclusions.Add(new TopicExclusion(evt.EventId, reason));
+                        exclusions.Add(new TopicExclusion(evt.EventId, reason, detail));
                     }
                     else
                     {
@@ -200,7 +206,7 @@ namespace VividWorld.Core.Rumors
             }
 
             int maxHop = MaxHopFor(evt);
-            var reason = TellerEligibility.Check(evt, tellerHeroId, day, maxHop, _playerHeroId, _config, _traits);
+            var reason = TellerEligibility.Check(evt, tellerHeroId, day, maxHop, _playerHeroId, _config, _traits, _getTemplate);
             if (reason != TellReason.Ok)
             {
                 return PropagationOutcome.Nothing;

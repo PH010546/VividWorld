@@ -26,6 +26,7 @@ namespace VividWorld.Core.Config
         public EventsConfig        Events        { get; set; } = new();
         public SituationsConfig    Situations    { get; set; } = new();
         public MemoryConfig        Memory        { get; set; } = new();
+        public AiConfig            Ai            { get; set; } = new();
         public DebugConfig         Debug         { get; set; } = new();
 
         [JsonExtensionData]
@@ -59,6 +60,7 @@ namespace VividWorld.Core.Config
             Situations.Contest ??= new SituationContestConfig();
             Memory ??= new MemoryConfig();
             Memory.InterestFloors ??= new InterestFloorsConfig();
+            Ai ??= new AiConfig();
             Debug ??= new DebugConfig();
 
             Events.CatalogFile = string.IsNullOrWhiteSpace(Events.CatalogFile) ? "vividworld_events.json" : Events.CatalogFile.Trim();
@@ -789,6 +791,42 @@ namespace VividWorld.Core.Config
             Memory.UpgradeMinInterest = ClampTracked("memory.upgradeMinInterest", Memory.UpgradeMinInterest, 0.0, 1.0, notices);
             Memory.ReinforceGrowth = ClampTracked("memory.reinforceGrowth", Memory.ReinforceGrowth, 1.0, 10.0, notices);
             Memory.ReinforceMaxMultiplier = ClampTracked("memory.reinforceMaxMultiplier", Memory.ReinforceMaxMultiplier, 1.0, 10.0, notices);
+
+            // AI
+            if (string.Equals(Ai.PushLanguage, "game", StringComparison.OrdinalIgnoreCase))
+            {
+                Ai.PushLanguage = "game";
+            }
+            else
+            {
+                Ai.PushLanguage = "english";
+            }
+
+            int origPersistentMaxNew = Ai.PersistentMaxNewPerChat;
+            Ai.PersistentMaxNewPerChat = Math.Max(0, Math.Min(100, origPersistentMaxNew));
+            if (Ai.PersistentMaxNewPerChat != origPersistentMaxNew && notices != null)
+            {
+                notices.Add(new ClampNotice
+                {
+                    Key = "ai.persistentMaxNewPerChat",
+                    Requested = origPersistentMaxNew,
+                    Applied = Ai.PersistentMaxNewPerChat,
+                    AllowedRange = "0..100"
+                });
+            }
+
+            int origChatOnlyMaxNew = Ai.ChatOnlyMaxPerChat;
+            Ai.ChatOnlyMaxPerChat = Math.Max(0, Math.Min(100, origChatOnlyMaxNew));
+            if (Ai.ChatOnlyMaxPerChat != origChatOnlyMaxNew && notices != null)
+            {
+                notices.Add(new ClampNotice
+                {
+                    Key = "ai.chatOnlyMaxPerChat",
+                    Requested = origChatOnlyMaxNew,
+                    Applied = Ai.ChatOnlyMaxPerChat,
+                    AllowedRange = "0..100"
+                });
+            }
 
             return this;
         }

@@ -26,6 +26,9 @@ namespace VividWorld.Core.Catalog
         RefersToLinkMismatch,
 
         /// <summary>M6.5: 模板 opinion 欄位宣告無效（角色未在 roles 宣告、量為 0/NaN/Infinity、重複 about 等）。</summary>
-        OpinionInvalid
+        OpinionInvalid,
+
+        /// <summary>模板 selfTell 欄位宣告無效（角色未在 roles 宣告、性格名非五種之一、min 非整數、秘密類模板不可宣告等）。</summary>
+        SelfTellInvalid
     }
 }

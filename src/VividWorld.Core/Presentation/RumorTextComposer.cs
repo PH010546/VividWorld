@@ -10,17 +10,54 @@ namespace VividWorld.Core.Presentation
     {
         public const string RetellPrefixTextId = "VividWorld_RetellPrefix";
         public const string RetellPrefixFallback = "I was there, in fact—";
+        public const string RetellSelfPrefixTextId = RumorPrefixSelector.RetellSelfTextId;
+        public const string RetellSelfPrefixFallback = RumorPrefixSelector.RetellSelfFallback;
 
         public static ComposedRumor Compose(IReadOnlyList<Fact> retained,
-                                            PresentationConfig cfg, bool isRetell = false)
+                                            PresentationConfig cfg, RumorPrefix? prefix)
         {
+            return Compose(null, retained, cfg, prefix, null);
+        }
+
+        public static ComposedRumor Compose(WorldEvent? evt, IReadOnlyList<Fact> retained,
+                                            PresentationConfig cfg, RumorPrefix? prefix, string? speakerHeroId = null)
+        {
+            var prefixTextId = prefix?.TextId;
+            var prefixFallback = prefix?.Fallback;
+            var prefixVars = new Dictionary<string, string>();
+            if (prefix?.Vars != null)
+            {
+                foreach (var kvp in prefix.Vars)
+                {
+                    prefixVars[kvp.Key] = kvp.Value;
+                }
+            }
+
+            string? speakerRole = !string.IsNullOrEmpty(speakerHeroId) ? evt?.RoleOf(speakerHeroId!) : null;
+
+            var roles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (evt?.Participants != null)
+            {
+                foreach (var kvp in evt.Participants)
+                {
+                    if (!string.IsNullOrEmpty(kvp.Key) && !string.IsNullOrEmpty(kvp.Value))
+                    {
+                        roles[kvp.Key.ToLowerInvariant()] = kvp.Value;
+                    }
+                }
+            }
+
             if (retained == null || retained.Count == 0)
             {
                 return new ComposedRumor
                 {
                     Parts = Array.Empty<ComposedFactPart>(),
-                    PrefixTextId = isRetell ? RetellPrefixTextId : null,
-                    PrefixFallback = isRetell ? RetellPrefixFallback : null
+                    PrefixTextId = prefixTextId,
+                    PrefixFallback = prefixFallback,
+                    PrefixVars = prefixVars,
+                    SpeakerHeroId = speakerHeroId,
+                    SpeakerRole = speakerRole,
+                    Roles = roles
                 };
             }
 
@@ -53,15 +90,36 @@ namespace VividWorld.Core.Presentation
             return new ComposedRumor
             {
                 Parts = parts,
-                PrefixTextId = isRetell ? RetellPrefixTextId : null,
-                PrefixFallback = isRetell ? RetellPrefixFallback : null
+                PrefixTextId = prefixTextId,
+                PrefixFallback = prefixFallback,
+                PrefixVars = prefixVars,
+                SpeakerHeroId = speakerHeroId,
+                SpeakerRole = speakerRole,
+                Roles = roles
             };
         }
 
-        public static ComposedRumor Compose(WorldEvent evt, IReadOnlyList<Fact> retained,
+        public static ComposedRumor Compose(IReadOnlyList<Fact> retained,
                                             PresentationConfig cfg, bool isRetell = false)
         {
-            return Compose(retained, cfg, isRetell);
+            var prefix = isRetell
+                ? new RumorPrefix(RumorPrefixKind.Retell, RetellPrefixTextId, RetellPrefixFallback)
+                : null;
+            return Compose(null, retained, cfg, prefix, null);
+        }
+
+        public static ComposedRumor Compose(WorldEvent? evt, IReadOnlyList<Fact> retained,
+                                            PresentationConfig cfg, bool isRetell = false, string? speakerHeroId = null)
+        {
+            RumorPrefix? prefix = null;
+            if (isRetell)
+            {
+                bool isParticipant = !string.IsNullOrEmpty(speakerHeroId) && evt?.RoleOf(speakerHeroId!) != null;
+                prefix = isParticipant
+                    ? new RumorPrefix(RumorPrefixKind.RetellSelf, RetellSelfPrefixTextId, RetellSelfPrefixFallback)
+                    : new RumorPrefix(RumorPrefixKind.Retell, RetellPrefixTextId, RetellPrefixFallback);
+            }
+            return Compose(evt, retained, cfg, prefix, speakerHeroId);
         }
     }
 }

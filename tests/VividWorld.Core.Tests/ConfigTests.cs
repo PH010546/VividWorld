@@ -210,6 +210,13 @@ namespace VividWorld.Core.Tests
 
             // Memory
             Assert.Equal(new[] { 0.05, 0.05, 0.1, 0.2, 0.4 }, cfg.Memory.InterestFloors.OtherByDrama);
+
+            // Ai
+            Assert.NotNull(cfg.Ai);
+            Assert.True(cfg.Ai.Enabled);
+            Assert.Equal("english", cfg.Ai.PushLanguage);
+            Assert.Equal(2, cfg.Ai.PersistentMaxNewPerChat);
+            Assert.Equal(8, cfg.Ai.ChatOnlyMaxPerChat);
         }
 
         [Fact]
@@ -661,6 +668,53 @@ namespace VividWorld.Core.Tests
             Assert.Contains("debug.listenTally", result.AddedPaths);
             Assert.True((bool?)result.Merged.SelectToken("debug.listenTally"));
             Assert.True((bool?)result.Merged.SelectToken("debug.metricsEnabled"));
+        }
+
+        [Fact]
+        public void Normalize_AiConfig_ClampsValuesAndPreservesUnknownFields()
+        {
+            var json = @"{
+  ""ai"": {
+    ""enabled"": true,
+    ""pushLanguage"": ""invalid_lang"",
+    ""persistentMaxNewPerChat"": -5,
+    ""chatOnlyMaxPerChat"": 100,
+    ""customAiField"": ""future_value""
+  }
+}";
+            var cfg = Newtonsoft.Json.JsonConvert.DeserializeObject<VividWorldConfig>(json);
+            Assert.NotNull(cfg);
+            cfg!.Normalize();
+
+            Assert.NotNull(cfg.Ai);
+            Assert.Equal("english", cfg.Ai.PushLanguage);
+            Assert.Equal(0, cfg.Ai.PersistentMaxNewPerChat);
+            Assert.Equal(100, cfg.Ai.ChatOnlyMaxPerChat);
+            Assert.True(cfg.Ai.Extra.ContainsKey("customAiField"));
+            Assert.Equal("future_value", cfg.Ai.Extra["customAiField"]?.ToString());
+        }
+
+        [Fact]
+        public void ConfigMerge_AddsAiKeys_WhenMissing_AndDefaultsMatch()
+        {
+            var oldJson = @"{
+  ""configVersion"": 1,
+  ""enabled"": true
+}";
+            var existingJObj = Newtonsoft.Json.Linq.JObject.Parse(oldJson);
+            var canonical = new VividWorldConfig().Normalize();
+            var canonicalJObj = Newtonsoft.Json.Linq.JObject.Parse(VividJson.Write(canonical));
+
+            var result = ConfigMerge.AddMissingKeys(existingJObj, canonicalJObj);
+
+            Assert.Contains("ai.enabled", result.AddedPaths);
+            Assert.Contains("ai.pushLanguage", result.AddedPaths);
+            Assert.Contains("ai.persistentMaxNewPerChat", result.AddedPaths);
+            Assert.Contains("ai.chatOnlyMaxPerChat", result.AddedPaths);
+            Assert.True((bool?)result.Merged.SelectToken("ai.enabled"));
+            Assert.Equal("english", (string?)result.Merged.SelectToken("ai.pushLanguage"));
+            Assert.Equal(2, (int?)result.Merged.SelectToken("ai.persistentMaxNewPerChat"));
+            Assert.Equal(8, (int?)result.Merged.SelectToken("ai.chatOnlyMaxPerChat"));
         }
     }
 }

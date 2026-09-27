@@ -25,11 +25,13 @@ namespace VividWorld.Core.Rumors
     {
         public string EventId { get; }
         public TellReason Reason { get; }
+        public string? Detail { get; }
 
-        public TopicExclusion(string eventId, TellReason reason)
+        public TopicExclusion(string eventId, TellReason reason, string? detail = null)
         {
             EventId = eventId ?? string.Empty;
             Reason = reason;
+            Detail = detail;
         }
     }
 

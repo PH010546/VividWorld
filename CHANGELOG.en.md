@@ -10,6 +10,37 @@ Every release states three things:
 
 ## Unreleased
 
+## v0.9.3
+
+- **Fix: a hero taken prisoner kept passing news on (and hearing it) for the rest of that day**: whether a hero is a prisoner was cached together with trait values
+  and re-read only once a day, so a hero captured mid-day kept talking until the next day (in one campaign, 4 of 221 capture events were spread by the prisoner within seconds of being captured).
+  Prisoner / alive / lord-or-wanderer status is now read live every time; trait values are still cached daily.
+  Two wording bugs fixed too: English described a release as "someone set … free", and a Traditional Chinese fragment named no one because a variable was missing.
+  Existing campaigns can simply be continued. No config changes needed.
+- **New: AI dialogue mods now know the rumors an NPC heard in Vivid World**:
+  with Calradia Remembers installed, when you open an AI chat with a lord or wanderer, VW hands CR the rumors he still remembers and would tell
+  (in the version he heard, including who told him), and CR knows them from the first line. These become permanent CR memories, so at most 2 new ones per chat,
+  and the same version is never pushed twice (recorded in `ai_pushed.json` in the campaign folder, which rolls back with snapshots).
+  Forgotten, outdated, unleaked-secret and won't-tell-own rumors are never handed over.
+  ImmersiveAI is wired up as well (each chat re-sends up to 8 in their current version, never written into ImmersiveAI's permanent memory),
+  **but it needs an ImmersiveAI version that supports this interface, which has not been released yet**; with the current ImmersiveAI, VW logs one "disabled" line at startup and skips it.
+  Nothing changes if neither mod is installed. MCM gains an "AI Integration" group with "Language for AI mods" (English / Game Language, default English).
+  A new developer dialogue line "(dev) AI integration: what would be handed over for this NPC" lists every candidate and every exclusion reason without pushing anything.
+  Existing campaigns can simply be continued: the push record starts accumulating after the update. No config changes needed: `ai.enabled` (`true`),
+  `ai.pushLanguage` (`english`), `ai.persistentMaxNewPerChat` (2) and `ai.chatOnlyMaxPerChat` (8) are added automatically.
+- **NPCs now say where a rumor came from**: "I saw it myself:" (an eyewitness), "X told me that", "I heard it said that"; if you had heard someone was captured and now hear he was released,
+  it becomes a correction ("Later, X told me that"). 12 fragments that described a current state were rewritten to describe what happened,
+  so they do not go stale in an AI mod's permanent memory. Existing campaigns can simply be continued. No config changes needed.
+- **Participants tell their own stories in their own voice**: when the speaker is one of the people in the event, it is no longer "I saw it myself: X …";
+  he speaks as "I" using a spoken line for that role (173 lines, English and Traditional Chinese, e.g. "科爾 got away from me, near 鄧葛蘭尼, …"),
+  and a retelling opens with "You may have heard about this already—". Some people keep embarrassing things to themselves:
+  the credit-grabber, the drunken boaster and the one who spoke harshly never tell; a mocked student tells only with some valor.
+  English he/him/his follow the hero's gender in the game, falling back to they only when it cannot be found.
+  Existing campaigns can simply be continued and existing events use the new lines immediately. No config changes needed.
+- **Two situation events retired: "private complaint" and "backbiting"**: a secret told by its own owner came out framed wrong ("I told someone a secret");
+  they return when the secret system is reworked. No new ones are created; existing ones still load and stay in the chronicle,
+  but are no longer spread, told or handed to AI mods. Existing campaigns can simply be continued. No config changes needed.
+
 ## v0.9.2
 
 - **New "rumor mode" (Auto / Casual / Realistic), so new characters hear rumors too**: lords used to bring up rumors only at relation 30 or higher,

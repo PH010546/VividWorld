@@ -7,6 +7,7 @@ using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using System.IO;
+using VividWorld.Ai;
 using VividWorld.Campaign;
 using VividWorld.Core.Config;
 using VividWorld.Core.Diagnostics;
@@ -18,6 +19,7 @@ using VividWorld.Core.Memory;
 using VividWorld.Core.Persistence;
 using VividWorld.Core.Rumors;
 using VividWorld.Core.Situations;
+using VividWorld.Core.Util;
 using VividWorld.Dialogue;
 
 namespace VividWorld.Debug
@@ -276,6 +278,26 @@ namespace VividWorld.Debug
                 Consequence_PreviewTalkAll,
                 DevDialoguePriority);
 
+            // 20. (dev) What does this NPC remember?
+            starter.AddPlayerLine(
+                "vividworld_dev_npc_recall",
+                TokenHeroMainOptions,
+                TokenDevResult,
+                "{=VividWorld_Dev_NpcRecall}(dev) What does this NPC remember?",
+                Condition_AlwaysAvailable,
+                Consequence_NpcRecall,
+                DevDialoguePriority);
+
+            // 21. (dev) AI integration: what would be handed over for this NPC
+            starter.AddPlayerLine(
+                "vividworld_dev_ai_push_preview",
+                TokenHeroMainOptions,
+                TokenDevResult,
+                "{=VividWorld_Dev_AiPushPreview}(dev) AI integration: what would be handed over for this NPC",
+                Condition_AlwaysAvailable,
+                Consequence_AiPushPreview,
+                DevDialoguePriority);
+
             // Shared return line to main options. Condition MUST be null so the dev subtree always has an unconditional exit edge.
             starter.AddDialogLine(
                 "vividworld_dev_result_line",
@@ -287,7 +309,7 @@ namespace VividWorld.Debug
                 100,
                 null);
 
-            ModLog.Info("Registered 19 developer dialogue lines on hero_main_options.");
+            ModLog.Info("Registered 21 developer dialogue lines on hero_main_options.");
         }
 
         private static void SetResult(string line)
@@ -1194,6 +1216,82 @@ namespace VividWorld.Debug
             catch (Exception ex)
             {
                 ModLog.Error("Dev preview talk all failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_NpcRecall()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null) return;
+
+                double currentDay = CampaignTime.Now.ToDays;
+                var eventIds = _eventStore.KnownBy.EventsKnownBy(hero.StringId, currentDay);
+                var candidateEvents = new List<WorldEvent>(eventIds.Count);
+                foreach (var id in eventIds)
+                {
+                    var evt = _eventStore.Load(id);
+                    if (evt != null) candidateEvents.Add(evt);
+                }
+
+                var knownSet = new HashSet<string>(eventIds, StringComparer.OrdinalIgnoreCase);
+                var retention = FactRetentionPolicies.Create(_config, new SplitMix64Rng(), _eventStore.CampaignSeed);
+
+                var result = NpcRecallQuery.Query(
+                    hero.StringId,
+                    currentDay,
+                    maxCount: 20,
+                    candidateEvents,
+                    retention,
+                    isEventKnown: id => knownSet.Contains(id),
+                    config: _config,
+                    getTemplate: EventCatalogStore.TemplateByType,
+                    traits: _traitLookup);
+
+                string report = DevReport.FormatNpcRecall(hero, result);
+                InformationManager.DisplayMessage(new InformationMessage(report));
+                ModLog.Info($"[DevDialogue]\n{report}");
+
+                string summary = string.Format(CultureInfo.InvariantCulture,
+                    "(dev) {0} remembers {1} / {2} candidates ({3} excluded). See log.txt.",
+                    hero.Name, result.Items.Count, result.CandidateCount, result.Exclusions.Count);
+                Finish(summary);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev NPC recall dump failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_AiPushPreview()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null) return;
+
+                var previewData = AiPushCoordinator.GeneratePreview(hero, _eventStore, _config);
+                string report = DevReport.FormatAiPushPreview(previewData);
+                InformationManager.DisplayMessage(new InformationMessage(report));
+                ModLog.Info($"[DevDialogue]\n{report}");
+
+                string summary = previewData.RejectionReason != null
+                    ? string.Format(CultureInfo.InvariantCulture, "(dev) {0} is ineligible: {1}. See log.txt.", hero.Name, previewData.RejectionReason)
+                    : string.Format(CultureInfo.InvariantCulture, "(dev) {0}: {1} candidates. Planned: {2}. See log.txt.",
+                        hero.Name,
+                        previewData.CandidateCount,
+                        string.Join(", ", previewData.Targets.Select(t => t.IsEnabled ? $"{t.TargetId}={t.PlannedPushes.Count}" : $"{t.TargetId}=(disabled)")));
+
+                Finish(summary);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev AI push preview dump failed", ex);
                 Finish("(dev) failed - see log.txt");
             }
         }

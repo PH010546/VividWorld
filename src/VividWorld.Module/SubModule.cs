@@ -4,6 +4,7 @@ using TaleWorlds.Core;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
+using VividWorld.Ai;
 using VividWorld.Campaign;
 using VividWorld.Core.Config;
 using VividWorld.Core.Diagnostics;
@@ -80,6 +81,8 @@ namespace VividWorld
             starter.AddBehavior(producer);
             starter.AddBehavior(realEvents);
             starter.AddBehavior(situationScan);
+
+            AiPushCoordinator.Initialize(config);
 
             ModLog.Info("Registered 5 campaign behaviors on the game starter.");
             ModLog.Flush();
@@ -279,12 +282,14 @@ namespace VividWorld
             {
                 ChronicleWindowManager.ReturnTracker.Cancel("campaign ended");
                 ChronicleWindowManager.Close();
+                AiPushCoordinator.Reset();
                 _activeBehavior?.Flush();
                 _activeBehavior = null;
                 _config = null;
                 // 回到主選單之後設定畫面還開得到，所以另外重讀一份給它用。
                 try { _menuConfig = ConfigStore.LoadOrCreate(); } catch { /* 選單少一輪同步，不值得讓 OnGameEnd 失敗 */ }
                 Api.VividWorldEventApi.Store = null;
+                FallbackTextRenderer.TraitLookup = null;
             }
             catch (Exception ex)
             {

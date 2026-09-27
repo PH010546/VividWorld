@@ -9,5 +9,7 @@ namespace VividWorld.Core.Dialogue
         public int TellerHop;                       // 講述者的手數
         public int? PlayerExistingHop;              // 玩家已知則為其手數，未知為 null
         public bool InvolvesHeroPlayerCaresAbout;   // 事件參與者中有玩家好感度 >= scoreRelevanceRelationGate 者
+        public string? SourceHeroId;               // 講述者從誰那裡聽來的（Hop 0 時為 null）
+        public bool IsCorrection;                  // 是否為更正（例如被放/脫逃事件，且玩家聽過其連到的被俘事件）
     }
 }

@@ -18,7 +18,9 @@ namespace VividWorld.Core.Rumors
         Forgotten,
         Outdated,
         AtMaxHop,
-        LeakNotSpread
+        LeakNotSpread,
+        WontTellOwn,
+        RetiredType
     }
 
     public static class TellerEligibility
@@ -32,6 +34,35 @@ namespace VividWorld.Core.Rumors
             VividWorldConfig cfg,
             IHeroTraitLookup traits)
         {
+            return Check(evt, heroId, day, maxHop, playerHeroId, cfg, traits, null, out _);
+        }
+
+        public static TellReason Check(
+            WorldEvent evt,
+            string heroId,
+            double day,
+            int maxHop,
+            string playerHeroId,
+            VividWorldConfig cfg,
+            IHeroTraitLookup traits,
+            Func<string, VividWorld.Core.Catalog.EventTemplate?>? getTemplate)
+        {
+            return Check(evt, heroId, day, maxHop, playerHeroId, cfg, traits, getTemplate, out _);
+        }
+
+        public static TellReason Check(
+            WorldEvent evt,
+            string heroId,
+            double day,
+            int maxHop,
+            string playerHeroId,
+            VividWorldConfig cfg,
+            IHeroTraitLookup traits,
+            Func<string, VividWorld.Core.Catalog.EventTemplate?>? getTemplate,
+            out string? exclusionDetail)
+        {
+            exclusionDetail = null;
+
             if (evt == null || !evt.IsVisibleToRumorSystem)
             {
                 return TellReason.NotVisible;
@@ -59,6 +90,23 @@ namespace VividWorld.Core.Rumors
             if (!Eligibility.IsEligible(traits, heroId))
             {
                 return TellReason.NotEligible;
+            }
+
+            // 停用的事件型別：已存下來的也不再傳，事件資料保留
+            if (getTemplate != null && VividWorld.Core.Catalog.RetiredTypeEvaluator.IsRetired(evt, getTemplate))
+            {
+                return TellReason.RetiredType;
+            }
+
+            // 當事人自己不講（selfTell）
+            if (getTemplate != null)
+            {
+                var selfTell = VividWorld.Core.Catalog.SelfTellEvaluator.Evaluate(evt, heroId, getTemplate, traits);
+                if (!selfTell.CanTell)
+                {
+                    exclusionDetail = selfTell.ReasonText;
+                    return TellReason.WontTellOwn;
+                }
             }
 
             if (Forgetting.IsForgotten(evt, entry, day, playerHeroId, cfg.Memory))
@@ -102,6 +150,8 @@ namespace VividWorld.Core.Rumors
             TellReason.Outdated => "outdated",
             TellReason.AtMaxHop => "at max hop",
             TellReason.LeakNotSpread => "leak not spread (only leaker can tell)",
+            TellReason.WontTellOwn => "won't tell own",
+            TellReason.RetiredType => "retired type",
             _ => reason.ToString()
         };
     }

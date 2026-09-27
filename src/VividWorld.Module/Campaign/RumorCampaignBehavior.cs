@@ -8,6 +8,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.ModuleManager;
+using VividWorld.Ai;
 using VividWorld.Api;
 using VividWorld.Core.Config;
 using VividWorld.Core.Diagnostics;
@@ -20,6 +21,7 @@ using VividWorld.Core.Rumors;
 using VividWorld.Core.Util;
 using VividWorld.Debug;
 using VividWorld.Dialogue;
+using VividWorld.Presentation;
 
 namespace VividWorld.Campaign
 {
@@ -212,12 +214,13 @@ namespace VividWorld.Campaign
                 string playerHeroId = mainHero?.StringId ?? "player";
                 _channel = new GameWorldChannel(_config, _heroLookup, playerHeroId);
                 _traitLookup = new GameTraitLookup(_heroLookup);
+                FallbackTextRenderer.TraitLookup = _traitLookup;
 
                 long campaignSeed = (long)RumorSeed.Of(0, _campaignId);
                 var rng = new SplitMix64Rng();
                 var retentionPolicy = FactRetentionPolicies.Create(_config, rng, campaignSeed);
                 var embellishmentPolicy = NullEmbellishmentPolicy.Instance;
-                _engine = new RumorEngine(_config, retentionPolicy, embellishmentPolicy, _channel, _traitLookup, rng, campaignSeed, playerHeroId);
+                _engine = new RumorEngine(_config, retentionPolicy, embellishmentPolicy, _channel, _traitLookup, rng, campaignSeed, playerHeroId, EventCatalogStore.TemplateByType);
 
                 var stamper = new MemoryStamper(_config, _heroLookup, playerHeroId);
 
@@ -299,7 +302,7 @@ namespace VividWorld.Campaign
                 // M6a-fix: 子行為依賴注入與對話註冊（行為註冊已在 SubModule.OnGameStart，見帳本 D-38）
                 if (_engine != null && _store != null && _index != null && _knownBy != null && _traitLookup != null && _heroLookup != null)
                 {
-                    var offerSelector = new RumorOfferSelector(_config, _engine, playerHeroId);
+                    var offerSelector = new RumorOfferSelector(_config, _engine, playerHeroId, getTemplate: EventCatalogStore.TemplateByType, traits: _traitLookup);
                     _dialogs.Initialize(offerSelector, _store, _index, _knownBy, _traitLookup, _heroLookup, _campaignId, stamper, PlayerHeardLog);
                     _dialogs.RegisterDialogues(starter);
 
@@ -324,6 +327,11 @@ namespace VividWorld.Campaign
                 if (_realEvents != null && _eventStore != null)
                 {
                     _realEvents.Initialize(_eventStore, _traitLookup);
+                }
+
+                if (_eventStore != null && !string.IsNullOrEmpty(_campaignId))
+                {
+                    AiPushCoordinator.SetSession(_eventStore, _campaignId, VividWorldPaths.AiPushedFile(_campaignId));
                 }
 
                 ModLog.Info($"VividWorld session launched for campaign {_campaignId}.");
@@ -661,6 +669,7 @@ namespace VividWorld.Campaign
             try
             {
                 _eventStore?.Flush();
+                AiPushCoordinator.Flush();
                 if (_store != null && _store.LastReleased.Count > 0)
                 {
                     ModLog.Info(ShardCacheLogFormatter.FormatReleased(

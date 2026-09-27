@@ -622,6 +622,157 @@ namespace VividWorld.Core.Catalog
                     }
                 }
 
+                // 8. SelfTell
+                Dictionary<string, SelfTellRule>? selfTell = null;
+                var selfTellProp = templateObj.Property("selfTell", StringComparison.OrdinalIgnoreCase);
+                if (selfTellProp != null && selfTellProp.Value.Type != JTokenType.Null)
+                {
+                    if (origin == EventOrigin.Secret)
+                    {
+                        allIssues.Add(new CatalogIssue
+                        {
+                            TemplateIndex = i,
+                            TemplateType = templateType,
+                            Field = "selfTell",
+                            Code = CatalogIssueCode.SelfTellInvalid,
+                            IsError = true,
+                            Detail = "Secret event template cannot declare selfTell. Field will be ignored."
+                        });
+                        // 秘密類模板不可宣告 selfTell，報錯並忽略該欄位
+                    }
+                    else if (selfTellProp.Value is not JObject selfTellObj)
+                    {
+                        templateIssues.Add(new CatalogIssue
+                        {
+                            TemplateIndex = i,
+                            TemplateType = templateType,
+                            Field = "selfTell",
+                            Code = CatalogIssueCode.SelfTellInvalid,
+                            IsError = true,
+                            Detail = "Template selfTell must be a JSON object."
+                        });
+                    }
+                    else
+                    {
+                        selfTell = new Dictionary<string, SelfTellRule>(StringComparer.Ordinal);
+                        foreach (var prop in selfTellObj.Properties())
+                        {
+                            string roleKey = prop.Name;
+                            if (!roles.ContainsKey(roleKey))
+                            {
+                                templateIssues.Add(new CatalogIssue
+                                {
+                                    TemplateIndex = i,
+                                    TemplateType = templateType,
+                                    Field = $"selfTell.{roleKey}",
+                                    Code = CatalogIssueCode.SelfTellInvalid,
+                                    IsError = true,
+                                    Detail = $"Role '{roleKey}' in selfTell is not a declared role."
+                                });
+                                continue;
+                            }
+
+                            var val = prop.Value;
+                            if (val.Type == JTokenType.String)
+                            {
+                                string strVal = val.Value<string>() ?? "";
+                                if (string.Equals(strVal, "never", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    selfTell[roleKey] = SelfTellRule.Never;
+                                }
+                                else
+                                {
+                                    templateIssues.Add(new CatalogIssue
+                                    {
+                                        TemplateIndex = i,
+                                        TemplateType = templateType,
+                                        Field = $"selfTell.{roleKey}",
+                                        Code = CatalogIssueCode.SelfTellInvalid,
+                                        IsError = true,
+                                        Detail = $"Invalid string value '{strVal}' for selfTell. Expected 'never'."
+                                    });
+                                }
+                            }
+                            else if (val is JObject ruleObj)
+                            {
+                                var traitProp = ruleObj.Property("trait", StringComparison.OrdinalIgnoreCase);
+                                string? trait = traitProp?.Value?.Value<string>();
+                                var minProp = ruleObj.Property("min", StringComparison.OrdinalIgnoreCase);
+
+                                bool traitValid = trait != null && (
+                                    string.Equals(trait, "honor", StringComparison.OrdinalIgnoreCase) ||
+                                    string.Equals(trait, "mercy", StringComparison.OrdinalIgnoreCase) ||
+                                    string.Equals(trait, "valor", StringComparison.OrdinalIgnoreCase) ||
+                                    string.Equals(trait, "calculating", StringComparison.OrdinalIgnoreCase) ||
+                                    string.Equals(trait, "generosity", StringComparison.OrdinalIgnoreCase));
+
+                                bool minValid = false;
+                                int minVal = 0;
+                                if (minProp != null && minProp.Value.Type == JTokenType.Integer)
+                                {
+                                    minVal = minProp.Value.Value<int>();
+                                    minValid = true;
+                                }
+
+                                if (!traitValid)
+                                {
+                                    templateIssues.Add(new CatalogIssue
+                                    {
+                                        TemplateIndex = i,
+                                        TemplateType = templateType,
+                                        Field = $"selfTell.{roleKey}.trait",
+                                        Code = CatalogIssueCode.SelfTellInvalid,
+                                        IsError = true,
+                                        Detail = $"Trait '{trait}' is invalid. Expected honor, mercy, valor, calculating, or generosity."
+                                    });
+                                }
+
+                                if (!minValid)
+                                {
+                                    templateIssues.Add(new CatalogIssue
+                                    {
+                                        TemplateIndex = i,
+                                        TemplateType = templateType,
+                                        Field = $"selfTell.{roleKey}.min",
+                                        Code = CatalogIssueCode.SelfTellInvalid,
+                                        IsError = true,
+                                        Detail = "Min trait threshold must be an integer."
+                                    });
+                                }
+
+                                if (traitValid && minValid)
+                                {
+                                    var rule = new SelfTellRule(trait!.ToLowerInvariant(), minVal);
+                                    foreach (var p in ruleObj.Properties())
+                                    {
+                                        if (!string.Equals(p.Name, "trait", StringComparison.OrdinalIgnoreCase) &&
+                                            !string.Equals(p.Name, "min", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            rule.Extra[p.Name] = p.Value;
+                                        }
+                                    }
+                                    selfTell[roleKey] = rule;
+                                }
+                            }
+                            else
+                            {
+                                templateIssues.Add(new CatalogIssue
+                                {
+                                    TemplateIndex = i,
+                                    TemplateType = templateType,
+                                    Field = $"selfTell.{roleKey}",
+                                    Code = CatalogIssueCode.SelfTellInvalid,
+                                    IsError = true,
+                                    Detail = "SelfTell rule must be 'never' or an object with 'trait' and 'min'."
+                                });
+                            }
+                        }
+                    }
+                }
+
+                // 9. retired：停用的型別不再產生、已存下來的也不再傳，事件資料保留
+                bool retired = templateObj.Property("retired", StringComparison.OrdinalIgnoreCase)?.Value?.Value<bool>() ?? false;
+
                 allIssues.AddRange(templateIssues);
 
                 if (templateIssues.Any(issue => issue.IsError))
@@ -639,7 +790,9 @@ namespace VividWorld.Core.Catalog
                         Roles = roles,
                         KnowingRoles = knowingRoles,
                         Facts = facts,
-                        Opinions = opinions
+                        Opinions = opinions,
+                        SelfTell = selfTell,
+                        Retired = retired
                     });
                 }
             }

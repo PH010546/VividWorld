@@ -367,25 +367,6 @@
           ]
         },
         {
-          "id": "confide",
-          "base": 0.8,
-          "traits": {
-            "honor": 0.4,
-            "calculating": -0.5
-          },
-          "preconditions": [],
-          "events": [
-            {
-              "type": "tavern_confidence",
-              "bind": {
-                "SPEAKER": "speaker",
-                "LISTENER": "listener",
-                "SETTLEMENT": "@settlement"
-              }
-            }
-          ]
-        },
-        {
           "id": "sour_words",
           "base": 0.7,
           "traits": {
@@ -509,25 +490,6 @@
               "from": "rival",
               "to": "claimant",
               "amount": 6.0
-            }
-          ]
-        },
-        {
-          "id": "belittle",
-          "base": 0.8,
-          "traits": {
-            "calculating": 0.7,
-            "honor": -0.5
-          },
-          "preconditions": [],
-          "events": [
-            {
-              "type": "victory_credit_belittled",
-              "bind": {
-                "CLAIMANT": "claimant",
-                "RIVAL": "rival",
-                "SETTLEMENT": "@settlement"
-              }
             }
           ]
         },

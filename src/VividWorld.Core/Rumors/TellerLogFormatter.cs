@@ -44,7 +44,7 @@ namespace VividWorld.Core.Rumors
             else
             {
                 var exclItems = choice.Exclusions.Take(5)
-                    .Select(e => string.Format(CultureInfo.InvariantCulture, "{0} {1}", e.EventId, TellerEligibility.TellReasonText(e.Reason)))
+                    .Select(e => string.Format(CultureInfo.InvariantCulture, "{0} {1}", e.EventId, e.Detail ?? TellerEligibility.TellReasonText(e.Reason)))
                     .ToList();
                 string joined = string.Join(", ", exclItems);
                 if (x > 5)
@@ -249,7 +249,7 @@ namespace VividWorld.Core.Rumors
             else
             {
                 var exclList = choice.Exclusions.Select(e =>
-                    string.Format(CultureInfo.InvariantCulture, "{0} {1}", e.EventId, TellerEligibility.TellReasonText(e.Reason)));
+                    string.Format(CultureInfo.InvariantCulture, "{0} {1}", e.EventId, e.Detail ?? TellerEligibility.TellReasonText(e.Reason)));
                 excludedStr = string.Format(CultureInfo.InvariantCulture, "excluded {0}: {1}", choice.Exclusions.Count, string.Join(", ", exclList));
             }
 

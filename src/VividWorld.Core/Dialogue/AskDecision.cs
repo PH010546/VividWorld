@@ -25,7 +25,9 @@ namespace VividWorld.Core.Dialogue
         TellerDoesNotKnow,
         RetellDisabled,      // AllowRicherRetell = false
         RetellNotCloser,     // TellerHop + 1 >= PlayerExistingHop
-        RetellNoNewFacts     // 更近，但該 hop 的碎片集合玩家已經全有
+        RetellNoNewFacts,    // 更近，但該 hop 的碎片集合玩家已經全有
+        WontTellOwn,         // 當事人自己不講（selfTell）
+        RetiredType          // 停用的事件型別：已存下來的也不再傳，事件資料保留
     }
 
     public sealed class AskDecision

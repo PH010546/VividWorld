@@ -259,7 +259,7 @@
         "id": "outcome",
         "category": "OUTCOME",
         "textId": "VividWorld_Fact_HeroTakenPrisoner_Outcome",
-        "text": "the captive remains in custody awaiting ransom or release",
+        "text": "and was led away",
         "vars": {},
         "fragility": 4
       }
@@ -311,7 +311,7 @@
         "id": "outcome",
         "category": "OUTCOME",
         "textId": "VividWorld_Fact_HeroesMarried_Outcome",
-        "text": "the alliance binds two noble lines in enduring friendship",
+        "text": "and so the two houses were joined by marriage",
         "vars": {},
         "fragility": 4
       }
@@ -326,6 +326,9 @@
     "roles": {
       "mother": "{MOTHER}",
       "child": "{CHILD}"
+    },
+    "selfTell": {
+      "child": "never"
     },
     "knowingRoles": [],
     "facts": [
@@ -415,7 +418,7 @@
         "id": "outcome",
         "category": "OUTCOME",
         "textId": "VividWorld_Fact_HeroReleased_Outcome",
-        "text": "the captive is no longer held",
+        "text": "and so {PRISONER.he} walked free",
         "vars": {},
         "fragility": 4
       }
@@ -467,7 +470,7 @@
         "id": "outcome",
         "category": "OUTCOME",
         "textId": "VividWorld_Fact_HeroEscaped_Outcome",
-        "text": "nobody is quite sure which way he went",
+        "text": "and no one saw which way {PRISONER.he} went",
         "vars": {},
         "fragility": 4
       }

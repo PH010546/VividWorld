@@ -1,0 +1,790 @@
+﻿# Vivid World - First-Person Golden File
+# Generated from shipped templates (vividworld_events.json & vividworld_situation_events.json)
+# Format: [template_type | role | fact_id]
+# EN:  <first_person_english>
+# CNT: <first_person_cnt>
+
+[hero_murdered | victim | who]
+EN:  KILLER murdered me in cold blood.
+CNT: KILLER殘忍地謀殺了我。
+
+[hero_murdered | victim | where]
+EN:  near SETTLEMENT.
+CNT: 在SETTLEMENT附近。
+
+[hero_murdered | victim | what]
+EN:  the deed was done in secret and without mercy.
+CNT: 這樁暴行是秘密進行且毫不留情的。
+
+[hero_murdered | victim | outcome]
+EN:  the foul crime has cast a grim shadow over the realm.
+CNT: 這起邪惡的罪行在各界投下了陰影。
+
+[hero_murdered | killer | who]
+EN:  I know better than anyone how VICTIM died.
+CNT: VICTIM怎麼死的，我比誰都清楚。
+
+[hero_murdered | killer | where]
+EN:  that day near SETTLEMENT.
+CNT: 那天在SETTLEMENT附近。
+
+[hero_murdered | killer | what]
+EN:  and it was no accident...
+CNT: 那可不是什麼意外……
+
+[hero_murdered | killer | outcome]
+EN:  never mind, forget I said that.
+CNT: 算了，這話你就當沒聽過。
+
+[hero_executed | victim | who]
+EN:  KILLER formally executed me.
+CNT: KILLER公開處決了我。
+
+[hero_executed | victim | where]
+EN:  at SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[hero_executed | victim | what]
+EN:  the headsman's axe severed the noble head before assembled crowds.
+CNT: 劊子手的利斧在眾目睽睽之下斬落了貴族的頭顱。
+
+[hero_executed | victim | outcome]
+EN:  the execution sent shockwaves across the continent.
+CNT: 這場處決震撼了整個大陸。
+
+[hero_executed | killer | who]
+EN:  I had VICTIM executed in public.
+CNT: 我把VICTIM公開處決了。
+
+[hero_executed | killer | where]
+EN:  at SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[hero_executed | killer | what]
+EN:  beheaded in front of everyone.
+CNT: 當著所有人的面砍了頭。
+
+[hero_executed | killer | outcome]
+EN:  some things have to be brought to an end.
+CNT: 事情總得有個了斷。
+
+[hero_died_in_battle | victim | who]
+EN:  I was slain in battle by KILLER.
+CNT: 我在戰場上被KILLER陣斬。
+
+[hero_died_in_battle | victim | where]
+EN:  on the field near SETTLEMENT.
+CNT: 在SETTLEMENT附近的戰場上。
+
+[hero_died_in_battle | victim | what]
+EN:  fighting bravely amidst the clash of shields and spears.
+CNT: 在盾牌與長矛的猛烈交鋒中英勇奮戰。
+
+[hero_died_in_battle | victim | outcome]
+EN:  the warrior met an honorable end on the field of war.
+CNT: 這位戰士在沙場上迎來了光榮的結局。
+
+[hero_died_in_battle | killer | who]
+EN:  I cut down VICTIM in battle.
+CNT: 我在戰場上斬了VICTIM。
+
+[hero_died_in_battle | killer | where]
+EN:  near SETTLEMENT.
+CNT: 在SETTLEMENT附近。
+
+[hero_died_in_battle | killer | what]
+EN:  shields and spears everywhere, a hard fight.
+CNT: 那一仗盾牌長矛撞在一起，打得很兇。
+
+[hero_died_in_battle | killer | outcome]
+EN:  and on a battlefield it is kill or be killed, nothing more to say.
+CNT: 戰場上就是你死我活，沒什麼好說的。
+
+[hero_taken_prisoner | captor | who]
+EN:  I captured PRISONER.
+CNT: 我抓了PRISONER。
+
+[hero_taken_prisoner | captor | where]
+EN:  near SETTLEMENT.
+CNT: 在SETTLEMENT附近。
+
+[hero_taken_prisoner | captor | what]
+EN:  took their weapons and had them watched closely.
+CNT: 繳了他的兵器，派人看緊了。
+
+[hero_taken_prisoner | captor | outcome]
+EN:  then had them led away; what to do with them can wait.
+CNT: 然後把他押了下去，怎麼處置，之後再說。
+
+[hero_taken_prisoner | prisoner | who]
+EN:  CAPTOR captured me.
+CNT: 我被CAPTOR抓了。
+
+[hero_taken_prisoner | prisoner | where]
+EN:  near SETTLEMENT.
+CNT: 在SETTLEMENT附近。
+
+[hero_taken_prisoner | prisoner | what]
+EN:  they took my weapons and never let me out of their sight.
+CNT: 兵器被繳了，身邊一直有人盯著。
+
+[hero_taken_prisoner | prisoner | outcome]
+EN:  and that is a taste I never want again.
+CNT: 那滋味，我這輩子都不想再嘗第二次。
+
+[heroes_married | spouse_a | who]
+EN:  SPOUSE_B and I were married.
+CNT: 我跟SPOUSE_B成親了。
+
+[heroes_married | spouse_a | where]
+EN:  at SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[heroes_married | spouse_a | what]
+EN:  the feast was a grand one, and everyone came to wish us well.
+CNT: 喜宴辦得很熱鬧，大家都來祝福。
+
+[heroes_married | spouse_a | outcome]
+EN:  and our two houses are family now; I will not forget that day.
+CNT: 從此我們兩家就是親家了，那一天我不會忘。
+
+[heroes_married | spouse_b | who]
+EN:  SPOUSE_A and I were married.
+CNT: 我跟SPOUSE_A成親了。
+
+[heroes_married | spouse_b | where]
+EN:  at SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[heroes_married | spouse_b | what]
+EN:  the feast was a grand one, and everyone came to wish us well.
+CNT: 喜宴辦得很熱鬧，大家都來祝福。
+
+[heroes_married | spouse_b | outcome]
+EN:  and our two houses are family now; I will not forget that day.
+CNT: 從此我們兩家就是親家了，那一天我不會忘。
+
+[child_born | mother | who]
+EN:  I gave birth to CHILD.
+CNT: 我生下了CHILD。
+
+[child_born | mother | where]
+EN:  at SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[child_born | mother | what]
+EN:  mother and child both came through well, and the baby is healthy.
+CNT: 母子都平安，孩子很健康。
+
+[child_born | mother | outcome]
+EN:  and the moment I held the baby, every pain was worth it.
+CNT: 抱著孩子的那一刻，什麼辛苦都值得了。
+
+[child_born | child | who]
+EN:  MOTHER gave birth to a healthy child me.
+CNT: MOTHER順利誕下了新生兒我。
+
+[child_born | child | where]
+EN:  at SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[child_born | child | what]
+EN:  the newborn arrived safely after a long labor.
+CNT: 母子平安，新生兒健康茁壯。
+
+[child_born | child | outcome]
+EN:  the clan rejoiced at the blessing of a new heir.
+CNT: 家族上下皆為新血脈的到來感到無比欣喜。
+
+[hero_released | captor | who]
+EN:  I set PRISONER free.
+CNT: 我放了PRISONER。
+
+[hero_released | captor | where]
+EN:  near SETTLEMENT.
+CNT: 在SETTLEMENT附近。
+
+[hero_released | captor | what]
+EN:  the terms were settled, and a word given is a word kept, so I told the guards to stand aside.
+CNT: 條件談妥了，說話得算話，我叫看守讓開。
+
+[hero_released | captor | outcome]
+EN:  and so I let them go.
+CNT: 他就這樣走了。
+
+[hero_released | prisoner | who]
+EN:  CAPTOR set me free.
+CNT: CAPTOR把我放了。
+
+[hero_released | prisoner | where]
+EN:  near SETTLEMENT.
+CNT: 在SETTLEMENT附近。
+
+[hero_released | prisoner | what]
+EN:  the terms were settled and the guards stood aside.
+CNT: 條件談妥了，看守就讓開了。
+
+[hero_released | prisoner | outcome]
+EN:  and the moment I walked out, I could finally breathe again.
+CNT: 走出去那一刻，總算又能好好喘口氣。
+
+[hero_escaped_captivity | captor | who]
+EN:  PRISONER got away from me.
+CNT: PRISONER從我手裡逃掉了。
+
+[hero_escaped_captivity | captor | where]
+EN:  near SETTLEMENT.
+CNT: 在SETTLEMENT附近。
+
+[hero_escaped_captivity | captor | what]
+EN:  the guard was thin that night and the night was long.
+CNT: 那晚看守的人手不夠，夜又長。
+
+[hero_escaped_captivity | captor | outcome]
+EN:  and I am ashamed to say they was long gone by the time anyone noticed.
+CNT: 說來丟臉，等發現的時候早就不見人影了。
+
+[hero_escaped_captivity | prisoner | who]
+EN:  I got away from CAPTOR.
+CNT: 我從CAPTOR手裡逃出來了。
+
+[hero_escaped_captivity | prisoner | where]
+EN:  near SETTLEMENT.
+CNT: 在SETTLEMENT附近。
+
+[hero_escaped_captivity | prisoner | what]
+EN:  the guard was thin that night and the night was long.
+CNT: 那晚看守的人手不夠，夜又長。
+
+[hero_escaped_captivity | prisoner | outcome]
+EN:  and I did not dare look back.
+CNT: 我一路沒敢回頭。
+
+[seat_dispute_demanded | slighted | who]
+EN:  I told FAVORED to give up the seat of honor.
+CNT: 我要FAVORED把上座讓出來。
+
+[seat_dispute_demanded | slighted | where]
+EN:  in the hall of SETTLEMENT.
+CNT: 在SETTLEMENT的大廳裡。
+
+[seat_dispute_demanded | slighted | why]
+EN:  the head of a house does not sit below a lesser member of another.
+CNT: 一家之主哪有坐在別家晚輩下首的道理。
+
+[seat_dispute_demanded | slighted | outcome]
+EN:  and the whole hall went quiet.
+CNT: 整個大廳一下子都安靜了。
+
+[seat_dispute_demanded | favored | who]
+EN:  SLIGHTED told me to give up the seat of honor.
+CNT: SLIGHTED要我把上座讓出來。
+
+[seat_dispute_demanded | favored | where]
+EN:  in the hall of SETTLEMENT.
+CNT: 在SETTLEMENT的大廳裡。
+
+[seat_dispute_demanded | favored | why]
+EN:  saying the head of a house should not sit below the likes of me.
+CNT: 說他是一家之主，不該坐在我這個晚輩下首。
+
+[seat_dispute_demanded | favored | outcome]
+EN:  and with the whole hall watching, I did not know where to look.
+CNT: 當著那麼多人，我臉上真是掛不住。
+
+[seat_dispute_endured | slighted | who]
+EN:  I had to sit below FAVORED, and I let it pass.
+CNT: 坐在FAVORED下首這口氣，我忍了。
+
+[seat_dispute_endured | slighted | where]
+EN:  in the hall of SETTLEMENT.
+CNT: 在SETTLEMENT的大廳裡。
+
+[seat_dispute_endured | slighted | what]
+EN:  I could hardly make a scene in front of everyone, but that meal tasted of nothing.
+CNT: 當著那麼多人，我總不能當場翻臉，那頓飯吃得一點味道也沒有。
+
+[seat_dispute_endured | favored | who]
+EN:  SLIGHTED had to sit below me and let it pass.
+CNT: SLIGHTED坐在我下首，那口氣他忍下來了。
+
+[seat_dispute_endured | favored | where]
+EN:  in the hall of SETTLEMENT.
+CNT: 在SETTLEMENT的大廳裡。
+
+[seat_dispute_endured | favored | what]
+EN:  not a word, but I could see on their face that they will remember it.
+CNT: 嘴上沒說什麼，臉色可難看了，我看得出來他記下了。
+
+[seat_dispute_yielded | slighted | who]
+EN:  I gave the seat of honor to FAVORED.
+CNT: 我把上座讓給了FAVORED。
+
+[seat_dispute_yielded | slighted | where]
+EN:  in the hall of SETTLEMENT.
+CNT: 在SETTLEMENT的大廳裡。
+
+[seat_dispute_yielded | slighted | outcome]
+EN:  and raised a cup to them; it is only a seat, not worth a quarrel.
+CNT: 還敬了他一杯，一個座位而已，犯不著傷和氣。
+
+[seat_dispute_yielded | favored | who]
+EN:  SLIGHTED graciously gave the seat of honor to me.
+CNT: SLIGHTED很大方，把上座讓給了我。
+
+[seat_dispute_yielded | favored | where]
+EN:  in the hall of SETTLEMENT.
+CNT: 在SETTLEMENT的大廳裡。
+
+[seat_dispute_yielded | favored | outcome]
+EN:  and raised a cup to me; I will remember that kindness.
+CNT: 還敬了我一杯，這份情我記著。
+
+[seat_dispute_walked_out | slighted | who]
+EN:  I walked out of HOST's feast.
+CNT: 我從HOST的宴席上走人了。
+
+[seat_dispute_walked_out | slighted | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[seat_dispute_walked_out | slighted | why]
+EN:  I would rather go hungry than sit below FAVORED.
+CNT: 要我坐在FAVORED下首，我寧可不吃這頓飯。
+
+[seat_dispute_walked_out | favored | who]
+EN:  SLIGHTED walked out of HOST's feast.
+CNT: SLIGHTED從HOST的宴席上走人了。
+
+[seat_dispute_walked_out | favored | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[seat_dispute_walked_out | favored | why]
+EN:  rather than sit below me, and I had done nothing to deserve it.
+CNT: 就是不肯坐在我下首，我又沒招他惹他。
+
+[seat_dispute_walked_out | host | who]
+EN:  SLIGHTED walked out of my feast.
+CNT: SLIGHTED從我的宴席上走人了。
+
+[seat_dispute_walked_out | host | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[seat_dispute_walked_out | host | why]
+EN:  rather than sit below FAVORED, and left me, the host, looking a fool.
+CNT: 就是不肯坐在FAVORED下首，讓我這個主人下不了台。
+
+[advice_given_freely | student | who]
+EN:  VETERAN told me how that campaign was really won, step by step.
+CNT: VETERAN把當年那一仗到底是怎麼打贏的，一五一十講給我聽。
+
+[advice_given_freely | student | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[advice_given_freely | student | what]
+EN:  holding nothing back, not even their own mistakes; I owe them for that.
+CNT: 連他自己當年犯的錯都沒藏，這份人情我記下了。
+
+[advice_given_freely | veteran | who]
+EN:  I told STUDENT how that campaign was really won.
+CNT: 我把當年那一仗到底是怎麼打贏的，講給STUDENT聽。
+
+[advice_given_freely | veteran | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[advice_given_freely | veteran | what]
+EN:  holding nothing back, not even my own mistakes; if the young want to learn, I will teach.
+CNT: 連我自己當年犯的錯都沒藏，年輕人肯學，我就肯教。
+
+[advice_brushed_off | student | who]
+EN:  I asked VETERAN for advice and got nothing but old sayings.
+CNT: 我去請教VETERAN，他只跟我講了幾句場面話。
+
+[advice_brushed_off | student | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[advice_brushed_off | student | what]
+EN:  and the subject changed before the cup was empty; clearly I was not worth the time.
+CNT: 酒還沒喝完就把話題岔開了，看來是不把我放在眼裡。
+
+[advice_brushed_off | veteran | who]
+EN:  STUDENT asked me for advice and I gave nothing but old sayings.
+CNT: STUDENT來請教我，我只跟他講了幾句場面話。
+
+[advice_brushed_off | veteran | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[advice_brushed_off | veteran | what]
+EN:  what I know of war was paid for in blood; I do not hand it out to anyone who asks.
+CNT: 打仗的本事是拿命換來的，哪能隨便教人。
+
+[advice_mocked | student | who]
+EN:  I asked VETERAN for advice and they made a joke of me in front of everyone.
+CNT: 我去請教VETERAN，他卻當著大家的面拿我開玩笑。
+
+[advice_mocked | student | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[advice_mocked | student | why]
+EN:  saying some men should first learn to sit still.
+CNT: 還說有些人該先學會坐得住。
+
+[advice_mocked | student | outcome]
+EN:  and they were still laughing as I walked out; I will not swallow that.
+CNT: 我走出大廳的時候，後面還有人在笑，這口氣我嚥不下去。
+
+[advice_mocked | veteran | who]
+EN:  STUDENT came asking for advice and I made a joke of it.
+CNT: STUDENT來請教我，被我拿來開了個玩笑。
+
+[advice_mocked | veteran | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[advice_mocked | veteran | why]
+EN:  I said some men should first learn to sit still.
+CNT: 我說有些人該先學會坐得住。
+
+[advice_mocked | veteran | outcome]
+EN:  the young only remember a lesson that stings.
+CNT: 年輕人嘛，吃點虧才記得住。
+
+[tavern_boast_told | speaker | who]
+EN:  I boasted to LISTENER of deeds that grew with every cup.
+CNT: 我向LISTENER吹噓自己的戰功，一杯比一杯誇張。
+
+[tavern_boast_told | speaker | where]
+EN:  in a tavern in SETTLEMENT.
+CNT: 在SETTLEMENT的酒館裡。
+
+[tavern_boast_told | speaker | what]
+EN:  and nobody at the table troubled to count the bodies.
+CNT: 同桌的人誰也懶得去對那個數字。
+
+[tavern_boast_told | listener | who]
+EN:  SPEAKER boasted to me of their deeds, and they grew with every cup.
+CNT: SPEAKER跟我吹他的戰功，越喝吹得越誇張。
+
+[tavern_boast_told | listener | where]
+EN:  in a tavern in SETTLEMENT.
+CNT: 在SETTLEMENT的酒館裡。
+
+[tavern_boast_told | listener | what]
+EN:  nobody at the table bothered to count, and I just smiled.
+CNT: 同桌的人誰也懶得去算他說的數字，我也只是笑笑。
+
+[tavern_sour_words | speaker | who]
+EN:  I said something over the cups that stung LISTENER badly.
+CNT: 我酒後說了一句話，讓LISTENER很是記恨。
+
+[tavern_sour_words | speaker | where]
+EN:  in a tavern in SETTLEMENT.
+CNT: 在SETTLEMENT的酒館裡。
+
+[tavern_sour_words | speaker | what]
+EN:  and did not take it back once the wine had worn off.
+CNT: 酒醒之後也沒有收回去。
+
+[tavern_sour_words | listener | who]
+EN:  SPEAKER said something ugly to me over the cups.
+CNT: SPEAKER喝了酒，對我說了句很難聽的話。
+
+[tavern_sour_words | listener | where]
+EN:  in a tavern in SETTLEMENT.
+CNT: 在SETTLEMENT的酒館裡。
+
+[tavern_sour_words | listener | what]
+EN:  a drunk man's words I can forgive, but they did not take it back once sober, so they meant it.
+CNT: 喝醉說錯話我能體諒，酒醒了還不收回，那就是真心話了。
+
+[tavern_good_word | speaker | who]
+EN:  Someone at the table started mocking LISTENER, and I stood up for them.
+CNT: 喝酒的時候有人取笑LISTENER，我站出來替他說話。
+
+[tavern_good_word | speaker | where]
+EN:  in a tavern in SETTLEMENT.
+CNT: 在SETTLEMENT的酒館裡。
+
+[tavern_good_word | speaker | what]
+EN:  and I told them it was not the wine talking.
+CNT: 我還跟他們說，我可不是喝醉了才這麼講。
+
+[tavern_good_word | listener | who]
+EN:  Someone at the table started mocking me, and SPEAKER stood up for me.
+CNT: 喝酒的時候有人取笑我，SPEAKER站出來替我說話。
+
+[tavern_good_word | listener | where]
+EN:  in a tavern in SETTLEMENT.
+CNT: 在SETTLEMENT的酒館裡。
+
+[tavern_good_word | listener | what]
+EN:  and said it was not the wine talking; I will remember that.
+CNT: 還說他可不是喝醉了才這麼講，這份情我記著。
+
+[victory_credit_claimed | claimant | who]
+EN:  I claimed the credit for the last victory in front of the whole hall.
+CNT: 我當著滿廳的人把上一場勝仗的功勞攬到自己身上。
+
+[victory_credit_claimed | claimant | where]
+EN:  in the hall of SETTLEMENT.
+CNT: 在SETTLEMENT的大廳裡。
+
+[victory_credit_claimed | claimant | why]
+EN:  saying RIVAL rode up only after the line had already broken.
+CNT: 說RIVAL是等到敵陣都垮了才趕到的。
+
+[victory_credit_claimed | rival | who]
+EN:  CLAIMANT took all the credit for the last victory.
+CNT: CLAIMANT把上一場勝仗的功勞全攬到自己身上。
+
+[victory_credit_claimed | rival | where]
+EN:  in the hall of SETTLEMENT.
+CNT: 在SETTLEMENT的大廳裡。
+
+[victory_credit_claimed | rival | why]
+EN:  and said I only rode up after the line had broken, which I will never accept.
+CNT: 還說我是等敵陣都垮了才趕到的，這話我可不認。
+
+[victory_credit_deferred | claimant | who]
+EN:  I gave RIVAL the credit for the last victory.
+CNT: 我把上一場勝仗的功勞讓給了RIVAL。
+
+[victory_credit_deferred | claimant | where]
+EN:  in the hall of SETTLEMENT.
+CNT: 在SETTLEMENT的大廳裡。
+
+[victory_credit_deferred | claimant | what]
+EN:  though the hall was ready to toast me; they truly carried that fight.
+CNT: 其實大家本來是要敬我的，不過那一仗他確實出了大力。
+
+[victory_credit_deferred | rival | who]
+EN:  CLAIMANT gave me the credit for the last victory.
+CNT: CLAIMANT把上一場勝仗的功勞讓給了我。
+
+[victory_credit_deferred | rival | where]
+EN:  in the hall of SETTLEMENT.
+CNT: 在SETTLEMENT的大廳裡。
+
+[victory_credit_deferred | rival | what]
+EN:  though the hall was ready to toast CLAIMANT; I owe them for that.
+CNT: 其實大家本來是要敬他的，這份人情我欠下了。
+
+[victory_credit_judged | claimant | who]
+EN:  RIVAL and I quarrelled over the credit, and HOST settled it.
+CNT: 我跟RIVAL爭那份戰功，是HOST出面裁定的。
+
+[victory_credit_judged | claimant | where]
+EN:  in the hall of SETTLEMENT.
+CNT: 在SETTLEMENT的大廳裡。
+
+[victory_credit_judged | claimant | outcome]
+EN:  and the credit went to RIVAL; of course I do not accept it.
+CNT: 結果功勞判給了RIVAL，我心裡當然不服。
+
+[victory_credit_judged | rival | who]
+EN:  CLAIMANT and I quarrelled over the credit, and HOST settled it.
+CNT: CLAIMANT跟我爭那份戰功，是HOST出面裁定的。
+
+[victory_credit_judged | rival | where]
+EN:  in the hall of SETTLEMENT.
+CNT: 在SETTLEMENT的大廳裡。
+
+[victory_credit_judged | rival | outcome]
+EN:  and the credit went to me; justice at last.
+CNT: 結果功勞判給了我，總算還我一個公道。
+
+[victory_credit_judged | host | who]
+EN:  CLAIMANT and RIVAL were quarrelling over the credit, and I settled it.
+CNT: CLAIMANT跟RIVAL爭那份戰功，是我出面裁定的。
+
+[victory_credit_judged | host | where]
+EN:  in the hall of SETTLEMENT.
+CNT: 在SETTLEMENT的大廳裡。
+
+[victory_credit_judged | host | outcome]
+EN:  I gave the credit to RIVAL; I judged by what happened, and no one can call it favour.
+CNT: 我把功勞判給了RIVAL，照實情判，誰也別說我偏心。
+
+[brawl_man_handed_over | aggrieved | who]
+EN:  PATRON handed over the man who drew first and apologised to me.
+CNT: PATRON把先動手的人交了出來，還跟我賠了不是。
+
+[brawl_man_handed_over | aggrieved | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[brawl_man_handed_over | aggrieved | what]
+EN:  with the whole street watching, so as far as I am concerned it is done.
+CNT: 整條街的人都看著，這事就算過去了。
+
+[brawl_man_handed_over | patron | who]
+EN:  It was my man who drew first, so I handed him over and apologised to AGGRIEVED.
+CNT: 先動手的是我的人，我把他交了出去，還跟AGGRIEVED賠了不是。
+
+[brawl_man_handed_over | patron | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[brawl_man_handed_over | patron | what]
+EN:  with the whole street watching; wrong is wrong, and I own it.
+CNT: 整條街的人都看著，理虧就是理虧，我認。
+
+[brawl_shielded_own | aggrieved | who]
+EN:  PATRON refused to give up their man to me.
+CNT: PATRON不肯把他的人交給我。
+
+[brawl_shielded_own | aggrieved | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[brawl_shielded_own | aggrieved | why]
+EN:  saying their household answers to no one else, and it made my blood boil.
+CNT: 還說自家的人自家管，輪不到別家開口，我聽了一肚子火。
+
+[brawl_shielded_own | patron | who]
+EN:  I refused to give up my man to AGGRIEVED.
+CNT: 我不肯把自己的人交給AGGRIEVED。
+
+[brawl_shielded_own | patron | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[brawl_shielded_own | patron | why]
+EN:  my household answers to my house and no other.
+CNT: 自家的人自家管，輪不到別家開口。
+
+[brawl_counter_accused | aggrieved | who]
+EN:  I asked PATRON to hand over the man who drew first, and they said it was my man instead.
+CNT: 我要PATRON交人，他不交，反倒說先動手的是我的人。
+
+[brawl_counter_accused | aggrieved | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[brawl_counter_accused | aggrieved | what]
+EN:  and wanted me to answer for it first, as if black were white.
+CNT: 還要我先給個交代，簡直顛倒黑白。
+
+[brawl_counter_accused | aggrieved | outcome]
+EN:  and so our two houses are at odds.
+CNT: 我們兩家就這樣槓上了。
+
+[brawl_counter_accused | patron | who]
+EN:  AGGRIEVED wanted me to hand my man over, but it was plainly their man who drew first.
+CNT: AGGRIEVED要我交人，可先動手的明明是他那邊的人。
+
+[brawl_counter_accused | patron | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[brawl_counter_accused | patron | what]
+EN:  so I told them to answer for it first.
+CNT: 我要他先給個交代。
+
+[brawl_counter_accused | patron | outcome]
+EN:  and so our two houses are at odds.
+CNT: 我們兩家就這樣槓上了。
+
+[brawl_hushed_up | aggrieved | who]
+EN:  PATRON and I agreed to let the market brawl die quietly.
+CNT: 我跟PATRON講好，市集那場架就這麼壓下來。
+
+[brawl_hushed_up | aggrieved | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[brawl_hushed_up | aggrieved | what]
+EN:  no good comes of making it bigger... so keep this to yourself.
+CNT: 鬧大了對誰都沒好處……這事你聽聽就算了。
+
+[brawl_hushed_up | patron | who]
+EN:  AGGRIEVED and I agreed to let the market brawl die quietly.
+CNT: 我跟AGGRIEVED講好，市集那場架就這麼壓下來。
+
+[brawl_hushed_up | patron | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[brawl_hushed_up | patron | what]
+EN:  no good comes of making it bigger... so keep this to yourself.
+CNT: 鬧大了對誰都沒好處……這事你聽聽就算了。
+
+[wager_struck | challenger | who]
+EN:  CHALLENGED and I made a wager on the next hunt.
+CNT: 我跟CHALLENGED為下一場狩獵打了個賭。
+
+[wager_struck | challenger | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wager_struck | challenger | what]
+EN:  and half the hall put silver on it too; this one is mine.
+CNT: 大廳裡一半的人也跟著下注，這場我贏定了。
+
+[wager_struck | challenged | who]
+EN:  CHALLENGER challenged me to a wager on the next hunt.
+CNT: CHALLENGER找我為下一場狩獵打了個賭。
+
+[wager_struck | challenged | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wager_struck | challenged | what]
+EN:  and half the hall put silver on it too; if they dares to ask, I will play.
+CNT: 大廳裡一半的人也跟著下注，他既然敢開口，我就奉陪。
+
+[wager_refused | challenger | who]
+EN:  I offered CHALLENGED a wager, and they turned it down and made a joke of it.
+CNT: 我找CHALLENGED打賭，他不接，還拿這事開玩笑。
+
+[wager_refused | challenger | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wager_refused | challenger | what]
+EN:  and the hall laughed for far too long; I hardly knew where to look.
+CNT: 大廳裡的人笑了好一陣子，我臉上實在掛不住。
+
+[wager_refused | challenged | who]
+EN:  CHALLENGER offered me a wager, and I turned it down with a joke.
+CNT: CHALLENGER找我打賭，我沒接，還拿這事開了個玩笑。
+
+[wager_refused | challenged | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wager_refused | challenged | what]
+EN:  and the hall laughed for a good while; a wager like that is not worth my time.
+CNT: 大廳裡的人笑了好一陣子，這種賭我犯不著陪他玩。
+
+[wager_secret_stake | challenger | who]
+EN:  CHALLENGED and I have more than silver riding on the next hunt.
+CNT: 我跟CHALLENGED為下一場狩獵打了個賭，押的不只是銀子。
+
+[wager_secret_stake | challenger | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wager_secret_stake | challenger | what]
+EN:  and what it is... that I can't tell you.
+CNT: 押了什麼……這我可不能說。
+
+[wager_secret_stake | challenged | who]
+EN:  CHALLENGER and I have more than silver riding on the next hunt.
+CNT: CHALLENGER找我為下一場狩獵打了個賭，押的不只是銀子。
+
+[wager_secret_stake | challenged | where]
+EN:  in SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wager_secret_stake | challenged | what]
+EN:  and what it is... that I can't tell you.
+CNT: 押了什麼……這我可不能說。
+

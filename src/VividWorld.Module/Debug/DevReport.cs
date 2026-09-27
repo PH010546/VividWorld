@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using TaleWorlds.CampaignSystem;
+using VividWorld.Ai;
 using VividWorld.Campaign;
 using VividWorld.Core.Channels;
 using VividWorld.Core.Config;
@@ -12,8 +13,10 @@ using VividWorld.Core.Events;
 using VividWorld.Core.Grudges;
 using VividWorld.Core.Memory;
 using VividWorld.Core.Persistence;
+using VividWorld.Core.Presentation;
 using VividWorld.Core.Rumors;
 using VividWorld.Core.Situations;
+using VividWorld.Presentation;
 
 namespace VividWorld.Debug
 {
@@ -130,6 +133,43 @@ namespace VividWorld.Debug
                         entry.OutdatedDay ?? 0.0,
                         viaEvtId);
                 }
+
+                bool isParticipant = evt?.RoleOf(hero.StringId) != null;
+                bool isRetell = evt?.IsKnownBy(playerId) ?? false;
+                string? linkedId = evt?.LinkedEventId;
+                bool isCorrection = !string.IsNullOrEmpty(linkedId) &&
+                    knownBy.EventsKnownBy(playerId, currentDay).Contains(linkedId!);
+
+                var prefix = RumorPrefixSelector.SelectPrefix(
+                    entry?.Hop ?? 0,
+                    entry?.SourceHeroId,
+                    isRetell,
+                    isCorrection,
+                    isParticipant);
+
+                string prefixDesc;
+                var selfTell = evt != null
+                    ? VividWorld.Core.Catalog.SelfTellEvaluator.Evaluate(evt, hero.StringId, EventCatalogStore.TemplateByType, store.Traits)
+                    : VividWorld.Core.Catalog.SelfTellResult.Allowed;
+
+                if (isParticipant && !selfTell.CanTell)
+                {
+                    prefixDesc = selfTell.ReasonText ?? "won't tell own";
+                }
+                else if (prefix.Kind == RumorPrefixKind.Self)
+                {
+                    prefixDesc = "Self";
+                }
+                else if (prefix.Kind == RumorPrefixKind.None)
+                {
+                    prefixDesc = "None";
+                }
+                else
+                {
+                    prefixDesc = $"{prefix.Kind} (\"{prefix.Fallback}\")";
+                }
+
+                suffix += $" | prefix: {prefixDesc}";
 
                 body.AppendLine(baseLine + suffix);
             }
@@ -951,6 +991,137 @@ namespace VividWorld.Debug
             return string.Format(CultureInfo.InvariantCulture,
                 "(dev) ring {0} / secrets {1} / events {2}{4} / player knows {3}",
                 ring, secrets, events, playerKnows, hiddenPart);
+        }
+
+        public static string FormatNpcRecall(Hero hero, NpcRecallResult result, string? language = "english")
+        {
+            if (hero == null) return "Invalid hero.";
+            var sb = new StringBuilder();
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "Npc Recall for {0} ({1}) on day {2:F1}:",
+                hero.Name, hero.StringId, result.CurrentDay));
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "  Candidates: {0} | Recalled: {1} | Excluded: {2} ({3})",
+                result.CandidateCount, result.Items.Count, result.Exclusions.Count, result.ExclusionSummary()));
+
+            sb.AppendLine("Recalled Memories:");
+            if (result.Items.Count == 0)
+            {
+                sb.AppendLine("  (none)");
+            }
+            else
+            {
+                for (int i = 0; i < result.Items.Count; i++)
+                {
+                    var item = result.Items[i];
+                    string source = !string.IsNullOrEmpty(item.SourceHeroId) ? item.SourceHeroId! : "eyewitness";
+                    sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                        "  [{0}] {1} | hop {2} | source {3} | learned {4:F1} | interest {5:F2} | correction: {6} | facts: {7}",
+                        i + 1, item.EventId, item.Hop, source, item.LearnedDay, item.Interest ?? 0.0, item.IsCorrection, item.Facts.Count));
+                    bool isParticipant = item.Event.RoleOf(hero.StringId) != null;
+                    var prefix = RumorPrefixSelector.SelectPrefix(item.Hop, item.SourceHeroId, false, item.IsCorrection, isParticipant);
+                    var composed = RumorTextComposer.Compose(item.Event, item.Facts, new PresentationConfig(), prefix, hero.StringId);
+                    string text = FallbackTextRenderer.RenderRecallMemory(composed, language, null);
+                    sb.AppendLine($"      \"{text}\"");
+                }
+            }
+
+            sb.AppendLine("Excluded Events:");
+            if (result.Exclusions.Count == 0)
+            {
+                sb.AppendLine("  (none)");
+            }
+            else
+            {
+                foreach (var ex in result.Exclusions)
+                {
+                    sb.AppendLine($"  - {ex.EventId}: {ex.Reason} ({ex.Detail})");
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        public static string FormatAiPushPreview(AiPushPreviewData data)
+        {
+            if (data == null) return "Invalid preview data.";
+            var sb = new StringBuilder();
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "AI Push Preview for {0} ({1}) on day {2:F1}:",
+                data.HeroName, data.HeroId, data.CurrentDay));
+
+            if (data.RejectionReason != null)
+            {
+                sb.AppendLine($"  Status: Ineligible ({data.RejectionReason}). No rumors will be pushed.");
+                return sb.ToString();
+            }
+
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "  Candidates: {0}",
+                data.CandidateCount));
+
+            foreach (var target in data.Targets)
+            {
+                if (!target.IsEnabled)
+                {
+                    sb.AppendLine($"Target: {target.TargetId} (disabled: {target.DisabledReason})");
+                    continue;
+                }
+
+                sb.AppendLine($"Planned Pushes (Target: {target.TargetId}):");
+                if (target.PlannedPushes.Count == 0)
+                {
+                    sb.AppendLine("  (none)");
+                }
+                else
+                {
+                    for (int i = 0; i < target.PlannedPushes.Count; i++)
+                    {
+                        var item = target.PlannedPushes[i];
+                        sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                            "  [{0}] {1} | ver={2} | chars={3} | truncated={4} | daysAgo={5}",
+                            i + 1, item.EventId, item.Version, item.CharCount, item.IsTruncated, item.DaysAgo));
+                        sb.AppendLine($"      \"{item.Text}\"");
+                    }
+                }
+
+                sb.AppendLine("Excluded:");
+                if (target.Exclusions.Count == 0)
+                {
+                    sb.AppendLine("  (none)");
+                }
+                else
+                {
+                    foreach (var exc in target.Exclusions)
+                    {
+                        sb.AppendLine($"  - {exc}");
+                    }
+                }
+
+                if (target.IsPersistent)
+                {
+                    sb.AppendLine("Already in ai_pushed.json:");
+                    if (target.ExistingPushes.Count == 0)
+                    {
+                        sb.AppendLine("  (none)");
+                    }
+                    else
+                    {
+                        foreach (var kvp in target.ExistingPushes)
+                        {
+                            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                                "  - {0}: ver={1}, pushedDay={2:F1}",
+                                kvp.Key, kvp.Value.Version, kvp.Value.PushedDay));
+                        }
+                    }
+                }
+                else
+                {
+                    sb.AppendLine("Chat-only target: resent every conversation, not recorded to ai_pushed.json.");
+                }
+            }
+
+            return sb.ToString();
         }
     }
 }

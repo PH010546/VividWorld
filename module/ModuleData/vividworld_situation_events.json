@@ -97,7 +97,7 @@
         "id": "what",
         "category": "WHAT",
         "textId": "VividWorld_Fact_SeatDisputeEndured_What",
-        "text": "but has not forgotten it",
+        "text": "and said nothing, though it plainly stung",
         "vars": {},
         "fragility": 3
       }
@@ -241,7 +241,7 @@
         "id": "what",
         "category": "WHAT",
         "textId": "VividWorld_Fact_AdviceGivenFreely_What",
-        "text": "and held nothing back, down to his own mistakes",
+        "text": "and held nothing back, down to {VETERAN.his} own mistakes",
         "vars": {},
         "fragility": 3
       }
@@ -304,6 +304,12 @@
       "student": "{STUDENT}",
       "veteran": "{VETERAN}"
     },
+    "selfTell": {
+      "student": {
+        "trait": "valor",
+        "min": 1
+      }
+    },
     "knowingRoles": [],
     "opinion": [
       { "about": "veteran", "amount": -6 }
@@ -361,6 +367,9 @@
       "speaker": "{SPEAKER}",
       "listener": "{LISTENER}"
     },
+    "selfTell": {
+      "speaker": "never"
+    },
     "knowingRoles": [],
     "opinion": [
       { "about": "speaker", "amount": -3 }
@@ -400,6 +409,7 @@
   },
   {
     "type": "tavern_confidence",
+    "retired": true,
     "headline": "A confidence was let slip over the cups",
     "origin": "secret",
     "dramaWeight": 2,
@@ -420,7 +430,7 @@
         "id": "who",
         "category": "WHO",
         "textId": "VividWorld_Fact_TavernConfidence_Who",
-        "text": "{SPEAKER} admitted to {LISTENER} that the coffers are all but empty",
+        "text": "{SPEAKER} confided to {LISTENER} that {SPEAKER.his} coffers were all but empty",
         "vars": {
           "SPEAKER": "hero:{SPEAKER}",
           "LISTENER": "hero:{LISTENER}"
@@ -458,6 +468,9 @@
       "speaker": "{SPEAKER}",
       "listener": "{LISTENER}"
     },
+    "selfTell": {
+      "speaker": "never"
+    },
     "knowingRoles": [],
     "opinion": [
       { "about": "speaker", "amount": -5 }
@@ -467,7 +480,7 @@
         "id": "who",
         "category": "WHO",
         "textId": "VividWorld_Fact_TavernSourWords_Who",
-        "text": "{SPEAKER} said something over the cups that {LISTENER} will not forget",
+        "text": "{SPEAKER} said something over the cups that stung {LISTENER} badly",
         "vars": {
           "SPEAKER": "hero:{SPEAKER}",
           "LISTENER": "hero:{LISTENER}"
@@ -514,7 +527,7 @@
         "id": "who",
         "category": "WHO",
         "textId": "VividWorld_Fact_TavernGoodWord_Who",
-        "text": "{SPEAKER} spoke up for {LISTENER} when the table turned on him",
+        "text": "{SPEAKER} stood up for {LISTENER} against the mockery of the whole table",
         "vars": {
           "SPEAKER": "hero:{SPEAKER}",
           "LISTENER": "hero:{LISTENER}"
@@ -536,7 +549,7 @@
         "id": "what",
         "category": "WHAT",
         "textId": "VividWorld_Fact_TavernGoodWord_What",
-        "text": "and said he would tell them the same sober",
+        "text": "and said it was not the wine talking",
         "vars": {},
         "fragility": 3
       }
@@ -551,6 +564,9 @@
     "roles": {
       "claimant": "{CLAIMANT}",
       "rival": "{RIVAL}"
+    },
+    "selfTell": {
+      "claimant": "never"
     },
     "knowingRoles": [],
     "opinion": [
@@ -641,6 +657,7 @@
   },
   {
     "type": "victory_credit_belittled",
+    "retired": true,
     "headline": "A victory was belittled",
     "origin": "secret",
     "dramaWeight": 3,
@@ -660,7 +677,7 @@
         "id": "who",
         "category": "WHO",
         "textId": "VividWorld_Fact_VictoryCreditBelittled_Who",
-        "text": "{CLAIMANT} has been telling a few trusted ears that {RIVAL} did nothing in the last battle",
+        "text": "{CLAIMANT} told a few trusted ears that {RIVAL} did nothing in the last battle",
         "vars": {
           "CLAIMANT": "hero:{CLAIMANT}",
           "RIVAL": "hero:{RIVAL}"
@@ -682,7 +699,7 @@
         "id": "what",
         "category": "WHAT",
         "textId": "VividWorld_Fact_VictoryCreditBelittled_What",
-        "text": "and is careful never to say it where {RIVAL} might hear",
+        "text": "and took care to say it only when {RIVAL} was out of earshot",
         "vars": {
           "RIVAL": "hero:{RIVAL}"
         },
@@ -760,7 +777,7 @@
         "id": "who",
         "category": "WHO",
         "textId": "VividWorld_Fact_BrawlManHandedOver_Who",
-        "text": "{PATRON} handed over the man who drew first and made his apology to {AGGRIEVED}",
+        "text": "{PATRON} handed over the man who drew first and made {PATRON.his} apology to {AGGRIEVED}",
         "vars": {
           "PATRON": "hero:{PATRON}",
           "AGGRIEVED": "hero:{AGGRIEVED}"
@@ -807,7 +824,7 @@
         "id": "who",
         "category": "WHO",
         "textId": "VividWorld_Fact_BrawlShieldedOwn_Who",
-        "text": "{PATRON} refused to give up his man to {AGGRIEVED}",
+        "text": "{PATRON} refused to give up {PATRON.his} man to {AGGRIEVED}",
         "vars": {
           "PATRON": "hero:{PATRON}",
           "AGGRIEVED": "hero:{AGGRIEVED}"
@@ -829,7 +846,7 @@
         "id": "why",
         "category": "WHY",
         "textId": "VividWorld_Fact_BrawlShieldedOwn_Why",
-        "text": "saying his household answers to his house and no other",
+        "text": "saying {PATRON.his} household answers to {PATRON.his} house and no other",
         "vars": {},
         "fragility": 3
       }
@@ -854,7 +871,7 @@
         "id": "who",
         "category": "WHO",
         "textId": "VividWorld_Fact_BrawlCounterAccused_Who",
-        "text": "{PATRON} told the hall it was {AGGRIEVED}'s man who drew first",
+        "text": "{PATRON} refused to hand anyone over and told the crowd it was {AGGRIEVED}'s man who drew first",
         "vars": {
           "PATRON": "hero:{PATRON}",
           "AGGRIEVED": "hero:{AGGRIEVED}"
@@ -876,7 +893,7 @@
         "id": "what",
         "category": "WHAT",
         "textId": "VividWorld_Fact_BrawlCounterAccused_What",
-        "text": "and demanded an accounting of his own",
+        "text": "and demanded that the other house answer first",
         "vars": {},
         "fragility": 3
       },
@@ -935,7 +952,7 @@
         "id": "what",
         "category": "WHAT",
         "textId": "VividWorld_Fact_BrawlHushedUp_What",
-        "text": "and neither house will speak of it again",
+        "text": "and both houses agreed never to speak of it again",
         "vars": {},
         "fragility": 3
       }
@@ -1073,7 +1090,7 @@
         "id": "what",
         "category": "WHAT",
         "textId": "VividWorld_Fact_WagerSecretStake_What",
-        "text": "and neither of them will say what it was",
+        "text": "and neither of them would say what it was",
         "vars": {},
         "fragility": 3
       }

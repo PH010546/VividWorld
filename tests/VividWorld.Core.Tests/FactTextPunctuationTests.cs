@@ -110,6 +110,8 @@ namespace VividWorld.Core.Tests
         private static bool EndsWithTerminalPunctuation(string text)
         {
             if (string.IsNullOrEmpty(text)) return false;
+            // 刪節號與破折號是刻意的：用來寫說溜嘴、欲言又止，組句時它後面不插分隔符
+            if (VividWorld.Core.Presentation.RumorTextAssembler.EndsWithEllipsisOrDash(text)) return false;
             return TerminalPunctuation.IndexOf(text[text.Length - 1]) >= 0;
         }
 

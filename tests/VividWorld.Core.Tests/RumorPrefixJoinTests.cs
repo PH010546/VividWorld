@@ -73,6 +73,17 @@ namespace VividWorld.Core.Tests
             Assert.Equal("I was there, in fact—梅拉格殘忍地謀殺了戴爾圖斯。", text);
         }
 
+        // 中文介面下推給 AI 的英文句子：開頭語是英文、人名是遊戲介面上的中文。
+        // 前綴語以半形字元結尾就要留空白（實機 AI 推送預覽印出 "that科爾"、"myself:烏德里斯"）。
+        [Theory]
+        [InlineData("I saw it myself:", "I saw it myself: 烏德里斯 slipped out of captivity.")]
+        [InlineData("Later, I heard it said that", "Later, I heard it said that 烏德里斯 slipped out of captivity.")]
+        public void PrefixJoin_EnglishPrefixEndingInAsciiAndChineseName_KeepsTheSpace(string prefix, string expected)
+        {
+            string text = Assemble(prefix, "烏德里斯 slipped out of captivity", ", ", ".");
+            Assert.Equal(expected, text);
+        }
+
         [Fact]
         public void PrefixJoin_PrefixAlreadyEndsWithSpace_DoesNotAddASecondOne()
         {
@@ -94,6 +105,129 @@ namespace VividWorld.Core.Tests
 
             Assert.Equal("梅拉格殘忍地謀殺了戴爾圖斯。",
                 RumorTextAssembler.Assemble(rumor, cfg, (val, links) => val).PlainText);
+        }
+
+        [Fact]
+        public void PrefixJoin_EyewitnessChinese_HasNoSpace()
+        {
+            string text = Assemble("我親眼看到的：", "索埃拉斯與曼格斯進行了慘烈的決鬥");
+            Assert.Equal("我親眼看到的：索埃拉斯與曼格斯進行了慘烈的決鬥。", text);
+        }
+
+        [Fact]
+        public void PrefixJoin_EyewitnessEnglish_KeepsTheSpace()
+        {
+            string text = Assemble("I saw it myself:", "Meirag murdered Deiltus in cold blood", ", ", ".");
+            Assert.Equal("I saw it myself: Meirag murdered Deiltus in cold blood.", text);
+        }
+
+        [Fact]
+        public void PrefixJoin_HeardFromSourceChinese_HasNoSpace()
+        {
+            var cfg = Cfg();
+            var rumor = new ComposedRumor
+            {
+                PrefixFallback = "聽{SOURCE}說，",
+                PrefixVars = new Dictionary<string, string> { ["SOURCE"] = "hero:derthert" },
+                Parts = new List<ComposedFactPart>
+                {
+                    new ComposedFactPart { TextId = string.Empty, Fallback = "索埃拉斯與曼格斯進行了慘烈的決鬥", Vars = new Dictionary<string, string>() }
+                }
+            };
+
+            string text = RumorTextAssembler.Assemble(rumor, cfg, (val, links) => "德瑟特").PlainText;
+            Assert.Equal("聽德瑟特說，索埃拉斯與曼格斯進行了慘烈的決鬥。", text);
+        }
+
+        [Fact]
+        public void PrefixJoin_HeardFromSourceEnglish_KeepsTheSpace()
+        {
+            var cfg = new PresentationConfig
+            {
+                EncyclopediaLinksEnabled = false,
+                FactSeparator = ", ",
+                SentenceEnd = "."
+            };
+            var rumor = new ComposedRumor
+            {
+                PrefixFallback = "{SOURCE} told me that",
+                PrefixVars = new Dictionary<string, string> { ["SOURCE"] = "hero:derthert" },
+                Parts = new List<ComposedFactPart>
+                {
+                    new ComposedFactPart { TextId = string.Empty, Fallback = "Meirag murdered Deiltus in cold blood", Vars = new Dictionary<string, string>() }
+                }
+            };
+
+            string text = RumorTextAssembler.Assemble(rumor, cfg, (val, links) => "Derthert").PlainText;
+            Assert.Equal("{SOURCE} told me that Meirag murdered Deiltus in cold blood."
+                .Replace("{SOURCE}", "Derthert"), text);
+        }
+
+        [Fact]
+        public void Prefix_Variables_RenderLinksInDisplayTextAndPlainInPlainText()
+        {
+            var cfg = new PresentationConfig
+            {
+                EncyclopediaLinksEnabled = true,
+                FactSeparator = ", ",
+                SentenceEnd = "."
+            };
+            var rumor = new ComposedRumor
+            {
+                PrefixFallback = "{SOURCE} told me that",
+                PrefixVars = new Dictionary<string, string> { ["SOURCE"] = "hero:derthert" },
+                Parts = new List<ComposedFactPart>
+                {
+                    new ComposedFactPart { TextId = string.Empty, Fallback = "peace was declared", Vars = new Dictionary<string, string>() }
+                }
+            };
+
+            string ResolveVar(string val, bool links)
+            {
+                if (val == "hero:derthert")
+                {
+                    return links ? "<a href=\"hero:derthert\">Derthert</a>" : "Derthert";
+                }
+                return val;
+            }
+
+            var result = RumorTextAssembler.Assemble(rumor, cfg, ResolveVar);
+            Assert.Equal("<a href=\"hero:derthert\">Derthert</a> told me that peace was declared.", result.DisplayText);
+            Assert.Equal("Derthert told me that peace was declared.", result.PlainText);
+        }
+
+        [Fact]
+        public void Prefix_UnresolvedPlaceholder_EmitsWarningAndFallsBackToSomeone()
+        {
+            var cfg = new PresentationConfig
+            {
+                EncyclopediaLinksEnabled = false,
+                FactSeparator = ", ",
+                SentenceEnd = "."
+            };
+            var rumor = new ComposedRumor
+            {
+                PrefixTextId = "VividWorld_Prefix_HeardFromSource",
+                PrefixFallback = "{SOURCE} told me that",
+                PrefixVars = new Dictionary<string, string>(), // Empty vars -> unresolved SOURCE
+                Parts = new List<ComposedFactPart>
+                {
+                    new ComposedFactPart { TextId = string.Empty, Fallback = "peace was declared", Vars = new Dictionary<string, string>() }
+                }
+            };
+
+            var warnings = new List<string>();
+            var result = RumorTextAssembler.Assemble(
+                rumor,
+                cfg,
+                (val, links) => val,
+                getTemplate: null,
+                getLocalized: (id, fallback) => id == "VividWorld_UnknownSubject" ? "someone" : fallback,
+                onWarning: warnings.Add);
+
+            Assert.Equal("someone told me that peace was declared.", result.PlainText);
+            Assert.Single(warnings);
+            Assert.Contains("SOURCE", warnings[0]);
         }
     }
 }

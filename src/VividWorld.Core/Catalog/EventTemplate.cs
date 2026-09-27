@@ -21,6 +21,12 @@ namespace VividWorld.Core.Catalog
         [JsonProperty("opinion")]
         public List<OpinionDef>? Opinions;
 
+        [JsonProperty("selfTell")]
+        public Dictionary<string, SelfTellRule>? SelfTell;
+
+        [JsonProperty("retired")]
+        public bool Retired { get; set; } = false;
+
         [JsonExtensionData]
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
     }

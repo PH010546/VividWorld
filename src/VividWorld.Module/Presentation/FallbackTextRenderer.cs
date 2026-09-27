@@ -6,13 +6,18 @@ using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Localization;
 using VividWorld.Core.Config;
 using VividWorld.Core.Presentation;
+using VividWorld.Core.Rumors;
 
 namespace VividWorld.Presentation
 {
     internal static class FallbackTextRenderer
     {
-        internal static RumorRenderResult RenderBoth(ComposedRumor r, PresentationConfig? cfg)
+        internal static IHeroTraitLookup? TraitLookup { get; set; }
+
+        internal static RumorRenderResult RenderBoth(ComposedRumor r, PresentationConfig? cfg, Func<string, bool?>? isFemale = null)
         {
+            isFemale ??= (id => TraitLookup?.Of(id)?.IsFemale ?? Hero.Find(id)?.IsFemale);
+
             return RumorTextAssembler.Assemble(
                 r,
                 cfg,
@@ -22,7 +27,8 @@ namespace VividWorld.Presentation
                 // 代換不掉的佔位符照舊留一行 WARN（帳本 L-23）。訊息在 Core 組裝、只在純文字
                 // 那一趟發出，所以雙重渲染不會印成兩行。`NoteMissingKey` 不必從這裡傳——
                 // 缺鍵的告警本來就在 LocalizedTemplate 裡自己發。
-                ModLog.Warn);
+                ModLog.Warn,
+                isFemale);
         }
 
         /// <summary>
@@ -47,14 +53,22 @@ namespace VividWorld.Presentation
                 string englishId = LocalizedTextManager.DefaultEnglishLanguageId ?? "English";
                 if (string.IsNullOrEmpty(lang) || string.Equals(lang, englishId, StringComparison.OrdinalIgnoreCase))
                 {
-                    // 英文環境下引擎根本不查表（帳本 D-07／規格 §9.5.3），後備就是英文版本本身。
+                    // 英文環境下引擎不查表；但若 fallback 為 null（探測可選鍵），改由英文字串表查詢
+                    if (fallback == null)
+                    {
+                        var enVal = EnglishStringTableStore.Instance.Get(textId!);
+                        return enVal ?? string.Empty;
+                    }
                     return english;
                 }
 
                 string translated = LocalizedTextManager.GetTranslatedText(lang, textId!);
                 if (string.IsNullOrEmpty(translated))
                 {
-                    NoteMissingKey(textId!, lang);
+                    if (fallback != null)
+                    {
+                        NoteMissingKey(textId!, lang);
+                    }
                     return english;
                 }
                 return translated;
@@ -77,8 +91,12 @@ namespace VividWorld.Presentation
                 "stored on the fact. Add the key to module/ModuleData/Languages/<lang>/std_module_strings_xml.xml.");
         }
 
-        private static string ResolveVar(string val, bool useLinks)
+        internal static string ResolveVar(string val, bool useLinks)
+            => ResolveVar(val, useLinks, Localized);
+
+        internal static string ResolveVar(string val, bool useLinks, Func<string?, string, string>? localizer)
         {
+            localizer ??= Localized;
             if (string.IsNullOrEmpty(val)) return string.Empty;
             int colon = val.IndexOf(':');
             if (colon < 0) return val;
@@ -95,44 +113,44 @@ namespace VividWorld.Presentation
                 case "hero":
                 {
                     var hero = Hero.Find(payload);
-                    if (hero == null) return UnknownSubject();
+                    if (hero == null) return UnknownSubject(localizer);
                     return useLinks
                         ? hero.EncyclopediaLinkWithName.ToString()
-                        : (hero.Name?.ToString() ?? UnknownSubject());
+                        : (hero.Name?.ToString() ?? UnknownSubject(localizer));
                 }
                 case "settlement":
                 {
                     var settlement = Settlement.Find(payload);
-                    if (settlement == null) return UnknownPlace();
+                    if (settlement == null) return UnknownPlace(localizer);
                     return useLinks
                         ? settlement.EncyclopediaLinkWithName.ToString()
-                        : (settlement.Name?.ToString() ?? UnknownPlace());
+                        : (settlement.Name?.ToString() ?? UnknownPlace(localizer));
                 }
                 case "faction":
                     var clan = Clan.FindFirst(c => c.StringId == payload);
-                    if (clan != null) return clan.Name?.ToString() ?? UnknownSubject();
+                    if (clan != null) return clan.Name?.ToString() ?? UnknownSubject(localizer);
                     var kingdom = Kingdom.All?.FirstOrDefault(k => k.StringId == payload);
-                    if (kingdom != null) return kingdom.Name?.ToString() ?? UnknownSubject();
-                    return UnknownSubject();
+                    if (kingdom != null) return kingdom.Name?.ToString() ?? UnknownSubject(localizer);
+                    return UnknownSubject(localizer);
                 case "num":
                 case "text":
                     return payload;
                 case "key":
                     // M6b：字串表的鍵。查得到就用表裡的，查不到原樣退回。
-                    return Localized(payload, payload);
+                    return localizer(payload, payload);
                 default:
                     return payload;
             }
         }
 
-        private static string UnknownSubject()
+        private static string UnknownSubject(Func<string?, string, string>? localizer = null)
         {
-            return Localized("VividWorld_UnknownSubject", "someone");
+            return (localizer ?? Localized)("VividWorld_UnknownSubject", "someone");
         }
 
-        private static string UnknownPlace()
+        private static string UnknownPlace(Func<string?, string, string>? localizer = null)
         {
-            return Localized("VividWorld_UnknownPlace", "somewhere");
+            return (localizer ?? Localized)("VividWorld_UnknownPlace", "somewhere");
         }
 
         /// <summary>
@@ -153,6 +171,35 @@ namespace VividWorld.Presentation
             {
                 return english;
             }
+        }
+
+        internal static string RenderRecallMemory(ComposedRumor rumor, string? language, PresentationConfig? cfg, EnglishStringTable? stringTable = null, Func<string, bool?>? isFemale = null)
+        {
+            if (rumor == null) return string.Empty;
+
+            bool isEnglish = string.IsNullOrEmpty(language) || string.Equals(language, "english", StringComparison.OrdinalIgnoreCase);
+            var table = stringTable ?? EnglishStringTableStore.Instance;
+
+            Func<string?, string?, string> getTemplate = isEnglish
+                ? (id, fallback) => table.Lookup(id, fallback)
+                : LocalizedTemplate;
+
+            Func<string?, string, string> getLocalized = isEnglish
+                ? (id, eng) => table.GetWithFallback(id, eng)
+                : Localized;
+
+            isFemale ??= (id => TraitLookup?.Of(id)?.IsFemale ?? Hero.Find(id)?.IsFemale);
+
+            var result = RumorTextAssembler.Assemble(
+                rumor,
+                cfg,
+                (val, links) => ResolveVar(val, links, getLocalized),
+                getTemplate,
+                getLocalized,
+                null,
+                isFemale);
+
+            return result.PlainText;
         }
     }
 }

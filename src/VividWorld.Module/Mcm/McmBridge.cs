@@ -268,6 +268,7 @@ namespace VividWorld.Mcm
                 case "events.sources.heroPrisonerTaken": return s.SourceHeroPrisonerTaken;
                 case "events.sources.heroPrisonerReleased": return s.SourceHeroPrisonerReleased;
                 case "persistence.maxSnapshots": return s.MaxSnapshots;
+                case "ai.pushLanguage": return PushLanguageOf(s.PushLanguage);
                 default: return null;
             }
         }
@@ -339,6 +340,19 @@ namespace VividWorld.Mcm
             PushKey("events.sources.heroPrisonerTaken", () => s.SourceHeroPrisonerTaken = live.Events.Sources.HeroPrisonerTaken);
             PushKey("events.sources.heroPrisonerReleased", () => s.SourceHeroPrisonerReleased = live.Events.Sources.HeroPrisonerReleased);
             PushKey("persistence.maxSnapshots", () => s.MaxSnapshots = live.Persistence.MaxSnapshots);
+            PushKey("ai.pushLanguage", () =>
+            {
+                int index = McmChoiceLists.IndexOf(McmChoiceLists.PushLanguages, live.Ai.PushLanguage, 0);
+                var labels = McmChoiceLists.PushLanguageLabels();
+                if (s.PushLanguage != null && HasLabels(s.PushLanguage, labels))
+                {
+                    s.PushLanguage.SelectedIndex = index;
+                }
+                else
+                {
+                    s.PushLanguage = new Dropdown<string>(labels, index);
+                }
+            });
             seededCount = count;
             skipped = list;
         }
@@ -367,6 +381,11 @@ namespace VividWorld.Mcm
                 s.SnapshotManagerHotkey = "F9";
                 repaired = true;
             }
+            if (s.PushLanguage == null)
+            {
+                s.PushLanguage = new Dropdown<string>(McmChoiceLists.PushLanguageLabels(), 0);
+                repaired = true;
+            }
             if (repaired)
             {
                 ModLog.Warn("MCM served an uninitialized settings instance — dropdowns/strings repaired by hand.");
@@ -389,6 +408,18 @@ namespace VividWorld.Mcm
                 if (dropdown == null) return null;
                 int i = dropdown.SelectedIndex;
                 return i >= 0 && i < McmChoiceLists.VolunteerModes.Length ? McmChoiceLists.VolunteerModes[i] : null;
+            }
+            catch { return null; }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static string? PushLanguageOf(Dropdown<string>? dropdown)
+        {
+            try
+            {
+                if (dropdown == null) return null;
+                int i = dropdown.SelectedIndex;
+                return i >= 0 && i < McmChoiceLists.PushLanguages.Length ? McmChoiceLists.PushLanguages[i] : null;
             }
             catch { return null; }
         }
@@ -435,7 +466,8 @@ namespace VividWorld.Mcm
                 s.SourceHeroKilled,
                 s.SourceHeroPrisonerTaken,
                 s.SourceHeroPrisonerReleased,
-                s.MaxSnapshots);
+                s.MaxSnapshots,
+                PushLanguageOf(s.PushLanguage));
         }
 
         private static string CfgSignature(VividWorldConfig live)
@@ -464,7 +496,8 @@ namespace VividWorld.Mcm
                 live.Events.Sources.HeroKilled,
                 live.Events.Sources.HeroPrisonerTaken,
                 live.Events.Sources.HeroPrisonerReleased,
-                live.Persistence.MaxSnapshots);
+                live.Persistence.MaxSnapshots,
+                live.Ai.PushLanguage);
         }
 
         private static bool ValuesEqual(McmKeyKind kind, object? a, object? b)

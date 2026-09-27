@@ -4,6 +4,7 @@ using System.Linq;
 using VividWorld.Core.Config;
 using VividWorld.Core.Dialogue;
 using VividWorld.Core.Events;
+using VividWorld.Core.Presentation;
 using VividWorld.Core.Rumors;
 using VividWorld.Core.Tests.Fakes;
 using VividWorld.Core.Util;
@@ -756,6 +757,72 @@ namespace VividWorld.Core.Tests
 
             var note2 = Assert.Single(decision.FilterNotes, n => n.StartsWith("evt_nonew:"));
             Assert.Contains("nothing new to add", note2);
+        }
+
+        [Fact]
+        public void Offer_AssignsPrefix_ForEyewitnessCandidate()
+        {
+            var (selector, _, _) = CreateSelector();
+            var evt = CreateSampleEvent("evt_eye");
+            evt.KnownBy.Add(new KnownByEntry { HeroId = "teller", Hop = 0 });
+
+            var teller = new HeroSocialProfile { HeroId = "teller", RelationWithPlayer = 30, LastVolunteeredDay = -1 };
+            var candidates = new List<RumorCandidate>
+            {
+                new() { Event = evt, TellerHop = 0, PlayerExistingHop = null, SourceHeroId = null }
+            };
+
+            var offer = selector.SelectOnAsk(teller, candidates, day: 10.0);
+            Assert.NotNull(offer);
+            Assert.NotNull(offer!.Prefix);
+            Assert.Equal(RumorPrefixKind.Eyewitness, offer.Prefix!.Kind);
+            Assert.Equal("VividWorld_Prefix_Eyewitness", offer.Composed.PrefixTextId);
+            Assert.Equal("I saw it myself:", offer.Composed.PrefixFallback);
+        }
+
+        [Fact]
+        public void Offer_AssignsPrefix_ForHeardFromSourceCandidate()
+        {
+            var (selector, _, _) = CreateSelector();
+            var evt = CreateSampleEvent("evt_heard");
+            evt.KnownBy.Add(new KnownByEntry { HeroId = "teller", Hop = 1, SourceHeroId = "lord_informant" });
+
+            var teller = new HeroSocialProfile { HeroId = "teller", RelationWithPlayer = 30, LastVolunteeredDay = -1 };
+            var candidates = new List<RumorCandidate>
+            {
+                new() { Event = evt, TellerHop = 1, PlayerExistingHop = null, SourceHeroId = "lord_informant" }
+            };
+
+            var offer = selector.SelectOnAsk(teller, candidates, day: 10.0);
+            Assert.NotNull(offer);
+            Assert.NotNull(offer!.Prefix);
+            Assert.Equal(RumorPrefixKind.HeardFromSource, offer.Prefix!.Kind);
+            Assert.Equal("lord_informant", offer.SourceHeroId);
+            Assert.Equal("VividWorld_Prefix_HeardFromSource", offer.Composed.PrefixTextId);
+            Assert.True(offer.Composed.PrefixVars.ContainsKey("SOURCE"));
+            Assert.Equal("hero:lord_informant", offer.Composed.PrefixVars["SOURCE"]);
+        }
+
+        [Fact]
+        public void Offer_AssignsPrefix_ForCorrectionCandidate()
+        {
+            var (selector, _, _) = CreateSelector();
+            var evt = CreateSampleEvent("evt_correction");
+            evt.KnownBy.Add(new KnownByEntry { HeroId = "teller", Hop = 1, SourceHeroId = "lord_informant" });
+
+            var teller = new HeroSocialProfile { HeroId = "teller", RelationWithPlayer = 30, LastVolunteeredDay = -1 };
+            var candidates = new List<RumorCandidate>
+            {
+                new() { Event = evt, TellerHop = 1, PlayerExistingHop = null, SourceHeroId = "lord_informant", IsCorrection = true }
+            };
+
+            var offer = selector.SelectOnAsk(teller, candidates, day: 10.0);
+            Assert.NotNull(offer);
+            Assert.True(offer!.IsCorrection);
+            Assert.NotNull(offer.Prefix);
+            Assert.Equal(RumorPrefixKind.CorrectionSource, offer.Prefix!.Kind);
+            Assert.Equal("VividWorld_Prefix_CorrectionSource", offer.Composed.PrefixTextId);
+            Assert.Equal("hero:lord_informant", offer.Composed.PrefixVars["SOURCE"]);
         }
     }
 }

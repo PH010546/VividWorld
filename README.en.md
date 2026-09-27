@@ -8,7 +8,7 @@ And you can be part of it.
 
 *[繁體中文](README.md)*
 
-> **This is a beta (v0.9.2).**
+> **This is a beta (v0.9.3).**
 > The underlying machinery is complete and has seen live play; the content is still being expanded.
 > See the Roadmap at the end of this document for what remains.
 
@@ -25,7 +25,8 @@ counsel sought from a veteran, loose talk over the cups, a dispute over credit f
 in the market, and a wager struck on a hunt.
 
 **News travels by word of mouth, and frays in transit.** Every so often, lords each choose something
-from memory and relate it to whoever is at hand. Every retelling loses
+from memory and relate it to whoever is at hand. They say whether they saw it themselves or who told them;
+those involved speak of their own affairs in their own voice. Every retelling loses
 further detail — the day, the place, who else was present, one item at a time. By the fifth telling,
 what reaches you is often no more than "someone did something, somewhere."
 
@@ -132,7 +133,7 @@ values you have adjusted, and even keys the mod no longer recognises, are preser
 are.
 
 **There is also a Vivid World page in the game's settings screen** (provided by Mod Configuration
-Menu): 24 entries in eight groups, changed in game and written straight back to the `config.json`
+Menu): 25 entries in nine groups, changed in game and written straight back to the `config.json`
 above. Settings not on the page are left untouched.
 
 ---
@@ -149,6 +150,12 @@ English and **Traditional Chinese** only at present. Further translations are we
 which a rumor mode of Auto switches to Realistic, restricting *asking* for news to clan tier 1 and above.
 **At clan tier 0 you will get nothing out of anyone** — this is deliberate deference to those mods.
 To let a commoner ask anyway, set the rumor mode to Casual.
+
+**Calradia Remembers**: this mod is currently integrated with Calradia Remembers only. With it installed, when you chat
+with a lord or wanderer through AI, he knows the rumors he has heard in this mod and still remembers — in the version he
+heard, and he can say who told him; what he has forgotten or what is long out of date does not come up. Other AI chat mods
+do not receive these rumors yet; without Calradia Remembers, nothing in this mod is affected.
+The language used for this is set in the "AI Integration" group in MCM (English by default).
 
 **Mods that take over the greeting:** some mods claim a lord's opening line in its entirety, leaving
 this mod no opening. In that case the dialogue menu gains the line *"You looked like you were about to
@@ -186,7 +193,7 @@ being worked on:
 | **Consequences that reach further** | Outcomes will touch not only standing but money, renown, influence — and, in time, life and limb |
 | **A voice of your own** | Spread news yourself, and set one lord against another; make rumour an instrument in your hands |
 | **More sources of news** | Defections, rebellions and the fall of besieged settlements will travel among the lords as well |
-| **Hooking into AI dialogue mods** | What they know, and what they hold against one another, will be made available to mods that drive conversation with AI, so they can speak about it in their own words |
+| **Deeper ties with AI dialogue mods** | Beyond the rumors they have heard, making what they hold against one another available to mods that drive conversation with AI |
 
 ---
 

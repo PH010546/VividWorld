@@ -81,7 +81,10 @@ namespace VividWorld.Core.Config
                 new McmExposedKey("events.sources.heroPrisonerReleased", McmKeyKind.Bool),
 
                 // Group 7: Persistence
-                new McmExposedKey("persistence.maxSnapshots", McmKeyKind.Int, 0, 64)
+                new McmExposedKey("persistence.maxSnapshots", McmKeyKind.Int, 0, 64),
+
+                // Group 8: AI Integration
+                new McmExposedKey("ai.pushLanguage", McmKeyKind.Dropdown, choices: new[] { "english", "game" })
             };
 
             All = keys.AsReadOnly();
@@ -142,6 +145,8 @@ namespace VividWorld.Core.Config
                     return cfg.Events.Sources.HeroPrisonerReleased;
                 case "persistence.maxSnapshots":
                     return cfg.Persistence.MaxSnapshots;
+                case "ai.pushLanguage":
+                    return cfg.Ai?.PushLanguage;
                 default:
                     return null;
             }
@@ -235,6 +240,13 @@ namespace VividWorld.Core.Config
                         case "dialogue.volunteerMode":
                             cfg.Dialogue.VolunteerMode = sVal;
                             return true;
+                        case "ai.pushLanguage":
+                            if (cfg.Ai != null)
+                            {
+                                cfg.Ai.PushLanguage = sVal;
+                                return true;
+                            }
+                            return false;
                         default:
                             return false;
                     }

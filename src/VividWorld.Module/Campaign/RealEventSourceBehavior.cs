@@ -304,9 +304,15 @@ namespace VividWorld.Campaign
                 EventTemplate? adaptedTemplate = null;
                 if (captorHero == null && baseTemplate != null)
                 {
-                    string whoNoCaptorTextId = string.Equals(templateType, "hero_escaped_captivity", StringComparison.Ordinal)
+                    bool isEscape = string.Equals(templateType, "hero_escaped_captivity", StringComparison.Ordinal);
+                    string whoNoCaptorTextId = isEscape
                         ? "VividWorld_Fact_HeroEscaped_WhoNoCaptor"
                         : "VividWorld_Fact_HeroReleased_WhoNoCaptor";
+                    // 英文介面不查字串表、直接用存進事件的英文，所以這裡要存沒有 {CAPTOR} 的那一句；
+                    // 沿用模板那句會在英文介面印成「someone set … free」。字與英文字串表同一句（帳本 D-88）。
+                    string whoNoCaptorText = isEscape
+                        ? "{PRISONER} slipped out of captivity"
+                        : "{PRISONER} got out of captivity";
 
                     adaptedTemplate = new EventTemplate
                     {
@@ -325,7 +331,7 @@ namespace VividWorld.Campaign
                                     Id = f.Id,
                                     Category = f.Category,
                                     TextId = whoNoCaptorTextId,
-                                    Text = f.Text,
+                                    Text = whoNoCaptorText,
                                     Vars = new Dictionary<string, string> { ["PRISONER"] = "hero:{PRISONER}" },
                                     Fragility = f.Fragility,
                                     Optional = f.Optional

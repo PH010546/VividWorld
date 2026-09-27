@@ -375,7 +375,7 @@ namespace VividWorld.Core.Tests
             Assert.Equal(RumorTextComposer.RetellPrefixFallback, d0.Offer!.Composed.PrefixFallback);
             Assert.Equal("VividWorld_RetellPrefix", d0.Offer!.Composed.PrefixTextId);
 
-            // 非目擊者 (tellerHop == 1) 的重述 -> 不帶前綴
+            // 非目擊者 (tellerHop == 1) 的重述 -> 不帶「當時我也在場」，改用一般的開頭語（沒有來源 ⇒ 聽人說）
             var teller1 = new HeroSocialProfile { HeroId = "teller_1", RelationWithPlayer = 30, LastVolunteeredDay = -1 };
             evt.KnownBy.Add(new KnownByEntry { HeroId = teller1.HeroId, Hop = 1 });
             var candidates1 = new List<RumorCandidate>
@@ -384,8 +384,8 @@ namespace VividWorld.Core.Tests
             };
             var d1 = selector.DecideOnVolunteer(teller1, candidates1, day: 10.0, volunteersAlreadyToday: 0);
             Assert.NotNull(d1.Offer);
-            Assert.Null(d1.Offer!.Composed.PrefixFallback);
-            Assert.Null(d1.Offer!.Composed.PrefixTextId);
+            Assert.NotEqual("VividWorld_RetellPrefix", d1.Offer!.Composed.PrefixTextId);
+            Assert.Equal(RumorPrefixSelector.HeardGeneralTextId, d1.Offer!.Composed.PrefixTextId);
         }
 
         // ── 9. DecideOnAsk 不變 ──
@@ -604,7 +604,7 @@ namespace VividWorld.Core.Tests
         {
             Assert.Contains(McmExposedKeys.All, k => k.Path == "dialogue.volunteerMode");
             Assert.DoesNotContain(McmExposedKeys.All, k => k.Path == "dialogue.commonerCompatMode");
-            Assert.Equal(24, McmExposedKeys.All.Count);
+            Assert.Equal(25, McmExposedKeys.All.Count);
         }
 
         // ── 14. 預演多出來的格式化 ──

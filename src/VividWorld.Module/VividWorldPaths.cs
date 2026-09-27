@@ -35,5 +35,8 @@ namespace VividWorld
 
         internal static string ListenTallyFile(string campaignId) =>
             Path.Combine(CampaignDirectory(campaignId), "listen_tally.json");
+
+        internal static string AiPushedFile(string campaignId) =>
+            Path.Combine(CampaignDirectory(campaignId), "ai_pushed.json");
     }
 }

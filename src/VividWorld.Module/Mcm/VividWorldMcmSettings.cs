@@ -154,5 +154,12 @@ namespace VividWorld.Mcm
             HintText = "{=VividWorld_MCM_MaxSnapshotsHint}Maximum number of rumor system snapshots retained per campaign. 0 keeps all snapshots without automatic pruning.")]
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Persistence}Persistence", GroupOrder = 7)]
         public int MaxSnapshots { get; set; } = 0;
+
+        // ── Group 8: AI Integration ─────────────────────────────────────────────────
+
+        [SettingPropertyDropdown("{=VividWorld_MCM_PushLanguage}Language for AI mods", Order = 0, RequireRestart = false,
+            HintText = "{=VividWorld_MCM_PushLanguageHint}The language Vivid World uses when handing the rumors an NPC remembers to AI dialogue mods. English: this mod's own English wording (recommended). Game language: your current interface language. Names of people and places always follow the game interface.")]
+        [SettingPropertyGroup("{=VividWorld_MCM_Group_Ai}AI Integration", GroupOrder = 8)]
+        public Dropdown<string> PushLanguage { get; set; } = new Dropdown<string>(McmChoiceLists.PushLanguages, 0);
     }
 }
