@@ -30,6 +30,7 @@
     <string id="VividWorld_AskRefuseForgotten" text="好像聽誰提過些什麼……一時想不起來了。" />
     <string id="VividWorld_AskRefuseOutdated" text="我聽說的那些，現在大概都不是那麼回事了。" />
     <string id="VividWorld_AskRefusePlayerKnows" text="我知道的，你應該都聽說了。" />
+    <string id="VividWorld_AskRefuseSharedToday" text="今天該說的都說了，改天再來找我聊吧。" />
     <string id="VividWorld_RecoveryAsk" text="你剛才似乎欲言又止？" />
     <string id="VividWorld_RetellPrefix" text="事實上，當時我也在場——" />
     <string id="VividWorld_RetellPrefix_Self" text="這事你大概聽說了吧——" />
@@ -319,6 +320,8 @@
     <string id="VividWorld_MCM_TellersPerHourlyTickHint" text="遊戲內每小時最多挑選幾位 NPC 分享傳聞。數值越高，傳聞擴散速度越快。" />
 
     <!-- Group 3: 對話 -->
+    <string id="VividWorld_MCM_SharesPerHeroPerDay" text="每位 NPC 每天分享幾則" />
+    <string id="VividWorld_MCM_SharesPerHeroPerDayHint" text="同一位 NPC 一天最多跟你分享幾則消息，他主動聊起的和你問出來的合算。設成 0 就不限。" />
     <string id="VividWorld_MCM_AskRelationGate" text="打聽傳聞好感度門檻" />
     <string id="VividWorld_MCM_AskRelationGateHint" text="NPC 願意回答你打聽傳聞前，所需的最低個人好感度。" />
     <string id="VividWorld_MCM_AskWillingnessThreshold" text="打聽意願判定門檻" />

@@ -5,6 +5,7 @@ namespace VividWorld.Core.Dialogue
 {
     public enum AskRefusalLineKind
     {
+        SharedToday,
         Unwilling,
         NothingHeard,
         Forgotten,
@@ -15,12 +16,14 @@ namespace VividWorld.Core.Dialogue
 
     public static class AskRefusalLine
     {
+        public const string KeySharedToday = "VividWorld_AskRefuseSharedToday";
         public const string KeyUnwilling = "VividWorld_AskRefuseUnwilling";
         public const string KeyNothingHeard = "VividWorld_AskRefuseNothingHeard";
         public const string KeyForgotten = "VividWorld_AskRefuseForgotten";
         public const string KeyOutdated = "VividWorld_AskRefuseOutdated";
         public const string KeyPlayerKnows = "VividWorld_AskRefusePlayerKnows";
 
+        public const string FallbackSharedToday = "I've said my piece for today. Come find me another time.";
         public const string FallbackUnwilling = "That's not something I'd care to discuss.";
         public const string FallbackNothingHeard = "I haven't heard any news lately.";
         public const string FallbackForgotten = "Someone mentioned something... I can't quite recall what.";
@@ -38,6 +41,9 @@ namespace VividWorld.Core.Dialogue
 
             switch (decision.Refusal)
             {
+                case AskRefusal.SharedToday:
+                    return AskRefusalLineKind.SharedToday;
+
                 case AskRefusal.RelationGate:
                 case AskRefusal.WillingnessGate:
                     return AskRefusalLineKind.Unwilling;
@@ -74,6 +80,7 @@ namespace VividWorld.Core.Dialogue
         {
             switch (kind)
             {
+                case AskRefusalLineKind.SharedToday: return KeySharedToday;
                 case AskRefusalLineKind.Unwilling: return KeyUnwilling;
                 case AskRefusalLineKind.NothingHeard: return KeyNothingHeard;
                 case AskRefusalLineKind.Forgotten: return KeyForgotten;
@@ -87,6 +94,7 @@ namespace VividWorld.Core.Dialogue
         {
             switch (kind)
             {
+                case AskRefusalLineKind.SharedToday: return FallbackSharedToday;
                 case AskRefusalLineKind.Unwilling: return FallbackUnwilling;
                 case AskRefusalLineKind.NothingHeard: return FallbackNothingHeard;
                 case AskRefusalLineKind.Forgotten: return FallbackForgotten;

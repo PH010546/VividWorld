@@ -1,5 +1,11 @@
 Vivid World changelog
 
+v0.9.4
+Every lord and wanderer may now bring up a piece of news with you each day, instead of only one person in the whole world speaking up per day.
+The same person shares only one piece of news with you per day, counting what they bring up and what you ask for; ask again that day and they say "I've said my piece for today. Come find me another time." Come back the next day and they will talk again.
+How many pieces each person shares per day can be changed in the "Dialogue" group in MCM.
+Existing campaigns can be continued as they are; no settings need to be changed.
+
 v0.9.3
 Fixed: a hero taken prisoner no longer keeps passing news on for the rest of that day.
 Fixed a few rumor lines that said "someone" instead of naming the person.

@@ -279,7 +279,7 @@ namespace VividWorld.Core.Tests
         {
             var (selector, teller, candidates) = FutureOfferSetup();
 
-            var decision = selector.DecideOnVolunteer(teller, candidates, 50.0, 0);
+            var decision = selector.DecideOnVolunteer(teller, candidates, 50.0);
 
             Assert.Null(decision.Offer);
             Assert.Equal(VolunteerRefusal.AllCandidatesFiltered, decision.Refusal);

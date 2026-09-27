@@ -264,8 +264,7 @@ namespace VividWorld.Core.Config
             Scheduling.SecretWatchDays = Math.Max(0.0, Scheduling.SecretWatchDays);
 
             // Dialogue
-            Dialogue.MaxVolunteersPerDay = Math.Max(1, Dialogue.MaxVolunteersPerDay);
-            Dialogue.VolunteerCooldownDays = Math.Max(0.0, Dialogue.VolunteerCooldownDays);
+            Dialogue.SharesPerHeroPerDay = Math.Max(0, Math.Min(10, Dialogue.SharesPerHeroPerDay));
             Dialogue.ScoreRetellMultiplier = Math.Max(0.0, Math.Min(10.0, Dialogue.ScoreRetellMultiplier));
 
             // §9.1 的四個評分權重都是「越大越優先」的正向項；負值會讓排序整個反轉，

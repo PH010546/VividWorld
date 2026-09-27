@@ -179,26 +179,26 @@ namespace VividWorld.Core.Tests
             var candidates = new List<RumorCandidate>();
 
             // -1: 低於閒聊門檻 (0) -> 拒絕 (RelationGate)
-            var pNeg = new HeroSocialProfile { HeroId = "p_neg", RelationWithPlayer = -1, LastVolunteeredDay = -1 };
-            var dNeg = selector.DecideOnVolunteer(pNeg, candidates, day: 10.0, volunteersAlreadyToday: 0);
+            var pNeg = new HeroSocialProfile { HeroId = "p_neg", RelationWithPlayer = -1 };
+            var dNeg = selector.DecideOnVolunteer(pNeg, candidates, day: 10.0);
             Assert.Equal(VolunteerRefusal.RelationGate, dNeg.Refusal);
             Assert.Equal(VolunteerTier.None, dNeg.Tier);
 
             // 0: 等於閒聊門檻 (0) -> 大概 (Gist)
-            var p0 = new HeroSocialProfile { HeroId = "p_0", RelationWithPlayer = 0, LastVolunteeredDay = -1 };
-            var d0 = selector.DecideOnVolunteer(p0, candidates, day: 10.0, volunteersAlreadyToday: 0);
+            var p0 = new HeroSocialProfile { HeroId = "p_0", RelationWithPlayer = 0 };
+            var d0 = selector.DecideOnVolunteer(p0, candidates, day: 10.0);
             Assert.Equal(VolunteerRefusal.NoKnownEvents, d0.Refusal);
             Assert.Equal(VolunteerTier.Gist, d0.Tier);
 
             // 29: 低於完整門檻 (30)，高於閒聊門檻 (0) -> 大概 (Gist)
-            var p29 = new HeroSocialProfile { HeroId = "p_29", RelationWithPlayer = 29, LastVolunteeredDay = -1 };
-            var d29 = selector.DecideOnVolunteer(p29, candidates, day: 10.0, volunteersAlreadyToday: 0);
+            var p29 = new HeroSocialProfile { HeroId = "p_29", RelationWithPlayer = 29 };
+            var d29 = selector.DecideOnVolunteer(p29, candidates, day: 10.0);
             Assert.Equal(VolunteerRefusal.NoKnownEvents, d29.Refusal);
             Assert.Equal(VolunteerTier.Gist, d29.Tier);
 
             // 30: 達到完整門檻 (30) -> 完整 (Full)
-            var p30 = new HeroSocialProfile { HeroId = "p_30", RelationWithPlayer = 30, LastVolunteeredDay = -1 };
-            var d30 = selector.DecideOnVolunteer(p30, candidates, day: 10.0, volunteersAlreadyToday: 0);
+            var p30 = new HeroSocialProfile { HeroId = "p_30", RelationWithPlayer = 30 };
+            var d30 = selector.DecideOnVolunteer(p30, candidates, day: 10.0);
             Assert.Equal(VolunteerRefusal.NoKnownEvents, d30.Refusal);
             Assert.Equal(VolunteerTier.Full, d30.Tier);
         }
@@ -210,26 +210,26 @@ namespace VividWorld.Core.Tests
             var candidates = new List<RumorCandidate>();
 
             // 9: 低於寫實閒聊門檻 (10) -> 拒絕 (RelationGate)
-            var p9 = new HeroSocialProfile { HeroId = "p_9", RelationWithPlayer = 9, LastVolunteeredDay = -1 };
-            var d9 = selector.DecideOnVolunteer(p9, candidates, day: 10.0, volunteersAlreadyToday: 0);
+            var p9 = new HeroSocialProfile { HeroId = "p_9", RelationWithPlayer = 9 };
+            var d9 = selector.DecideOnVolunteer(p9, candidates, day: 10.0);
             Assert.Equal(VolunteerRefusal.RelationGate, d9.Refusal);
             Assert.Equal(VolunteerTier.None, d9.Tier);
 
             // 10: 達到寫實閒聊門檻 (10) -> 大概 (Gist)
-            var p10 = new HeroSocialProfile { HeroId = "p_10", RelationWithPlayer = 10, LastVolunteeredDay = -1 };
-            var d10 = selector.DecideOnVolunteer(p10, candidates, day: 10.0, volunteersAlreadyToday: 0);
+            var p10 = new HeroSocialProfile { HeroId = "p_10", RelationWithPlayer = 10 };
+            var d10 = selector.DecideOnVolunteer(p10, candidates, day: 10.0);
             Assert.Equal(VolunteerRefusal.NoKnownEvents, d10.Refusal);
             Assert.Equal(VolunteerTier.Gist, d10.Tier);
 
             // 29: 低於完整門檻 (30)，達到閒聊門檻 (10) -> 大概 (Gist)
-            var p29 = new HeroSocialProfile { HeroId = "p_29", RelationWithPlayer = 29, LastVolunteeredDay = -1 };
-            var d29 = selector.DecideOnVolunteer(p29, candidates, day: 10.0, volunteersAlreadyToday: 0);
+            var p29 = new HeroSocialProfile { HeroId = "p_29", RelationWithPlayer = 29 };
+            var d29 = selector.DecideOnVolunteer(p29, candidates, day: 10.0);
             Assert.Equal(VolunteerRefusal.NoKnownEvents, d29.Refusal);
             Assert.Equal(VolunteerTier.Gist, d29.Tier);
 
             // 30: 達到完整門檻 (30) -> 完整 (Full)
-            var p30 = new HeroSocialProfile { HeroId = "p_30", RelationWithPlayer = 30, LastVolunteeredDay = -1 };
-            var d30 = selector.DecideOnVolunteer(p30, candidates, day: 10.0, volunteersAlreadyToday: 0);
+            var p30 = new HeroSocialProfile { HeroId = "p_30", RelationWithPlayer = 30 };
+            var d30 = selector.DecideOnVolunteer(p30, candidates, day: 10.0);
             Assert.Equal(VolunteerRefusal.NoKnownEvents, d30.Refusal);
             Assert.Equal(VolunteerTier.Full, d30.Tier);
         }
@@ -244,10 +244,9 @@ namespace VividWorld.Core.Tests
             {
                 HeroId = "spouse",
                 RelationWithPlayer = -50,
-                IsPlayerSpouse = true,
-                LastVolunteeredDay = -1
+                IsPlayerSpouse = true
             };
-            var decision = selector.DecideOnVolunteer(spouse, candidates, day: 10.0, volunteersAlreadyToday: 0);
+            var decision = selector.DecideOnVolunteer(spouse, candidates, day: 10.0);
             Assert.Equal(VolunteerTier.Full, decision.Tier);
             Assert.True(decision.IsCloseKin);
             Assert.Equal(VolunteerRefusal.NoKnownEvents, decision.Refusal);
@@ -305,7 +304,7 @@ namespace VividWorld.Core.Tests
             var (selector, _, _) = CreateSelector(mode: RumorMode.Casual);
             var evt = CreateSampleEvent("evt_retell_hop", drama: 4);
 
-            var teller = new HeroSocialProfile { HeroId = "teller", RelationWithPlayer = 15, LastVolunteeredDay = -1 };
+            var teller = new HeroSocialProfile { HeroId = "teller", RelationWithPlayer = 15 };
             evt.KnownBy.Add(new KnownByEntry { HeroId = teller.HeroId, Hop = 1 });
             evt.KnownBy.Add(new KnownByEntry { HeroId = "player", Hop = 3, KnownFactIds = new List<string> { "f_who" } });
 
@@ -333,7 +332,7 @@ namespace VividWorld.Core.Tests
             var (selector, _, _) = CreateSelector(mode: RumorMode.Casual);
             var evt = CreateSampleEvent("evt_apply_landing", drama: 4);
 
-            var teller = new HeroSocialProfile { HeroId = "teller", RelationWithPlayer = 15, LastVolunteeredDay = -1 };
+            var teller = new HeroSocialProfile { HeroId = "teller", RelationWithPlayer = 15 };
             evt.KnownBy.Add(new KnownByEntry { HeroId = teller.HeroId, Hop = 0 });
 
             var candidates = new List<RumorCandidate>
@@ -342,7 +341,7 @@ namespace VividWorld.Core.Tests
             };
 
             // 15 好感在 Casual 下為 Gist，tellerHop 0 + 1 + 2 = 3
-            var decision = selector.DecideOnVolunteer(teller, candidates, day: 10.0, volunteersAlreadyToday: 0);
+            var decision = selector.DecideOnVolunteer(teller, candidates, day: 10.0);
             Assert.Equal(VolunteerTier.Gist, decision.Tier);
             Assert.NotNull(decision.Offer);
             Assert.Equal(3, decision.Offer!.ResultingPlayerHop);
@@ -363,26 +362,26 @@ namespace VividWorld.Core.Tests
             evt.KnownBy.Add(new KnownByEntry { HeroId = "player", Hop = 3, KnownFactIds = new List<string> { "f_who" } });
 
             // 目擊者 (tellerHop == 0) 的重述 -> 帶前綴
-            var teller0 = new HeroSocialProfile { HeroId = "teller_0", RelationWithPlayer = 30, LastVolunteeredDay = -1 };
+            var teller0 = new HeroSocialProfile { HeroId = "teller_0", RelationWithPlayer = 30 };
             evt.KnownBy.Add(new KnownByEntry { HeroId = teller0.HeroId, Hop = 0 });
             var candidates0 = new List<RumorCandidate>
             {
                 new() { Event = evt, TellerHop = 0, PlayerExistingHop = 3 }
             };
-            var d0 = selector.DecideOnVolunteer(teller0, candidates0, day: 10.0, volunteersAlreadyToday: 0);
+            var d0 = selector.DecideOnVolunteer(teller0, candidates0, day: 10.0);
             Assert.NotNull(d0.Offer);
             Assert.NotNull(d0.Offer!.Composed.PrefixFallback);
             Assert.Equal(RumorTextComposer.RetellPrefixFallback, d0.Offer!.Composed.PrefixFallback);
             Assert.Equal("VividWorld_RetellPrefix", d0.Offer!.Composed.PrefixTextId);
 
             // 非目擊者 (tellerHop == 1) 的重述 -> 不帶「當時我也在場」，改用一般的開頭語（沒有來源 ⇒ 聽人說）
-            var teller1 = new HeroSocialProfile { HeroId = "teller_1", RelationWithPlayer = 30, LastVolunteeredDay = -1 };
+            var teller1 = new HeroSocialProfile { HeroId = "teller_1", RelationWithPlayer = 30 };
             evt.KnownBy.Add(new KnownByEntry { HeroId = teller1.HeroId, Hop = 1 });
             var candidates1 = new List<RumorCandidate>
             {
                 new() { Event = evt, TellerHop = 1, PlayerExistingHop = 3 }
             };
-            var d1 = selector.DecideOnVolunteer(teller1, candidates1, day: 10.0, volunteersAlreadyToday: 0);
+            var d1 = selector.DecideOnVolunteer(teller1, candidates1, day: 10.0);
             Assert.NotNull(d1.Offer);
             Assert.NotEqual("VividWorld_RetellPrefix", d1.Offer!.Composed.PrefixTextId);
             Assert.Equal(RumorPrefixSelector.HeardGeneralTextId, d1.Offer!.Composed.PrefixTextId);
@@ -604,7 +603,7 @@ namespace VividWorld.Core.Tests
         {
             Assert.Contains(McmExposedKeys.All, k => k.Path == "dialogue.volunteerMode");
             Assert.DoesNotContain(McmExposedKeys.All, k => k.Path == "dialogue.commonerCompatMode");
-            Assert.Equal(25, McmExposedKeys.All.Count);
+            Assert.Equal(26, McmExposedKeys.All.Count);
         }
 
         // ── 14. 預演多出來的格式化 ──
@@ -617,8 +616,7 @@ namespace VividWorld.Core.Tests
                 Day = 15,
                 TotalNetworkCount = 2,
                 LordCount = 2,
-                VolunteersToday = 0,
-                MaxVolunteersPerDay = 1,
+                SharedTodaySummary = "Shared today: 0 people (cap 1 each; 0 = no limit)",
                 VolunteerRelationGate = 30,
                 HeroesMeetingVolunteerRelationGate = 1,
                 ChatRelationGate = 0,

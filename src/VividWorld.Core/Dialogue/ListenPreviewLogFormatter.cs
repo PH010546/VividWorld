@@ -12,8 +12,7 @@ namespace VividWorld.Core.Dialogue
             ListenTallyKeys.VolunteerTold,
             ListenTallyKeys.VolunteerBlockedCommonerTier,
             ListenTallyKeys.VolunteerBlockedRelationGate,
-            ListenTallyKeys.VolunteerBlockedCooldown,
-            ListenTallyKeys.VolunteerBlockedDailyCap,
+            ListenTallyKeys.VolunteerBlockedSharedToday,
             ListenTallyKeys.VolunteerNoTopicNothingOnFile,
             ListenTallyKeys.VolunteerNoTopicAllForgotten,
             ListenTallyKeys.VolunteerNoTopicAllOutdated,
@@ -36,6 +35,7 @@ namespace VividWorld.Core.Dialogue
             ListenTallyKeys.AskTold,
             ListenTallyKeys.AskRefusedRelationGate,
             ListenTallyKeys.AskRefusedWillingnessGate,
+            ListenTallyKeys.AskRefusedSharedToday,
             ListenTallyKeys.AskNoTopicNothingOnFile,
             ListenTallyKeys.AskNoTopicAllForgotten,
             ListenTallyKeys.AskNoTopicAllOutdated,
@@ -46,6 +46,7 @@ namespace VividWorld.Core.Dialogue
         private static readonly string[] AskRefusalOrder = new[]
         {
             "told",
+            nameof(AskRefusalLineKind.SharedToday),
             nameof(AskRefusalLineKind.Unwilling),
             nameof(AskRefusalLineKind.NothingHeard),
             nameof(AskRefusalLineKind.Forgotten),
@@ -74,7 +75,7 @@ namespace VividWorld.Core.Dialogue
             }
             sb.AppendLine($"Day {result.Day} | trigger: {trigger}");
             sb.AppendLine($"Network: {result.TotalNetworkCount} heroes ({result.LordCount} lords, {result.WandererCount} wanderers) | Elapsed: {result.ElapsedMilliseconds}ms");
-            sb.AppendLine($"Volunteers today: {result.VolunteersToday}/{result.MaxVolunteersPerDay} | Relation >= {result.VolunteerRelationGate}: {result.HeroesMeetingVolunteerRelationGate} heroes");
+            sb.AppendLine($"{result.SharedTodaySummary} | Relation >= {result.VolunteerRelationGate}: {result.HeroesMeetingVolunteerRelationGate} heroes");
             sb.AppendLine($"Relation >= {result.ChatRelationGate} (chat gate): {result.HeroesMeetingChatRelationGate} heroes");
             sb.AppendLine($"Notice: {result.LordAttackNote} | Unstamped entries: {result.UnstampedEntriesCount}");
             sb.AppendLine();
@@ -83,7 +84,7 @@ namespace VividWorld.Core.Dialogue
             AppendCategoryList(sb, result.VolunteerCounts, result.VolunteerNames, VolunteerOrder, includeTopNames, result);
             sb.AppendLine();
 
-            sb.AppendLine("[2. Volunteer Path (Topic Only - ignoring relation, cooldown, daily cap)]");
+            sb.AppendLine("[2. Volunteer Path (Topic Only - ignoring relation, share cap)]");
             AppendCategoryList(sb, result.TopicOnlyCounts, result.TopicOnlyNames, TopicOnlyOrder, includeTopNames);
             sb.AppendLine();
 

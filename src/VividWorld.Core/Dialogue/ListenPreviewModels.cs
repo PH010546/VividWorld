@@ -36,8 +36,7 @@ namespace VividWorld.Core.Dialogue
         public int WandererCount { get; set; }
         public int OtherCount { get; set; }
 
-        public int VolunteersToday { get; set; }
-        public int MaxVolunteersPerDay { get; set; }
+        public string SharedTodaySummary { get; set; } = string.Empty;
         public int VolunteerRelationGate { get; set; }
         public int HeroesMeetingVolunteerRelationGate { get; set; }
         public int ChatRelationGate { get; set; }

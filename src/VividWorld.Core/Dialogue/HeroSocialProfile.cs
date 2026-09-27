@@ -8,6 +8,6 @@ namespace VividWorld.Core.Dialogue
         public int RelationWithPlayer;
         public bool IsPlayerSpouse, IsPlayerCompanion, IsPlayerClanMember;
         public TraitProfile Traits = new();
-        public double LastVolunteeredDay = -1;
+        public int SharedToday;
     }
 }

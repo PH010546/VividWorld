@@ -30,6 +30,7 @@
     <string id="VividWorld_AskRefuseForgotten" text="Someone mentioned something... I can't quite recall what." />
     <string id="VividWorld_AskRefuseOutdated" text="Whatever I heard is likely no longer the case." />
     <string id="VividWorld_AskRefusePlayerKnows" text="Whatever I know, you've surely heard already." />
+    <string id="VividWorld_AskRefuseSharedToday" text="I've said my piece for today. Come find me another time." />
     <string id="VividWorld_RecoveryAsk" text="You looked like you were about to say something." />
     <string id="VividWorld_RetellPrefix" text="I was there, in fact—" />
     <string id="VividWorld_RetellPrefix_Self" text="You may have heard about this already—" />
@@ -319,6 +320,8 @@
     <string id="VividWorld_MCM_TellersPerHourlyTickHint" text="Maximum number of NPCs picked to share rumors every in-game hour. Higher values increase rumor spread speed." />
 
     <!-- Group 3: Dialogue -->
+    <string id="VividWorld_MCM_SharesPerHeroPerDay" text="News per person per day" />
+    <string id="VividWorld_MCM_SharesPerHeroPerDayHint" text="How many pieces of news the same person will share with you in one day, counting both what they bring up on their own and what you ask them about. Set to 0 for no limit." />
     <string id="VividWorld_MCM_AskRelationGate" text="Ask rumor relation gate" />
     <string id="VividWorld_MCM_AskRelationGateHint" text="Minimum relation required before an NPC is willing to answer your inquiries about news." />
     <string id="VividWorld_MCM_AskWillingnessThreshold" text="Ask willingness threshold" />

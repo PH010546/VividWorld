@@ -98,7 +98,7 @@ namespace VividWorld.Core.Tests
                 });
             }
 
-            // 3. Wanderer on cooldown -> VolunteerBlockedCooldown, TopicOnly hasTopic, AskTold
+            // 3. Wanderer who shared today -> VolunteerBlockedSharedToday, TopicOnly hasTopic, AskRefusedSharedToday
             {
                 string hid = "hero_cd";
                 var evt = CreateSampleEvent("evt_cd", day: 10.0, tellerHeroId: hid);
@@ -112,7 +112,7 @@ namespace VividWorld.Core.Tests
                     {
                         HeroId = hid,
                         RelationWithPlayer = 35,
-                        LastVolunteeredDay = 9.5 // Day is 10.0, cooldown is 3.0 days -> Cooldown
+                        SharedToday = 1
                     },
                     Candidates = new[] { cand },
                     KnownCount = 1,
@@ -201,7 +201,7 @@ namespace VividWorld.Core.Tests
                 selector,
                 compat: null,
                 playerClanTier: 2,
-                volunteersAlreadyToday: 0,
+                sharedTodaySummary: "Shared today: 0 people (cap 1 each; 0 = no limit)",
                 day: 10.0,
                 cfg.Dialogue,
                 people,
@@ -211,8 +211,7 @@ namespace VividWorld.Core.Tests
             Assert.Equal(13, result.TotalNetworkCount);
             Assert.Equal(9, result.LordCount); // 6 + 1 (nothing) + 1 (outdated) + 1 (mixed) = 9
             Assert.Equal(4, result.WandererCount); // 1 (low_rel) + 1 (cd) + 1 (forgotten) + 1 (filt) = 4
-            Assert.Equal(0, result.VolunteersToday);
-            Assert.Equal(cfg.Dialogue.MaxVolunteersPerDay, result.MaxVolunteersPerDay);
+            Assert.Equal("Shared today: 0 people (cap 1 each; 0 = no limit)", result.SharedTodaySummary);
             Assert.Equal(25, result.ElapsedMilliseconds);
             Assert.Equal(2, result.UnstampedEntriesCount); // 1 from low_rel, 1 from filt
             Assert.False(result.AskBlockedByClanTier);
@@ -221,7 +220,7 @@ namespace VividWorld.Core.Tests
             Assert.Equal(6, result.VolunteerCounts[ListenTallyKeys.VolunteerTold]);
             Assert.Equal(5, result.VolunteerNames[ListenTallyKeys.VolunteerTold].Count); // Top 5 capped
             Assert.Equal(1, result.VolunteerCounts[ListenTallyKeys.VolunteerBlockedRelationGate]);
-            Assert.Equal(1, result.VolunteerCounts[ListenTallyKeys.VolunteerBlockedCooldown]);
+            Assert.Equal(1, result.VolunteerCounts[ListenTallyKeys.VolunteerBlockedSharedToday]);
             Assert.Equal(1, result.VolunteerCounts[ListenTallyKeys.VolunteerNoTopicNothingOnFile]);
             Assert.Equal(1, result.VolunteerCounts[ListenTallyKeys.VolunteerNoTopicAllForgotten]);
             Assert.Equal(1, result.VolunteerCounts[ListenTallyKeys.VolunteerNoTopicAllOutdated]);
@@ -237,7 +236,8 @@ namespace VividWorld.Core.Tests
             Assert.Equal(1, result.TopicOnlyCounts["filtered"]);
 
             // Ask Counts
-            Assert.Equal(7, result.AskCounts[ListenTallyKeys.AskTold]); // 6 told + 1 cd (cd only blocks volunteer, not ask)
+            Assert.Equal(6, result.AskCounts[ListenTallyKeys.AskTold]); // 6 told
+            Assert.Equal(1, result.AskCounts[ListenTallyKeys.AskRefusedSharedToday]); // 1 cd (sharedToday >= cap)
             Assert.Equal(1, result.AskCounts[ListenTallyKeys.AskRefusedRelationGate]);
             Assert.Equal(1, result.AskCounts[ListenTallyKeys.AskNoTopicNothingOnFile]);
             Assert.Equal(1, result.AskCounts[ListenTallyKeys.AskNoTopicAllForgotten]);
@@ -246,8 +246,9 @@ namespace VividWorld.Core.Tests
             Assert.Equal(1, result.AskCounts[ListenTallyKeys.AskFiltered]);
 
             // Ask Refusal Lines (3b)
-            Assert.Equal(7, result.AskRefusalCounts["told"]);
+            Assert.Equal(6, result.AskRefusalCounts["told"]);
             Assert.Equal(5, result.AskRefusalNames["told"].Count);
+            Assert.Equal(1, result.AskRefusalCounts[nameof(AskRefusalLineKind.SharedToday)]);
             Assert.Equal(1, result.AskRefusalCounts[nameof(AskRefusalLineKind.Unwilling)]);
             Assert.Equal(1, result.AskRefusalCounts[nameof(AskRefusalLineKind.NothingHeard)]);
             Assert.Equal(2, result.AskRefusalCounts[nameof(AskRefusalLineKind.Forgotten)]); // 1 allForgotten + 1 forgottenOrOutdated
@@ -300,7 +301,7 @@ namespace VividWorld.Core.Tests
                 selector,
                 compat,
                 playerClanTier: 1,
-                volunteersAlreadyToday: 0,
+                sharedTodaySummary: "Shared today: 0 people (cap 1 each; 0 = no limit)",
                 day: 10.0,
                 cfg.Dialogue,
                 people);
@@ -397,7 +398,7 @@ namespace VividWorld.Core.Tests
             Assert.Equal(4, classification.FilteredTotal);
 
             // Also verify that DecideOnVolunteer and DecideOnAsk execute cleanly using this classification
-            var volDecision = selector.DecideOnVolunteer(teller, candidates, day, volunteersAlreadyToday: 0);
+            var volDecision = selector.DecideOnVolunteer(teller, candidates, day);
             Assert.Equal(VolunteerRefusal.None, volDecision.Refusal);
             Assert.NotNull(volDecision.Offer);
             Assert.Equal("evt_vis", volDecision.Offer!.EventId);
@@ -484,7 +485,7 @@ namespace VividWorld.Core.Tests
         {
             // 摘要格式化一條
             var (selector, _, cfg) = CreateSelector();
-            cfg.Dialogue.MaxVolunteersPerDay = 4;
+            cfg.Dialogue.SharesPerHeroPerDay = 1;
 
             var evt = CreateSampleEvent("evt_derthert", day: 10.0, tellerHeroId: "lord_derthert");
             var cand = new RumorCandidate { Event = evt, TellerHop = 1, PlayerExistingHop = null };
@@ -515,7 +516,7 @@ namespace VividWorld.Core.Tests
                 selector,
                 compat: new CommonerCompatState { Active = true, AskMinClanTier = 2 },
                 playerClanTier: 1,
-                volunteersAlreadyToday: 1,
+                sharedTodaySummary: "Shared today: 1 people (cap 1 each; 0 = no limit)",
                 day: 10.0,
                 cfg.Dialogue,
                 people,
@@ -526,14 +527,14 @@ namespace VividWorld.Core.Tests
 
             Assert.Contains("=== Listen Preview (What if I talk to everyone right now?) ===", summary);
             Assert.Contains("Network: 2 heroes (1 lords, 1 wanderers) | Elapsed: 8ms", summary);
-            Assert.Contains("Volunteers today: 1/4", summary);
+            Assert.Contains("Shared today: 1 people (cap 1 each; 0 = no limit)", summary);
             Assert.Contains("Notice: lordAttack not previewed (conversation-only)", summary);
 
             Assert.Contains("[1. Volunteer Path (as-is)]", summary);
             Assert.Contains("told: 1 (King Derthert)", summary);
             Assert.Contains("blocked.relationGate: 1 (Bob the Wanderer)", summary);
 
-            Assert.Contains("[2. Volunteer Path (Topic Only - ignoring relation, cooldown, daily cap)]", summary);
+            Assert.Contains("[2. Volunteer Path (Topic Only - ignoring relation, share cap)]", summary);
             Assert.Contains("hasTopic: 1 (King Derthert)", summary);
             Assert.Contains("nothingOnFile: 1 (Bob the Wanderer)", summary);
 
@@ -709,7 +710,7 @@ namespace VividWorld.Core.Tests
                 selector,
                 compat: null,
                 playerClanTier: 2,
-                volunteersAlreadyToday: 0,
+                sharedTodaySummary: "Shared today: 0 people (cap 1 each; 0 = no limit)",
                 day: 10.0,
                 cfg.Dialogue,
                 people);

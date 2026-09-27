@@ -8,7 +8,7 @@ And you can be part of it.
 
 *[繁體中文](README.md)*
 
-> **This is a beta (v0.9.3).**
+> **This is a beta (v0.9.4).**
 > The underlying machinery is complete and has seen live play; the content is still being expanded.
 > See the Roadmap at the end of this document for what remains.
 
@@ -67,15 +67,17 @@ but only so far — it is never wiped clean.
 
 ## Encountering it in play
 
-**Asking.** In conversation with any lord, the menu gains the line *"Any news on the road?"* He relates
+**Asking.** In conversation with any lord or wanderer, the menu gains the line *"Any news on the road?"* He relates
 what he knows; when he has nothing for you, he tells you why: he would rather not say, has heard
 nothing lately, cannot quite recall, what he heard is out of date, or you have surely heard it already. **Getting nothing out of a
 stranger is normal** — whether he will speak depends on his opinion of you together with his character
 (generosity and honour incline him to share; a calculating nature keeps him silent). Below the
 threshold, nothing is forthcoming. This is by design.
 
-**Being told.** A lord will sometimes open by relating news he has heard, unprompted. One on good terms
-with you tells the whole story; one you are merely acquainted with gives you the gist. Should another
+**Being told.** A lord or wanderer will sometimes open by relating news he has heard, unprompted. One on good terms
+with you tells the whole story; one you are merely acquainted with gives you the gist. Each lord and
+wanderer shares at most one piece of news with you per day, counting what he volunteers and what you ask for; ask again
+that day and he will tell you to come back another time. The number per day can be changed in the settings. Should another
 installed mod take over the greeting entirely, the menu gains the fallback line *"You looked like you
 were about to say something."*
 

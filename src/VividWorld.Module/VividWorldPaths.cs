@@ -30,6 +30,9 @@ namespace VividWorld
         internal static string VolunteersFile(string campaignId) =>
             Path.Combine(CampaignDirectory(campaignId), "volunteers.json");
 
+        internal static string SharesFile(string campaignId) =>
+            Path.Combine(CampaignDirectory(campaignId), "shares.json");
+
         internal static string PlayerHeardFile(string campaignId) =>
             Path.Combine(CampaignDirectory(campaignId), "player_heard.json");
 

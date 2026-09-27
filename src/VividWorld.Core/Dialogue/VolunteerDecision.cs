@@ -15,8 +15,7 @@ namespace VividWorld.Core.Dialogue
     {
         None,                  // 有提案
         RelationGate,          // RelationWithPlayer < gate (且非近親)
-        Cooldown,              // day - LastVolunteeredDay < VolunteerCooldownDays
-        DailyCap,              // volunteersAlreadyToday >= MaxVolunteersPerDay
+        SharedToday,           // SharedToday >= SharesPerHeroPerDay (cap > 0)
         NoKnownEvents,         // 候選清單是空的
         AllCandidatesFiltered  // 有候選，但一則都不合格
     }
@@ -38,11 +37,8 @@ namespace VividWorld.Core.Dialogue
         public bool IsCloseKin { get; set; }
 
         public double Day { get; set; }
-        public double LastVolunteeredDay { get; set; }
-        public double CooldownDays { get; set; }
-
-        public int VolunteersToday { get; set; }
-        public int MaxVolunteersPerDay { get; set; }
+        public int SharedToday { get; set; }
+        public int SharesPerHeroPerDay { get; set; }
 
         public int CandidateCount { get; set; }
         public int FilteredNotVisible { get; set; }   // 秘密未洩漏
@@ -66,7 +62,6 @@ namespace VividWorld.Core.Dialogue
             string heroId,
             VolunteerDecision decision,
             int knownCount = 0,
-            string? lastVolunteerDesc = null,
             int forgottenCount = 0)
         {
             if (decision == null) return string.Empty;
@@ -96,18 +91,8 @@ namespace VividWorld.Core.Dialogue
                 case VolunteerRefusal.None when decision.Offer != null:
                 {
                     var offer = decision.Offer;
-                    string lastStr;
-                    if (decision.LastVolunteeredDay >= 0)
-                    {
-                        double diff = decision.Day - decision.LastVolunteeredDay;
-                        lastStr = $"last {decision.LastVolunteeredDay:F1} (+{diff:F1}d >= {decision.CooldownDays:F1})";
-                    }
-                    else
-                    {
-                        lastStr = "last never";
-                    }
                     string tierStr = decision.Tier == VolunteerTier.Gist ? "gist" : "full";
-                    return $"{prefix} told {offer.EventId} hop {offer.TellerHop}->{offer.ResultingPlayerHop} score {offer.Score:F2} | tier {tierStr} (chat gate {decision.ChatRelationGate}, full gate {decision.RelationGate}), {(decision.IsCloseKin && decision.Tier != VolunteerTier.Gist ? $"rel {decision.Relation} (close kin)" : $"rel {decision.Relation} >= {(decision.Tier == VolunteerTier.Gist ? decision.ChatRelationGate : decision.RelationGate)}")}, {lastStr}, {decision.VolunteersToday}/{decision.MaxVolunteersPerDay} today";
+                    return $"{prefix} told {offer.EventId} hop {offer.TellerHop}->{offer.ResultingPlayerHop} score {offer.Score:F2} | tier {tierStr} (chat gate {decision.ChatRelationGate}, full gate {decision.RelationGate}), {(decision.IsCloseKin && decision.Tier != VolunteerTier.Gist ? $"rel {decision.Relation} (close kin)" : $"rel {decision.Relation} >= {(decision.Tier == VolunteerTier.Gist ? decision.ChatRelationGate : decision.RelationGate)}")}, shared today {decision.SharedToday}/{decision.SharesPerHeroPerDay}";
                 }
 
                 case VolunteerRefusal.RelationGate:
@@ -116,18 +101,11 @@ namespace VividWorld.Core.Dialogue
                     return $"{prefix} silent - relation {decision.Relation} < gate {decision.RelationGate} {kinStr} (chat gate {decision.ChatRelationGate}, full gate {decision.RelationGate}) | {knownStr}";
                 }
 
-                case VolunteerRefusal.Cooldown:
+                case VolunteerRefusal.SharedToday:
                 {
-                    double diff = decision.Day - decision.LastVolunteeredDay;
+                    int today = DailyCounter.BucketOf(decision.Day);
                     string tierStr = decision.Tier == VolunteerTier.Gist ? "gist" : (decision.Tier == VolunteerTier.Full ? "full" : "none");
-                    return $"{prefix} silent - cooldown {diff:F1}d < {decision.CooldownDays:F1} (last {decision.LastVolunteeredDay:F1}) | rel {decision.Relation} (tier {tierStr}, chat gate {decision.ChatRelationGate}, full gate {decision.RelationGate})";
-                }
-
-                case VolunteerRefusal.DailyCap:
-                {
-                    string lastPart = !string.IsNullOrEmpty(lastVolunteerDesc) ? $" (last: {lastVolunteerDesc})" : "";
-                    string tierStr = decision.Tier == VolunteerTier.Gist ? "gist" : (decision.Tier == VolunteerTier.Full ? "full" : "none");
-                    return $"{prefix} silent - daily cap {decision.VolunteersToday}/{decision.MaxVolunteersPerDay} already used today{lastPart} | tier {tierStr} (chat gate {decision.ChatRelationGate}, full gate {decision.RelationGate})";
+                    return $"{prefix} silent - already shared today {decision.SharedToday}/{decision.SharesPerHeroPerDay} (day {today}) | rel {decision.Relation} (tier {tierStr}, chat gate {decision.ChatRelationGate}, full gate {decision.RelationGate})";
                 }
 
                 case VolunteerRefusal.NoKnownEvents:

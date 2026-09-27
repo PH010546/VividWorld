@@ -66,9 +66,8 @@ namespace VividWorld.Dialogue
         private bool _recoveryShown;
         private bool _recoveryUsed;
 
-        private readonly DailyCounter _volunteersCounter = new DailyCounter();
-        private readonly Dictionary<string, double> _lastVolunteeredDays = new Dictionary<string, double>(StringComparer.Ordinal);
-        private string? _lastVolunteerDesc;
+        private HeroShareStore? _sharesStore;
+        private HeroShareLedger? _sharesLedger;
         private string? _lastVolunteerSessionInfo;
 
         // 記憶化快取（規格 §9.2）
@@ -173,16 +172,12 @@ namespace VividWorld.Dialogue
             }
         }
 
-        public int VolunteersToday
-        {
-            get
-            {
-                _volunteersCounter.Advance(CampaignTime.Now.ToDays);
-                return _volunteersCounter.Count;
-            }
-        }
-
-        public int MaxVolunteersPerDay => _config.Dialogue.MaxVolunteersPerDay;
+        public string SharedTodaySummary =>
+            _sharesLedger?.TodaySummary(
+                CampaignTime.Now.ToDays,
+                _config.Dialogue.SharesPerHeroPerDay,
+                id => _heroLookup?.Get(id)?.Name?.ToString())
+            ?? "(no share ledger)";
 
         public string LastVolunteerSessionInfo => _lastVolunteerSessionInfo ?? "(none this session)";
 
@@ -231,7 +226,28 @@ namespace VividWorld.Dialogue
             _campaignId = campaignId;
             _stamper = stamper;
             _playerHeardLog = playerHeardLog;
-            LoadVolunteers();
+            if (!string.IsNullOrEmpty(_campaignId))
+            {
+                _sharesStore = new HeroShareStore(VividWorldPaths.SharesFile(_campaignId!));
+                _sharesLedger = _sharesStore.Load();
+                if (_sharesStore.LastLoadError != null)
+                {
+                    ModLog.Warn($"Shares: could not read shares.json ({_sharesStore.LastLoadError}) - starting fresh; next save will overwrite.");
+                }
+                else if (!_sharesStore.FileExisted)
+                {
+                    ModLog.Info("Shares: no shares.json yet (will create on first share)");
+                }
+                else
+                {
+                    int n = _sharesLedger.ToDictionary().Count;
+                    ModLog.Info($"Shares: loaded {n} people from shares.json");
+                }
+            }
+            else
+            {
+                _sharesLedger = new HeroShareLedger();
+            }
             if (!string.IsNullOrEmpty(_campaignId))
             {
                 _listenTallyStore = new ListenTallyStore(VividWorldPaths.ListenTallyFile(_campaignId!));
@@ -349,6 +365,11 @@ namespace VividWorld.Dialogue
             _renderedVolunteerTextPlain = null;
             _renderedAskText = null;
             _renderedAskTextPlain = null;
+
+            _cachedAskDecision = null;
+            _cachedAskKnownCount = 0;
+            _cachedAskForgottenCount = 0;
+            _cachedAskOutdatedCount = 0;
         }
 
         /// <summary>
@@ -989,14 +1010,10 @@ namespace VividWorld.Dialogue
                     if (hero != null)
                     {
                         double day = CampaignTime.Now.ToDays;
-                        VolunteerRecoveryGate.ConsumeQuotaAndCooldown(_volunteersCounter, _lastVolunteeredDays, hero.StringId, day);
-
                         string tellerName = hero.Name?.ToString() ?? hero.StringId;
                         ApplyOfferAndRecord(_cachedVolunteerOffer, _cachedVolunteerEvent, hero.StringId, day, tellerName);
+                        RecordShareAndSave(hero, day, "volunteer");
 
-                        SaveVolunteers();
-
-                        _lastVolunteerDesc = $"{tellerName} {_cachedVolunteerOffer.EventId}";
                         _lastVolunteerSessionInfo = $"{tellerName} ({hero.StringId}) told {_cachedVolunteerOffer.EventId} at day {day:F1}";
 
                         _deliveredVolunteerThisConversation = true;
@@ -1118,14 +1135,10 @@ namespace VividWorld.Dialogue
                     if (hero != null)
                     {
                         double day = CampaignTime.Now.ToDays;
-                        VolunteerRecoveryGate.ConsumeQuotaAndCooldown(_volunteersCounter, _lastVolunteeredDays, hero.StringId, day);
-
                         string tellerName = hero.Name?.ToString() ?? hero.StringId;
                         ApplyOfferAndRecord(_cachedVolunteerOffer, _cachedVolunteerEvent, hero.StringId, day, tellerName);
+                        RecordShareAndSave(hero, day, "recovery");
 
-                        SaveVolunteers();
-
-                        _lastVolunteerDesc = $"{tellerName} {_cachedVolunteerOffer.EventId}";
                         _lastVolunteerSessionInfo = $"{tellerName} ({hero.StringId}) told {_cachedVolunteerOffer.EventId} at day {day:F1} (via recovery)";
 
                         _deliveredVolunteerThisConversation = true;
@@ -1203,12 +1216,10 @@ namespace VividWorld.Dialogue
             }
 
             double day = CampaignTime.Now.ToDays;
-            _volunteersCounter.Advance(day);
-
             var profile = BuildSocialProfile(hero);
             var candidates = BuildCandidates(hero, day, out var forgottenEvents, out var outdatedEvents);
 
-            var decision = _offerSelector!.DecideOnVolunteer(profile, candidates, day, _volunteersCounter.Count);
+            var decision = _offerSelector!.DecideOnVolunteer(profile, candidates, day);
 
             if (decision.Offer != null)
             {
@@ -1230,7 +1241,6 @@ namespace VividWorld.Dialogue
                 hero.StringId,
                 decision,
                 knownCount,
-                _lastVolunteerDesc,
                 forgottenEvents.Count);
 
             if (_config.Debug.ListenTally)
@@ -1639,6 +1649,7 @@ namespace VividWorld.Dialogue
                         double day = CampaignTime.Now.ToDays;
                         string tellerName = hero.Name?.ToString() ?? hero.StringId;
                         ApplyOfferAndRecord(_cachedOffer, _cachedEvent, hero.StringId, day, tellerName);
+                        RecordShareAndSave(hero, day, "ask");
 
                         _askAsked = true;
                         _askTold = true;
@@ -1881,11 +1892,7 @@ namespace VividWorld.Dialogue
 
             var traits = _traitLookup?.Of(hero.StringId) ?? new VividWorld.Core.Rumors.TraitProfile { HeroId = hero.StringId };
 
-            double lastDay = -1.0;
-            if (_lastVolunteeredDays.TryGetValue(hero.StringId, out double recordedDay))
-            {
-                lastDay = recordedDay;
-            }
+            int sharedToday = _sharesLedger?.SharedOn(hero.StringId, CampaignTime.Now.ToDays) ?? 0;
 
             return new HeroSocialProfile
             {
@@ -1895,49 +1902,22 @@ namespace VividWorld.Dialogue
                 IsPlayerCompanion = isCompanion,
                 IsPlayerClanMember = isClanMember,
                 Traits = traits,
-                LastVolunteeredDay = lastDay
+                SharedToday = sharedToday
             };
         }
 
-        private void LoadVolunteers()
+        private void RecordShareAndSave(Hero hero, double day, string via)
         {
-            try
+            if (_sharesLedger == null || _sharesStore == null) return;
+            int newCount = _sharesLedger.Record(hero.StringId, day);
+            int cap = _config.Dialogue.SharesPerHeroPerDay;
+            string capStr = cap <= 0 ? "no limit" : cap.ToString();
+            string heroName = hero.Name?.ToString() ?? hero.StringId;
+            ModLog.Info($"Share recorded: {heroName} ({hero.StringId}) day {(int)Math.Floor(day)} -> {newCount}/{capStr} (via {via})");
+            bool ok = _sharesStore.Save(_sharesLedger);
+            if (!ok)
             {
-                _lastVolunteeredDays.Clear();
-                if (string.IsNullOrEmpty(_campaignId)) return;
-                string path = VividWorldPaths.VolunteersFile(_campaignId!);
-                if (File.Exists(path))
-                {
-                    string json = File.ReadAllText(path);
-                    var dict = JsonConvert.DeserializeObject<Dictionary<string, double>>(json);
-                    if (dict != null)
-                    {
-                        foreach (var kv in dict)
-                        {
-                            _lastVolunteeredDays[kv.Key] = kv.Value;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn($"Failed to load volunteers.json for campaign {_campaignId}: {ex.Message}");
-            }
-        }
-
-        private void SaveVolunteers()
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(_campaignId)) return;
-                string path = VividWorldPaths.VolunteersFile(_campaignId!);
-                string json = JsonConvert.SerializeObject(_lastVolunteeredDays, Formatting.Indented);
-                var writer = new SystemFileWriter();
-                AtomicFile.Write(writer, path, json);
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn($"Failed to save volunteers.json for campaign {_campaignId}: {ex.Message}");
+                ModLog.Warn($"Shares: failed to save {VividWorldPaths.SharesFile(_campaignId ?? "")}.");
             }
         }
 
@@ -2062,8 +2042,6 @@ namespace VividWorld.Dialogue
 
             double day = CampaignTime.Now.ToDays;
             int playerClanTier = PlayerClanTier();
-            // 不能呼叫 Advance（預演不改狀態），也不能直接讀 Count：它要等下一次 Advance 才歸零。
-            int volunteersToday = _volunteersCounter.CountOn(day);
 
             var persons = new List<ListenPreviewPerson>();
             int totalUnstamped = 0;
@@ -2099,7 +2077,7 @@ namespace VividWorld.Dialogue
                 _offerSelector,
                 _compat,
                 playerClanTier,
-                volunteersToday,
+                SharedTodaySummary,
                 day,
                 _config.Dialogue,
                 persons,

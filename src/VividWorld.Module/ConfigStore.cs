@@ -142,7 +142,6 @@ namespace VividWorld
                 config.Scheduling.RumorLifetimeDays = _unscaledConfig.Scheduling.RumorLifetimeDays;
                 config.Scheduling.StaleDays = _unscaledConfig.Scheduling.StaleDays;
                 config.Scheduling.SecretWatchDays = _unscaledConfig.Scheduling.SecretWatchDays;
-                config.Dialogue.VolunteerCooldownDays = _unscaledConfig.Dialogue.VolunteerCooldownDays;
                 config.Memory.BaseDays = _unscaledConfig.Memory.BaseDays;
             }
 
@@ -173,7 +172,7 @@ namespace VividWorld
 
             double scale = daysInYear > 0 ? (daysInYear / CalendarScaling.NativeDaysInYear) : 1.0;
             ModLog.Info(string.Format(CultureInfo.InvariantCulture,
-                "Calendar: DaysInYear={0:0} (native {1:0}), scale={2:0.000}\n             rumorLifetime={3:0.0} stale={4:0.0} secretWatch={5:0.0} leakHalfLife={6:0.0} volunteerCooldown={7:0.0} memoryBaseDays={8:0.0}",
+                "Calendar: DaysInYear={0:0} (native {1:0}), scale={2:0.000}\n             rumorLifetime={3:0.0} stale={4:0.0} secretWatch={5:0.0} leakHalfLife={6:0.0} memoryBaseDays={7:0.0}",
                 daysInYear,
                 CalendarScaling.NativeDaysInYear,
                 scale,
@@ -181,7 +180,6 @@ namespace VividWorld
                 config.Scheduling.StaleDays,
                 config.Scheduling.SecretWatchDays,
                 config.Leak.ChanceDecayHalfLifeDays,
-                config.Dialogue.VolunteerCooldownDays,
                 config.Memory.BaseDays));
             ModLog.Info(string.Format(CultureInfo.InvariantCulture,
                 "Relation: ScaleOverride={0}, EffectiveScale={1:0.0}",

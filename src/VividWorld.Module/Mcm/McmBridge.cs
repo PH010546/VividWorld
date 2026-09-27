@@ -256,6 +256,7 @@ namespace VividWorld.Mcm
                 case "dialogue.askWillingnessThreshold": return (double)s.AskWillingnessThreshold;
                 case "dialogue.npcVolunteerRelationGate": return s.NpcVolunteerRelationGate;
                 case "dialogue.volunteerMode": return VolunteerModeOf(s.VolunteerMode);
+                case "dialogue.sharesPerHeroPerDay": return s.SharesPerHeroPerDay;
                 case "consequences.enabled": return s.ConsequencesEnabled;
                 case "consequences.bystanderMultiplier": return (double)s.BystanderMultiplier;
                 case "consequences.maxAbsoluteDeltaPerHeroPerDay": return (double)s.MaxAbsoluteDeltaPerHeroPerDay;
@@ -328,6 +329,7 @@ namespace VividWorld.Mcm
                     s.VolunteerMode = new Dropdown<string>(labels, index);
                 }
             });
+            PushKey("dialogue.sharesPerHeroPerDay", () => s.SharesPerHeroPerDay = live.Dialogue.SharesPerHeroPerDay);
             PushKey("consequences.enabled", () => s.ConsequencesEnabled = live.Consequences.Enabled);
             PushKey("consequences.bystanderMultiplier", () => s.BystanderMultiplier = (float)live.Consequences.BystanderMultiplier);
             PushKey("consequences.maxAbsoluteDeltaPerHeroPerDay", () => s.MaxAbsoluteDeltaPerHeroPerDay = (float)live.Consequences.MaxAbsoluteDeltaPerHeroPerDay);
@@ -455,6 +457,7 @@ namespace VividWorld.Mcm
                 s.AskWillingnessThreshold.ToString("R", CultureInfo.InvariantCulture),
                 s.NpcVolunteerRelationGate,
                 VolunteerModeOf(s.VolunteerMode),
+                s.SharesPerHeroPerDay,
                 s.ConsequencesEnabled,
                 s.BystanderMultiplier.ToString("R", CultureInfo.InvariantCulture),
                 s.MaxAbsoluteDeltaPerHeroPerDay.ToString("R", CultureInfo.InvariantCulture),
@@ -485,6 +488,7 @@ namespace VividWorld.Mcm
                 live.Dialogue.AskWillingnessThreshold.ToString("R", CultureInfo.InvariantCulture),
                 live.Dialogue.NpcVolunteerRelationGate,
                 live.Dialogue.VolunteerMode,
+                live.Dialogue.SharesPerHeroPerDay,
                 live.Consequences.Enabled,
                 live.Consequences.BystanderMultiplier.ToString("R", CultureInfo.InvariantCulture),
                 live.Consequences.MaxAbsoluteDeltaPerHeroPerDay.ToString("R", CultureInfo.InvariantCulture),

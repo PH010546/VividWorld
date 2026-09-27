@@ -17,7 +17,6 @@ namespace VividWorld.Core.Config
             "scheduling.rumorLifetimeDays",
             "scheduling.staleDays",
             "scheduling.secretWatchDays",
-            "dialogue.volunteerCooldownDays",
             "memory.baseDays",
             "situations.grudgeDecay.personal.daysPerPoint",
             "situations.grudgeDecay.clan.daysPerPoint",
@@ -41,10 +40,6 @@ namespace VividWorld.Core.Config
                 config.Scheduling.RumorLifetimeDays *= scale;
                 config.Scheduling.StaleDays *= scale;
                 config.Scheduling.SecretWatchDays *= scale;
-            }
-            if (config.Dialogue != null)
-            {
-                config.Dialogue.VolunteerCooldownDays *= scale;
             }
             if (config.Memory != null)
             {

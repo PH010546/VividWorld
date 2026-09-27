@@ -77,7 +77,6 @@ namespace VividWorld.Core.Dialogue
         /// `WillVolunteer` 只回答「行不行」，`DecideOnVolunteer` 還要回答「是哪一個閘擋的」——
         /// 兩者都只准呼叫這裡。閘的述詞寫兩份，正是 M6a-fix2 那個 C-1 的成因。</summary>
         private VolunteerRefusal EvaluateVolunteerGates(HeroSocialProfile? teller, double day,
-                                                        int volunteersAlreadyToday,
                                                         out bool isCloseKin,
                                                         out VolunteerTier tier,
                                                         out int chatGate,
@@ -111,24 +110,19 @@ namespace VividWorld.Core.Dialogue
                 return VolunteerRefusal.RelationGate;
             }
 
-            // 2. 冷卻 (LastVolunteeredDay < 0 時視為未曾主動講過)
-            if (teller.LastVolunteeredDay >= 0 && (day - teller.LastVolunteeredDay) < d.VolunteerCooldownDays)
+            // 2. 每人每天分享上限
+            int cap = d.SharesPerHeroPerDay;
+            if (cap > 0 && teller.SharedToday >= cap)
             {
-                return VolunteerRefusal.Cooldown;
-            }
-
-            // 3. 每日上限
-            if (volunteersAlreadyToday >= d.MaxVolunteersPerDay)
-            {
-                return VolunteerRefusal.DailyCap;
+                return VolunteerRefusal.SharedToday;
             }
 
             return VolunteerRefusal.None;
         }
 
-        public bool WillVolunteer(HeroSocialProfile teller, double day, int volunteersAlreadyToday)
+        public bool WillVolunteer(HeroSocialProfile teller, double day)
         {
-            return EvaluateVolunteerGates(teller, day, volunteersAlreadyToday, out _, out _, out _, out _) == VolunteerRefusal.None;
+            return EvaluateVolunteerGates(teller, day, out _, out _, out _, out _) == VolunteerRefusal.None;
         }
 
         /// <summary>詢問意願的**唯一**計算處（規格 §7）。
@@ -160,12 +154,11 @@ namespace VividWorld.Core.Dialogue
             return relation >= _config.Dialogue.AskRelationGate && willingness >= threshold;
         }
 
-        public VolunteerDecision DecideOnVolunteer(HeroSocialProfile teller, IReadOnlyList<RumorCandidate> candidates,
-                                                     double day, int volunteersAlreadyToday)
+        public VolunteerDecision DecideOnVolunteer(HeroSocialProfile teller, IReadOnlyList<RumorCandidate> candidates, double day)
         {
             var d = _config.Dialogue;
             int relation = teller?.RelationWithPlayer ?? 0;
-            var gate = EvaluateVolunteerGates(teller, day, volunteersAlreadyToday,
+            var gate = EvaluateVolunteerGates(teller, day,
                 out bool isCloseKin, out VolunteerTier tier, out int chatGate, out int fullGate);
 
             var decision = new VolunteerDecision
@@ -176,10 +169,8 @@ namespace VividWorld.Core.Dialogue
                 Tier = tier,
                 IsCloseKin = isCloseKin,
                 Day = day,
-                LastVolunteeredDay = teller?.LastVolunteeredDay ?? -1.0,
-                CooldownDays = d.VolunteerCooldownDays,
-                VolunteersToday = volunteersAlreadyToday,
-                MaxVolunteersPerDay = d.MaxVolunteersPerDay,
+                SharedToday = teller?.SharedToday ?? 0,
+                SharesPerHeroPerDay = d.SharesPerHeroPerDay,
                 CandidateCount = candidates?.Count ?? 0
             };
 
@@ -218,15 +209,17 @@ namespace VividWorld.Core.Dialogue
             return decision;
         }
 
-        public RumorOffer? SelectVolunteered(HeroSocialProfile teller, IReadOnlyList<RumorCandidate> candidates,
-                                             double day, int volunteersAlreadyToday)
+        public RumorOffer? SelectVolunteered(HeroSocialProfile teller, IReadOnlyList<RumorCandidate> candidates, double day)
         {
-            return DecideOnVolunteer(teller, candidates, day, volunteersAlreadyToday).Offer;
+            return DecideOnVolunteer(teller, candidates, day).Offer;
         }
 
         public AskDecision DecideOnAsk(HeroSocialProfile teller, IReadOnlyList<RumorCandidate> candidates, double day)
         {
             var d = _config.Dialogue;
+            int cap = d.SharesPerHeroPerDay;
+            int sharedToday = teller?.SharedToday ?? 0;
+
             ComputeAskWillingness(teller, out int relation, out double willingness, out double threshold);
 
             var decision = new AskDecision
@@ -234,8 +227,16 @@ namespace VividWorld.Core.Dialogue
                 Relation = relation,
                 Willingness = willingness,
                 Threshold = threshold,
+                SharedToday = sharedToday,
+                SharesPerHeroPerDay = cap,
                 CandidateCount = candidates?.Count ?? 0
             };
+
+            if (cap > 0 && sharedToday >= cap)
+            {
+                decision.Refusal = AskRefusal.SharedToday;
+                return decision;
+            }
 
             if (teller == null || relation < d.AskRelationGate)
             {

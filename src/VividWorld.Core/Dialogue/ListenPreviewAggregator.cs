@@ -11,7 +11,7 @@ namespace VividWorld.Core.Dialogue
             RumorOfferSelector offerSelector,
             CommonerCompatState? compat,
             int playerClanTier,
-            int volunteersAlreadyToday,
+            string sharedTodaySummary,
             double day,
             DialogueConfig dialogueConfig,
             IEnumerable<ListenPreviewPerson> persons,
@@ -27,8 +27,7 @@ namespace VividWorld.Core.Dialogue
 
             var result = new ListenPreviewResult
             {
-                VolunteersToday = volunteersAlreadyToday,
-                MaxVolunteersPerDay = dialogueConfig.MaxVolunteersPerDay,
+                SharedTodaySummary = sharedTodaySummary,
                 VolunteerRelationGate = fullGate,
                 ChatRelationGate = chatGate,
                 ElapsedMilliseconds = elapsedMs,
@@ -86,7 +85,7 @@ namespace VividWorld.Core.Dialogue
                 }
                 else
                 {
-                    var volDecision = offerSelector.DecideOnVolunteer(profile, candidates, day, volunteersAlreadyToday);
+                    var volDecision = offerSelector.DecideOnVolunteer(profile, candidates, day);
                     volKey = ListenTallyClassifier.ClassifyVolunteer(
                         isEligible: true,
                         volunteerConditionRan: true,

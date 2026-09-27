@@ -83,11 +83,8 @@ namespace VividWorld.Core.Dialogue
                     case VolunteerRefusal.RelationGate:
                         return ListenTallyKeys.VolunteerBlockedRelationGate;
 
-                    case VolunteerRefusal.Cooldown:
-                        return ListenTallyKeys.VolunteerBlockedCooldown;
-
-                    case VolunteerRefusal.DailyCap:
-                        return ListenTallyKeys.VolunteerBlockedDailyCap;
+                    case VolunteerRefusal.SharedToday:
+                        return ListenTallyKeys.VolunteerBlockedSharedToday;
 
                     case VolunteerRefusal.NoKnownEvents:
                         switch (ClassifyNoTopic(knownCount, forgottenCount, outdatedCount))
@@ -128,6 +125,9 @@ namespace VividWorld.Core.Dialogue
             {
                 switch (decision.Refusal)
                 {
+                    case AskRefusal.SharedToday:
+                        return ListenTallyKeys.AskRefusedSharedToday;
+
                     case AskRefusal.RelationGate:
                         return ListenTallyKeys.AskRefusedRelationGate;
 

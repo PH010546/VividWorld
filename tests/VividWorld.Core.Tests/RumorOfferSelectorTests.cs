@@ -279,57 +279,199 @@ namespace VividWorld.Core.Tests
         }
 
         [Fact]
-        public void Volunteer_RequiresAllThreeGates()
+        public void Volunteer_RespectsPerHeroDailyCap()
         {
             var (selector, _, cfg) = CreateSelector();
-            // 預設 cfg.Dialogue: NpcVolunteerRelationGate = 30, VolunteerCooldownDays = 3.0, MaxVolunteersPerDay = 1
             cfg.Dialogue.CasualChatRelationGate = 30;
+            cfg.Dialogue.SharesPerHeroPerDay = 1;
 
             // 閘門 1: 好感度
             var lowRelation = new HeroSocialProfile
             {
                 HeroId = "h_low",
-                RelationWithPlayer = 29,
-                LastVolunteeredDay = -1
+                RelationWithPlayer = 29
             };
-            Assert.False(selector.WillVolunteer(lowRelation, day: 10.0, volunteersAlreadyToday: 0));
+            Assert.False(selector.WillVolunteer(lowRelation, day: 10.0));
 
             // 近親豁免好感度
             var spouseLowRelation = new HeroSocialProfile
             {
                 HeroId = "h_spouse",
                 RelationWithPlayer = 0,
-                IsPlayerSpouse = true,
-                LastVolunteeredDay = -1
+                IsPlayerSpouse = true
             };
-            Assert.True(selector.WillVolunteer(spouseLowRelation, day: 10.0, volunteersAlreadyToday: 0));
+            Assert.True(selector.WillVolunteer(spouseLowRelation, day: 10.0));
 
-            // 閘門 2: 冷卻
-            var onCooldown = new HeroSocialProfile
-            {
-                HeroId = "h_cooldown",
-                RelationWithPlayer = 50,
-                LastVolunteeredDay = 8.0 // day 10 - 8 = 2 < 3.0
-            };
-            Assert.False(selector.WillVolunteer(onCooldown, day: 10.0, volunteersAlreadyToday: 0));
-
-            var cooldownPassed = new HeroSocialProfile
+            // 閘門 2: 每人每日上限
+            var ready = new HeroSocialProfile
             {
                 HeroId = "h_ready",
                 RelationWithPlayer = 50,
-                LastVolunteeredDay = 7.0 // day 10 - 7 = 3.0 >= 3.0
+                SharedToday = 0
             };
-            Assert.True(selector.WillVolunteer(cooldownPassed, day: 10.0, volunteersAlreadyToday: 0));
+            Assert.True(selector.WillVolunteer(ready, day: 10.0));
 
-            // 閘門 3: 每日上限
-            var normalReady = new HeroSocialProfile
+            var atCap = new HeroSocialProfile
             {
-                HeroId = "h_normal",
+                HeroId = "h_at_cap",
                 RelationWithPlayer = 50,
-                LastVolunteeredDay = -1
+                SharedToday = 1
             };
-            Assert.True(selector.WillVolunteer(normalReady, day: 10.0, volunteersAlreadyToday: 0));
-            Assert.False(selector.WillVolunteer(normalReady, day: 10.0, volunteersAlreadyToday: 1)); // 上限已滿
+            Assert.False(selector.WillVolunteer(atCap, day: 10.0));
+        }
+
+        [Fact]
+        public void Volunteer_ZeroCapMeansUnlimited()
+        {
+            var (selector, _, cfg) = CreateSelector();
+            cfg.Dialogue.CasualChatRelationGate = 30;
+            cfg.Dialogue.SharesPerHeroPerDay = 0; // unlimited
+
+            var teller = new HeroSocialProfile
+            {
+                HeroId = "h_active",
+                RelationWithPlayer = 50,
+                SharedToday = 5
+            };
+            Assert.True(selector.WillVolunteer(teller, day: 10.0));
+        }
+
+        [Fact]
+        public void Ask_RespectsPerHeroDailyCap_BeforeRelationAndWillingness()
+        {
+            var (selector, _, cfg) = CreateSelector();
+            cfg.Dialogue.SharesPerHeroPerDay = 1;
+            cfg.Dialogue.AskRelationGate = 0;
+            cfg.Dialogue.AskWillingnessThreshold = 5.0;
+
+            var evt = CreateSampleEvent("evt_ask_cap", day: 10.0, drama: 3);
+            evt.KnownBy.Add(new KnownByEntry { HeroId = "teller", Hop = 1 });
+            var candidates = new List<RumorCandidate>
+            {
+                new RumorCandidate { Event = evt, TellerHop = 1, PlayerExistingHop = null }
+            };
+
+            var tellerAtCap = new HeroSocialProfile
+            {
+                HeroId = "teller",
+                RelationWithPlayer = 100,
+                Traits = new TraitProfile { HeroId = "teller", Generosity = 2, Honor = 2, Calculating = -2 },
+                SharedToday = 1
+            };
+
+            var decision = selector.DecideOnAsk(tellerAtCap, candidates, day: 10.0);
+            Assert.Equal(AskRefusal.SharedToday, decision.Refusal);
+            Assert.Null(decision.Offer);
+            Assert.Equal(1, decision.SharedToday);
+            Assert.Equal(1, decision.SharesPerHeroPerDay);
+        }
+
+        [Fact]
+        public void Ask_RefusalLine_SharedToday_ReturnsCorrectTextKeyAndFallback()
+        {
+            var decision = new AskDecision
+            {
+                Refusal = AskRefusal.SharedToday,
+                SharedToday = 1,
+                SharesPerHeroPerDay = 1
+            };
+
+            var kind = AskRefusalLine.Choose(decision, knownCount: 5, forgottenCount: 0, outdatedCount: 0);
+            Assert.Equal(AskRefusalLineKind.SharedToday, kind);
+
+            string? key = AskRefusalLine.GetStringKey(kind);
+            Assert.Equal("VividWorld_AskRefuseSharedToday", key);
+
+            string? fallback = AskRefusalLine.GetEnglishFallback(kind);
+            Assert.Equal("I've said my piece for today. Come find me another time.", fallback);
+        }
+
+        [Fact]
+        public void Cap1_VolunteerOrAsk_BlocksSubsequentSharesOnSameDay_AllowsNextDay()
+        {
+            var (selector, _, cfg) = CreateSelector();
+            cfg.Dialogue.SharesPerHeroPerDay = 1;
+            cfg.Dialogue.CasualChatRelationGate = 0;
+            cfg.Dialogue.NpcVolunteerRelationGate = 0;
+            cfg.Dialogue.AskRelationGate = 0;
+
+            var ledger = new HeroShareLedger();
+            string heroId = "lord_cap1";
+            double day1 = 10.2;
+            double day2 = 11.1;
+
+            var evt = CreateSampleEvent("evt_cap1", day: 10.0, drama: 3);
+            evt.KnownBy.Add(new KnownByEntry { HeroId = heroId, Hop = 1 });
+            var candidates = new List<RumorCandidate>
+            {
+                new RumorCandidate { Event = evt, TellerHop = 1, PlayerExistingHop = null }
+            };
+
+            // Case A: 主動講過 -> Record share
+            ledger.Record(heroId, day1);
+
+            var profileDay1 = new HeroSocialProfile
+            {
+                HeroId = heroId,
+                RelationWithPlayer = 50,
+                SharedToday = ledger.SharedOn(heroId, day1)
+            };
+
+            // 同日主動講被擋
+            var volDecision = selector.DecideOnVolunteer(profileDay1, candidates, day1);
+            Assert.Equal(VolunteerRefusal.SharedToday, volDecision.Refusal);
+
+            // 同日問回 SharedToday
+            var askDecision = selector.DecideOnAsk(profileDay1, candidates, day1);
+            Assert.Equal(AskRefusal.SharedToday, askDecision.Refusal);
+
+            // 隔日放行
+            var profileDay2 = new HeroSocialProfile
+            {
+                HeroId = heroId,
+                RelationWithPlayer = 50,
+                SharedToday = ledger.SharedOn(heroId, day2)
+            };
+            var volDay2 = selector.DecideOnVolunteer(profileDay2, candidates, day2);
+            Assert.Equal(VolunteerRefusal.None, volDay2.Refusal);
+
+            var askDay2 = selector.DecideOnAsk(profileDay2, candidates, day2);
+            Assert.Equal(AskRefusal.None, askDay2.Refusal);
+        }
+
+        [Fact]
+        public void Cap1_AskRecorded_BlocksVolunteerOnSameDay()
+        {
+            var (selector, _, cfg) = CreateSelector();
+            cfg.Dialogue.SharesPerHeroPerDay = 1;
+            cfg.Dialogue.CasualChatRelationGate = 0;
+            cfg.Dialogue.NpcVolunteerRelationGate = 0;
+            cfg.Dialogue.AskRelationGate = 0;
+
+            var ledger = new HeroShareLedger();
+            string heroId = "lord_ask1";
+            double day1 = 10.5;
+
+            var evt = CreateSampleEvent("evt_ask_then_vol", day: 10.0, drama: 3);
+            evt.KnownBy.Add(new KnownByEntry { HeroId = heroId, Hop = 1 });
+            var candidates = new List<RumorCandidate>
+            {
+                new RumorCandidate { Event = evt, TellerHop = 1, PlayerExistingHop = null }
+            };
+
+            // 問出一則 -> Record share
+            ledger.Record(heroId, day1);
+
+            var profile = new HeroSocialProfile
+            {
+                HeroId = heroId,
+                RelationWithPlayer = 50,
+                SharedToday = ledger.SharedOn(heroId, day1)
+            };
+
+            // 同日主動講被擋
+            var volDecision = selector.DecideOnVolunteer(profile, candidates, day1);
+            Assert.Equal(VolunteerRefusal.SharedToday, volDecision.Refusal);
         }
 
         [Fact]
@@ -661,8 +803,7 @@ namespace VividWorld.Core.Tests
             var (selector, _, cfg) = CreateSelector();
             cfg.Dialogue.NpcVolunteerRelationGate = 25;
             cfg.Dialogue.CasualChatRelationGate = 20;
-            cfg.Dialogue.VolunteerCooldownDays = 4.0;
-            cfg.Dialogue.MaxVolunteersPerDay = 2;
+            cfg.Dialogue.SharesPerHeroPerDay = 1;
 
             var candidates = new List<RumorCandidate>();
 
@@ -670,42 +811,27 @@ namespace VividWorld.Core.Tests
             var lowRel = new HeroSocialProfile
             {
                 HeroId = "h_low",
-                RelationWithPlayer = 15,
-                LastVolunteeredDay = -1
+                RelationWithPlayer = 15
             };
-            var d1 = selector.DecideOnVolunteer(lowRel, candidates, day: 10.0, volunteersAlreadyToday: 0);
+            var d1 = selector.DecideOnVolunteer(lowRel, candidates, day: 10.0);
             Assert.Equal(VolunteerRefusal.RelationGate, d1.Refusal);
             Assert.Null(d1.Offer);
             Assert.Equal(15, d1.Relation);
             Assert.Equal(25, d1.RelationGate);
             Assert.False(d1.IsCloseKin);
 
-            // 2. 冷卻中 (Cooldown)
-            var onCooldown = new HeroSocialProfile
+            // 2. 當日已達上限 (SharedToday)
+            var atCap = new HeroSocialProfile
             {
                 HeroId = "h_cd",
                 RelationWithPlayer = 50,
-                LastVolunteeredDay = 8.0 // day 10 - 8 = 2.0 < 4.0
+                SharedToday = 1
             };
-            var d2 = selector.DecideOnVolunteer(onCooldown, candidates, day: 10.0, volunteersAlreadyToday: 0);
-            Assert.Equal(VolunteerRefusal.Cooldown, d2.Refusal);
+            var d2 = selector.DecideOnVolunteer(atCap, candidates, day: 10.0);
+            Assert.Equal(VolunteerRefusal.SharedToday, d2.Refusal);
             Assert.Null(d2.Offer);
-            Assert.Equal(8.0, d2.LastVolunteeredDay);
-            Assert.Equal(4.0, d2.CooldownDays);
-            Assert.Equal(10.0, d2.Day);
-
-            // 3. 每日上限已滿 (DailyCap)
-            var ready = new HeroSocialProfile
-            {
-                HeroId = "h_ready",
-                RelationWithPlayer = 50,
-                LastVolunteeredDay = -1
-            };
-            var d3 = selector.DecideOnVolunteer(ready, candidates, day: 10.0, volunteersAlreadyToday: 2);
-            Assert.Equal(VolunteerRefusal.DailyCap, d3.Refusal);
-            Assert.Null(d3.Offer);
-            Assert.Equal(2, d3.VolunteersToday);
-            Assert.Equal(2, d3.MaxVolunteersPerDay);
+            Assert.Equal(1, d2.SharedToday);
+            Assert.Equal(1, d2.SharesPerHeroPerDay);
         }
 
         [Fact]
@@ -713,14 +839,11 @@ namespace VividWorld.Core.Tests
         {
             var (selector, _, cfg) = CreateSelector();
             cfg.Dialogue.NpcVolunteerRelationGate = 20;
-            cfg.Dialogue.VolunteerCooldownDays = 3.0;
-            cfg.Dialogue.MaxVolunteersPerDay = 1;
 
             var teller = new HeroSocialProfile
             {
                 HeroId = "teller",
-                RelationWithPlayer = 30,
-                LastVolunteeredDay = -1
+                RelationWithPlayer = 30
             };
 
             // 候選 1: 玩家已知且 teller 距離沒有更近 (hop 1 vs hop 1)
@@ -744,7 +867,7 @@ namespace VividWorld.Core.Tests
                 new RumorCandidate { Event = evt2, TellerHop = 0, PlayerExistingHop = 2 }
             };
 
-            var decision = selector.DecideOnVolunteer(teller, candidates, day: 10.0, volunteersAlreadyToday: 0);
+            var decision = selector.DecideOnVolunteer(teller, candidates, day: 10.0);
 
             Assert.Equal(VolunteerRefusal.AllCandidatesFiltered, decision.Refusal);
             Assert.Null(decision.Offer);
@@ -766,7 +889,7 @@ namespace VividWorld.Core.Tests
             var evt = CreateSampleEvent("evt_eye");
             evt.KnownBy.Add(new KnownByEntry { HeroId = "teller", Hop = 0 });
 
-            var teller = new HeroSocialProfile { HeroId = "teller", RelationWithPlayer = 30, LastVolunteeredDay = -1 };
+            var teller = new HeroSocialProfile { HeroId = "teller", RelationWithPlayer = 30 };
             var candidates = new List<RumorCandidate>
             {
                 new() { Event = evt, TellerHop = 0, PlayerExistingHop = null, SourceHeroId = null }
@@ -787,7 +910,7 @@ namespace VividWorld.Core.Tests
             var evt = CreateSampleEvent("evt_heard");
             evt.KnownBy.Add(new KnownByEntry { HeroId = "teller", Hop = 1, SourceHeroId = "lord_informant" });
 
-            var teller = new HeroSocialProfile { HeroId = "teller", RelationWithPlayer = 30, LastVolunteeredDay = -1 };
+            var teller = new HeroSocialProfile { HeroId = "teller", RelationWithPlayer = 30 };
             var candidates = new List<RumorCandidate>
             {
                 new() { Event = evt, TellerHop = 1, PlayerExistingHop = null, SourceHeroId = "lord_informant" }
@@ -810,7 +933,7 @@ namespace VividWorld.Core.Tests
             var evt = CreateSampleEvent("evt_correction");
             evt.KnownBy.Add(new KnownByEntry { HeroId = "teller", Hop = 1, SourceHeroId = "lord_informant" });
 
-            var teller = new HeroSocialProfile { HeroId = "teller", RelationWithPlayer = 30, LastVolunteeredDay = -1 };
+            var teller = new HeroSocialProfile { HeroId = "teller", RelationWithPlayer = 30 };
             var candidates = new List<RumorCandidate>
             {
                 new() { Event = evt, TellerHop = 1, PlayerExistingHop = null, SourceHeroId = "lord_informant", IsCorrection = true }

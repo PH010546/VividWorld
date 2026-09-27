@@ -10,6 +10,16 @@ Every release states three things:
 
 ## Unreleased
 
+## v0.9.4
+
+- **Each NPC can now share one piece of news with you per day, instead of only one NPC in the whole world volunteering per day**: previously at most 1 NPC per day
+  volunteered a rumor world-wide, and the same NPC then stayed quiet for 3 days, so touring a whole town got you one speaker at most; asking, on the other hand, had no limit,
+  so a willing NPC could be drained in one sitting. It is now **per person**: on any day, every NPC may bring up one rumor, but the same person shares only one per day
+  (what they volunteer and what you ask for count together). Ask again that day and they say "I've said my piece for today. Come find me another time."; the next day they talk again.
+  Memories pushed to AI dialogue mods do not count. MCM gains "News per person per day" (default 1, 0 = no limit, max 10).
+  Existing campaigns can simply be continued: the count is kept in a new `shares.json` in the campaign folder (rolls back with snapshots) and starts after the update; the old `volunteers.json` is left in place and no longer used.
+  No config changes needed: `dialogue.sharesPerHeroPerDay` (`1`) is added automatically; the old `dialogue.maxVolunteersPerDay` and `dialogue.volunteerCooldownDays` stay in the file but are no longer read, so you may delete them or leave them.
+
 ## v0.9.3
 
 - **Fix: a hero taken prisoner kept passing news on (and hearing it) for the rest of that day**: whether a hero is a prisoner was cached together with trait values

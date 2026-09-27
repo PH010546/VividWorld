@@ -15,7 +15,6 @@ namespace VividWorld.Core.Tests
             double origLifetime = config.Scheduling.RumorLifetimeDays;
             double origStale = config.Scheduling.StaleDays;
             double origSecretWatch = config.Scheduling.SecretWatchDays;
-            double origCooldown = config.Dialogue.VolunteerCooldownDays;
             double origMemoryBaseDays = config.Memory.BaseDays;
             double origMemoryMinDays = config.Memory.MinDays;
 
@@ -25,7 +24,6 @@ namespace VividWorld.Core.Tests
             Assert.Equal(origLifetime, config.Scheduling.RumorLifetimeDays);
             Assert.Equal(origStale, config.Scheduling.StaleDays);
             Assert.Equal(origSecretWatch, config.Scheduling.SecretWatchDays);
-            Assert.Equal(origCooldown, config.Dialogue.VolunteerCooldownDays);
             Assert.Equal(origMemoryBaseDays, config.Memory.BaseDays);
             Assert.Equal(origMemoryMinDays, config.Memory.MinDays);
         }
@@ -43,7 +41,6 @@ namespace VividWorld.Core.Tests
             Assert.Equal(10.0, config.Scheduling.StaleDays, 4);
             Assert.Equal(84.0, config.Scheduling.SecretWatchDays, 4);
             Assert.Equal(20.0, config.Leak.ChanceDecayHalfLifeDays, 4);
-            Assert.Equal(1.0, config.Dialogue.VolunteerCooldownDays, 4);
             Assert.Equal(20.0, config.Memory.BaseDays, 4);
 
             // 非敘事型時長原封不動

@@ -87,6 +87,11 @@ namespace VividWorld.Mcm
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Dialogue}Dialogue", GroupOrder = 3)]
         public Dropdown<string> VolunteerMode { get; set; } = new Dropdown<string>(McmChoiceLists.VolunteerModes, 0);
 
+        [SettingPropertyInteger("{=VividWorld_MCM_SharesPerHeroPerDay}News per person per day", 0, 10, "0", Order = 4, RequireRestart = false,
+            HintText = "{=VividWorld_MCM_SharesPerHeroPerDayHint}How many pieces of news the same person will share with you in one day, counting both what they bring up on their own and what you ask them about. Set to 0 for no limit.")]
+        [SettingPropertyGroup("{=VividWorld_MCM_Group_Dialogue}Dialogue", GroupOrder = 3)]
+        public int SharesPerHeroPerDay { get; set; } = 1;
+
         // ── Group 4: Consequences ───────────────────────────────────────────────────
 
         [SettingPropertyBool("{=VividWorld_MCM_ConsequencesEnabled}Enable relation consequences", Order = 0, RequireRestart = false,

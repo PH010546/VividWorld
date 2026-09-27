@@ -16,8 +16,7 @@ namespace VividWorld.Core.Dialogue
         public const string VolunteerBlockedCommonerTier = "volunteer.blocked.commonerTier";
         public const string VolunteerBlockedLordAttack = "volunteer.blocked.lordAttack";
         public const string VolunteerBlockedRelationGate = "volunteer.blocked.relationGate";
-        public const string VolunteerBlockedCooldown = "volunteer.blocked.cooldown";
-        public const string VolunteerBlockedDailyCap = "volunteer.blocked.dailyCap";
+        public const string VolunteerBlockedSharedToday = "volunteer.blocked.sharedToday";
 
         // Volunteer no topic
         public const string VolunteerNoTopicNothingOnFile = "volunteer.noTopic.nothingOnFile";
@@ -41,6 +40,7 @@ namespace VividWorld.Core.Dialogue
         public const string AskBlockedCommonerTier = "ask.blocked.commonerTier";
         public const string AskAsked = "ask.asked";
         public const string AskTold = "ask.told";
+        public const string AskRefusedSharedToday = "ask.refused.sharedToday";
         public const string AskRefusedRelationGate = "ask.refused.relationGate";
         public const string AskRefusedWillingnessGate = "ask.refused.willingnessGate";
         public const string AskNoTopicNothingOnFile = "ask.noTopic.nothingOnFile";

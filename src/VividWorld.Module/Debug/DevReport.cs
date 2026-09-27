@@ -354,8 +354,7 @@ namespace VividWorld.Debug
             int rollbackCount = 0,
             double rollbackMaxDay = 0.0,
             double launchDay = 0.0,
-            int volunteeredToday = 0,
-            int maxVolunteers = 1,
+            string? sharedTodaySummary = null,
             string? lastVolunteerInfo = null,
             string? commonerCompatInfo = null,
             IReadOnlyList<string>? lastConversationRoute = null,
@@ -423,7 +422,7 @@ namespace VividWorld.Debug
                 "- Relation EffectiveScale: {0:0.0} (ScaleOverride: {1})",
                 config.Relation.EffectiveScale, config.Relation.ScaleOverride));
             sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
-                "- Volunteered today: {0} / {1}", volunteeredToday, maxVolunteers));
+                "- {0}", sharedTodaySummary ?? "Shared today: (unknown - dialogue behavior not wired)"));
             sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
                 "- Last volunteer: {0}", lastVolunteerInfo ?? "(none this session)"));
             sb.AppendLine(string.Format(CultureInfo.InvariantCulture,

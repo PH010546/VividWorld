@@ -125,9 +125,9 @@ namespace VividWorld.Core.Tests
         }
 
         [Fact]
-        public void Classify_VolunteerBlockedCooldown_WhenCooldownRefusal()
+        public void Classify_VolunteerBlockedSharedToday_WhenSharedTodayRefusal()
         {
-            var decision = new VolunteerDecision { Refusal = VolunteerRefusal.Cooldown };
+            var decision = new VolunteerDecision { Refusal = VolunteerRefusal.SharedToday };
             string key = ListenTallyClassifier.ClassifyVolunteer(
                 isEligible: true,
                 volunteerConditionRan: true,
@@ -140,26 +140,7 @@ namespace VividWorld.Core.Tests
                 outdatedCount: 0,
                 delivered: false);
 
-            Assert.Equal(ListenTallyKeys.VolunteerBlockedCooldown, key);
-        }
-
-        [Fact]
-        public void Classify_VolunteerBlockedDailyCap_WhenDailyCapRefusal()
-        {
-            var decision = new VolunteerDecision { Refusal = VolunteerRefusal.DailyCap };
-            string key = ListenTallyClassifier.ClassifyVolunteer(
-                isEligible: true,
-                volunteerConditionRan: true,
-                rivalCount: 0,
-                commonerTierBlocked: false,
-                willLordAttack: false,
-                decision: decision,
-                knownCount: 5,
-                forgottenCount: 0,
-                outdatedCount: 0,
-                delivered: false);
-
-            Assert.Equal(ListenTallyKeys.VolunteerBlockedDailyCap, key);
+            Assert.Equal(ListenTallyKeys.VolunteerBlockedSharedToday, key);
         }
 
         [Fact]
@@ -359,6 +340,21 @@ namespace VividWorld.Core.Tests
                 outdatedCount: 0);
 
             Assert.Equal(ListenTallyKeys.AskRefusedWillingnessGate, key);
+        }
+
+        [Fact]
+        public void Classify_AskRefusedSharedToday_WhenSharedTodayRefusal()
+        {
+            var decision = new AskDecision { Refusal = AskRefusal.SharedToday };
+            string key = ListenTallyClassifier.ClassifyAsk(
+                asked: true,
+                told: false,
+                decision: decision,
+                knownCount: 3,
+                forgottenCount: 0,
+                outdatedCount: 0);
+
+            Assert.Equal(ListenTallyKeys.AskRefusedSharedToday, key);
         }
 
         [Fact]

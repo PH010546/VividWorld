@@ -24,14 +24,14 @@ namespace VividWorld.Core.Tests
             };
 
             string log = VolunteerDecision.FormatLog(
-                "梅拉格", "lord_5_1_1", decision, knownCount: 6, lastVolunteerDesc: null, forgottenCount: 5);
+                "梅拉格", "lord_5_1_1", decision, knownCount: 6, forgottenCount: 5);
 
             Assert.Contains("1 remembered of 6 on file", log);
             Assert.DoesNotContain("6 known", log);
 
             // 一件都沒忘的時候不要硬塞「6 remembered of 6」，那只是噪音。
             string noneForgotten = VolunteerDecision.FormatLog(
-                "梅拉格", "lord_5_1_1", decision, knownCount: 6, lastVolunteerDesc: null, forgottenCount: 0);
+                "梅拉格", "lord_5_1_1", decision, knownCount: 6, forgottenCount: 0);
 
             Assert.Contains("6 on file", noneForgotten);
             Assert.DoesNotContain("remembered", noneForgotten);
@@ -53,32 +53,19 @@ namespace VividWorld.Core.Tests
             Assert.Contains("(not close kin)", relLog);
             Assert.Contains("3 on file", relLog);
 
-            // 2. Cooldown
-            var cooldownDecision = new VolunteerDecision
-            {
-                Refusal = VolunteerRefusal.Cooldown,
-                Relation = 42,
-                Day = 26036.6,
-                LastVolunteeredDay = 26035.4,
-                CooldownDays = 3.0
-            };
-            string cooldownLog = VolunteerDecision.FormatLog("埃隆", "lord_5_16", cooldownDecision);
-            Assert.Contains("silent - cooldown 1.2d < 3.0", cooldownLog);
-            Assert.Contains("(last 26035.4)", cooldownLog);
-            Assert.Contains("rel 42", cooldownLog);
-
-            // 3. DailyCap
+            // 2. SharedToday
             var capDecision = new VolunteerDecision
             {
-                Refusal = VolunteerRefusal.DailyCap,
-                VolunteersToday = 1,
-                MaxVolunteersPerDay = 1
+                Refusal = VolunteerRefusal.SharedToday,
+                Relation = 42,
+                SharedToday = 1,
+                SharesPerHeroPerDay = 1
             };
-            string capLog = VolunteerDecision.FormatLog("埃隆", "lord_5_16", capDecision, lastVolunteerDesc: "梅拉格 evt_26024_52ff");
-            Assert.Contains("silent - daily cap 1/1 already used today", capLog);
-            Assert.Contains("(last: 梅拉格 evt_26024_52ff)", capLog);
+            string capLog = VolunteerDecision.FormatLog("埃隆", "lord_5_16", capDecision);
+            Assert.Contains("silent - already shared today 1/1", capLog);
+            Assert.Contains("rel 42", capLog);
 
-            // 4. NoKnownEvents
+            // 3. NoKnownEvents
             var noKnownDecision = new VolunteerDecision
             {
                 Refusal = VolunteerRefusal.NoKnownEvents,
@@ -89,7 +76,7 @@ namespace VividWorld.Core.Tests
             Assert.Contains("nothing on file", noKnownLog);
             Assert.Contains("rel 42", noKnownLog);
 
-            // 5. AllCandidatesFiltered
+            // 4. AllCandidatesFiltered
             var filteredDecision = new VolunteerDecision
             {
                 Refusal = VolunteerRefusal.AllCandidatesFiltered,
@@ -121,16 +108,13 @@ namespace VividWorld.Core.Tests
                 Relation = 42,
                 RelationGate = 30,
                 Day = 26036.6,
-                LastVolunteeredDay = 26031.2,
-                CooldownDays = 3.0,
-                VolunteersToday = 0,
-                MaxVolunteersPerDay = 1
+                SharedToday = 0,
+                SharesPerHeroPerDay = 1
             };
             string toldLog = VolunteerDecision.FormatLog("埃隆", "lord_5_16", toldDecision);
             Assert.Contains("told evt_26036_a10c hop 1->2 score 5.58", toldLog);
             Assert.Contains("rel 42 >= 30", toldLog);
-            Assert.Contains("last 26031.2 (+5.4d >= 3.0)", toldLog);
-            Assert.Contains("0/1 today", toldLog);
+            Assert.Contains("shared today 0/1", toldLog);
 
             string attackLog = VolunteerDecision.FormatLordAboutToAttack("埃隆", "lord_5_16");
             Assert.Equal("Volunteer 埃隆 (lord_5_16): silent - lord is about to attack (WillLordAttack)", attackLog);

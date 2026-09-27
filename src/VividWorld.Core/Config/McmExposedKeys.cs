@@ -62,6 +62,7 @@ namespace VividWorld.Core.Config
                 new McmExposedKey("dialogue.askWillingnessThreshold", McmKeyKind.Double, -20.0, 40.0),
                 new McmExposedKey("dialogue.npcVolunteerRelationGate", McmKeyKind.Int, -100, 100),
                 new McmExposedKey("dialogue.volunteerMode", McmKeyKind.Dropdown, choices: new[] { "auto", "casual", "realistic" }),
+                new McmExposedKey("dialogue.sharesPerHeroPerDay", McmKeyKind.Int, 0, 10),
 
                 // Group 4: Consequences
                 new McmExposedKey("consequences.enabled", McmKeyKind.Bool),
@@ -121,6 +122,8 @@ namespace VividWorld.Core.Config
                     return cfg.Dialogue.NpcVolunteerRelationGate;
                 case "dialogue.volunteerMode":
                     return cfg.Dialogue.VolunteerMode;
+                case "dialogue.sharesPerHeroPerDay":
+                    return cfg.Dialogue.SharesPerHeroPerDay;
                 case "consequences.enabled":
                     return cfg.Consequences.Enabled;
                 case "consequences.bystanderMultiplier":
@@ -290,6 +293,9 @@ namespace VividWorld.Core.Config
                             break;
                         case "dialogue.npcVolunteerRelationGate":
                             cfg.Dialogue.NpcVolunteerRelationGate = iVal;
+                            break;
+                        case "dialogue.sharesPerHeroPerDay":
+                            cfg.Dialogue.SharesPerHeroPerDay = iVal;
                             break;
                         case "situations.clanEscalationThreshold":
                             cfg.Situations.ClanEscalationThreshold = iVal;

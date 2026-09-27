@@ -7,6 +7,7 @@ namespace VividWorld.Core.Dialogue
     public enum AskRefusal
     {
         None,                  // 有提案
+        SharedToday,           // SharedToday >= SharesPerHeroPerDay (cap > 0)
         RelationGate,          // RelationWithPlayer < AskRelationGate
         WillingnessGate,       // willingness < AskWillingnessThreshold
         NoKnownEvents,         // 候選清單是空的
@@ -37,6 +38,8 @@ namespace VividWorld.Core.Dialogue
         public int Relation { get; set; }
         public double Willingness { get; set; }
         public double Threshold { get; set; }
+        public int SharedToday { get; set; }
+        public int SharesPerHeroPerDay { get; set; }
         public int CandidateCount { get; set; }
         public int FilteredNotVisible { get; set; }   // 秘密未洩漏
         public int FilteredFutureTimeline { get; set; } // 日期比今天晚（規格 §2.2.1）
@@ -74,6 +77,9 @@ namespace VividWorld.Core.Dialogue
                     string candidateUnit = decision.CandidateCount == 1 ? "candidate" : "candidates";
                     return $"{prefix} offer {offer.EventId} hop {offer.TellerHop}->{offer.ResultingPlayerHop} score {offer.Score:F2} | rel {decision.Relation}, willingness {decision.Willingness:F1} >= {decision.Threshold:F1} | {knownCount} known, {decision.CandidateCount} {candidateUnit}, {filtered} filtered";
                 }
+
+                case AskRefusal.SharedToday:
+                    return $"{prefix} refused - already shared today {decision.SharedToday}/{decision.SharesPerHeroPerDay}";
 
                 case AskRefusal.RelationGate:
                     return $"{prefix} no offer - relation {decision.Relation} < gate {relationGate} | {knownStr}";

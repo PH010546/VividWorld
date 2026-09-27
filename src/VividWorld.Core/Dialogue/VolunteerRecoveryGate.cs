@@ -31,27 +31,5 @@ namespace VividWorld.Core.Dialogue
             if (alreadyDeliveredThisConversation) return false;
             return true;
         }
-
-        /// <summary>
-        /// 執行補救送出後的配額與冷卻消耗結算（規格 §9.2.3，與主動講完全相同）。
-        /// 消耗每日計數器，並更新講述者最後講述天數。
-        /// </summary>
-        public static void ConsumeQuotaAndCooldown(
-            DailyCounter? dailyCounter,
-            IDictionary<string, double>? lastVolunteeredDays,
-            string tellerHeroId,
-            double day)
-        {
-            if (dailyCounter != null)
-            {
-                dailyCounter.Advance(day);
-                dailyCounter.Increment();
-            }
-
-            if (lastVolunteeredDays != null && !string.IsNullOrEmpty(tellerHeroId))
-            {
-                lastVolunteeredDays[tellerHeroId] = day;
-            }
-        }
     }
 }

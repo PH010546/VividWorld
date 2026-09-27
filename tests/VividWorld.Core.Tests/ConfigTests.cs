@@ -90,8 +90,7 @@ namespace VividWorld.Core.Tests
             // Dialogue
             Assert.Equal(30, cfg.Dialogue.NpcVolunteerRelationGate);
             Assert.True(cfg.Dialogue.NpcVolunteerAlwaysForCloseKin);
-            Assert.Equal(1, cfg.Dialogue.MaxVolunteersPerDay);
-            Assert.Equal(3.0, cfg.Dialogue.VolunteerCooldownDays);
+            Assert.Equal(1, cfg.Dialogue.SharesPerHeroPerDay);
             Assert.Equal(0, cfg.Dialogue.AskRelationGate);
             Assert.Equal(5.0, cfg.Dialogue.AskWillingnessThreshold);
             Assert.Equal(6.0, cfg.Dialogue.AskTraitWeights.Generosity);
@@ -284,6 +283,7 @@ namespace VividWorld.Core.Tests
             cfg.Dialogue.ScoreFreshness = 500.0;
             cfg.Dialogue.ScoreDetail = -0.1;
             cfg.Dialogue.ScoreRelevance = -100.0;
+            cfg.Dialogue.SharesPerHeroPerDay = -5;
 
             cfg.Normalize();
 
@@ -298,6 +298,7 @@ namespace VividWorld.Core.Tests
             Assert.Equal(100.0, cfg.Dialogue.ScoreFreshness);
             Assert.Equal(0.0, cfg.Dialogue.ScoreDetail);
             Assert.Equal(0.0, cfg.Dialogue.ScoreRelevance);
+            Assert.Equal(0, cfg.Dialogue.SharesPerHeroPerDay);
 
             // 合法值不得被動到。
             var untouched = new VividWorldConfig();
@@ -715,6 +716,39 @@ namespace VividWorld.Core.Tests
             Assert.Equal("english", (string?)result.Merged.SelectToken("ai.pushLanguage"));
             Assert.Equal(2, (int?)result.Merged.SelectToken("ai.persistentMaxNewPerChat"));
             Assert.Equal(8, (int?)result.Merged.SelectToken("ai.chatOnlyMaxPerChat"));
+        }
+
+        [Fact]
+        public void DialogueConfig_OldKeysPreservedInExtra_AndNewKeyDefaulted()
+        {
+            var oldJson = @"{
+  ""dialogue"": {
+    ""maxVolunteersPerDay"": 3,
+    ""volunteerCooldownDays"": 7.0,
+    ""askRelationGate"": 10
+  }
+}";
+            var cfg = Newtonsoft.Json.JsonConvert.DeserializeObject<VividWorldConfig>(oldJson);
+            Assert.NotNull(cfg);
+            Assert.NotNull(cfg!.Dialogue);
+
+            // 新鍵是 1
+            Assert.Equal(1, cfg.Dialogue.SharesPerHeroPerDay);
+
+            // 兩個舊鍵在 Extra 裡
+            Assert.True(cfg.Dialogue.Extra.ContainsKey("maxVolunteersPerDay"));
+            Assert.True(cfg.Dialogue.Extra.ContainsKey("volunteerCooldownDays"));
+            Assert.Equal(3, (int)cfg.Dialogue.Extra["maxVolunteersPerDay"]);
+            Assert.Equal(7.0, (double)cfg.Dialogue.Extra["volunteerCooldownDays"]);
+
+            // 再序列化出去兩個舊鍵還在
+            string serialized = VividJson.Write(cfg);
+            var parsedBack = Newtonsoft.Json.Linq.JObject.Parse(serialized);
+            var dialogueToken = parsedBack["dialogue"];
+            Assert.NotNull(dialogueToken);
+            Assert.Equal(3, (int)dialogueToken!["maxVolunteersPerDay"]!);
+            Assert.Equal(7.0, (double)dialogueToken!["volunteerCooldownDays"]!);
+            Assert.Equal(1, (int)dialogueToken!["sharesPerHeroPerDay"]!);
         }
     }
 }
