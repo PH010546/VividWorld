@@ -115,7 +115,7 @@ Documents\Mount and Blade II Bannerlord\Configs\VividWorld\config.json
 你自行調整過的值，乃至模組已不再辨識的設定鍵，一律原樣保留。
 
 **遊戲的設定畫面裡也有一頁 Vivid World**（由 Mod Configuration Menu 提供），
-分成九組、共 25 個項目，可以直接在遊戲裡改，改完立刻寫回上面那個 `config.json`；
+分成九組、共 26 個項目，可以直接在遊戲裡改，改完立刻寫回上面那個 `config.json`；
 選單上沒有的設定維持原樣。
 
 ---

@@ -135,7 +135,7 @@ values you have adjusted, and even keys the mod no longer recognises, are preser
 are.
 
 **There is also a Vivid World page in the game's settings screen** (provided by Mod Configuration
-Menu): 25 entries in nine groups, changed in game and written straight back to the `config.json`
+Menu): 26 entries in nine groups, changed in game and written straight back to the `config.json`
 above. Settings not on the page are left untouched.
 
 ---
