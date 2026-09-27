@@ -1,6 +1,6 @@
 ﻿#Requires -Version 5.1
 <#
-    把正式發行包上傳到 Nexus Mods，在既有的模組檔案底下建新版本，並追加兩份玩家版更新紀錄。
+    把正式發行包上傳到 Nexus Mods，在既有的模組檔案底下建新版本，並追加英文的玩家版更新紀錄。
 
     不加 -Send：只讀（查模組、查檔案、查上一版），把「要傳什麼、建成什麼版本、追加哪些字」
     整份印出來就停，一個請求都不寫。加 -Send 才真的上傳。
@@ -11,8 +11,9 @@
       3. GET  /mod-files/{id}/versions             上一版的版本字串、檔名、類別
       4. POST /uploads                             建上傳（帶 md5）→ PUT 到回傳的網址 → POST /uploads/{id}/finalise
       5. GET  /uploads/{id}                        等到 state = available
-      6. POST /mod-files/{id}/versions             建新版本（更新模組版本號、封存上一版）
-      7. POST /mods/{id}/changelogs                英文、中文各追加一次（只能追加，不能改）
+      6. POST /mod-files/{id}/versions             建新版本（主要檔案、設成 mod manager 預設下載、更新模組版本號；上一版不封存）
+      7. POST /mods/{id}/changelogs                追加英文那一份（只能追加，不能改）
+      8. GET  /mod-files/{id}/versions             讀回來，印出每一版的分類與誰是預設下載
     任何一步失敗就停，把伺服器回的原文印出來；之後那一版改由人手動上傳。
 
     API 金鑰從 -ApiKeyFile 讀（預設 使用者資料夾\.vividworld\nexus-apikey.txt），
@@ -64,9 +65,9 @@ function Get-ChangelogSection([string]$path, [string]$ver) {
     if ($body.Count -eq 0) { Write-Error "$path 的 '$ver' 底下是空的" }
     return ($body -join "`n")
 }
+# Nexus 上暫時只放英文；中文那份照樣隨發行包出貨
 $changelogs = [ordered]@{
     'English' = Get-ChangelogSection (Join-Path $repoRoot 'module\CHANGELOG.en.txt') $version
-    '繁體中文' = Get-ChangelogSection (Join-Path $repoRoot 'module\CHANGELOG.txt') $version
 }
 
 # ── API 金鑰 ─────────────────────────────────────────────────────────
@@ -127,7 +128,7 @@ Write-Host '── 計畫 ──' -ForegroundColor Cyan
 Write-Host "上傳：$($zip.Name)（$($zip.Length) bytes，md5 $md5Hex）"
 Write-Host "加在檔案：$($target.name)（id $($target.id)）"
 Write-Host "上一版：$($previous.version)  名稱 '$($previous.name)'  類別 $($previous.category)  上傳於 $($previous.uploaded_at)"
-Write-Host "新版本：$nexusVersion  名稱 '$($previous.name)'  類別 main  更新模組版本號=是  封存上一版=是"
+Write-Host "新版本：$nexusVersion  名稱 '$($previous.name)'  類別 main  mod manager 預設下載=是  更新模組版本號=是  上一版不封存（留成舊版）"
 foreach ($k in $changelogs.Keys) {
     Write-Host "`n追加更新紀錄（$k，版本 $nexusVersion）：" -ForegroundColor Cyan
     Write-Host $changelogs[$k]
@@ -147,6 +148,9 @@ $put = New-Object System.Net.Http.HttpRequestMessage ([System.Net.Http.HttpMetho
 $put.Content = New-Object System.Net.Http.ByteArrayContent (, [IO.File]::ReadAllBytes($zip.FullName))
 $put.Content.Headers.ContentDisposition = [System.Net.Http.Headers.ContentDispositionHeaderValue]::Parse("attachment; filename=`"$($zip.Name)`"")
 $put.Content.Headers.ContentMD5 = $md5Bytes
+# 預先簽好的網址把 Content-Type 也算進簽章；不帶這個標頭會被儲存端以 SignatureDoesNotMatch 拒絕。
+# 值照 Nexus 官方 upload-action 送檔案時用的那一個
+$put.Content.Headers.ContentType = [System.Net.Http.Headers.MediaTypeHeaderValue]::Parse('application/octet-stream')
 $putResp = $http.SendAsync($put).GetAwaiter().GetResult()
 if (-not $putResp.IsSuccessStatusCode) {
     Write-Host "PUT 檔案失敗：HTTP $([int]$putResp.StatusCode)" -ForegroundColor Red
@@ -173,8 +177,11 @@ $created = Invoke-Nexus 'POST' "/mod-files/$($target.id)/versions" @{
     name                  = $previous.name
     version               = $nexusVersion
     file_category         = 'main'
+    # 「mod manager 的預設下載」建版本之後就沒有端點能改，只能在這裡設：一律給新上傳的這一版
+    primary_mod_manager_download = $true
     update_mod_version    = $true
-    archive_existing_file = $true
+    # 上一版不封存，留成舊版；封存了沒有端點能改回來
+    archive_existing_file = $false
     previous_version_id   = $previous.id
 }
 Write-Host "新版本已建立：檔案 $($created.file.name)（$($created.file.game_scoped_id)），版本 id $($created.version.id)" -ForegroundColor Green
@@ -184,5 +191,14 @@ foreach ($k in $changelogs.Keys) {
     $null = Invoke-Nexus 'POST' "/mods/$($mod.id)/changelogs" @{ version = $nexusVersion; changelog = $changelogs[$k] }
     Write-Host "更新紀錄已追加：$k" -ForegroundColor Green
 }
+
+# ── 8. 讀回來核對 ────────────────────────────────────────────────────
+$after = @((Invoke-Nexus 'GET' "/mod-files/$($target.id)/versions" $null).versions | Sort-Object { [decimal]$_.position })
+Write-Host "`n讀回 Nexus 上的版本："
+foreach ($v in $after) { Write-Host ("  {0,-10} {1,-12} 預設下載={2}" -f $v.version, $v.category, $v.is_primary) }
+$newV = $after | Where-Object { $_.version -eq $nexusVersion } | Select-Object -Last 1
+$oldV = $after | Where-Object { $_.id -eq $previous.id }
+if (-not $newV -or $newV.category -ne 'main' -or -not $newV.is_primary) { Write-Warning "新版本 $nexusVersion 不是「main＋預設下載」，要到網站上手動改" }
+if ($oldV -and $oldV.category -ne 'old_version') { Write-Warning "上一版 $($previous.version) 的分類是 '$($oldV.category)'，不是 old_version，要到網站上手動改" }
 
 Write-Host "`n完成：https://www.nexusmods.com/$GameDomain/mods/$($ModId)?tab=files" -ForegroundColor Green
