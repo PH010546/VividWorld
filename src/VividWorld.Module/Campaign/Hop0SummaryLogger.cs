@@ -116,6 +116,12 @@ namespace VividWorld.Campaign
                 }
             }
 
+            var hearsayHeroIds = evt?.KnownBy?
+                .Where(k => k.Hop == 1 && k.SourceHeroId == null)
+                .Select(k => k.HeroId)
+                .Where(id => !string.IsNullOrEmpty(id))
+                .ToList();
+
             string hop0Summary = Hop0Summary.Format(
                 totalKnowers,
                 participantsOrdered,
@@ -125,7 +131,8 @@ namespace VividWorld.Campaign
                     var h = Hero.Find(hId);
                     return EligibilityLabel.GetRejectionReason(h, traitLookup);
                 },
-                witnessInfo);
+                witnessInfo,
+                hearsayHeroIds);
 
             ModLog.Info($"  {hop0Summary}");
         }

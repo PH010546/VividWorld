@@ -10,6 +10,19 @@ Every release states three things:
 
 ## Unreleased
 
+## v0.9.5
+
+- **New: heroes captured by bandits or deserters now become news**: previously, when a hero was taken by a party with no leader, VW could not tell who had taken them and skipped it
+  (7 skips over 43 days in one campaign, mostly lords taken by deserters), and when the hero was later freed, the news was linked to an older capture by a lord. It is now recorded as
+  "fell into the hands of a band of Deserters" and the like, naming which kind of bandit (Looters, Deserters, Mountain Bandits…; "outlaws" when it can't tell),
+  the captive's family hears of it right away as "I heard that" (up to 8 of them), and it spreads further than a capture by a lord.
+  When someone routs the bandits and frees the captive, the news names the rescuer ("Ergeon routed a band of Deserters and freed Yorig"); escaping has its own line; people who heard of the capture stop saying the hero is still held.
+  **If you rout the bandits and free the captive yourself, the news says you rescued them.** The people involved speak of it in the first person.
+- **Every rumor now puts the place first**: "Near Dunglanys, Ergeon routed a band of Deserters and freed Yorig." English capitalizes the first word when there is no lead-in (Near …). Set `presentation.placeFirst` to `false` to get the old order back.
+- Developer dialogue gains "(dev) Have the closest bandits capture this person" (the conversation closes first; the capture happens once you leave the encounter); `(dev) World status` gains a line counting bandit captures / rescues / escapes.
+- Existing campaigns can simply be continued: the new news starts after the update. Someone already held by bandits at the moment of updating will, when freed, still be linked to their older capture by a lord (one-off, not handled).
+  No config edits needed: `presentation.placeFirst` (`true`), `events.banditCaptureDramaByProminence` and `events.banditReleaseDramaByProminence` are added automatically.
+
 ## v0.9.4
 
 - **Each NPC can now share one piece of news with you per day, instead of only one NPC in the whole world volunteering per day**: previously at most 1 NPC per day

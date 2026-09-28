@@ -118,7 +118,8 @@ namespace VividWorld.Core.Ingest
             IEnumerable<KeyValuePair<string, string>> participants,
             IReadOnlyCollection<string>? knowingRoles,
             Func<string, string?>? cannotTellReasonLookup,
-            Hop0WitnessInfo witnessInfo)
+            Hop0WitnessInfo witnessInfo,
+            IReadOnlyList<string>? hearsayHeroIds = null)
         {
             if (witnessInfo == null) throw new ArgumentNullException(nameof(witnessInfo));
 
@@ -157,8 +158,11 @@ namespace VividWorld.Core.Ingest
             string participantsSection = "participants: " + (seededParts.Count > 0 ? string.Join(", ", seededParts) : "(none)");
             string notSeededSection = notSeededParts.Count > 0 ? $"; not seeded: {string.Join(", ", notSeededParts)}" : string.Empty;
             string witnessSection = "; witnesses: " + witnessInfo.Format();
+            string hearsaySection = (hearsayHeroIds != null && hearsayHeroIds.Count > 0)
+                ? $"; hearsay: {hearsayHeroIds.Count} ({string.Join(", ", hearsayHeroIds)})"
+                : string.Empty;
 
-            return $"hop0: {totalKnowers} {knowerLabel} - {participantsSection}{notSeededSection}{witnessSection}";
+            return $"hop0: {totalKnowers} {knowerLabel} - {participantsSection}{notSeededSection}{witnessSection}{hearsaySection}";
         }
 
         public static string Format(
@@ -166,12 +170,14 @@ namespace VividWorld.Core.Ingest
             IEnumerable<KeyValuePair<string, string>> participants,
             IReadOnlyCollection<string>? knowingRoles,
             IReadOnlyDictionary<string, string?>? cannotTellReasons,
-            Hop0WitnessInfo witnessInfo)
+            Hop0WitnessInfo witnessInfo,
+            IReadOnlyList<string>? hearsayHeroIds = null)
             => Format(
                 totalKnowers,
                 participants,
                 knowingRoles,
                 id => cannotTellReasons != null && cannotTellReasons.TryGetValue(id, out var reason) ? reason : null,
-                witnessInfo);
+                witnessInfo,
+                hearsayHeroIds);
     }
 }

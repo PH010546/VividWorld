@@ -139,6 +139,27 @@ namespace VividWorld.Core.Ingest
                     }
                 }
             }
+
+            // 5. ＋ HearsayKnowerHeroIds（第 1 手、無來源，與前面的知情者去重）
+            if (submission.HearsayKnowerHeroIds != null)
+            {
+                foreach (var heroId in submission.HearsayKnowerHeroIds)
+                {
+                    if (!string.IsNullOrEmpty(heroId))
+                    {
+                        if (seen.Add(heroId))
+                        {
+                            evt.KnownBy.Add(new KnownByEntry
+                            {
+                                HeroId = heroId,
+                                Hop = 1,
+                                LearnedDay = day,
+                                SourceHeroId = null
+                            });
+                        }
+                    }
+                }
+            }
         }
     }
 }

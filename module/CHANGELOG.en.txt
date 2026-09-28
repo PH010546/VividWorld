@@ -1,5 +1,12 @@
 Vivid World changelog
 
+v0.9.5
+When someone is taken by bandits, deserters or other outlaws, it now becomes news too, naming which band it was; their family hears first, and this news travels further than a capture by a lord.
+When someone routs the bandits and frees them, the news says who did it; escaping on their own is told differently. People who heard of the capture stop saying they are still held once they hear of the rescue.
+If you rout the bandits and free someone yourself, the news says you rescued them.
+Every rumor now names the place first, for example "Near Dunglanys, Ergeon routed a band of Deserters and freed Yorig."
+Existing campaigns can be continued as they are; no settings need to be changed.
+
 v0.9.4
 Every lord and wanderer may now bring up a piece of news with you each day, instead of only one person in the whole world speaking up per day.
 The same person shares only one piece of news with you per day, counting what they bring up and what you ask for; ask again that day and they say "I've said my piece for today. Come find me another time." Come back the next day and they will talk again.

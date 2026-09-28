@@ -188,7 +188,7 @@ namespace VividWorld.Core.Tests
             var result = RumorTextAssembler.Assemble(rumor, cfg, MockResolveVar);
 
             // 查不到物件時應退回純名字（someone / somewhere），絕不產生半截錨點
-            Assert.Contains("someone was seen near somewhere.", result.DisplayText);
+            Assert.Contains("Someone was seen near somewhere.", result.DisplayText);
             Assert.DoesNotContain("<a", result.DisplayText);
             Assert.DoesNotContain("href=", result.DisplayText);
             Assert.DoesNotContain("<", result.DisplayText);

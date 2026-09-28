@@ -475,5 +475,160 @@
         "fragility": 4
       }
     ]
+  },
+  {
+    "type": "hero_captured_by_bandits",
+    "headline": "Captured by bandits",
+    "origin": "public",
+    "dramaWeight": 4,
+    "linkedTemplateType": null,
+    "roles": {
+      "prisoner": "{PRISONER}"
+    },
+    "knowingRoles": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_HeroCapturedByBandits_Who",
+        "text": "{PRISONER} fell into the hands of a band of {BANDITS}",
+        "vars": {
+          "PRISONER": "hero:{PRISONER}",
+          "BANDITS": "{BANDITS}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_HeroCapturedByBandits_Where",
+        "text": "near {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_HeroCapturedByBandits_What",
+        "text": "bound and dragged along with them through the wilds",
+        "vars": {},
+        "fragility": 3
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_HeroCapturedByBandits_Outcome",
+        "text": "and no one knew what they meant to do with {PRISONER.him}",
+        "vars": {},
+        "fragility": 4
+      }
+    ]
+  },
+  {
+    "type": "hero_rescued_from_bandits",
+    "headline": "Rescued from bandits",
+    "origin": "public",
+    "dramaWeight": 4,
+    "linkedTemplateType": "hero_captured_by_bandits",
+    "roles": {
+      "prisoner": "{PRISONER}",
+      "rescuer": "{RESCUER}"
+    },
+    "knowingRoles": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_HeroRescuedFromBandits_Who",
+        "text": "{RESCUER} routed a band of {BANDITS} and freed {PRISONER}",
+        "vars": {
+          "RESCUER": "hero:{RESCUER}",
+          "BANDITS": "{BANDITS}",
+          "PRISONER": "hero:{PRISONER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_HeroRescuedFromBandits_Where",
+        "text": "near {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_HeroRescuedFromBandits_What",
+        "text": "and even had {PRISONER.him} escorted on {PRISONER.his} way",
+        "vars": {},
+        "fragility": 3
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_HeroRescuedFromBandits_Outcome",
+        "text": "and {PRISONER.he} made it home safe at last",
+        "vars": {},
+        "fragility": 4
+      }
+    ]
+  },
+  {
+    "type": "hero_escaped_bandits",
+    "headline": "Escaped from bandits",
+    "origin": "public",
+    "dramaWeight": 4,
+    "linkedTemplateType": "hero_captured_by_bandits",
+    "roles": {
+      "prisoner": "{PRISONER}"
+    },
+    "knowingRoles": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_HeroEscapedBandits_Who",
+        "text": "{PRISONER} escaped from a band of {BANDITS}",
+        "vars": {
+          "PRISONER": "hero:{PRISONER}",
+          "BANDITS": "{BANDITS}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_HeroEscapedBandits_Where",
+        "text": "near {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_HeroEscapedBandits_What",
+        "text": "while the guards slept, {PRISONER.he} wore through {PRISONER.his} bonds",
+        "vars": {},
+        "fragility": 3
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_HeroEscapedBandits_Outcome",
+        "text": "and made {PRISONER.his} way back to where people live, in the dark",
+        "vars": {},
+        "fragility": 4
+      }
+    ]
   }
 ]

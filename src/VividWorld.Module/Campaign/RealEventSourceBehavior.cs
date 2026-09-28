@@ -32,6 +32,11 @@ namespace VividWorld.Campaign
         private int _releaseReleasedCount;
         private int _releaseLinkedCount;
         private int _releaseUnlinkedCount;
+        private int _banditCapturesCount;
+        private int _banditRescuedCount;
+        private int _banditRescuerFoundCount;
+        private int _banditPlayerRescuedCount;
+        private int _banditEscapedCount;
 
         public int EventsSubmittedThisSession => _eventsSubmittedThisSession;
         public int SubscribedCount => 5;
@@ -47,6 +52,11 @@ namespace VividWorld.Campaign
         public int ReleaseReleasedCount => _releaseReleasedCount;
         public int ReleaseLinkedCount => _releaseLinkedCount;
         public int ReleaseUnlinkedCount => _releaseUnlinkedCount;
+        public int BanditCapturesCount => _banditCapturesCount;
+        public int BanditRescuedCount => _banditRescuedCount;
+        public int BanditRescuerFoundCount => _banditRescuerFoundCount;
+        public int BanditPlayerRescuedCount => _banditPlayerRescuedCount;
+        public int BanditEscapedCount => _banditEscapedCount;
         public int EntriesMarkedOutdatedCount => _eventStore?.Stamper?.EntriesMarkedOutdatedCount ?? 0;
         public int EventsDormantByOutdatingCount => _eventStore?.Stamper?.EventsDormantByOutdatingCount ?? 0;
 
@@ -142,8 +152,7 @@ namespace VividWorld.Campaign
                 Hero? captorHero = capturer?.LeaderHero ?? capturer?.Owner;
                 if (captorHero == null)
                 {
-                    string capturerId = capturer?.Id ?? "none";
-                    ModLog.Info($"RealEventSource: HeroPrisonerTaken - capturer party has no leader and no owner, skipped (prisoner={prisoner.StringId}, capturer={capturerId})");
+                    OnHeroCapturedByBandits(capturer, prisoner);
                     return;
                 }
 
@@ -206,6 +215,123 @@ namespace VividWorld.Campaign
             }
         }
 
+        private static string ResolveBanditsVar(PartyBase? capturer)
+        {
+            if (capturer?.MapFaction is Clan banditClan && banditClan.IsBanditFaction)
+            {
+                return $"faction:{banditClan.StringId}";
+            }
+            return "key:VividWorld_UnknownBandits";
+        }
+
+        private void OnHeroCapturedByBandits(PartyBase? capturer, Hero prisoner)
+        {
+            string capturerId = capturer?.Id ?? "none";
+            string factionStr = capturer?.MapFaction?.StringId ?? "none";
+            ModLog.Info($"RealEventSource: HeroPrisonerTaken - leaderless capturer {capturerId} (faction {factionStr}) -> template 'hero_captured_by_bandits'");
+
+            string banditsVar = ResolveBanditsVar(capturer);
+
+            var bindings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["PRISONER"] = prisoner.StringId,
+                ["BANDITS"] = banditsVar
+            };
+
+            var probes = new List<SettlementProbe>();
+            probes.AddRange(ProbesForHero("prisoner", prisoner));
+            if (capturer != null && capturer.IsSettlement)
+            {
+                probes.Add(new SettlementProbe("capturer.Settlement", () => capturer.Settlement?.StringId));
+            }
+
+            var fallbackResult = SettlementFallback.Resolve(probes);
+            if (!string.IsNullOrEmpty(fallbackResult.SettlementId))
+            {
+                bindings["SETTLEMENT"] = fallbackResult.SettlementId!;
+            }
+
+            ProminenceResult? prominenceResult = null;
+            Exception? prominenceException = null;
+            try
+            {
+                var facts = new ProminenceFacts
+                {
+                    HeroId = prisoner.StringId,
+                    IsKingdomLeader = prisoner.IsKingdomLeader,
+                    KingdomId = prisoner.MapFaction?.StringId,
+                    IsClanLeader = prisoner.IsClanLeader,
+                    ClanId = prisoner.Clan?.StringId,
+                    ClanIsMinorFaction = prisoner.Clan?.IsMinorFaction ?? false,
+                    IsLord = prisoner.IsLord
+                };
+                prominenceResult = PrisonerProminence.Classify(facts, _config.Events.BanditCaptureDramaByProminence);
+            }
+            catch (Exception ex)
+            {
+                prominenceException = ex;
+            }
+
+            var candidates = new List<KeyValuePair<string, TraitProfile?>>();
+            if (prisoner.Clan != null)
+            {
+                var clanHeroes = new HashSet<Hero>();
+                if (prisoner.Clan.Heroes != null)
+                {
+                    foreach (var h in prisoner.Clan.Heroes)
+                    {
+                        if (h != null) clanHeroes.Add(h);
+                    }
+                }
+                if (prisoner.Clan.Companions != null)
+                {
+                    foreach (var c in prisoner.Clan.Companions)
+                    {
+                        if (c != null) clanHeroes.Add(c);
+                    }
+                }
+
+                foreach (var h in clanHeroes)
+                {
+                    string hid = h.StringId;
+                    TraitProfile? profile = _traitLookup?.Of(hid);
+                    if (profile == null && _traitLookup == null)
+                    {
+                        profile = new TraitProfile
+                        {
+                            HeroId = hid,
+                            IsAlive = h.IsAlive,
+                            IsPrisoner = h.IsPrisoner,
+                            IsLord = h.IsLord,
+                            IsWanderer = h.IsWanderer
+                        };
+                    }
+                    candidates.Add(new KeyValuePair<string, TraitProfile?>(hid, profile));
+                }
+            }
+
+            string? playerHeroId = Hero.MainHero?.StringId;
+            var familyResult = BanditCaptureFamilySelector.Select(
+                prisoner.StringId,
+                candidates,
+                playerHeroId,
+                _config.Propagation.MaxInitialWitnesses);
+
+            string selectedStr = string.Join(", ", familyResult.SelectedHeroIds);
+            string excludedStr = string.Join(", ", familyResult.Exclusions.Select(e => $"{e.HeroId}: {e.Reason}"));
+            ModLog.Info($"  family: {familyResult.SelectedHeroIds.Count} selected ({selectedStr}); excluded {familyResult.Exclusions.Count} ({excludedStr})");
+
+            TrySubmit(
+                "hero_captured_by_bandits",
+                bindings,
+                "HeroPrisonerTaken",
+                fallbackResult,
+                prominenceResult,
+                prominenceException,
+                prisoner.StringId,
+                hearsayKnowerHeroIds: familyResult.SelectedHeroIds);
+        }
+
         private void OnHeroPrisonerReleased(Hero prisoner, PartyBase party, IFaction faction, TaleWorlds.CampaignSystem.Actions.EndCaptivityDetail detail, bool showNotification)
         {
             try
@@ -214,25 +340,154 @@ namespace VividWorld.Campaign
                 if (!_config.Events.Sources.HeroPrisonerReleased) return;
                 if (prisoner == null) return;
 
-                string? templateType = RealEventMapping.TemplateForRelease((int)detail);
+                double day = CampaignTime.Now.ToDays;
+                var captureEntry = CaptureLookup.FindLatestCapture(_eventStore.Index, prisoner.StringId, day);
+                string? linkedEventId = captureEntry?.EventId;
+
+                Hero? captorHero = party?.LeaderHero ?? party?.Owner;
+                string? captorId = captorHero?.StringId;
+                bool isMainParty = party != null && party == MobileParty.MainParty?.Party;
+                bool hasLeaderOrOwner = captorHero != null;
+                var coreDetail = (VividWorld.Core.Events.EndCaptivityDetail)(int)detail;
+
+                var playerRescueResult = PlayerRescueEvaluator.Evaluate(
+                    captureEntry?.Type,
+                    isMainParty,
+                    hasLeaderOrOwner,
+                    coreDetail);
+                bool isPlayerRescue = playerRescueResult.IsPlayerRescue;
+
+                string? templateType;
+                if (isPlayerRescue)
+                {
+                    templateType = "hero_rescued_from_bandits";
+                }
+                else if (captorHero == null)
+                {
+                    if (detail == TaleWorlds.CampaignSystem.Actions.EndCaptivityDetail.ReleasedAfterBattle)
+                    {
+                        templateType = "hero_rescued_from_bandits";
+                    }
+                    else if (detail == TaleWorlds.CampaignSystem.Actions.EndCaptivityDetail.ReleasedAfterEscape)
+                    {
+                        templateType = "hero_escaped_bandits";
+                    }
+                    else
+                    {
+                        templateType = RealEventMapping.TemplateForRelease((int)detail);
+                    }
+                }
+                else
+                {
+                    templateType = RealEventMapping.TemplateForRelease((int)detail);
+                }
+
                 if (templateType == null)
                 {
                     ModLog.Info($"RealEventSource: HeroPrisonerReleased detail={detail} -> no template, skipped (prisoner={prisoner.StringId})");
                     return;
                 }
 
-                Hero? captorHero = party?.LeaderHero ?? party?.Owner;
-                string? captorId = captorHero?.StringId;
-
-                ModLog.Info(OutdatingLogFormatter.FormatReleaseHeader(detail.ToString(), templateType, prisoner.StringId, captorId));
-
-                var bindings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                string captorPartyId = party?.Id ?? "none";
+                if (captorHero == null)
                 {
-                    ["PRISONER"] = prisoner.StringId
-                };
-                if (captorHero != null)
+                    ModLog.Info(OutdatingLogFormatter.FormatReleaseHeader(detail.ToString(), templateType, prisoner.StringId, captorId, captorPartyId));
+                }
+                else
                 {
-                    bindings["CAPTOR"] = captorHero.StringId;
+                    ModLog.Info(OutdatingLogFormatter.FormatReleaseHeader(detail.ToString(), templateType, prisoner.StringId, captorId));
+                }
+
+                if (string.Equals(captureEntry?.Type, "hero_captured_by_bandits", StringComparison.Ordinal)
+                    || isMainParty
+                    || (captorHero == null && detail == TaleWorlds.CampaignSystem.Actions.EndCaptivityDetail.ReleasedByChoice))
+                {
+                    ModLog.Info("  " + PlayerRescueEvaluator.FormatLog(playerRescueResult, captorPartyId, detail.ToString()));
+                }
+
+                Hero? rescuerHero = null;
+                if (string.Equals(templateType, "hero_rescued_from_bandits", StringComparison.Ordinal))
+                {
+                    if (isPlayerRescue)
+                    {
+                        rescuerHero = Hero.MainHero;
+                        ModLog.Info($"  rescuer: {rescuerHero?.StringId ?? "player"} (player rescue)");
+                    }
+                    else
+                    {
+                        if (party == null)
+                        {
+                            ModLog.Info("  rescuer: none (party is null)");
+                        }
+                        else if (party.MapEvent == null)
+                        {
+                            ModLog.Info("  rescuer: none (no MapEvent)");
+                        }
+                        else if (!party.MapEvent.HasWinner)
+                        {
+                            ModLog.Info("  rescuer: none (no winner)");
+                        }
+                        else
+                        {
+                            var winnerSide = party.MapEvent.WinningSide;
+                            var leaderParty = party.MapEvent.GetLeaderParty(winnerSide);
+                            rescuerHero = leaderParty?.LeaderHero;
+                            if (rescuerHero == null)
+                            {
+                                ModLog.Info("  rescuer: none (winner leader party has no hero)");
+                            }
+                            else
+                            {
+                                ModLog.Info($"  rescuer: {rescuerHero.StringId} via MapEvent winner side {winnerSide}");
+                            }
+                        }
+                    }
+                }
+
+                Dictionary<string, string> bindings;
+                if (string.Equals(templateType, "hero_rescued_from_bandits", StringComparison.Ordinal))
+                {
+                    string banditsVar;
+                    if (isPlayerRescue)
+                    {
+                        WorldEvent? captureEvent = !string.IsNullOrEmpty(captureEntry?.EventId)
+                            ? _eventStore.Load(captureEntry!.EventId)
+                            : null;
+                        banditsVar = PlayerRescueEvaluator.ResolveBanditsVar(captureEvent);
+                    }
+                    else
+                    {
+                        banditsVar = ResolveBanditsVar(party);
+                    }
+
+                    bindings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        ["PRISONER"] = prisoner.StringId,
+                        ["BANDITS"] = banditsVar
+                    };
+                    if (rescuerHero != null)
+                    {
+                        bindings["RESCUER"] = rescuerHero.StringId;
+                    }
+                }
+                else if (string.Equals(templateType, "hero_escaped_bandits", StringComparison.Ordinal))
+                {
+                    bindings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        ["PRISONER"] = prisoner.StringId,
+                        ["BANDITS"] = ResolveBanditsVar(party)
+                    };
+                }
+                else
+                {
+                    bindings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        ["PRISONER"] = prisoner.StringId
+                    };
+                    if (captorHero != null)
+                    {
+                        bindings["CAPTOR"] = captorHero.StringId;
+                    }
                 }
 
                 var probes = new List<SettlementProbe>();
@@ -244,6 +499,10 @@ namespace VividWorld.Campaign
                 if (captorHero != null)
                 {
                     probes.AddRange(ProbesForHero("captor", captorHero));
+                }
+                if (rescuerHero != null)
+                {
+                    probes.AddRange(ProbesForHero("rescuer", rescuerHero));
                 }
 
                 var fallbackResult = SettlementFallback.Resolve(probes);
@@ -266,7 +525,12 @@ namespace VividWorld.Campaign
                         ClanIsMinorFaction = prisoner.Clan?.IsMinorFaction ?? false,
                         IsLord = prisoner.IsLord
                     };
-                    prominenceResult = PrisonerProminence.Classify(facts, _config.Events.ReleaseDramaByProminence);
+                    bool isBanditRelease = string.Equals(templateType, "hero_rescued_from_bandits", StringComparison.Ordinal)
+                        || string.Equals(templateType, "hero_escaped_bandits", StringComparison.Ordinal);
+                    var dramaConfig = isBanditRelease
+                        ? _config.Events.BanditReleaseDramaByProminence
+                        : _config.Events.ReleaseDramaByProminence;
+                    prominenceResult = PrisonerProminence.Classify(facts, dramaConfig);
                 }
                 catch (Exception ex)
                 {
@@ -286,9 +550,6 @@ namespace VividWorld.Campaign
                     ModLog.Info($"  prominence: prisoner={prisoner.StringId} failed ({prominenceException.GetType().Name}) => drama {templateDrama} (template {templateDrama}, not overridden)");
                 }
 
-                double day = CampaignTime.Now.ToDays;
-                var captureEntry = CaptureLookup.FindLatestCapture(_eventStore.Index, prisoner.StringId, day);
-                string? linkedEventId = captureEntry?.EventId;
                 if (captureEntry != null)
                 {
                     ModLog.Info(OutdatingLogFormatter.FormatLinkedCapture(captureEntry.EventId, captureEntry.Type, captureEntry.Day, day));
@@ -302,53 +563,100 @@ namespace VividWorld.Campaign
                 }
 
                 EventTemplate? adaptedTemplate = null;
-                if (captorHero == null && baseTemplate != null)
+                if (baseTemplate != null)
                 {
-                    bool isEscape = string.Equals(templateType, "hero_escaped_captivity", StringComparison.Ordinal);
-                    string whoNoCaptorTextId = isEscape
-                        ? "VividWorld_Fact_HeroEscaped_WhoNoCaptor"
-                        : "VividWorld_Fact_HeroReleased_WhoNoCaptor";
-                    // 英文介面不查字串表、直接用存進事件的英文，所以這裡要存沒有 {CAPTOR} 的那一句；
-                    // 沿用模板那句會在英文介面印成「someone set … free」。字與英文字串表同一句（帳本 D-88）。
-                    string whoNoCaptorText = isEscape
-                        ? "{PRISONER} slipped out of captivity"
-                        : "{PRISONER} got out of captivity";
-
-                    adaptedTemplate = new EventTemplate
+                    if (string.Equals(templateType, "hero_rescued_from_bandits", StringComparison.Ordinal) && rescuerHero == null)
                     {
-                        Type = baseTemplate.Type,
-                        Origin = baseTemplate.Origin,
-                        DramaWeight = baseTemplate.DramaWeight,
-                        LinkedTemplateType = baseTemplate.LinkedTemplateType,
-                        Roles = new Dictionary<string, string> { ["prisoner"] = "{PRISONER}" },
-                        KnowingRoles = new HashSet<string>(baseTemplate.KnowingRoles),
-                        Facts = baseTemplate.Facts.Select(f =>
+                        adaptedTemplate = new EventTemplate
                         {
-                            if (string.Equals(f.Id, "who", StringComparison.OrdinalIgnoreCase))
+                            Type = baseTemplate.Type,
+                            Origin = baseTemplate.Origin,
+                            DramaWeight = baseTemplate.DramaWeight,
+                            LinkedTemplateType = baseTemplate.LinkedTemplateType,
+                            Roles = new Dictionary<string, string> { ["prisoner"] = "{PRISONER}" },
+                            KnowingRoles = new HashSet<string>(baseTemplate.KnowingRoles),
+                            Facts = baseTemplate.Facts
+                                .Where(f => !string.Equals(f.Id, "what", StringComparison.OrdinalIgnoreCase))
+                                .Select(f =>
+                                {
+                                    if (string.Equals(f.Id, "who", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        return new TemplateFact
+                                        {
+                                            Id = f.Id,
+                                            Category = f.Category,
+                                            TextId = "VividWorld_Fact_HeroRescuedFromBandits_WhoNoRescuer",
+                                            Text = "a band of {BANDITS} was routed, and {PRISONER} got away in the confusion",
+                                            Vars = new Dictionary<string, string>
+                                            {
+                                                ["BANDITS"] = "{BANDITS}",
+                                                ["PRISONER"] = "hero:{PRISONER}"
+                                            },
+                                            Fragility = f.Fragility,
+                                            Optional = f.Optional
+                                        };
+                                    }
+                                    return new TemplateFact
+                                    {
+                                        Id = f.Id,
+                                        Category = f.Category,
+                                        TextId = f.TextId,
+                                        Text = f.Text,
+                                        Vars = f.Vars != null ? new Dictionary<string, string>(f.Vars) : new Dictionary<string, string>(),
+                                        Fragility = f.Fragility,
+                                        Optional = f.Optional
+                                    };
+                                }).ToList()
+                        };
+                    }
+                    else if (captorHero == null && !string.Equals(templateType, "hero_rescued_from_bandits", StringComparison.Ordinal) && !string.Equals(templateType, "hero_escaped_bandits", StringComparison.Ordinal))
+                    {
+                        bool isEscape = string.Equals(templateType, "hero_escaped_captivity", StringComparison.Ordinal);
+                        string whoNoCaptorTextId = isEscape
+                            ? "VividWorld_Fact_HeroEscaped_WhoNoCaptor"
+                            : "VividWorld_Fact_HeroReleased_WhoNoCaptor";
+                        // 英文介面不查字串表、直接用存進事件的英文，所以這裡要存沒有 {CAPTOR} 的那一句；
+                        // 沿用模板那句會在英文介面印成「someone set … free」。字與英文字串表同一句（帳本 D-88）。
+                        string whoNoCaptorText = isEscape
+                            ? "{PRISONER} slipped out of captivity"
+                            : "{PRISONER} got out of captivity";
+
+                        adaptedTemplate = new EventTemplate
+                        {
+                            Type = baseTemplate.Type,
+                            Origin = baseTemplate.Origin,
+                            DramaWeight = baseTemplate.DramaWeight,
+                            LinkedTemplateType = baseTemplate.LinkedTemplateType,
+                            Roles = new Dictionary<string, string> { ["prisoner"] = "{PRISONER}" },
+                            KnowingRoles = new HashSet<string>(baseTemplate.KnowingRoles),
+                            Facts = baseTemplate.Facts.Select(f =>
                             {
+                                if (string.Equals(f.Id, "who", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    return new TemplateFact
+                                    {
+                                        Id = f.Id,
+                                        Category = f.Category,
+                                        TextId = whoNoCaptorTextId,
+                                        Text = whoNoCaptorText,
+                                        Vars = new Dictionary<string, string> { ["PRISONER"] = "hero:{PRISONER}" },
+                                        Fragility = f.Fragility,
+                                        Optional = f.Optional
+                                    };
+                                }
                                 return new TemplateFact
                                 {
                                     Id = f.Id,
                                     Category = f.Category,
-                                    TextId = whoNoCaptorTextId,
-                                    Text = whoNoCaptorText,
-                                    Vars = new Dictionary<string, string> { ["PRISONER"] = "hero:{PRISONER}" },
+                                    TextId = f.TextId,
+                                    Text = f.Text,
+                                    Vars = f.Vars != null ? new Dictionary<string, string>(f.Vars) : new Dictionary<string, string>(),
                                     Fragility = f.Fragility,
                                     Optional = f.Optional
                                 };
-                            }
-                            return new TemplateFact
-                            {
-                                Id = f.Id,
-                                Category = f.Category,
-                                TextId = f.TextId,
-                                Text = f.Text,
-                                Vars = f.Vars != null ? new Dictionary<string, string>(f.Vars) : new Dictionary<string, string>(),
-                                Fragility = f.Fragility,
-                                Optional = f.Optional
-                            };
-                        }).ToList()
-                    };
+                            }).ToList()
+                        };
+                    }
                 }
 
                 TrySubmit(
@@ -486,7 +794,8 @@ namespace VividWorld.Campaign
             string? prisonerIdForProminence = null,
             string? linkedEventId = null,
             EventTemplate? templateOverride = null,
-            bool skipProminenceLog = false)
+            bool skipProminenceLog = false,
+            IReadOnlyList<string>? hearsayKnowerHeroIds = null)
         {
             var catalog = EventCatalogStore.Catalog;
             var template = templateOverride ?? catalog.ByType(templateType);
@@ -510,6 +819,11 @@ namespace VividWorld.Campaign
                 submission.DramaWeight = prominenceResult.Drama;
             }
 
+            if (hearsayKnowerHeroIds != null && hearsayKnowerHeroIds.Count > 0)
+            {
+                submission.HearsayKnowerHeroIds.AddRange(hearsayKnowerHeroIds);
+            }
+
             var result = _eventStore!.Submit(submission, out string? eventId, out string? rejectionReason);
             if (result != IngestResult.Accepted || string.IsNullOrEmpty(eventId))
             {
@@ -518,6 +832,30 @@ namespace VividWorld.Campaign
             }
 
             _eventsSubmittedThisSession++;
+
+            if (string.Equals(templateType, "hero_captured_by_bandits", StringComparison.Ordinal))
+            {
+                _banditCapturesCount++;
+            }
+            else if (string.Equals(templateType, "hero_rescued_from_bandits", StringComparison.Ordinal))
+            {
+                _banditRescuedCount++;
+                if (bindings.ContainsKey("RESCUER"))
+                {
+                    _banditRescuerFoundCount++;
+                }
+                string playerHeroId = Hero.MainHero?.StringId ?? "player";
+                if (bindings.TryGetValue("RESCUER", out var rescuerId)
+                    && !string.IsNullOrEmpty(rescuerId)
+                    && string.Equals(rescuerId, playerHeroId, StringComparison.Ordinal))
+                {
+                    _banditPlayerRescuedCount++;
+                }
+            }
+            else if (string.Equals(templateType, "hero_escaped_bandits", StringComparison.Ordinal))
+            {
+                _banditEscapedCount++;
+            }
 
             // Only track prisoner prominence for hero_taken_prisoner
             if (string.Equals(templateType, "hero_taken_prisoner", StringComparison.Ordinal))

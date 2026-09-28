@@ -21,6 +21,12 @@ namespace VividWorld.Core.Config
         public string[] FactOrder { get; set; } =
             { "WHO", "CONTEXT", "WHEN", "WHERE", "WHAT", "WHY", "OUTCOME" };
 
+        /// <summary>
+        /// 消息裡的地點碎片是否排在句首。預設 true。
+        /// 設為 false 時依據 FactOrder 排序。
+        /// </summary>
+        public bool PlaceFirst { get; set; } = true;
+
         // §9.5.4：空字串 = 用字串表的 VividWorld_FactSeparator／VividWorld_SentenceEnd。
         // 嚴禁在這裡填全形標點——那是 v2 的在地化 bug。
         public string FactSeparator { get; set; } = string.Empty;

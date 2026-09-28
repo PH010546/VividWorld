@@ -48,7 +48,7 @@ namespace VividWorld.Core.Tests
         {
             var catalog = LoadRealEventsCatalog();
 
-            Assert.Equal(9, catalog.Templates.Count);
+            Assert.Equal(12, catalog.Templates.Count);
             Assert.Equal(0, catalog.SkippedCount);
             Assert.Empty(catalog.Issues.Where(i => i.IsError));
 
@@ -62,7 +62,10 @@ namespace VividWorld.Core.Tests
                 "heroes_married",
                 "child_born",
                 "hero_released",
-                "hero_escaped_captivity"
+                "hero_escaped_captivity",
+                "hero_captured_by_bandits",
+                "hero_rescued_from_bandits",
+                "hero_escaped_bandits"
             };
 
             foreach (var type in expectedTypes)
@@ -102,7 +105,7 @@ namespace VividWorld.Core.Tests
                 }
             }
 
-            Assert.Equal(36, totalFacts);
+            Assert.Equal(48, totalFacts);
         }
 
         [Fact]
@@ -381,11 +384,14 @@ namespace VividWorld.Core.Tests
 
             Assert.Equal("hero_taken_prisoner", catalog.ByType("hero_released")!.LinkedTemplateType);
             Assert.Equal("hero_taken_prisoner", catalog.ByType("hero_escaped_captivity")!.LinkedTemplateType);
+            Assert.Equal("hero_captured_by_bandits", catalog.ByType("hero_rescued_from_bandits")!.LinkedTemplateType);
+            Assert.Equal("hero_captured_by_bandits", catalog.ByType("hero_escaped_bandits")!.LinkedTemplateType);
 
-            // 其餘七個維持沒有連結，而且宣告出去的型別不能是懸空的
+            // 其餘模板維持沒有連結，而且宣告出去的型別不能是懸空的
             foreach (var template in catalog.Templates)
             {
-                if (template.Type == "hero_released" || template.Type == "hero_escaped_captivity") continue;
+                if (template.Type == "hero_released" || template.Type == "hero_escaped_captivity" ||
+                    template.Type == "hero_rescued_from_bandits" || template.Type == "hero_escaped_bandits") continue;
                 Assert.True(string.IsNullOrEmpty(template.LinkedTemplateType), $"{template.Type} should not declare a linked template");
             }
 

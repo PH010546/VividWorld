@@ -5,12 +5,17 @@ namespace VividWorld.Core.Events
 {
     public static class OutdatingLogFormatter
     {
-        public static string FormatReleaseHeader(string detail, string templateType, string prisonerId, string? captorId)
+        public static string FormatReleaseHeader(string detail, string templateType, string prisonerId, string? captorId, string? leaderlessCaptorPartyId = null)
         {
             var captorStr = string.IsNullOrEmpty(captorId) ? "none" : captorId;
-            return string.Format(CultureInfo.InvariantCulture,
+            var baseHeader = string.Format(CultureInfo.InvariantCulture,
                 "RealEventSource: HeroPrisonerReleased detail={0} -> template '{1}' (prisoner={2}, captor={3})",
                 detail, templateType, prisonerId, captorStr);
+            if (!string.IsNullOrEmpty(leaderlessCaptorPartyId))
+            {
+                return baseHeader + $" leaderless captor {leaderlessCaptorPartyId}";
+            }
+            return baseHeader;
         }
 
         public static string FormatLinkedCapture(string captureEventId, string captureType, double captureDay, double currentDay)

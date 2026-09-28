@@ -444,6 +444,128 @@ namespace VividWorld.Core.Config
                 });
             }
 
+            // Events: BanditCaptureDramaByProminence
+            Events.BanditCaptureDramaByProminence ??= new ProminenceDramaConfig
+            {
+                Ruler = 5,
+                ClanLeader = 5,
+                NobleMember = 3,
+                Minor = 2
+            };
+
+            int origBanditRuler = Events.BanditCaptureDramaByProminence.Ruler;
+            Events.BanditCaptureDramaByProminence.Ruler = Math.Max(1, Math.Min(5, origBanditRuler));
+            if (Events.BanditCaptureDramaByProminence.Ruler != origBanditRuler && notices != null)
+            {
+                notices.Add(new ClampNotice
+                {
+                    Key = "events.banditCaptureDramaByProminence.ruler",
+                    Requested = origBanditRuler,
+                    Applied = Events.BanditCaptureDramaByProminence.Ruler,
+                    AllowedRange = "1..5"
+                });
+            }
+
+            int origBanditClanLeader = Events.BanditCaptureDramaByProminence.ClanLeader;
+            Events.BanditCaptureDramaByProminence.ClanLeader = Math.Max(1, Math.Min(5, origBanditClanLeader));
+            if (Events.BanditCaptureDramaByProminence.ClanLeader != origBanditClanLeader && notices != null)
+            {
+                notices.Add(new ClampNotice
+                {
+                    Key = "events.banditCaptureDramaByProminence.clanLeader",
+                    Requested = origBanditClanLeader,
+                    Applied = Events.BanditCaptureDramaByProminence.ClanLeader,
+                    AllowedRange = "1..5"
+                });
+            }
+
+            int origBanditNobleMember = Events.BanditCaptureDramaByProminence.NobleMember;
+            Events.BanditCaptureDramaByProminence.NobleMember = Math.Max(1, Math.Min(5, origBanditNobleMember));
+            if (Events.BanditCaptureDramaByProminence.NobleMember != origBanditNobleMember && notices != null)
+            {
+                notices.Add(new ClampNotice
+                {
+                    Key = "events.banditCaptureDramaByProminence.nobleMember",
+                    Requested = origBanditNobleMember,
+                    Applied = Events.BanditCaptureDramaByProminence.NobleMember,
+                    AllowedRange = "1..5"
+                });
+            }
+
+            int origBanditMinor = Events.BanditCaptureDramaByProminence.Minor;
+            Events.BanditCaptureDramaByProminence.Minor = Math.Max(1, Math.Min(5, origBanditMinor));
+            if (Events.BanditCaptureDramaByProminence.Minor != origBanditMinor && notices != null)
+            {
+                notices.Add(new ClampNotice
+                {
+                    Key = "events.banditCaptureDramaByProminence.minor",
+                    Requested = origBanditMinor,
+                    Applied = Events.BanditCaptureDramaByProminence.Minor,
+                    AllowedRange = "1..5"
+                });
+            }
+
+            // Events: BanditReleaseDramaByProminence
+            Events.BanditReleaseDramaByProminence ??= new ProminenceDramaConfig
+            {
+                Ruler = 5,
+                ClanLeader = 4,
+                NobleMember = 2,
+                Minor = 1
+            };
+
+            int origRelBanditRuler = Events.BanditReleaseDramaByProminence.Ruler;
+            Events.BanditReleaseDramaByProminence.Ruler = Math.Max(1, Math.Min(5, origRelBanditRuler));
+            if (Events.BanditReleaseDramaByProminence.Ruler != origRelBanditRuler && notices != null)
+            {
+                notices.Add(new ClampNotice
+                {
+                    Key = "events.banditReleaseDramaByProminence.ruler",
+                    Requested = origRelBanditRuler,
+                    Applied = Events.BanditReleaseDramaByProminence.Ruler,
+                    AllowedRange = "1..5"
+                });
+            }
+
+            int origRelBanditClanLeader = Events.BanditReleaseDramaByProminence.ClanLeader;
+            Events.BanditReleaseDramaByProminence.ClanLeader = Math.Max(1, Math.Min(5, origRelBanditClanLeader));
+            if (Events.BanditReleaseDramaByProminence.ClanLeader != origRelBanditClanLeader && notices != null)
+            {
+                notices.Add(new ClampNotice
+                {
+                    Key = "events.banditReleaseDramaByProminence.clanLeader",
+                    Requested = origRelBanditClanLeader,
+                    Applied = Events.BanditReleaseDramaByProminence.ClanLeader,
+                    AllowedRange = "1..5"
+                });
+            }
+
+            int origRelBanditNobleMember = Events.BanditReleaseDramaByProminence.NobleMember;
+            Events.BanditReleaseDramaByProminence.NobleMember = Math.Max(1, Math.Min(5, origRelBanditNobleMember));
+            if (Events.BanditReleaseDramaByProminence.NobleMember != origRelBanditNobleMember && notices != null)
+            {
+                notices.Add(new ClampNotice
+                {
+                    Key = "events.banditReleaseDramaByProminence.nobleMember",
+                    Requested = origRelBanditNobleMember,
+                    Applied = Events.BanditReleaseDramaByProminence.NobleMember,
+                    AllowedRange = "1..5"
+                });
+            }
+
+            int origRelBanditMinor = Events.BanditReleaseDramaByProminence.Minor;
+            Events.BanditReleaseDramaByProminence.Minor = Math.Max(1, Math.Min(5, origRelBanditMinor));
+            if (Events.BanditReleaseDramaByProminence.Minor != origRelBanditMinor && notices != null)
+            {
+                notices.Add(new ClampNotice
+                {
+                    Key = "events.banditReleaseDramaByProminence.minor",
+                    Requested = origRelBanditMinor,
+                    Applied = Events.BanditReleaseDramaByProminence.Minor,
+                    AllowedRange = "1..5"
+                });
+            }
+
             // Debug
             Debug.FakeProducerEventsPerDay = Math.Max(0.0, Debug.FakeProducerEventsPerDay);
             int origCrowdedOut = Debug.DevReportMaxCrowdedOut;

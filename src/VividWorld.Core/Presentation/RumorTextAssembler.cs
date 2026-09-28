@@ -449,12 +449,23 @@ namespace VividWorld.Core.Presentation
         private static string ApplyPrefix(string prefix, string body)
         {
             if (string.IsNullOrEmpty(body)) return string.Empty;
-            if (string.IsNullOrEmpty(prefix)) return body;
+            if (string.IsNullOrEmpty(prefix)) return CapitalizeFirstAscii(body);
             if (prefix.EndsWith(" ", StringComparison.Ordinal)) return prefix + body;
 
             char last = prefix[prefix.Length - 1];
             bool needsSpace = !IsCjk(last) && (!IsCjk(body[0]) || last < 0x80);
             return needsSpace ? prefix + " " + body : prefix + body;
+        }
+
+        internal static string CapitalizeFirstAscii(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return s;
+            char c = s[0];
+            if (c >= 'a' && c <= 'z')
+            {
+                return (char)(c - 32) + s.Substring(1);
+            }
+            return s;
         }
 
         /// <summary>

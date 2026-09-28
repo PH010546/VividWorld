@@ -144,12 +144,12 @@ namespace VividWorld.Mcm
         public bool SourceHeroKilled { get; set; } = true;
 
         [SettingPropertyBool("{=VividWorld_MCM_SourceHeroPrisonerTaken}Hero captures", Order = 1, RequireRestart = false,
-            HintText = "{=VividWorld_MCM_SourceHeroPrisonerTakenHint}Generates world events when lords are captured following battles or raids.")]
+            HintText = "{=VividWorld_MCM_SourceHeroPrisonerTakenHint}Generates world events when lords are captured following battles or raids, or fall into the hands of bandits.")]
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Sources}Event Sources", GroupOrder = 6)]
         public bool SourceHeroPrisonerTaken { get; set; } = true;
 
         [SettingPropertyBool("{=VividWorld_MCM_SourceHeroPrisonerReleased}Hero releases and escapes", Order = 2, RequireRestart = false,
-            HintText = "{=VividWorld_MCM_SourceHeroPrisonerReleasedHint}Generates world events when captured lords are ransomed, released, or escape captivity.")]
+            HintText = "{=VividWorld_MCM_SourceHeroPrisonerReleasedHint}Generates world events when captured lords are ransomed, released, rescued from bandits, or escape captivity.")]
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Sources}Event Sources", GroupOrder = 6)]
         public bool SourceHeroPrisonerReleased { get; set; } = true;
 

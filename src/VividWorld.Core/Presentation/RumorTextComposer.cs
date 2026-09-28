@@ -62,9 +62,14 @@ namespace VividWorld.Core.Presentation
             }
 
             var factOrder = cfg?.FactOrder;
+            bool placeFirst = cfg?.PlaceFirst ?? true;
 
             int GetCategoryRank(FactCategory cat)
             {
+                if (placeFirst && cat == FactCategory.Where)
+                {
+                    return -1;
+                }
                 if (factOrder == null || factOrder.Length == 0) return 0;
                 string catName = cat.ToString();
                 for (int i = 0; i < factOrder.Length; i++)

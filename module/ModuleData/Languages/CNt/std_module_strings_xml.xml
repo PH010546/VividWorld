@@ -21,6 +21,7 @@
     <string id="VividWorld_Dev_PreviewTalkAll" text="(dev) 現在跟每個人談會怎樣？" />
     <string id="VividWorld_Dev_NpcRecall" text="(dev) 這位 NPC 記得什麼" />
     <string id="VividWorld_Dev_AiPushPreview" text="(dev) AI 串接：這位 NPC 會被交出去什麼" />
+    <string id="VividWorld_Dev_CaptureByBandits" text="(dev) 讓最近的盜匪抓走對話對象" />
 
     <!-- Dialogue and presentation strings -->
     <string id="VividWorld_AskNews" text="最近路上有什麼消息嗎？" />
@@ -90,6 +91,9 @@
     <string id="VividWorld_EventType_child_born" text="麟兒誕生" />
     <string id="VividWorld_EventType_hero_released" text="俘虜獲釋" />
     <string id="VividWorld_EventType_hero_escaped_captivity" text="俘虜脫逃" />
+    <string id="VividWorld_EventType_hero_captured_by_bandits" text="被盜匪俘虜" />
+    <string id="VividWorld_EventType_hero_rescued_from_bandits" text="從盜匪手裡獲救" />
+    <string id="VividWorld_EventType_hero_escaped_bandits" text="從盜匪手裡逃脫" />
     <string id="VividWorld_EventType_seat_dispute_demanded" text="有人當眾爭座位" />
     <string id="VividWorld_EventType_seat_dispute_endured" text="有人忍下了席間的難堪" />
     <string id="VividWorld_EventType_seat_dispute_yielded" text="有人讓出了座位" />
@@ -359,9 +363,9 @@
     <string id="VividWorld_MCM_SourceHeroKilled" text="英雄死亡事件" />
     <string id="VividWorld_MCM_SourceHeroKilledHint" text="有領主死亡時產生一則消息，並依死因分為遭謀殺、被處決、戰死與自然死亡。" />
     <string id="VividWorld_MCM_SourceHeroPrisonerTaken" text="英雄被俘事件" />
-    <string id="VividWorld_MCM_SourceHeroPrisonerTakenHint" text="當領主在戰鬥或突襲後被俘時生成世界事件。" />
+    <string id="VividWorld_MCM_SourceHeroPrisonerTakenHint" text="當領主在戰鬥或突襲後被俘，或落到盜匪手裡時生成世界事件。" />
     <string id="VividWorld_MCM_SourceHeroPrisonerReleased" text="英雄釋放與脫逃事件" />
-    <string id="VividWorld_MCM_SourceHeroPrisonerReleasedHint" text="當被俘領主被贖回、釋放或成功逃脫時生成世界事件。" />
+    <string id="VividWorld_MCM_SourceHeroPrisonerReleasedHint" text="當被俘領主被贖回、釋放、從盜匪手裡獲救或成功逃脫時生成世界事件。" />
 
     <!-- Group 7: 存檔 -->
     <string id="VividWorld_MCM_MaxSnapshots" text="最多保留快照數" />
@@ -562,5 +566,36 @@
     <string id="VividWorld_Fact_WagerSecretStake_Who_Self_CHALLENGED" text="{CHALLENGER}找我為下一場狩獵打了個賭，押的不只是銀子" />
     <string id="VividWorld_Fact_WagerSecretStake_Where_Self_CHALLENGED" text="在{SETTLEMENT}" />
     <string id="VividWorld_Fact_WagerSecretStake_What_Self_CHALLENGED" text="押了什麼……這我可不能說" />
+    <string id="VividWorld_UnknownBandits" text="來路不明的人" />
+    <string id="VividWorld_Fact_HeroCapturedByBandits_Who" text="{PRISONER}落到一夥{BANDITS}手裡" />
+    <string id="VividWorld_Fact_HeroCapturedByBandits_Who_Self_PRISONER" text="我落到一夥{BANDITS}手裡" />
+    <string id="VividWorld_Fact_HeroCapturedByBandits_Where" text="在{SETTLEMENT}附近" />
+    <string id="VividWorld_Fact_HeroCapturedByBandits_Where_Self_PRISONER" text="在{SETTLEMENT}附近" />
+    <string id="VividWorld_Fact_HeroCapturedByBandits_What" text="人被綁著，跟著他們在荒野裡走" />
+    <string id="VividWorld_Fact_HeroCapturedByBandits_What_Self_PRISONER" text="被綁著跟他們在荒野裡走，一路挨餓受凍" />
+    <string id="VividWorld_Fact_HeroCapturedByBandits_Outcome" text="沒人知道那夥人打算拿他怎麼辦" />
+    <string id="VividWorld_Fact_HeroCapturedByBandits_Outcome_Self_PRISONER" text="那幾天我真以為自己回不去了" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_Who" text="{RESCUER}打散了一夥{BANDITS}，把{PRISONER}救了出來" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_Who_Self_PRISONER" text="{RESCUER}打散了那夥{BANDITS}，把我救了出來" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_Who_Self_RESCUER" text="我打散了那夥{BANDITS}，把{PRISONER}救了出來" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_WhoNoRescuer" text="一夥{BANDITS}被人打散，{PRISONER}趁亂得救" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_WhoNoRescuer_Self_PRISONER" text="那夥{BANDITS}被人打散，我趁亂得救" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_Where" text="在{SETTLEMENT}附近" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_Where_Self_PRISONER" text="在{SETTLEMENT}附近" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_Where_Self_RESCUER" text="在{SETTLEMENT}附近" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_What" text="還派人護送他上路" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_What_Self_PRISONER" text="繩子一割開，我腿都軟了" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_What_Self_RESCUER" text="他人還算完好，就是餓壞了" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_Outcome" text="他總算平安回來了" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_Outcome_Self_PRISONER" text="這條命是撿回來的" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_Outcome_Self_RESCUER" text="我派人護送他上路" />
+    <string id="VividWorld_Fact_HeroEscapedBandits_Who" text="{PRISONER}從一夥{BANDITS}手裡逃了出來" />
+    <string id="VividWorld_Fact_HeroEscapedBandits_Who_Self_PRISONER" text="我從那夥{BANDITS}手裡逃了出來" />
+    <string id="VividWorld_Fact_HeroEscapedBandits_Where" text="在{SETTLEMENT}附近" />
+    <string id="VividWorld_Fact_HeroEscapedBandits_Where_Self_PRISONER" text="在{SETTLEMENT}附近" />
+    <string id="VividWorld_Fact_HeroEscapedBandits_What" text="趁看守睡著，他磨斷了繩子" />
+    <string id="VividWorld_Fact_HeroEscapedBandits_What_Self_PRISONER" text="趁看守睡著，我把繩子磨斷了" />
+    <string id="VividWorld_Fact_HeroEscapedBandits_Outcome" text="一路摸黑走回了有人煙的地方" />
+    <string id="VividWorld_Fact_HeroEscapedBandits_Outcome_Self_PRISONER" text="摸黑走了一整夜才看到燈火" />
   </strings>
 </base>

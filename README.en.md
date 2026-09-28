@@ -8,7 +8,7 @@ And you can be part of it.
 
 *[繁體中文](README.md)*
 
-> **This is a beta (v0.9.4).**
+> **This mod is currently in beta.**
 > The underlying machinery is complete and has seen live play; the content is still being expanded.
 > See the Roadmap at the end of this document for what remains.
 
@@ -16,22 +16,18 @@ And you can be part of it.
 
 ## Overview
 
-**News generates itself.** The mod hooks five classes of the game's own events — death, captivity,
-marriage, childbirth, release — and subdivides them into nine kinds of news: death is distinguished by
-cause into murder, execution, death in battle and natural death; release is divided into being freed
-and escaping.
-Six authored scenes also occur of their own accord: a quarrel over seating at a feast,
-counsel sought from a veteran, loose talk over the cups, a dispute over credit for a victory, a brawl
-in the market, and a wager struck on a hunt.
+**News generates itself.** The mod hooks the game's own major events — death, captivity, release,
+marriage, childbirth — and tells them apart by cause and circumstance into different kinds of news.
+The lords also play out scenes of their own accord, such as a quarrel over seating at a feast or loose talk over the cups.
 
 **News travels by word of mouth, and frays in transit.** Every so often, lords each choose something
 from memory and relate it to whoever is at hand. They say whether they saw it themselves or who told them;
 those involved speak of their own affairs in their own voice. Every retelling loses
-further detail — the day, the place, who else was present, one item at a time. By the fifth telling,
-what reaches you is often no more than "someone did something, somewhere."
+further detail — the day, the place, who else was present, one item at a time. The further it travels,
+the more likely what reaches you is no more than "someone did something, somewhere."
 
 **Great news travels far; small news barely moves.** Each kind carries its own weight: word of a birth
-stops after two tellings, whereas the murder of a ruler may travel six and cross half the map.
+does not get far, whereas the murder of a ruler may cross half the map.
 
 **People forget.** Those with no connection to the parties involved retain it only for a few days;
 what is repeatedly raised is held longer; and once everyone who knew has forgotten, the account falls
@@ -68,20 +64,17 @@ but only so far — it is never wiped clean.
 ## Encountering it in play
 
 **Asking.** In conversation with any lord or wanderer, the menu gains the line *"Any news on the road?"* He relates
-what he knows; when he has nothing for you, he tells you why: he would rather not say, has heard
-nothing lately, cannot quite recall, what he heard is out of date, or you have surely heard it already. **Getting nothing out of a
-stranger is normal** — whether he will speak depends on his opinion of you together with his character
-(generosity and honour incline him to share; a calculating nature keeps him silent). Below the
+what he knows; when he has nothing for you, he tells you why. **Getting nothing out of a
+stranger is normal** — whether he will speak depends on his opinion of you together with his character. Below the
 threshold, nothing is forthcoming. This is by design.
 
 **Being told.** A lord or wanderer will sometimes open by relating news he has heard, unprompted. One on good terms
-with you tells the whole story; one you are merely acquainted with gives you the gist. Each lord and
-wanderer shares at most one piece of news with you per day, counting what he volunteers and what you ask for; ask again
-that day and he will tell you to come back another time. The number per day can be changed in the settings. Should another
+with you tells the whole story; one you are merely acquainted with gives you the gist. Each person will only
+share so much with you in a day; once he has said enough, he will tell you to come back another time. Should another
 installed mod take over the greeting entirely, the menu gains the fallback line *"You looked like you
 were about to say something."*
 
-**Rumor mode.** In the Vivid World page of the game's settings, the top of the *Dialogue* group offers
+**Rumor mode.** The Vivid World page of the game's settings offers
 Auto, Casual and Realistic; a change takes effect immediately. Casual: anyone who does not dislike you
 may bring up rumors, and even a commoner may ask. Realistic: a lord must think somewhat well of you
 before he brings them up. Auto (the default): Realistic when a mod such as NaN or Lowborn is detected,
@@ -135,7 +128,7 @@ values you have adjusted, and even keys the mod no longer recognises, are preser
 are.
 
 **There is also a Vivid World page in the game's settings screen** (provided by Mod Configuration
-Menu): 26 entries in nine groups, changed in game and written straight back to the `config.json`
+Menu): changed in game and written straight back to the `config.json`
 above. Settings not on the page are left untouched.
 
 ---

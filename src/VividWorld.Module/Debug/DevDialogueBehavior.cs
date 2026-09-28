@@ -4,6 +4,8 @@ using System.Globalization;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.Encounters;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using System.IO;
@@ -29,6 +31,8 @@ namespace VividWorld.Debug
         private const int DevDialoguePriority = 90;
         private const string TokenHeroMainOptions = "hero_main_options";
         private const string TokenDevResult = "vividworld_dev_result";
+        private const string TokenDevCaptureResult = "vividworld_dev_capture_result";
+        private const string TokenCloseWindow = "close_window";
 
         private readonly VividWorldConfig _config;
         private readonly WorldEventStore _eventStore;
@@ -47,6 +51,7 @@ namespace VividWorld.Debug
 
         private double _lastSimulatedDay = -1;
         private int _lastSimulatedHour = -1;
+        private Hero? _pendingBanditCapture;
 
         public DevDialogueBehavior(
             VividWorldConfig config,
@@ -298,6 +303,29 @@ namespace VividWorld.Debug
                 Consequence_AiPushPreview,
                 DevDialoguePriority);
 
+            // 22. (dev) Have closest bandits capture this NPC.
+            // Ends the conversation instead of returning to main options: once the conversation hero is a
+            // bandit prisoner, a native main-option condition reads the captor party's owner clan, which
+            // bandit parties do not have, and the conversation freezes (ledger D-98).
+            starter.AddPlayerLine(
+                "vividworld_dev_capture_by_bandits",
+                TokenHeroMainOptions,
+                TokenDevCaptureResult,
+                "{=VividWorld_Dev_CaptureByBandits}(dev) Have the closest bandits capture this person",
+                Condition_AllowInjection,
+                Consequence_CaptureByBandits,
+                DevDialoguePriority);
+
+            starter.AddDialogLine(
+                "vividworld_dev_capture_result_line",
+                TokenDevCaptureResult,
+                TokenCloseWindow,
+                "{=!}{VIVIDWORLD_DEV_RESULT}",
+                null,
+                null,
+                100,
+                null);
+
             // Shared return line to main options. Condition MUST be null so the dev subtree always has an unconditional exit edge.
             starter.AddDialogLine(
                 "vividworld_dev_result_line",
@@ -309,7 +337,7 @@ namespace VividWorld.Debug
                 100,
                 null);
 
-            ModLog.Info("Registered 21 developer dialogue lines on hero_main_options.");
+            ModLog.Info("Registered 22 developer dialogue lines on hero_main_options.");
         }
 
         private static void SetResult(string line)
@@ -629,6 +657,8 @@ namespace VividWorld.Debug
                 string report = DevReport.FormatWorldStatus(_scheduler, _eventStore, _config, _rollbackCount, _rollbackMaxDay, _launchDay, sharedSummary, lastVol, compatInfo, route, recoveryInfo, _realEvents, _eventStore.Stamper, _sessionState, _campaignId, _dialogs?.PlayerHeardLog);
                 InformationManager.DisplayMessage(new InformationMessage(report));
                 ModLog.Info($"[DevDialogue]\n{report}");
+                // 每種消息渲染一次有好幾百行，只寫進日誌；放進上面那則畫面訊息會把訊息欄洗掉。
+                ModLog.Info($"[DevDialogue] template renders\n{DevReport.FormatAllTemplatesRendered(_config)}");
 
                 string summary = DevReport.FormatWorldStatusSummary(_scheduler, _eventStore);
                 string metricsSummary = DevMetrics.Report();
@@ -1293,6 +1323,137 @@ namespace VividWorld.Debug
                 ModLog.Error("Dev AI push preview dump failed", ex);
                 Finish("(dev) failed - see log.txt");
             }
+        }
+
+        private void Consequence_CaptureByBandits()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var target = Hero.OneToOneConversationHero;
+                if (target == null)
+                {
+                    Finish("Dev: blocked - no conversation hero.");
+                    return;
+                }
+
+                if (target == Hero.MainHero)
+                {
+                    Finish("Dev: blocked - target is player.");
+                    return;
+                }
+
+                if (target.IsPrisoner)
+                {
+                    Finish("Dev: blocked - target is already a prisoner.");
+                    return;
+                }
+
+                if (target.CurrentSettlement != null)
+                {
+                    Finish("Dev: blocked - target is in a settlement.");
+                    return;
+                }
+
+                if (FindClosestIdleBanditParty() == null)
+                {
+                    Finish("Dev: blocked - no active bandit party outside battle.");
+                    return;
+                }
+
+                // Capturing mid-conversation freezes the native main options (ledger D-98), and the player's
+                // encounter with the target's party would be left pointing at a leaderless party. So end the
+                // conversation, leave the encounter, and capture on the first tick where neither is active.
+                _pendingBanditCapture = target;
+                if (PlayerEncounter.Current != null) PlayerEncounter.LeaveEncounter = true;
+                CampaignEvents.TickEvent.ClearListeners(this);
+                CampaignEvents.TickEvent.AddNonSerializedListener(this, OnTickPendingBanditCapture);
+
+                string msg = $"Dev: {target.StringId} will be taken by the closest bandits once this conversation closes.";
+                ModLog.Info(msg);
+                Finish(msg);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev capture by bandits failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void OnTickPendingBanditCapture(float dt)
+        {
+            var target = _pendingBanditCapture;
+            if (target == null)
+            {
+                CampaignEvents.TickEvent.ClearListeners(this);
+                return;
+            }
+
+            if (TaleWorlds.CampaignSystem.Campaign.Current?.ConversationManager?.IsConversationInProgress == true) return;
+            if (PlayerEncounter.Current != null) return;
+
+            CampaignEvents.TickEvent.ClearListeners(this);
+            _pendingBanditCapture = null;
+
+            try
+            {
+                string? blocked =
+                    !target.IsAlive ? "target is dead"
+                    : target.IsPrisoner ? "target is already a prisoner"
+                    : target.CurrentSettlement != null ? "target entered a settlement"
+                    : null;
+
+                MobileParty? closestBandit = blocked == null ? FindClosestIdleBanditParty() : null;
+                if (blocked == null && closestBandit == null) blocked = "no active bandit party outside battle";
+
+                string msg;
+                if (blocked != null)
+                {
+                    msg = $"Dev: capture of {target.StringId} skipped - {blocked}.";
+                }
+                else
+                {
+                    TakePrisonerAction.Apply(closestBandit!.Party, target);
+                    string factionId = closestBandit.MapFaction?.StringId ?? "unknown";
+                    msg = $"Dev: {target.StringId} taken by {closestBandit.Party.Id} ({factionId})";
+                }
+
+                ModLog.Info(msg);
+                ModLog.Flush();
+                InformationManager.DisplayMessage(new InformationMessage(msg));
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev capture by bandits failed", ex);
+                ModLog.Flush();
+            }
+        }
+
+        private static MobileParty? FindClosestIdleBanditParty()
+        {
+            var playerParty = MobileParty.MainParty;
+            if (playerParty == null) return null;
+
+            var playerPos = playerParty.Position;
+            MobileParty? closestBandit = null;
+            float minDistanceSq = float.MaxValue;
+            var banditParties = MobileParty.AllBanditParties;
+            if (banditParties == null) return null;
+
+            foreach (var bp in banditParties)
+            {
+                if (bp != null && bp.IsActive && bp.MapEvent == null)
+                {
+                    float distSq = bp.Position.DistanceSquared(playerPos);
+                    if (distSq < minDistanceSq)
+                    {
+                        minDistanceSq = distSq;
+                        closestBandit = bp;
+                    }
+                }
+            }
+
+            return closestBandit;
         }
     }
 }

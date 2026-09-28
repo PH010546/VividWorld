@@ -421,7 +421,10 @@ namespace VividWorld.Core.Catalog
                             foreach (var vProp in varsObj.Properties())
                             {
                                 string varVal = vProp.Value?.Value<string>() ?? string.Empty;
-                                if (!FactValidationRules.HasValidVarPrefix(varVal))
+                                bool isDynamicPlaceholder = varVal.Length > 2 &&
+                                                            varVal.StartsWith("{", StringComparison.Ordinal) &&
+                                                            varVal.EndsWith("}", StringComparison.Ordinal);
+                                if (!isDynamicPlaceholder && !FactValidationRules.HasValidVarPrefix(varVal))
                                 {
                                     templateIssues.Add(new CatalogIssue
                                     {

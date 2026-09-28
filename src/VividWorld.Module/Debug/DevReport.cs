@@ -6,6 +6,7 @@ using System.Text;
 using TaleWorlds.CampaignSystem;
 using VividWorld.Ai;
 using VividWorld.Campaign;
+using VividWorld.Core.Catalog;
 using VividWorld.Core.Channels;
 using VividWorld.Core.Config;
 using VividWorld.Core.Diagnostics;
@@ -465,6 +466,16 @@ namespace VividWorld.Debug
                     entriesMarkedOutdated,
                     eventsDormantByOutdating));
 
+            sb.AppendLine(realEvents == null
+                ? "- Bandit events this session: (unknown - behavior not wired)"
+                : string.Format(CultureInfo.InvariantCulture,
+                    "- Bandit events this session: captured {0}, rescued {1} (with rescuer {2}, by player {3}), escaped {4}",
+                    realEvents.BanditCapturesCount,
+                    realEvents.BanditRescuedCount,
+                    realEvents.BanditRescuerFoundCount,
+                    realEvents.BanditPlayerRescuedCount,
+                    realEvents.BanditEscapedCount));
+
             var sitCatalog = SituationCatalogStore.Catalog;
             int loadedCount = sitCatalog?.Situations?.Count ?? 0;
             string sitIds = loadedCount > 0
@@ -764,6 +775,37 @@ namespace VividWorld.Debug
                 GrudgeApplier.OpinionSkippedThisSession));
 
             return sb.ToString().TrimEnd();
+        }
+
+        public static string FormatAllTemplatesRendered(VividWorldConfig? config = null)
+        {
+            var templates = new List<EventTemplate>();
+            if (EventCatalogStore.Catalog?.Templates != null)
+            {
+                templates.AddRange(EventCatalogStore.Catalog.Templates);
+            }
+            if (EventCatalogStore.SituationCatalog?.Templates != null)
+            {
+                templates.AddRange(EventCatalogStore.SituationCatalog.Templates);
+            }
+
+            var enTable = EnglishStringTableStore.Instance;
+            string? enPath = EnglishStringTableStore.ResolvePath();
+            EnglishStringTable cntTable;
+            if (!string.IsNullOrEmpty(enPath))
+            {
+                string dir = System.IO.Path.GetDirectoryName(enPath)!;
+                string cntPath = System.IO.Path.Combine(dir, "CNt", "std_module_strings_xml.xml");
+                cntTable = System.IO.File.Exists(cntPath)
+                    ? EnglishStringTable.LoadFromFile(cntPath)
+                    : new EnglishStringTable();
+            }
+            else
+            {
+                cntTable = new EnglishStringTable();
+            }
+
+            return TemplateRenderSampleFormatter.FormatAll(templates, enTable, cntTable, config?.Presentation);
         }
 
         public static string FormatOpinionShifts(

@@ -40,6 +40,20 @@ namespace VividWorld.Core.Config
             NobleMember = 1,
             Minor = 1
         };
+        public ProminenceDramaConfig BanditCaptureDramaByProminence { get; set; } = new()
+        {
+            Ruler = 5,
+            ClanLeader = 5,
+            NobleMember = 3,
+            Minor = 2
+        };
+        public ProminenceDramaConfig BanditReleaseDramaByProminence { get; set; } = new()
+        {
+            Ruler = 5,
+            ClanLeader = 4,
+            NobleMember = 2,
+            Minor = 1
+        };
 
         [JsonExtensionData]
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();

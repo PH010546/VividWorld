@@ -21,6 +21,7 @@
     <string id="VividWorld_Dev_PreviewTalkAll" text="(dev) What happens if I talk to everyone right now?" />
     <string id="VividWorld_Dev_NpcRecall" text="(dev) What does this NPC remember?" />
     <string id="VividWorld_Dev_AiPushPreview" text="(dev) AI integration: what would be handed over for this NPC" />
+    <string id="VividWorld_Dev_CaptureByBandits" text="(dev) Have the closest bandits capture this person" />
 
     <!-- Dialogue and presentation strings -->
     <string id="VividWorld_AskNews" text="Any news on the road?" />
@@ -90,6 +91,9 @@
     <string id="VividWorld_EventType_child_born" text="Birth" />
     <string id="VividWorld_EventType_hero_released" text="A prisoner was released" />
     <string id="VividWorld_EventType_hero_escaped_captivity" text="A prisoner escaped" />
+    <string id="VividWorld_EventType_hero_captured_by_bandits" text="Captured by bandits" />
+    <string id="VividWorld_EventType_hero_rescued_from_bandits" text="Rescued from bandits" />
+    <string id="VividWorld_EventType_hero_escaped_bandits" text="Escaped from bandits" />
     <string id="VividWorld_EventType_seat_dispute_demanded" text="A seat at the high table was demanded" />
     <string id="VividWorld_EventType_seat_dispute_endured" text="A slight at the table was swallowed" />
     <string id="VividWorld_EventType_seat_dispute_yielded" text="A seat was given up" />
@@ -359,9 +363,9 @@
     <string id="VividWorld_MCM_SourceHeroKilled" text="Hero deaths" />
     <string id="VividWorld_MCM_SourceHeroKilledHint" text="Produces news when a lord dies, distinguished by cause into murder, execution, death in battle and natural death." />
     <string id="VividWorld_MCM_SourceHeroPrisonerTaken" text="Hero captures" />
-    <string id="VividWorld_MCM_SourceHeroPrisonerTakenHint" text="Generates world events when lords are captured following battles or raids." />
+    <string id="VividWorld_MCM_SourceHeroPrisonerTakenHint" text="Generates world events when lords are captured following battles or raids, or fall into the hands of bandits." />
     <string id="VividWorld_MCM_SourceHeroPrisonerReleased" text="Hero releases and escapes" />
-    <string id="VividWorld_MCM_SourceHeroPrisonerReleasedHint" text="Generates world events when captured lords are ransomed, released, or escape captivity." />
+    <string id="VividWorld_MCM_SourceHeroPrisonerReleasedHint" text="Generates world events when captured lords are ransomed, released, rescued from bandits, or escape captivity." />
 
     <!-- Group 7: Persistence -->
     <string id="VividWorld_MCM_MaxSnapshots" text="Max saved snapshots" />
@@ -494,10 +498,10 @@
     <string id="VividWorld_Fact_TavernSourWords_Who_Self_LISTENER" text="{SPEAKER} said something ugly to me over the cups" />
     <string id="VividWorld_Fact_TavernSourWords_Where_Self_LISTENER" text="in a tavern in {SETTLEMENT}" />
     <string id="VividWorld_Fact_TavernSourWords_What_Self_LISTENER" text="a drunk man's words I can forgive, but {SPEAKER.he} did not take it back once sober, so {SPEAKER.he} meant it" />
-    <string id="VividWorld_Fact_TavernGoodWord_Who_Self_SPEAKER" text="Someone at the table started mocking {LISTENER}, and I stood up for {LISTENER.him}" />
+    <string id="VividWorld_Fact_TavernGoodWord_Who_Self_SPEAKER" text="someone at the table started mocking {LISTENER}, and I stood up for {LISTENER.him}" />
     <string id="VividWorld_Fact_TavernGoodWord_Where_Self_SPEAKER" text="in a tavern in {SETTLEMENT}" />
     <string id="VividWorld_Fact_TavernGoodWord_What_Self_SPEAKER" text="and I told them it was not the wine talking" />
-    <string id="VividWorld_Fact_TavernGoodWord_Who_Self_LISTENER" text="Someone at the table started mocking me, and {SPEAKER} stood up for me" />
+    <string id="VividWorld_Fact_TavernGoodWord_Who_Self_LISTENER" text="someone at the table started mocking me, and {SPEAKER} stood up for me" />
     <string id="VividWorld_Fact_TavernGoodWord_Where_Self_LISTENER" text="in a tavern in {SETTLEMENT}" />
     <string id="VividWorld_Fact_TavernGoodWord_What_Self_LISTENER" text="and said it was not the wine talking; I will remember that" />
     <string id="VividWorld_Fact_VictoryCreditClaimed_Who_Self_RIVAL" text="{CLAIMANT} took all the credit for the last victory" />
@@ -518,7 +522,7 @@
     <string id="VividWorld_Fact_VictoryCreditJudged_Who_Self_RIVAL" text="{CLAIMANT} and I quarrelled over the credit, and {HOST} settled it" />
     <string id="VividWorld_Fact_VictoryCreditJudged_Where_Self_RIVAL" text="in the hall of {SETTLEMENT}" />
     <string id="VividWorld_Fact_VictoryCreditJudged_Outcome_Self_RIVAL" text="and the credit went to me; justice at last" />
-    <string id="VividWorld_Fact_BrawlManHandedOver_Who_Self_PATRON" text="It was my man who drew first, so I handed him over and apologised to {AGGRIEVED}" />
+    <string id="VividWorld_Fact_BrawlManHandedOver_Who_Self_PATRON" text="it was my man who drew first, so I handed him over and apologised to {AGGRIEVED}" />
     <string id="VividWorld_Fact_BrawlManHandedOver_Where_Self_PATRON" text="in {SETTLEMENT}" />
     <string id="VividWorld_Fact_BrawlManHandedOver_What_Self_PATRON" text="with the whole street watching; wrong is wrong, and I own it" />
     <string id="VividWorld_Fact_BrawlManHandedOver_Who_Self_AGGRIEVED" text="{PATRON} handed over the man who drew first and apologised to me" />
@@ -562,5 +566,36 @@
     <string id="VividWorld_Fact_WagerSecretStake_Who_Self_CHALLENGED" text="{CHALLENGER} and I have more than silver riding on the next hunt" />
     <string id="VividWorld_Fact_WagerSecretStake_Where_Self_CHALLENGED" text="in {SETTLEMENT}" />
     <string id="VividWorld_Fact_WagerSecretStake_What_Self_CHALLENGED" text="and what it is... that I can't tell you" />
+    <string id="VividWorld_UnknownBandits" text="outlaws" />
+    <string id="VividWorld_Fact_HeroCapturedByBandits_Who" text="{PRISONER} fell into the hands of a band of {BANDITS}" />
+    <string id="VividWorld_Fact_HeroCapturedByBandits_Who_Self_PRISONER" text="I fell into the hands of a band of {BANDITS}" />
+    <string id="VividWorld_Fact_HeroCapturedByBandits_Where" text="near {SETTLEMENT}" />
+    <string id="VividWorld_Fact_HeroCapturedByBandits_Where_Self_PRISONER" text="near {SETTLEMENT}" />
+    <string id="VividWorld_Fact_HeroCapturedByBandits_What" text="bound and dragged along with them through the wilds" />
+    <string id="VividWorld_Fact_HeroCapturedByBandits_What_Self_PRISONER" text="bound and dragged through the wilds with them, cold and hungry the whole way" />
+    <string id="VividWorld_Fact_HeroCapturedByBandits_Outcome" text="and no one knew what they meant to do with {PRISONER.him}" />
+    <string id="VividWorld_Fact_HeroCapturedByBandits_Outcome_Self_PRISONER" text="for a few days I truly thought I would never make it home" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_Who" text="{RESCUER} routed a band of {BANDITS} and freed {PRISONER}" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_Who_Self_PRISONER" text="{RESCUER} routed those {BANDITS} and freed me" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_Who_Self_RESCUER" text="I routed those {BANDITS} and freed {PRISONER}" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_WhoNoRescuer" text="a band of {BANDITS} was routed, and {PRISONER} got away in the confusion" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_WhoNoRescuer_Self_PRISONER" text="those {BANDITS} were routed, and I got away in the confusion" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_Where" text="near {SETTLEMENT}" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_Where_Self_PRISONER" text="near {SETTLEMENT}" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_Where_Self_RESCUER" text="near {SETTLEMENT}" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_What" text="and even had {PRISONER.him} escorted on {PRISONER.his} way" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_What_Self_PRISONER" text="when they cut me loose, my legs gave way" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_What_Self_RESCUER" text="{PRISONER.he} was mostly unharmed, just half-starved" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_Outcome" text="and {PRISONER.he} made it home safe at last" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_Outcome_Self_PRISONER" text="I count myself lucky to be alive" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_Outcome_Self_RESCUER" text="and I had my men escort {PRISONER.him} on {PRISONER.his} way" />
+    <string id="VividWorld_Fact_HeroEscapedBandits_Who" text="{PRISONER} escaped from a band of {BANDITS}" />
+    <string id="VividWorld_Fact_HeroEscapedBandits_Who_Self_PRISONER" text="I escaped from those {BANDITS}" />
+    <string id="VividWorld_Fact_HeroEscapedBandits_Where" text="near {SETTLEMENT}" />
+    <string id="VividWorld_Fact_HeroEscapedBandits_Where_Self_PRISONER" text="near {SETTLEMENT}" />
+    <string id="VividWorld_Fact_HeroEscapedBandits_What" text="while the guards slept, {PRISONER.he} wore through {PRISONER.his} bonds" />
+    <string id="VividWorld_Fact_HeroEscapedBandits_What_Self_PRISONER" text="while the guards slept, I wore through my bonds" />
+    <string id="VividWorld_Fact_HeroEscapedBandits_Outcome" text="and made {PRISONER.his} way back to where people live, in the dark" />
+    <string id="VividWorld_Fact_HeroEscapedBandits_Outcome_Self_PRISONER" text="I walked all night in the dark before I saw a light" />
   </strings>
 </base>

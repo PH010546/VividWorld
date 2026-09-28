@@ -185,6 +185,9 @@ namespace VividWorld
                 "Relation: ScaleOverride={0}, EffectiveScale={1:0.0}",
                 config.Relation.ScaleOverride,
                 config.Relation.EffectiveScale));
+            ModLog.Info(string.Format(CultureInfo.InvariantCulture,
+                "Presentation: placeFirst={0}",
+                (config.Presentation?.PlaceFirst ?? true) ? "true" : "false"));
         }
 
         internal static bool Reload(VividWorldConfig target)

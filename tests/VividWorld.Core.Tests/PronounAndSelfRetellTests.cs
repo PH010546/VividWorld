@@ -97,7 +97,8 @@ namespace VividWorld.Core.Tests
 
             Assert.Empty(warnings);
 
-            string expected = $"{expectedSubj} went away, saw {expectedObj} yesterday, took {expectedPoss} weapon.";
+            string capitalizedSubj = char.ToUpperInvariant(expectedSubj[0]) + expectedSubj.Substring(1);
+            string expected = $"{capitalizedSubj} went away, saw {expectedObj} yesterday, took {expectedPoss} weapon.";
             Assert.Equal(expected, result.PlainText);
         }
 
@@ -143,7 +144,7 @@ namespace VividWorld.Core.Tests
             Assert.Contains("MISSING_ROLE.him", warn);
             Assert.Contains("Fact_Outcome", warn);
 
-            Assert.Equal("and so they walked away with their horse and saw them.", result.PlainText);
+            Assert.Equal("And so they walked away with their horse and saw them.", result.PlainText);
         }
 
         [Fact]
@@ -185,7 +186,7 @@ namespace VividWorld.Core.Tests
                 isFemale: id => id == "hero_female_prisoner" ? true : false);
 
             Assert.Empty(warnings);
-            Assert.Equal("and so she walked free.", result.PlainText);
+            Assert.Equal("And so she walked free.", result.PlainText);
         }
 
         [Fact]

@@ -25,6 +25,7 @@ namespace VividWorld.Core.Ingest
 
         public List<Fact> Facts = new();                         // 不得為空
         public List<string> InitialKnowerHeroIds = new();
+        public List<string> HearsayKnowerHeroIds = new();
         public bool AutoResolveWitnesses = true;                 // 僅 Public 有效
     }
 

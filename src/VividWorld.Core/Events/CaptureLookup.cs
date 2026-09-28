@@ -20,7 +20,9 @@ namespace VividWorld.Core.Events
             {
                 if (entry == null) continue;
                 if (entry.Dormant) continue;
-                if (!string.Equals(entry.Type, "hero_taken_prisoner", StringComparison.Ordinal)) continue;
+                bool isCapture = string.Equals(entry.Type, "hero_taken_prisoner", StringComparison.Ordinal)
+                    || string.Equals(entry.Type, "hero_captured_by_bandits", StringComparison.Ordinal);
+                if (!isCapture) continue;
                 if (entry.ParticipantHeroIds == null || !entry.ParticipantHeroIds.Contains(prisonerHeroId, StringComparer.Ordinal)) continue;
 
                 if (best == null)
