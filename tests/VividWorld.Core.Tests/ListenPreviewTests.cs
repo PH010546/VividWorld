@@ -32,6 +32,7 @@ namespace VividWorld.Core.Tests
             };
             if (!string.IsNullOrEmpty(tellerHeroId))
             {
+                evt.Participants["actor"] = tellerHeroId!;
                 evt.KnownBy.Add(new KnownByEntry { HeroId = tellerHeroId!, Hop = 1 });
             }
             return evt;
@@ -249,7 +250,7 @@ namespace VividWorld.Core.Tests
             Assert.Equal(6, result.AskRefusalCounts["told"]);
             Assert.Equal(5, result.AskRefusalNames["told"].Count);
             Assert.Equal(1, result.AskRefusalCounts[nameof(AskRefusalLineKind.SharedToday)]);
-            Assert.Equal(1, result.AskRefusalCounts[nameof(AskRefusalLineKind.Unwilling)]);
+            Assert.Equal(1, result.AskRefusalCounts[nameof(AskRefusalLineKind.Disliked)]);
             Assert.Equal(1, result.AskRefusalCounts[nameof(AskRefusalLineKind.NothingHeard)]);
             Assert.Equal(2, result.AskRefusalCounts[nameof(AskRefusalLineKind.Forgotten)]); // 1 allForgotten + 1 forgottenOrOutdated
             Assert.Equal(1, result.AskRefusalCounts[nameof(AskRefusalLineKind.Outdated)]);
@@ -544,7 +545,7 @@ namespace VividWorld.Core.Tests
 
             Assert.Contains("[3b. Ask refusal lines (as if the clan-tier gate passed)]", summary);
             Assert.Contains("told: 1 (King Derthert)", summary);
-            Assert.Contains("Unwilling: 1 (Bob the Wanderer)", summary);
+            Assert.Contains("Disliked: 1 (Bob the Wanderer)", summary);
 
             Assert.Contains("[4. Relation Histogram]", summary);
             Assert.Contains("-10..-1: 1", summary);
@@ -614,6 +615,33 @@ namespace VividWorld.Core.Tests
 
             string allowed = ListenPreviewLogFormatter.FormatSummary(new ListenPreviewResult { Day = 5 }, trigger: "daily");
             Assert.DoesNotContain("as if the clan-tier gate passed", allowed);
+        }
+
+        [Fact]
+        public void ListenPreview_AskRefusalLines_PositiveRelationBelowRaisedGate_CountsAsUnwilling()
+        {
+            var (selector, _, cfg) = CreateSelector();
+            cfg.Dialogue.AskRelationGate = 5;
+            var evt = CreateSampleEvent("evt_gate", day: 10.0, tellerHeroId: "h_gate");
+            var people = new List<ListenPreviewPerson>
+            {
+                new ListenPreviewPerson
+                {
+                    HeroId = "h_gate",
+                    HeroName = "GateHero",
+                    Profile = new HeroSocialProfile { HeroId = "h_gate", RelationWithPlayer = 3 },
+                    Candidates = new[] { new RumorCandidate { Event = evt, TellerHop = 1, PlayerExistingHop = null } },
+                    KnownCount = 1
+                }
+            };
+
+            var result = ListenPreviewAggregator.Generate(
+                selector, compat: null, playerClanTier: 2,
+                sharedTodaySummary: "Shared today: 0 people (cap 1 each; 0 = no limit)",
+                day: 10.0, cfg.Dialogue, people);
+
+            Assert.Equal(1, result.AskRefusalCounts[nameof(AskRefusalLineKind.Unwilling)]);
+            Assert.False(result.AskRefusalCounts.ContainsKey(nameof(AskRefusalLineKind.Disliked)));
         }
 
         [Fact]
@@ -716,7 +744,8 @@ namespace VividWorld.Core.Tests
                 people);
 
             Assert.Equal(1, result.AskRefusalCounts["told"]);
-            Assert.Equal(1, result.AskRefusalCounts[nameof(AskRefusalLineKind.Unwilling)]);
+            Assert.Equal(1, result.AskRefusalCounts[nameof(AskRefusalLineKind.Disliked)]);
+            Assert.False(result.AskRefusalCounts.ContainsKey(nameof(AskRefusalLineKind.Unwilling)));
             Assert.Equal(1, result.AskRefusalCounts[nameof(AskRefusalLineKind.NothingHeard)]);
             Assert.Equal(1, result.AskRefusalCounts[nameof(AskRefusalLineKind.Forgotten)]);
             Assert.Equal(1, result.AskRefusalCounts[nameof(AskRefusalLineKind.Outdated)]);
@@ -725,7 +754,7 @@ namespace VividWorld.Core.Tests
 
             string summary = ListenPreviewLogFormatter.FormatSummary(result, includeTopNames: true);
             Assert.Contains("  - told: 1 (ToldHero)", summary);
-            Assert.Contains("  - Unwilling: 1 (UnwillingHero)", summary);
+            Assert.Contains("  - Disliked: 1 (UnwillingHero)", summary);
             Assert.Contains("  - NothingHeard: 1 (NothingHero)", summary);
             Assert.Contains("  - Forgotten: 1 (ForgottenHero)", summary);
             Assert.Contains("  - Outdated: 1 (OutdatedHero)", summary);

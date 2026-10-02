@@ -15,7 +15,7 @@ namespace VividWorld.Core.Tests
     public class RumorOfferSelectorTests
     {
         private (RumorOfferSelector selector, RumorEngine engine, VividWorldConfig cfg)
-            CreateSelector(string playerHeroId = "player", long seed = 42L, VividWorldConfig? customConfig = null)
+            CreateSelector(string playerHeroId = "player", long seed = 42L, VividWorldConfig? customConfig = null, RumorMode? mode = null, IDialogueWorld? dialogueWorld = null)
         {
             var cfg = customConfig ?? new VividWorldConfig();
             var rng = new SplitMix64Rng();
@@ -24,7 +24,7 @@ namespace VividWorld.Core.Tests
             var retention = FactRetentionPolicies.Create(cfg, rng, seed);
             var embellishment = NullEmbellishmentPolicy.Instance;
             var engine = new RumorEngine(cfg, retention, embellishment, channel, traits, rng, seed, playerHeroId);
-            var selector = new RumorOfferSelector(cfg, engine, playerHeroId);
+            var selector = new RumorOfferSelector(cfg, engine, playerHeroId, mode, dialogueWorld: dialogueWorld);
             return (selector, engine, cfg);
         }
 
@@ -77,7 +77,7 @@ namespace VividWorld.Core.Tests
         }
 
         [Fact]
-        public void Offer_Retell_RequiresStrictlyLowerHop()
+        public void Offer_Retell_OnlyLooksAtNewFacts_NotAtWhoIsCloser()
         {
             var (selector, _, _) = CreateSelector();
             var evt = CreateSampleEvent("evt_retell_hop");
@@ -85,15 +85,19 @@ namespace VividWorld.Core.Tests
             evt.KnownBy.Add(new KnownByEntry { HeroId = "teller_better", Hop = 0 });
             evt.KnownBy.Add(new KnownByEntry { HeroId = "player", Hop = 2, KnownFactIds = new List<string> { "f_who" } });
 
-            // 1. teller_equal: TellerHop + 1 = 3 >= 2 -> 拒絕
+            // 1. 講述者的手數跟玩家一樣遠，只要帶得來玩家沒聽過的碎片就能重講；
+            //    玩家那筆的手數是真實距離（講者手數 + 1），落點手數只決定講哪幾塊
             var profileEqual = new HeroSocialProfile { HeroId = "teller_equal", RelationWithPlayer = 20 };
             var candidateEqual = new List<RumorCandidate>
             {
                 new() { Event = evt, TellerHop = 2, PlayerExistingHop = 2 }
             };
-            Assert.Null(selector.SelectOnAsk(profileEqual, candidateEqual, day: 15.0));
+            var equalOffer = selector.SelectOnAsk(profileEqual, candidateEqual, day: 15.0);
+            Assert.NotNull(equalOffer);
+            Assert.True(equalOffer!.IsRetell);
+            Assert.Equal(3, equalOffer.PlayerHop);
 
-            // 2. teller_better: TellerHop + 1 = 1 < 2 -> 允許重述
+            // 2. 更近的講述者照樣可以
             var profileBetter = new HeroSocialProfile { HeroId = "teller_better", RelationWithPlayer = 20 };
             var candidateBetter = new List<RumorCandidate>
             {
@@ -103,6 +107,7 @@ namespace VividWorld.Core.Tests
             Assert.NotNull(offer);
             Assert.True(offer!.IsRetell);
             Assert.Equal(1, offer.ResultingPlayerHop);
+            Assert.Equal(1, offer.PlayerHop);
         }
 
         [Fact]
@@ -213,32 +218,25 @@ namespace VividWorld.Core.Tests
         }
 
         [Fact]
-        public void Offer_Retell_IsScoredLower()
+        public void Offer_PrioritizesUnheardOverRetell()
         {
-            var (selector, _, cfg) = CreateSelector();
-            var evt = CreateSampleEvent("evt_score", day: 10.0, drama: 4);
+            var (selector, _, _) = CreateSelector();
+            var evtUnheard = CreateSampleEvent("evt_unheard", day: 10.0, drama: 6);
+            evtUnheard.KnownBy.Add(new KnownByEntry { HeroId = "teller", Hop = 1 });
 
-            var freshCandidate = new RumorCandidate
-            {
-                Event = evt,
-                TellerHop = 1,
-                PlayerExistingHop = null,
-                InvolvesHeroPlayerCaresAbout = false
-            };
+            var evtRetell = CreateSampleEvent("evt_retell", day: 15.0, drama: 10);
+            evtRetell.KnownBy.Add(new KnownByEntry { HeroId = "teller", Hop = 0 });
+            evtRetell.KnownBy.Add(new KnownByEntry { HeroId = "player", Hop = 2, KnownFactIds = new List<string> { "f_who" } });
 
-            var retellCandidate = new RumorCandidate
-            {
-                Event = evt,
-                TellerHop = 1,
-                PlayerExistingHop = 3,
-                InvolvesHeroPlayerCaresAbout = false
-            };
+            var candUnheard = new RumorCandidate { Event = evtUnheard, TellerHop = 1, PlayerExistingHop = null };
+            var candRetell = new RumorCandidate { Event = evtRetell, TellerHop = 0, PlayerExistingHop = 2 };
 
-            double freshScore = selector.Score(freshCandidate, day: 20.0);
-            double retellScore = selector.Score(retellCandidate, day: 20.0);
+            var teller = new HeroSocialProfile { HeroId = "teller", RelationWithPlayer = 20 };
 
-            Assert.True(freshScore > 0);
-            Assert.Equal(freshScore * cfg.Dialogue.ScoreRetellMultiplier, retellScore, precision: 6);
+            // 被問時，即使重述的份量更高（10 vs 6）、日子更新，未聽過的仍然優先
+            var offer = selector.SelectOnAsk(teller, new[] { candRetell, candUnheard }, day: 20.0);
+            Assert.NotNull(offer);
+            Assert.Equal("evt_unheard", offer!.EventId);
         }
 
         [Fact]
@@ -282,7 +280,7 @@ namespace VividWorld.Core.Tests
         public void Volunteer_RespectsPerHeroDailyCap()
         {
             var (selector, _, cfg) = CreateSelector();
-            cfg.Dialogue.CasualChatRelationGate = 30;
+            cfg.Dialogue.CasualVolunteerLine = 30.0;
             cfg.Dialogue.SharesPerHeroPerDay = 1;
 
             // 閘門 1: 好感度
@@ -324,7 +322,7 @@ namespace VividWorld.Core.Tests
         public void Volunteer_ZeroCapMeansUnlimited()
         {
             var (selector, _, cfg) = CreateSelector();
-            cfg.Dialogue.CasualChatRelationGate = 30;
+            cfg.Dialogue.CasualVolunteerLine = 30.0;
             cfg.Dialogue.SharesPerHeroPerDay = 0; // unlimited
 
             var teller = new HeroSocialProfile
@@ -391,8 +389,7 @@ namespace VividWorld.Core.Tests
         {
             var (selector, _, cfg) = CreateSelector();
             cfg.Dialogue.SharesPerHeroPerDay = 1;
-            cfg.Dialogue.CasualChatRelationGate = 0;
-            cfg.Dialogue.NpcVolunteerRelationGate = 0;
+            cfg.Dialogue.CasualVolunteerLine = 0.0;
             cfg.Dialogue.AskRelationGate = 0;
 
             var ledger = new HeroShareLedger();
@@ -401,6 +398,7 @@ namespace VividWorld.Core.Tests
             double day2 = 11.1;
 
             var evt = CreateSampleEvent("evt_cap1", day: 10.0, drama: 3);
+            evt.Participants["actor"] = heroId;
             evt.KnownBy.Add(new KnownByEntry { HeroId = heroId, Hop = 1 });
             var candidates = new List<RumorCandidate>
             {
@@ -444,8 +442,7 @@ namespace VividWorld.Core.Tests
         {
             var (selector, _, cfg) = CreateSelector();
             cfg.Dialogue.SharesPerHeroPerDay = 1;
-            cfg.Dialogue.CasualChatRelationGate = 0;
-            cfg.Dialogue.NpcVolunteerRelationGate = 0;
+            cfg.Dialogue.CasualVolunteerLine = 0.0;
             cfg.Dialogue.AskRelationGate = 0;
 
             var ledger = new HeroShareLedger();
@@ -540,7 +537,7 @@ namespace VividWorld.Core.Tests
         [Fact]
         public void Decide_BelowWillingness_ReportsWillingnessGate()
         {
-            var (selector, _, _) = CreateSelector(); // default AskRelationGate = 0, AskWillingnessThreshold = 5.0
+            var (selector, _, _) = CreateSelector(mode: RumorMode.Realistic); // Realistic line = 10.0, AskWillingnessThreshold = 5.0
 
             var teller = new HeroSocialProfile
             {
@@ -657,7 +654,7 @@ namespace VividWorld.Core.Tests
                 Traits = new TraitProfile { Generosity = 0, Honor = 0, Calculating = 0 }
             };
 
-            // 不夠近：講述者 hop 1，重述後玩家還是 hop 2，並沒有比手上的 hop 1 更近
+            // 同一手的舊消息：講述者 hop 1，玩家也是 hop 1，講不出任何玩家沒有的碎片
             var notCloser = CreateSampleEvent("evt_notcloser");
             notCloser.KnownBy.Add(new KnownByEntry { HeroId = "teller", Hop = 1 });
             notCloser.KnownBy.Add(new KnownByEntry { HeroId = "player", Hop = 1 });
@@ -683,12 +680,12 @@ namespace VividWorld.Core.Tests
             Assert.Equal(AskRefusal.AllCandidatesFiltered, decision.Refusal);
             Assert.Equal(2, decision.FilteredPlayerKnows);
 
-            // 兩則各留一句話，而且兩句話講的是不同的理由
+            // 兩則各留一句話，各自帶著講述者的手數與碎片數
             Assert.Equal(2, decision.FilterNotes.Count);
 
             var closerNote = Assert.Single(decision.FilterNotes, n => n.StartsWith("evt_notcloser:"));
             Assert.Contains("hop 1", closerNote);
-            Assert.Contains("no closer", closerNote);
+            Assert.Contains("nothing new to add", closerNote);   // 手數只是距離：同樣沒新碎片，講的是「沒新東西」而不是「不夠近」
 
             var newFactsNote = Assert.Single(decision.FilterNotes, n => n.StartsWith("evt_nonew:"));
             Assert.Contains("hop 0", newFactsNote);
@@ -732,6 +729,17 @@ namespace VividWorld.Core.Tests
                 Relation = 100,
                 Willingness = 104.0,
                 Threshold = 5.0,
+                ActiveVolunteerLine = 10.0,
+                IsFamiliar = true,
+                CanAnswer = true,
+                GenerosityTerm = 0.0,
+                HonorTerm = 4.0,
+                CalculatingTerm = 0.0,
+                AnswerMode = "familiar_closely_related",
+                ReasonCategory = "TellerSelf",
+                ChosenTopicWeight = 4,
+                ChosenTopicScale = 2,
+                ChosenTopicWhy = "closely related",
                 CandidateCount = 1,
                 FilteredNotVisible = 0,
                 FilteredPlayerKnows = 0,
@@ -744,7 +752,7 @@ namespace VividWorld.Core.Tests
                 }
             };
             string line1 = AskDecision.FormatLog("特羅斯", "lord_5_21_2", offerDecision, knownCount: 1, relationGate: 0);
-            Assert.Equal("Ask 特羅斯 (lord_5_21_2): offer evt_26029_80b8 hop 2->3 score 4.21 | rel 100, willingness 104.0 >= 5.0 | 1 known, 1 candidate, 0 filtered", line1);
+            Assert.Equal("Ask 特羅斯 (lord_5_21_2): offer evt_26029_80b8 hop 2->3 score 4.21 | mode familiar_closely_related, reason TellerSelf, weight 4, band 2 (closely related) | willingness 104.0 (rel 100, gen 0.0, hon +4.0, calc 0.0), willingness 104.0 >= line 10.0 (familiar) | 1 known, 1 candidate, 0 filtered", line1);
 
             // 2. WillingnessGate
             var willDecision = new AskDecision
@@ -753,10 +761,14 @@ namespace VividWorld.Core.Tests
                 Relation = 0,
                 Willingness = 4.0,
                 Threshold = 5.0,
+                ActiveVolunteerLine = 10.0,
+                GenerosityTerm = 0.0,
+                HonorTerm = 4.0,
+                CalculatingTerm = 0.0,
                 CandidateCount = 1
             };
-            string line2 = AskDecision.FormatLog("埃爾瑟特", "CharacterObject_2763", willDecision, knownCount: 1, relationGate: 0, gen: 0, hon: 1, calc: 0);
-            Assert.Equal("Ask 埃爾瑟特 (CharacterObject_2763): no offer - willingness 4.0 < 5.0 | rel 0 (gen 0, hon 1, calc 0) | 1 known", line2);
+            string line2 = AskDecision.FormatLog("埃爾瑟特", "CharacterObject_2763", willDecision, knownCount: 1, relationGate: 0);
+            Assert.Equal("Ask 埃爾瑟特 (CharacterObject_2763): no offer - willingness 4.0 (rel 0, gen 0.0, hon +4.0, calc 0.0) < threshold 5.0 and < line 10.0 | 1 known", line2);
 
             // 3. NoKnownEvents
             var emptyDecision = new AskDecision
@@ -777,12 +789,15 @@ namespace VividWorld.Core.Tests
                 Relation = 100,
                 Willingness = 106.0,
                 Threshold = 5.0,
+                GenerosityTerm = 6.0,
+                HonorTerm = 0.0,
+                CalculatingTerm = 0.0,
                 CandidateCount = 3,
                 FilteredPlayerKnows = 2,
                 FilteredNotVisible = 1
             };
             string line4 = AskDecision.FormatLog("貝薩格", "lord_5_13_1", filteredDecision, knownCount: 3, relationGate: 0);
-            Assert.Equal("Ask 貝薩格 (lord_5_13_1): no offer - all 3 candidates filtered (2 player already knows, 1 secret not leaked) | rel 100, willingness 106.0 >= 5.0", line4);
+            Assert.Equal("Ask 貝薩格 (lord_5_13_1): no offer - all 3 candidates filtered (2 player already knows, 1 secret not leaked) | willingness 106.0 (rel 100, gen +6.0, hon 0.0, calc 0.0)", line4);
 
             // 5. RelationGate
             var relDecision = new AskDecision
@@ -801,8 +816,7 @@ namespace VividWorld.Core.Tests
         public void DecideOnVolunteer_EachGate_ReportsWhichOneRefused()
         {
             var (selector, _, cfg) = CreateSelector();
-            cfg.Dialogue.NpcVolunteerRelationGate = 25;
-            cfg.Dialogue.CasualChatRelationGate = 20;
+            cfg.Dialogue.CasualVolunteerLine = 20.0;
             cfg.Dialogue.SharesPerHeroPerDay = 1;
 
             var candidates = new List<RumorCandidate>();
@@ -817,7 +831,7 @@ namespace VividWorld.Core.Tests
             Assert.Equal(VolunteerRefusal.RelationGate, d1.Refusal);
             Assert.Null(d1.Offer);
             Assert.Equal(15, d1.Relation);
-            Assert.Equal(25, d1.RelationGate);
+            Assert.Equal(20, d1.RelationGate);
             Assert.False(d1.IsCloseKin);
 
             // 2. 當日已達上限 (SharedToday)
@@ -838,7 +852,7 @@ namespace VividWorld.Core.Tests
         public void DecideOnVolunteer_AllCandidatesFiltered_FillsFilterNotes()
         {
             var (selector, _, cfg) = CreateSelector();
-            cfg.Dialogue.NpcVolunteerRelationGate = 20;
+            cfg.Dialogue.CasualVolunteerLine = 20.0;
 
             var teller = new HeroSocialProfile
             {
@@ -846,7 +860,7 @@ namespace VividWorld.Core.Tests
                 RelationWithPlayer = 30
             };
 
-            // 候選 1: 玩家已知且 teller 距離沒有更近 (hop 1 vs hop 1)
+            // 候選 1: 玩家已知且 teller 講不出新碎片 (hop 1 vs hop 1)
             var evt1 = CreateSampleEvent("evt_notcloser");
             evt1.KnownBy.Add(new KnownByEntry { HeroId = "teller", Hop = 1 });
             evt1.KnownBy.Add(new KnownByEntry { HeroId = "player", Hop = 1 });
@@ -876,7 +890,7 @@ namespace VividWorld.Core.Tests
             Assert.Equal(2, decision.FilterNotes.Count);
 
             var note1 = Assert.Single(decision.FilterNotes, n => n.StartsWith("evt_notcloser:"));
-            Assert.Contains("no closer", note1);
+            Assert.Contains("nothing new to add", note1);
 
             var note2 = Assert.Single(decision.FilterNotes, n => n.StartsWith("evt_nonew:"));
             Assert.Contains("nothing new to add", note2);

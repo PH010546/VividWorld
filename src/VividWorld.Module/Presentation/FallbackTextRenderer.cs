@@ -5,6 +5,7 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Localization;
 using VividWorld.Core.Config;
+using VividWorld.Core.Feelings;
 using VividWorld.Core.Presentation;
 using VividWorld.Core.Rumors;
 
@@ -28,7 +29,9 @@ namespace VividWorld.Presentation
                 // 那一趟發出，所以雙重渲染不會印成兩行。`NoteMissingKey` 不必從這裡傳——
                 // 缺鍵的告警本來就在 LocalizedTemplate 裡自己發。
                 ModLog.Warn,
-                isFemale);
+                isFemale,
+                ModLog.Info,
+                Hero.MainHero?.StringId);
         }
 
         /// <summary>
@@ -173,6 +176,94 @@ namespace VividWorld.Presentation
             }
         }
 
+        /// <summary>把感想判定渲染成玩家會聽到的那一句；字串表沒有這一句時回傳 null。
+        /// 預設純文字（開發者工具用）；紀事要讓稱呼裡的人名可以點時傳 useLinks。</summary>
+        internal static string? RenderFeelingLine(FeelingDecision decision, bool useLinks = false, Func<string, bool?>? isFemale = null, string? speakerHeroId = null)
+        {
+            isFemale ??= (id => TraitLookup?.Of(id)?.IsFemale ?? Hero.Find(id)?.IsFemale);
+            return RumorTextAssembler.RenderFeeling(
+                decision,
+                useLinks,
+                ResolveVar,
+                LocalizedTemplate,
+                Localized,
+                Localized("VividWorld_SentenceEnd", "."),
+                out _,
+                isFemale,
+                speakerHeroId,
+                null,
+                Hero.MainHero?.StringId);
+        }
+
+        /// <summary>固定句子的警告每個字串鍵每個 session 只印一次：這些條件每次重畫對話選單都會跑。</summary>
+        private static readonly HashSet<string> FixedLineWarnedKeys = new HashSet<string>(StringComparer.Ordinal);
+
+        private static void WarnFixedLineOnce(string key, string message)
+        {
+            lock (FixedLineWarnedKeys)
+            {
+                if (!FixedLineWarnedKeys.Add(key)) return;
+            }
+            ModLog.Warn(message);
+        }
+
+        /// <summary>
+        /// 取出對話選單固定句子的字（還沒解析的版本）並套依性別選字的記號。
+        /// 取字或套記號丟出例外、或結果是空字串時，回傳英文原句並留一行警告，不會回傳空白。
+        /// </summary>
+        internal static string RenderFixedLine(string key, string english, string? speakerHeroId, string? listenerHeroId)
+        {
+            try
+            {
+                Func<string, bool?> isFemale = id => TraitLookup?.Of(id)?.IsFemale ?? Hero.Find(id)?.IsFemale;
+                string raw = LocalizedTemplate(key, english);
+                string text = RumorTextAssembler.ApplyFixedLineGenderSelect(
+                    raw,
+                    key,
+                    speakerHeroId,
+                    listenerHeroId,
+                    isFemale,
+                    msg => WarnFixedLineOnce(key, msg));
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    WarnFixedLineOnce(key, $"Fixed dialogue line '{key}' rendered to an empty string - using the English text instead.");
+                    return english;
+                }
+                return text;
+            }
+            catch (Exception ex)
+            {
+                WarnFixedLineOnce(key, $"Fixed dialogue line '{key}' could not be rendered ({ex.GetType().Name}: {ex.Message}) - using the English text instead.");
+                return english;
+            }
+        }
+
+        /// <summary>
+        /// 把固定句子渲染好、設成對話行讀的文字變數。整段包在自己的 try／catch 裡，
+        /// 失敗只會讓變數退回英文原句，不會影響呼叫它的條件的回傳值。
+        /// </summary>
+        internal static void SetFixedLineVariable(string variable, string key, string english, string? speakerHeroId, string? listenerHeroId)
+        {
+            string text = english;
+            try
+            {
+                text = RenderFixedLine(key, english, speakerHeroId, listenerHeroId);
+            }
+            catch
+            {
+                text = english;
+            }
+
+            try
+            {
+                MBTextManager.SetTextVariable(variable, text, false);
+            }
+            catch (Exception ex)
+            {
+                WarnFixedLineOnce(key, $"Could not set text variable '{variable}' for fixed dialogue line '{key}' ({ex.GetType().Name}: {ex.Message}).");
+            }
+        }
+
         internal static string RenderRecallMemory(ComposedRumor rumor, string? language, PresentationConfig? cfg, EnglishStringTable? stringTable = null, Func<string, bool?>? isFemale = null)
         {
             if (rumor == null) return string.Empty;
@@ -197,7 +288,9 @@ namespace VividWorld.Presentation
                 getTemplate,
                 getLocalized,
                 null,
-                isFemale);
+                isFemale,
+                ModLog.Info,
+                Hero.MainHero?.StringId);
 
             return result.PlainText;
         }

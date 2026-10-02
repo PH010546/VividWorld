@@ -13,11 +13,25 @@ namespace VividWorld.Core.Dialogue
 
     public enum VolunteerRefusal
     {
-        None,                  // 有提案
-        RelationGate,          // RelationWithPlayer < gate (且非近親)
-        SharedToday,           // SharedToday >= SharesPerHeroPerDay (cap > 0)
-        NoKnownEvents,         // 候選清單是空的
-        AllCandidatesFiltered  // 有候選，但一則都不合格
+        None = 0,              // 有提案
+        RelationGate = 1,      // RelationWithPlayer < gate (且非近親)
+        SharedToday = 2,       // SharedToday >= SharesPerHeroPerDay (cap > 0)
+        NoKnownEvents = 3,     // 候選清單是空的
+        AllCandidatesFiltered = 4, // 有候選，但一則都不合格
+        NoCloselyRelatedEvent = 5, // 沒有切身的事
+        WillingnessGate = RelationGate
+    }
+
+    public enum VolunteerReasonCategory
+    {
+        None,
+        TellerSelf,
+        TellerKin,
+        TellerClan,
+        TellerRelation,
+        TellerGrudge,
+        PlayerRelated,
+        Sequel
     }
 
     public sealed class VolunteerDecision
@@ -35,6 +49,17 @@ namespace VividWorld.Core.Dialogue
         }
         public int ChatRelationGate { get; set; }
         public bool IsCloseKin { get; set; }
+
+        public double Willingness { get; set; }
+        public double WillingnessLine { get; set; }
+        public bool WillingnessPassed { get; set; }
+        public double GenerosityTerm { get; set; }
+        public double HonorTerm { get; set; }
+        public double CalculatingTerm { get; set; }
+        public string ReasonCategory { get; set; } = string.Empty;
+        public int ChosenTopicWeight { get; set; }
+        public int ChosenTopicScale { get; set; }
+        public string ChosenTopicWhy { get; set; } = string.Empty;
 
         public double Day { get; set; }
         public int SharedToday { get; set; }
@@ -92,13 +117,21 @@ namespace VividWorld.Core.Dialogue
                 {
                     var offer = decision.Offer;
                     string tierStr = decision.Tier == VolunteerTier.Gist ? "gist" : "full";
-                    return $"{prefix} told {offer.EventId} hop {offer.TellerHop}->{offer.ResultingPlayerHop} score {offer.Score:F2} | tier {tierStr} (chat gate {decision.ChatRelationGate}, full gate {decision.RelationGate}), {(decision.IsCloseKin && decision.Tier != VolunteerTier.Gist ? $"rel {decision.Relation} (close kin)" : $"rel {decision.Relation} >= {(decision.Tier == VolunteerTier.Gist ? decision.ChatRelationGate : decision.RelationGate)}")}, shared today {decision.SharedToday}/{decision.SharesPerHeroPerDay}";
+                    string willDetail = $"willingness {decision.Willingness:F1} >= line {decision.WillingnessLine:F1} (rel {decision.Relation}, gen {decision.GenerosityTerm:+0.0;-0.0;0.0}, hon {decision.HonorTerm:+0.0;-0.0;0.0}, calc {decision.CalculatingTerm:+0.0;-0.0;0.0})";
+                    string chosenStr = !string.IsNullOrEmpty(decision.ReasonCategory)
+                        ? $" | reason {decision.ReasonCategory}, weight {decision.ChosenTopicWeight}, scale {decision.ChosenTopicScale} ({decision.ChosenTopicWhy})"
+                        : "";
+                    string notes = decision.FilterNotes != null && decision.FilterNotes.Count > 0
+                        ? Environment.NewLine + "    " + string.Join(Environment.NewLine + "    ", decision.FilterNotes)
+                        : "";
+                    return $"{prefix} told {offer.EventId} hop {offer.TellerHop}->{offer.ResultingPlayerHop} score {offer.Score:F2}{chosenStr} | tier {tierStr} (chat gate {decision.ChatRelationGate}, full gate {decision.RelationGate}), {(decision.IsCloseKin && decision.Tier != VolunteerTier.Gist ? $"rel {decision.Relation} (close kin)" : $"rel {decision.Relation} >= {(decision.Tier == VolunteerTier.Gist ? decision.ChatRelationGate : decision.RelationGate)}")}, {willDetail}, shared today {decision.SharedToday}/{decision.SharesPerHeroPerDay}{notes}";
                 }
 
                 case VolunteerRefusal.RelationGate:
                 {
                     string kinStr = decision.IsCloseKin ? "(close kin)" : "(not close kin)";
-                    return $"{prefix} silent - relation {decision.Relation} < gate {decision.RelationGate} {kinStr} (chat gate {decision.ChatRelationGate}, full gate {decision.RelationGate}) | {knownStr}";
+                    string willDetail = $"willingness {decision.Willingness:F1} < line {decision.WillingnessLine:F1} (rel {decision.Relation}, gen {decision.GenerosityTerm:+0.0;-0.0;0.0}, hon {decision.HonorTerm:+0.0;-0.0;0.0}, calc {decision.CalculatingTerm:+0.0;-0.0;0.0})";
+                    return $"{prefix} silent - not familiar enough to bring things up: {willDetail} {kinStr} | {knownStr}";
                 }
 
                 case VolunteerRefusal.SharedToday:
@@ -140,7 +173,17 @@ namespace VividWorld.Core.Dialogue
                         ? Environment.NewLine + "    " + string.Join(Environment.NewLine + "    ", decision.FilterNotes)
                         : "";
                     string filtTierStr = decision.Tier == VolunteerTier.Gist ? "gist" : (decision.Tier == VolunteerTier.Full ? "full" : "none");
-                    return $"{prefix} silent - all {decision.CandidateCount} {candidateUnit} filtered{detail} | rel {decision.Relation} (tier {filtTierStr}, chat gate {decision.ChatRelationGate}, full gate {decision.RelationGate}){notes}";
+                    string willDetail = $"willingness {decision.Willingness:F1} >= line {decision.WillingnessLine:F1} (rel {decision.Relation}, gen {decision.GenerosityTerm:+0.0;-0.0;0.0}, hon {decision.HonorTerm:+0.0;-0.0;0.0}, calc {decision.CalculatingTerm:+0.0;-0.0;0.0})";
+                    return $"{prefix} silent - all {decision.CandidateCount} {candidateUnit} filtered{detail} | rel {decision.Relation} ({willDetail}) (tier {filtTierStr}, chat gate {decision.ChatRelationGate}, full gate {decision.RelationGate}){notes}";
+                }
+
+                case VolunteerRefusal.NoCloselyRelatedEvent:
+                {
+                    string notes = decision.FilterNotes != null && decision.FilterNotes.Count > 0
+                        ? Environment.NewLine + "    " + string.Join(Environment.NewLine + "    ", decision.FilterNotes)
+                        : "";
+                    string willDetail = $"willingness {decision.Willingness:F1} >= line {decision.WillingnessLine:F1} (rel {decision.Relation}, gen {decision.GenerosityTerm:+0.0;-0.0;0.0}, hon {decision.HonorTerm:+0.0;-0.0;0.0}, calc {decision.CalculatingTerm:+0.0;-0.0;0.0})";
+                    return $"{prefix} silent - no closely related topic | {knownStr} | rel {decision.Relation} ({willDetail}){notes}";
                 }
 
                 default:

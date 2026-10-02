@@ -107,23 +107,21 @@ namespace VividWorld.UI
     {
         private string _headlineText;
         private string _dayText;
-        private string _bodyText;
-        private string _sourceText;
-        private string _hopText;
+        private MBBindingList<ChronicleSourceVM> _sources;
 
         internal ChronicleEntryVM(ChronicleEntry entry, PresentationConfig? cfg, HeroLookup? heroLookup)
         {
+            _sources = new MBBindingList<ChronicleSourceVM>();
+
             if (entry == null)
             {
                 _headlineText = string.Empty;
                 _dayText = string.Empty;
-                _bodyText = string.Empty;
-                _sourceText = string.Empty;
-                _hopText = string.Empty;
                 return;
             }
 
-            _headlineText = FallbackTextRenderer.LocalizedTemplate(entry.HeadlineTextId, entry.HeadlineFallback);
+            // 開紀事時已經算好就直接用（那時一併印了日誌）；沒算過才在這裡算
+            _headlineText = entry.HeadlineText ?? ResolveHeadline(entry, heroLookup).Text;
 
             if (TaleWorlds.CampaignSystem.Campaign.Current != null)
             {
@@ -134,43 +132,30 @@ namespace VividWorld.UI
                 _dayText = "Day " + entry.Day.ToString("0.0", CultureInfo.InvariantCulture);
             }
 
-            bool linksEnabled = cfg?.EncyclopediaLinksEnabled ?? true;
-            var renderResult = FallbackTextRenderer.RenderBoth(entry.Body, cfg);
-            _bodyText = linksEnabled ? renderResult.DisplayText : renderResult.PlainText;
-            if (!linksEnabled && _bodyText.IndexOf("<a ", StringComparison.Ordinal) >= 0)
+            foreach (var source in entry.Sources)
             {
-                ModLog.Warn($"Chronicle: body of {entry.EventId} still carries link markup while encyclopedia links are disabled.");
-            }
-
-            if (!string.IsNullOrEmpty(entry.SourceHeroId))
-            {
-                string? name = heroLookup?.Get(entry.SourceHeroId!)?.Name?.ToString();
-                if (string.IsNullOrEmpty(name))
-                {
-                    name = Hero.Find(entry.SourceHeroId!)?.Name?.ToString();
-                }
-                _sourceText = !string.IsNullOrEmpty(name)
-                    ? name!
-                    : new TextObject("{=VividWorld_Chronicle_SourceUnknown}from someone").ToString();
-            }
-            else
-            {
-                _sourceText = new TextObject("{=VividWorld_Chronicle_SourceUnknown}from someone").ToString();
-            }
-
-            if (entry.PlayerHop == 0)
-            {
-                _hopText = new TextObject("{=VividWorld_Chronicle_HopZero}you were there").ToString();
-            }
-            else
-            {
-                _hopText = new TextObject("{=VividWorld_Chronicle_Hop}{HOPS} tellings removed")
-                    .SetTextVariable("HOPS", entry.PlayerHop)
-                    .ToString();
+                _sources.Add(new ChronicleSourceVM(entry, source, cfg));
             }
 
             entry.DayLabel = _dayText;
-            entry.SourceHeroName = _sourceText;
+            entry.SourceHeroName = ChronicleSourceVM.NameOf(entry.SourceHeroId, heroLookup);
+        }
+
+        /// <summary>
+        /// 算出這一筆的標題：俘虜類的消息帶上被抓的人的名字，名字查不到（人已不在遊戲裡、紀錄裡沒記是誰）
+        /// 或目前語言沒有帶名字的那一句，就退回原本不帶名字的標題。標題是純文字，不放百科連結。
+        /// </summary>
+        internal static ChronicleHeadlineResult ResolveHeadline(ChronicleEntry entry, HeroLookup? heroLookup)
+        {
+            return ChronicleHeadline.Resolve(
+                entry,
+                FallbackTextRenderer.LocalizedTemplate,
+                nameVar =>
+                {
+                    int colon = nameVar.IndexOf(':');
+                    string heroId = colon >= 0 ? nameVar.Substring(colon + 1) : nameVar;
+                    return ChronicleSourceVM.NameOf(heroId, heroLookup);
+                });
         }
 
         [DataSourceProperty]
@@ -201,44 +186,129 @@ namespace VividWorld.UI
             }
         }
 
+        /// <summary>每個告訴過玩家這件事的人一塊。</summary>
         [DataSourceProperty]
-        public string BodyText
+        public MBBindingList<ChronicleSourceVM> Sources
         {
-            get => _bodyText;
+            get => _sources;
             set
             {
-                if (value != _bodyText)
+                if (value != _sources)
                 {
-                    _bodyText = value;
-                    OnPropertyChangedWithValue(value, nameof(BodyText));
+                    _sources = value;
+                    OnPropertyChangedWithValue(value, nameof(Sources));
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 紀事裡的一份來源：
+    /// 第一行：「〈誰〉：「〈他當時講的原句〉」」（有存原句）或「〈誰〉：〈事實〉」（沒存原句），
+    /// 第二行小字：「傳了 N 手」（在場為「你當時在場」，不明來源為「傳了 N 手 · 不知道是誰說的」）。
+    /// </summary>
+    public class ChronicleSourceVM : ViewModel
+    {
+        private string _lineText;
+        private string _provenanceText;
+
+        internal ChronicleSourceVM(ChronicleEntry entry, ChronicleSource source, PresentationConfig? cfg)
+        {
+            bool linksEnabled = cfg?.EncyclopediaLinksEnabled ?? true;
+
+            var renderResult = FallbackTextRenderer.RenderBoth(source.Body, cfg);
+            string line = linksEnabled ? renderResult.DisplayText : renderResult.PlainText;
+            if (!linksEnabled && line.IndexOf("<a ", StringComparison.Ordinal) >= 0)
+            {
+                ModLog.Warn($"Chronicle: body of {entry.EventId} still carries link markup while encyclopedia links are disabled.");
+            }
+
+            bool hasTeller = !string.IsNullOrEmpty(source.HeroId);
+            string tellerName = hasTeller
+                ? FallbackTextRenderer.ResolveVar("hero:" + source.HeroId, linksEnabled)
+                : string.Empty;
+
+            if (source.HasSpokenLine)
+            {
+                _lineText = hasTeller
+                    ? new TextObject("{=VividWorld_Chronicle_Quote}{NAME}: \u201C{LINE}\u201D")
+                        .SetTextVariable("NAME", tellerName)
+                        .SetTextVariable("LINE", line)
+                        .ToString()
+                    : line;
+            }
+            else
+            {
+                if (hasTeller && source.Hop > 0)
+                {
+                    _lineText = new TextObject("{=VividWorld_Chronicle_Plain}{NAME}: {FACTS}")
+                        .SetTextVariable("NAME", tellerName)
+                        .SetTextVariable("FACTS", line)
+                        .ToString();
+                }
+                else
+                {
+                    _lineText = line;
+                }
+            }
+
+            if (source.Hop <= 0)
+            {
+                _provenanceText = new TextObject("{=VividWorld_Chronicle_HopZero}you were there").ToString();
+            }
+            else
+            {
+                string hopText = new TextObject("{=VividWorld_Chronicle_Hop}at a remove of {HOPS}")
+                    .SetTextVariable("HOPS", source.Hop)
+                    .ToString();
+
+                if (hasTeller)
+                {
+                    _provenanceText = hopText;
+                }
+                else
+                {
+                    string unknown = new TextObject("{=VividWorld_Chronicle_SourceUnknown}from someone").ToString();
+                    _provenanceText = hopText + " · " + unknown;
+                }
+            }
+        }
+
+        internal static string? NameOf(string? heroId, HeroLookup? heroLookup)
+        {
+            if (string.IsNullOrEmpty(heroId)) return null;
+            string? name = heroLookup?.Get(heroId!)?.Name?.ToString();
+            if (string.IsNullOrEmpty(name))
+            {
+                name = Hero.Find(heroId!)?.Name?.ToString();
+            }
+            return string.IsNullOrEmpty(name) ? null : name;
+        }
+
+        [DataSourceProperty]
+        public string LineText
+        {
+            get => _lineText;
+            set
+            {
+                if (value != _lineText)
+                {
+                    _lineText = value;
+                    OnPropertyChangedWithValue(value, nameof(LineText));
                 }
             }
         }
 
         [DataSourceProperty]
-        public string SourceText
+        public string ProvenanceText
         {
-            get => _sourceText;
+            get => _provenanceText;
             set
             {
-                if (value != _sourceText)
+                if (value != _provenanceText)
                 {
-                    _sourceText = value;
-                    OnPropertyChangedWithValue(value, nameof(SourceText));
-                }
-            }
-        }
-
-        [DataSourceProperty]
-        public string HopText
-        {
-            get => _hopText;
-            set
-            {
-                if (value != _hopText)
-                {
-                    _hopText = value;
-                    OnPropertyChangedWithValue(value, nameof(HopText));
+                    _provenanceText = value;
+                    OnPropertyChangedWithValue(value, nameof(ProvenanceText));
                 }
             }
         }

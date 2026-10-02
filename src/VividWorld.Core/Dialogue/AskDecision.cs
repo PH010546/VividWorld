@@ -25,10 +25,16 @@ namespace VividWorld.Core.Dialogue
         FutureTimeline,      // 事件日期比今天晚（規格 §2.2.1）
         TellerDoesNotKnow,
         RetellDisabled,      // AllowRicherRetell = false
-        RetellNotCloser,     // TellerHop + 1 >= PlayerExistingHop
-        RetellNoNewFacts,    // 更近，但該 hop 的碎片集合玩家已經全有
+        RetellNoNewFacts,    // 這次能講的碎片玩家已經全有
         WontTellOwn,         // 當事人自己不講（selfTell）
-        RetiredType          // 停用的事件型別：已存下來的也不再傳，事件資料保留
+        RetiredType,         // 停用的事件型別：已存下來的也不再傳，事件資料保留
+        SecretHolderGist,    // 舊版留存
+        PlayerHeardEnding,   // 玩家已經聽過某次被俘的結局
+        LeakedSecretHonorable, // 走漏的秘密：誠實的人不講
+        LeakedSecretCautiousStranger, // 走漏的秘密：謹慎的人只跟熟人講
+        SecretHolderNotWilling, // 秘密當事人意願未過秘密線
+        NotCloselyRelated,   // 主動講/熟人問：不屬於三類切身相關之一
+        NotBigNews           // 被問：份量未達大事門檻
     }
 
     public sealed class AskDecision
@@ -38,6 +44,17 @@ namespace VividWorld.Core.Dialogue
         public int Relation { get; set; }
         public double Willingness { get; set; }
         public double Threshold { get; set; }
+        public double ActiveVolunteerLine { get; set; }
+        public bool IsFamiliar { get; set; }
+        public bool CanAnswer { get; set; }
+        public double GenerosityTerm { get; set; }
+        public double HonorTerm { get; set; }
+        public double CalculatingTerm { get; set; }
+        public string AnswerMode { get; set; } = string.Empty;
+        public string ReasonCategory { get; set; } = string.Empty;
+        public int ChosenTopicWeight { get; set; }
+        public int ChosenTopicScale { get; set; }
+        public string ChosenTopicWhy { get; set; } = string.Empty;
         public int SharedToday { get; set; }
         public int SharesPerHeroPerDay { get; set; }
         public int CandidateCount { get; set; }
@@ -68,6 +85,8 @@ namespace VividWorld.Core.Dialogue
             string prefix = $"Ask {heroName} ({heroId}):";
             string knownStr = knownCount == 0 ? "knows nothing" : $"{knownCount} known";
 
+            string willDetail = $"willingness {decision.Willingness:F1} (rel {decision.Relation}, gen {decision.GenerosityTerm:+0.0;-0.0;0.0}, hon {decision.HonorTerm:+0.0;-0.0;0.0}, calc {decision.CalculatingTerm:+0.0;-0.0;0.0})";
+
             switch (decision.Refusal)
             {
                 case AskRefusal.None when decision.Offer != null:
@@ -75,7 +94,14 @@ namespace VividWorld.Core.Dialogue
                     var offer = decision.Offer;
                     int filtered = decision.FilteredNotVisible + decision.FilteredFutureTimeline + decision.FilteredPlayerKnows + decision.FilteredOther;
                     string candidateUnit = decision.CandidateCount == 1 ? "candidate" : "candidates";
-                    return $"{prefix} offer {offer.EventId} hop {offer.TellerHop}->{offer.ResultingPlayerHop} score {offer.Score:F2} | rel {decision.Relation}, willingness {decision.Willingness:F1} >= {decision.Threshold:F1} | {knownCount} known, {decision.CandidateCount} {candidateUnit}, {filtered} filtered";
+                    string modeStr = $" | mode {decision.AnswerMode}, reason {decision.ReasonCategory}, weight {decision.ChosenTopicWeight}, band {decision.ChosenTopicScale} ({decision.ChosenTopicWhy})";
+                    string lineComparison = decision.IsFamiliar
+                        ? $"willingness {decision.Willingness:F1} >= line {decision.ActiveVolunteerLine:F1} (familiar)"
+                        : $"willingness {decision.Willingness:F1} >= threshold {decision.Threshold:F1} (stranger)";
+                    string notes = decision.FilterNotes != null && decision.FilterNotes.Count > 0
+                        ? Environment.NewLine + "    " + string.Join(Environment.NewLine + "    ", decision.FilterNotes)
+                        : "";
+                    return $"{prefix} offer {offer.EventId} hop {offer.TellerHop}->{offer.ResultingPlayerHop} score {offer.Score:F2}{modeStr} | {willDetail}, {lineComparison} | {knownCount} known, {decision.CandidateCount} {candidateUnit}, {filtered} filtered{notes}";
                 }
 
                 case AskRefusal.SharedToday:
@@ -85,7 +111,7 @@ namespace VividWorld.Core.Dialogue
                     return $"{prefix} no offer - relation {decision.Relation} < gate {relationGate} | {knownStr}";
 
                 case AskRefusal.WillingnessGate:
-                    return $"{prefix} no offer - willingness {decision.Willingness:F1} < {decision.Threshold:F1} | rel {decision.Relation} (gen {gen}, hon {hon}, calc {calc}) | {knownStr}";
+                    return $"{prefix} no offer - {willDetail} < threshold {decision.Threshold:F1} and < line {decision.ActiveVolunteerLine:F1} | {knownStr}";
 
                 case AskRefusal.NoKnownEvents:
                     return $"{prefix} no offer - knows nothing | rel {decision.Relation}";
@@ -114,7 +140,7 @@ namespace VividWorld.Core.Dialogue
                     string notes = decision.FilterNotes != null && decision.FilterNotes.Count > 0
                         ? Environment.NewLine + "    " + string.Join(Environment.NewLine + "    ", decision.FilterNotes)
                         : "";
-                    return $"{prefix} no offer - all {decision.CandidateCount} {candidateUnit} filtered{detail} | rel {decision.Relation}, willingness {decision.Willingness:F1} >= {decision.Threshold:F1}{notes}";
+                    return $"{prefix} no offer - all {decision.CandidateCount} {candidateUnit} filtered{detail} | {willDetail}{notes}";
                 }
 
                 default:

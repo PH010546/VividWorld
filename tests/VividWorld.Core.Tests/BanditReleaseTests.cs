@@ -283,7 +283,8 @@ namespace VividWorld.Core.Tests
                 Facts = submission.Facts
             };
 
-            var cfg = new PresentationConfig();
+            // 這條測的是逐段拼接的第一人稱字串；整句句型上線後同一組碎片會走整句，所以固定成拼接
+            var cfg = new PresentationConfig { WholeSentences = false };
 
             // 救人者自己講話：第一人稱
             var composedRescuer = RumorTextComposer.Compose(
@@ -367,7 +368,8 @@ namespace VividWorld.Core.Tests
                 Facts = submission.Facts
             };
 
-            var cfg = new PresentationConfig();
+            // 這條測的是逐段拼接的第一人稱字串；整句句型上線後同一組碎片會走整句，所以固定成拼接
+            var cfg = new PresentationConfig { WholeSentences = false };
 
             var composed = RumorTextComposer.Compose(
                 worldEvent,
@@ -463,105 +465,36 @@ namespace VividWorld.Core.Tests
         #region 5. Drama 四種身分與 Normalize 夾取
 
         [Fact]
-        public void BanditReleaseDrama_FourProminenceTiers()
+        public void BanditReleaseWeightBonus_FourProminenceTiers()
         {
             var cfg = new VividWorldConfig();
-            var dramaCfg = cfg.Events.BanditReleaseDramaByProminence;
+            var bonusCfg = cfg.Events.WeightBonusByProminence;
 
-            // 驗證預設值：Ruler 5, ClanLeader 4, NobleMember 2, Minor 1
-            Assert.Equal(5, dramaCfg.Ruler);
-            Assert.Equal(4, dramaCfg.ClanLeader);
-            Assert.Equal(2, dramaCfg.NobleMember);
-            Assert.Equal(1, dramaCfg.Minor);
+            // 預設加成：國王 +4、族長 +2、一般家族成員 0、小勢力或沒家族 -2
+            Assert.Equal(4, bonusCfg.Ruler);
+            Assert.Equal(2, bonusCfg.ClanLeader);
+            Assert.Equal(0, bonusCfg.NobleMember);
+            Assert.Equal(-2, bonusCfg.Minor);
 
-            // Ruler
             var rulerFacts = new ProminenceFacts { HeroId = "h_ruler", IsKingdomLeader = true, IsLord = true };
-            var resRuler = PrisonerProminence.Classify(rulerFacts, dramaCfg);
+            var resRuler = PrisonerProminence.Classify(rulerFacts, bonusCfg);
             Assert.Equal(ProminenceTier.Ruler, resRuler.Tier);
-            Assert.Equal(5, resRuler.Drama);
+            Assert.Equal(4, resRuler.Bonus);
 
-            // ClanLeader
             var clanLeaderFacts = new ProminenceFacts { HeroId = "h_leader", IsClanLeader = true, IsLord = true };
-            var resClanLeader = PrisonerProminence.Classify(clanLeaderFacts, dramaCfg);
+            var resClanLeader = PrisonerProminence.Classify(clanLeaderFacts, bonusCfg);
             Assert.Equal(ProminenceTier.ClanLeader, resClanLeader.Tier);
-            Assert.Equal(4, resClanLeader.Drama);
+            Assert.Equal(2, resClanLeader.Bonus);
 
-            // NobleMember
             var nobleFacts = new ProminenceFacts { HeroId = "h_noble", ClanId = "clan_noble", IsLord = true };
-            var resNoble = PrisonerProminence.Classify(nobleFacts, dramaCfg);
+            var resNoble = PrisonerProminence.Classify(nobleFacts, bonusCfg);
             Assert.Equal(ProminenceTier.NobleMember, resNoble.Tier);
-            Assert.Equal(2, resNoble.Drama);
+            Assert.Equal(0, resNoble.Bonus);
 
-            // Minor
             var minorFacts = new ProminenceFacts { HeroId = "h_wanderer", IsLord = false };
-            var resMinor = PrisonerProminence.Classify(minorFacts, dramaCfg);
+            var resMinor = PrisonerProminence.Classify(minorFacts, bonusCfg);
             Assert.Equal(ProminenceTier.Minor, resMinor.Tier);
-            Assert.Equal(1, resMinor.Drama);
-        }
-
-        [Fact]
-        public void Normalize_ClampsBanditReleaseDramaByProminence_ToValidRange()
-        {
-            var cfg = new VividWorldConfig();
-            cfg.Events.BanditReleaseDramaByProminence.Ruler = 99;
-            cfg.Events.BanditReleaseDramaByProminence.ClanLeader = 0;
-            cfg.Events.BanditReleaseDramaByProminence.NobleMember = -5;
-            cfg.Events.BanditReleaseDramaByProminence.Minor = 10;
-
-            var notices = new List<ClampNotice>();
-            cfg.Normalize(notices);
-
-            Assert.Equal(5, cfg.Events.BanditReleaseDramaByProminence.Ruler);
-            Assert.Equal(1, cfg.Events.BanditReleaseDramaByProminence.ClanLeader);
-            Assert.Equal(1, cfg.Events.BanditReleaseDramaByProminence.NobleMember);
-            Assert.Equal(5, cfg.Events.BanditReleaseDramaByProminence.Minor);
-
-            Assert.Contains(notices, n => n.Key == "events.banditReleaseDramaByProminence.ruler");
-            Assert.Contains(notices, n => n.Key == "events.banditReleaseDramaByProminence.clanLeader");
-            Assert.Contains(notices, n => n.Key == "events.banditReleaseDramaByProminence.nobleMember");
-            Assert.Contains(notices, n => n.Key == "events.banditReleaseDramaByProminence.minor");
-        }
-
-        #endregion
-
-        #region 6. ConfigMerge 補鍵
-
-        [Fact]
-        public void ConfigMerge_FillsBanditReleaseDramaByProminence_LeavingOtherSettingsIntact()
-        {
-            string oldConfigJson = @"{
-  ""configVersion"": 1,
-  ""events"": {
-    ""flushIntervalHours"": 12,
-    ""banditCaptureDramaByProminence"": {
-      ""ruler"": 5,
-      ""clanLeader"": 5,
-      ""nobleMember"": 3,
-      ""minor"": 2
-    }
-  },
-  ""presentation"": {
-    ""factOrder"": [""WHO"", ""WHAT"", ""OUTCOME"", ""WHERE""]
-  }
-}";
-
-            var defConfig = new VividWorldConfig();
-            string defConfigJson = VividJson.Write(defConfig);
-
-            var existingJObj = JObject.Parse(oldConfigJson);
-            var canonicalJObj = JObject.Parse(defConfigJson);
-
-            var result = ConfigMerge.AddMissingKeys(existingJObj, canonicalJObj);
-
-            Assert.NotEmpty(result.AddedPaths);
-            Assert.Contains(result.AddedPaths, p => p.Contains("banditReleaseDramaByProminence"));
-
-            var mergedObj = result.Merged;
-            Assert.Equal(12, (int)mergedObj["events"]!["flushIntervalHours"]!);
-            Assert.Equal(5, (int)mergedObj["events"]!["banditReleaseDramaByProminence"]!["ruler"]!);
-            Assert.Equal(4, (int)mergedObj["events"]!["banditReleaseDramaByProminence"]!["clanLeader"]!);
-            Assert.Equal(2, (int)mergedObj["events"]!["banditReleaseDramaByProminence"]!["nobleMember"]!);
-            Assert.Equal(1, (int)mergedObj["events"]!["banditReleaseDramaByProminence"]!["minor"]!);
+            Assert.Equal(-2, resMinor.Bonus);
         }
 
         #endregion

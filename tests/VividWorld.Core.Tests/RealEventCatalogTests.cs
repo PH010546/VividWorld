@@ -48,7 +48,7 @@ namespace VividWorld.Core.Tests
         {
             var catalog = LoadRealEventsCatalog();
 
-            Assert.Equal(12, catalog.Templates.Count);
+            Assert.Equal(14, catalog.Templates.Count);
             Assert.Equal(0, catalog.SkippedCount);
             Assert.Empty(catalog.Issues.Where(i => i.IsError));
 
@@ -58,6 +58,8 @@ namespace VividWorld.Core.Tests
                 "hero_executed",
                 "hero_died_in_battle",
                 "hero_died_naturally",
+                "hero_died_of_old_age",
+                "hero_died_in_labor",
                 "hero_taken_prisoner",
                 "heroes_married",
                 "child_born",
@@ -83,7 +85,8 @@ namespace VividWorld.Core.Tests
 
             Assert.NotNull(murder);
             Assert.Equal(EventOrigin.Secret, murder!.Origin);
-            Assert.Equal(5, murder.DramaWeight);
+            Assert.Equal(8, murder.DramaWeight);
+            Assert.Equal(10, murder.DramaScale);
             Assert.Single(murder.KnowingRoles);
             Assert.Contains("killer", murder.KnowingRoles);
         }
@@ -96,7 +99,10 @@ namespace VividWorld.Core.Tests
 
             foreach (var template in catalog.Templates)
             {
-                Assert.Equal(4, template.Facts.Count);
+                int expectedCount = (template.Type == "hero_died_of_old_age" ||
+                                     template.Type == "hero_died_in_labor" ||
+                                     template.Type == "hero_released") ? 3 : 4;
+                Assert.Equal(expectedCount, template.Facts.Count);
                 foreach (var fact in template.Facts)
                 {
                     totalFacts++;
@@ -105,7 +111,7 @@ namespace VividWorld.Core.Tests
                 }
             }
 
-            Assert.Equal(48, totalFacts);
+            Assert.Equal(53, totalFacts);
         }
 
         [Fact]
@@ -151,7 +157,8 @@ namespace VividWorld.Core.Tests
             Assert.Empty(issues.Where(i => i.IsError));
             Assert.Equal("hero_murdered", sub!.Type);
             Assert.Equal(EventOrigin.Secret, sub.Origin);
-            Assert.Equal(5, sub.DramaWeight);
+            Assert.Equal(8, sub.DramaWeight);
+            Assert.Equal(10, sub.DramaScale);
             Assert.Equal(100.0, sub.Day);
             Assert.Equal("hero_victim", sub.Participants["victim"]);
             Assert.Equal("hero_killer", sub.Participants["killer"]);
@@ -187,7 +194,8 @@ namespace VividWorld.Core.Tests
             Assert.Empty(issues.Where(i => i.IsError));
             Assert.Equal("hero_executed", sub!.Type);
             Assert.Equal(EventOrigin.Public, sub.Origin);
-            Assert.Equal(5, sub.DramaWeight);
+            Assert.Equal(8, sub.DramaWeight);
+            Assert.Equal(10, sub.DramaScale);
             Assert.Equal(101.0, sub.Day);
             Assert.Equal("hero_victim", sub.Participants["victim"]);
             Assert.Equal("hero_exec", sub.Participants["killer"]);
@@ -223,7 +231,8 @@ namespace VividWorld.Core.Tests
             Assert.Empty(issues.Where(i => i.IsError));
             Assert.Equal("hero_died_in_battle", sub!.Type);
             Assert.Equal(EventOrigin.Public, sub.Origin);
-            Assert.Equal(4, sub.DramaWeight);
+            Assert.Equal(6, sub.DramaWeight);
+            Assert.Equal(10, sub.DramaScale);
             Assert.Equal(102.0, sub.Day);
             Assert.Equal("hero_victim", sub.Participants["victim"]);
             Assert.Equal("hero_killer", sub.Participants["killer"]);
@@ -255,7 +264,8 @@ namespace VividWorld.Core.Tests
             Assert.Empty(issues.Where(i => i.IsError));
             Assert.Equal("hero_died_naturally", sub!.Type);
             Assert.Equal(EventOrigin.Public, sub.Origin);
-            Assert.Equal(2, sub.DramaWeight);
+            Assert.Equal(4, sub.DramaWeight);
+            Assert.Equal(10, sub.DramaScale);
             Assert.Equal(103.0, sub.Day);
             Assert.Equal("hero_victim", sub.Participants["victim"]);
             Assert.Empty(sub.KnowingRoles);
@@ -287,7 +297,8 @@ namespace VividWorld.Core.Tests
             Assert.Empty(issues.Where(i => i.IsError));
             Assert.Equal("hero_taken_prisoner", sub!.Type);
             Assert.Equal(EventOrigin.Public, sub.Origin);
-            Assert.Equal(4, sub.DramaWeight);
+            Assert.Equal(3, sub.DramaWeight);
+            Assert.Equal(10, sub.DramaScale);
             Assert.Equal(104.0, sub.Day);
             Assert.Equal("hero_captured", sub.Participants["prisoner"]);
             Assert.Equal("hero_captor", sub.Participants["captor"]);
@@ -320,7 +331,8 @@ namespace VividWorld.Core.Tests
             Assert.Empty(issues.Where(i => i.IsError));
             Assert.Equal("heroes_married", sub!.Type);
             Assert.Equal(EventOrigin.Public, sub.Origin);
-            Assert.Equal(3, sub.DramaWeight);
+            Assert.Equal(4, sub.DramaWeight);
+            Assert.Equal(10, sub.DramaScale);
             Assert.Equal(105.0, sub.Day);
             Assert.Equal("hero_spouse1", sub.Participants["spouse_a"]);
             Assert.Equal("hero_spouse2", sub.Participants["spouse_b"]);
@@ -354,6 +366,7 @@ namespace VividWorld.Core.Tests
             Assert.Equal("child_born", sub!.Type);
             Assert.Equal(EventOrigin.Public, sub.Origin);
             Assert.Equal(2, sub.DramaWeight);
+            Assert.Equal(10, sub.DramaScale);
             Assert.Equal(106.0, sub.Day);
             Assert.Equal("hero_mother", sub.Participants["mother"]);
             Assert.Equal("hero_baby", sub.Participants["child"]);
@@ -425,11 +438,19 @@ namespace VividWorld.Core.Tests
             // 這一行就是 L-36 的缺陷本身
             Assert.Equal("evt_91078_88ff", sub.LinkedEventId);
 
-            Assert.Equal(4, sub.Facts.Count);
+            int expectedCount = type == "hero_released" ? 3 : 4;
+            Assert.Equal(expectedCount, sub.Facts.Count);
             Assert.Equal(FactCategory.Who, sub.Facts[0].Category);
             Assert.Equal(FactCategory.Where, sub.Facts[1].Category);
-            Assert.Equal(FactCategory.What, sub.Facts[2].Category);
-            Assert.Equal(FactCategory.Outcome, sub.Facts[3].Category);
+            if (type == "hero_released")
+            {
+                Assert.Equal(FactCategory.Why, sub.Facts[2].Category);
+            }
+            else
+            {
+                Assert.Equal(FactCategory.What, sub.Facts[2].Category);
+                Assert.Equal(FactCategory.Outcome, sub.Facts[3].Category);
+            }
             Assert.NotNull(sub.Facts[1].Vars);
             Assert.Equal("settlement:settlement_gate", sub.Facts[1].Vars!["SETTLEMENT"]);
         }
@@ -454,7 +475,8 @@ namespace VividWorld.Core.Tests
             Assert.NotNull(sub);
             Assert.Empty(issues.Where(i => i.IsError));
             Assert.Null(sub!.LinkedEventId);
-            Assert.Equal(4, sub.Facts.Count);
+            int expectedCount = type == "hero_released" ? 3 : 4;
+            Assert.Equal(expectedCount, sub.Facts.Count);
         }
     }
 }

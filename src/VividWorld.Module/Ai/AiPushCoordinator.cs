@@ -388,7 +388,7 @@ namespace VividWorld.Ai
                         candidate.Memory.Facts,
                         subset =>
                         {
-                            var composed = RumorTextComposer.Compose(candidate.Memory.Event, subset, cfg.Presentation, prefix, hero.StringId);
+                            var composed = RumorTextComposer.Compose(candidate.Memory.Event, subset, cfg.Presentation, prefix, hero.StringId, candidate.Memory.SourceHeroId);
                             return FallbackTextRenderer.RenderRecallMemory(composed, pushLang, cfg.Presentation);
                         });
 
@@ -569,7 +569,7 @@ namespace VividWorld.Ai
                         candidate.Memory.Facts,
                         subset =>
                         {
-                            var composed = RumorTextComposer.Compose(candidate.Memory.Event, subset, config.Presentation, prefix, hero.StringId);
+                            var composed = RumorTextComposer.Compose(candidate.Memory.Event, subset, config.Presentation, prefix, hero.StringId, candidate.Memory.SourceHeroId);
                             return FallbackTextRenderer.RenderRecallMemory(composed, pushLang, config.Presentation);
                         });
 

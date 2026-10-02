@@ -113,22 +113,19 @@ namespace VividWorld.Campaign
                 return IngestResult.RejectedDuplicate;
             }
 
-            // 3. 解析 DramaWeight
-            int drama;
-            if (submission.DramaWeight.HasValue)
+            // 3. 解析份量（1..10）：呼叫的人給的是舊的 1..5 就當成段 × 2；設定的預設值也是舊尺度的段
+            int? typeDefaultBand = null;
+            if (_config.Propagation.DefaultDramaByEventType != null
+                && _config.Propagation.DefaultDramaByEventType.TryGetValue(submission.Type, out int typeDrama))
             {
-                drama = submission.DramaWeight.Value;
+                typeDefaultBand = typeDrama;
             }
-            else if (_config.Propagation.DefaultDramaByEventType != null
-                     && _config.Propagation.DefaultDramaByEventType.TryGetValue(submission.Type, out int typeDrama))
-            {
-                drama = typeDrama;
-            }
-            else
-            {
-                drama = _config.Propagation.DefaultDrama;
-            }
-            drama = Math.Max(1, Math.Min(5, drama));
+            int drama = DramaScales.ResolveWeight(
+                submission.DramaWeight,
+                submission.DramaScale,
+                typeDefaultBand,
+                _config.Propagation.DefaultDrama,
+                out string dramaSource);
 
             // 4. Hop0Seeding.Seed(...)
             var evt = new WorldEvent
@@ -140,13 +137,16 @@ namespace VividWorld.Campaign
                 LinkedEventId = submission.LinkedEventId,
                 SituationId = submission.SituationId,
                 DramaWeight = drama,
+                DramaScale = DramaScales.Ten,
                 Participants = new Dictionary<string, string>(submission.Participants),
                 Facts = new List<Fact>(submission.Facts),
                 KnownBy = new List<KnownByEntry>(),
                 State = new RumorState()
             };
 
-            Hop0Seeding.Seed(evt, submission, _channel, _traits, _config.Propagation, _playerHeroId, submission.Day);
+            ModLog.Info($"WorldEventStore: {mintedId} ({submission.Type}) {DramaScales.Describe(evt.DramaWeight, evt.DramaScale)}, from {dramaSource}");
+
+            Hop0Seeding.Seed(evt, submission, _channel, _traits, _config.Propagation, _playerHeroId, submission.Day, ModLogSink.Instance);
             _stamper?.StampLearned(evt, evt.KnownBy);
             _stamper?.StampOutdated(evt, evt.KnownBy, evt.Day);
 

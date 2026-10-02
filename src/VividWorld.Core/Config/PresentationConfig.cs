@@ -27,6 +27,15 @@ namespace VividWorld.Core.Config
         /// </summary>
         public bool PlaceFirst { get; set; } = true;
 
+        /// <summary>
+        /// 消息是否優先使用整句句型渲染。預設 true。
+        /// 設為 false 時退回逐段拼接。
+        /// </summary>
+        public bool WholeSentences { get; set; } = true;
+
+        /// <summary>說話的人講給玩家聽時，事實句後面另起一句的感想（開關與好感、恩怨的分界）。</summary>
+        public FeelingsConfig Feelings { get; set; } = new();
+
         // §9.5.4：空字串 = 用字串表的 VividWorld_FactSeparator／VividWorld_SentenceEnd。
         // 嚴禁在這裡填全形標點——那是 v2 的在地化 bug。
         public string FactSeparator { get; set; } = string.Empty;

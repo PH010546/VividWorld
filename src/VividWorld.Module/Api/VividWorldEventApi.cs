@@ -176,7 +176,7 @@ namespace VividWorld.Api
                 {
                     bool isParticipant = item.Event.RoleOf(heroId) != null;
                     var prefix = RumorPrefixSelector.SelectPrefix(item.Hop, item.SourceHeroId, false, item.IsCorrection, isParticipant);
-                    var composed = RumorTextComposer.Compose(item.Event, item.Facts, cfg ?? new PresentationConfig(), prefix, heroId);
+                    var composed = RumorTextComposer.Compose(item.Event, item.Facts, cfg ?? new PresentationConfig(), prefix, heroId, item.SourceHeroId);
                     string text = FallbackTextRenderer.RenderRecallMemory(composed, language, cfg);
                     results.Add((item.EventId, text));
                 }

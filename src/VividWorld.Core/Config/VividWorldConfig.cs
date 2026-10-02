@@ -48,14 +48,8 @@ namespace VividWorld.Core.Config
             Embellishment ??= new EmbellishmentConfig();
             Events ??= new EventsConfig();
             Events.Sources ??= new EventSourcesConfig();
-            Events.PrisonerDramaByProminence ??= new ProminenceDramaConfig();
-            Events.ReleaseDramaByProminence ??= new ProminenceDramaConfig
-            {
-                Ruler = 4,
-                ClanLeader = 3,
-                NobleMember = 1,
-                Minor = 1
-            };
+            Events.WeightBonusByProminence ??= new ProminenceWeightBonusConfig();
+            Events.WeightBonusByClanStanding ??= new ClanStandingWeightBonusConfig();
             Situations ??= new SituationsConfig();
             Situations.Contest ??= new SituationContestConfig();
             Memory ??= new MemoryConfig();
@@ -265,17 +259,12 @@ namespace VividWorld.Core.Config
 
             // Dialogue
             Dialogue.SharesPerHeroPerDay = Math.Max(0, Math.Min(10, Dialogue.SharesPerHeroPerDay));
-            Dialogue.ScoreRetellMultiplier = Math.Max(0.0, Math.Min(10.0, Dialogue.ScoreRetellMultiplier));
+            Dialogue.CasualVolunteerLine = ClampTracked("dialogue.casualVolunteerLine", Dialogue.CasualVolunteerLine, -100.0, 100.0, notices);
+            Dialogue.RealisticVolunteerLine = ClampTracked("dialogue.realisticVolunteerLine", Dialogue.RealisticVolunteerLine, -100.0, 100.0, notices);
+            Dialogue.SecretLine = ClampTracked("dialogue.secretLine", Dialogue.SecretLine, -100.0, 100.0, notices);
+            Dialogue.BigNewsLine = (int)ClampTracked("dialogue.bigNewsLine", Dialogue.BigNewsLine, 1, 10, notices);
 
-            // §9.1 的四個評分權重都是「越大越優先」的正向項；負值會讓排序整個反轉，
-            // 那不是一種合理的調校，是設定寫錯。
-            Dialogue.ScoreDrama     = Clamp(Dialogue.ScoreDrama,     0.0, 100.0);
-            Dialogue.ScoreFreshness = Clamp(Dialogue.ScoreFreshness, 0.0, 100.0);
-            Dialogue.ScoreDetail    = Clamp(Dialogue.ScoreDetail,    0.0, 100.0);
-            Dialogue.ScoreRelevance = Clamp(Dialogue.ScoreRelevance, 0.0, 100.0);
-
-            // 傳聞模式（feature-LISTEN1/spec.md §12，LISTEN1d）
-            Dialogue.GistExtraHops = Math.Max(0, Dialogue.GistExtraHops);
+            // 傳聞模式
             string vMode = (Dialogue.VolunteerMode ?? string.Empty).Trim();
             if (string.Equals(vMode, "casual", StringComparison.OrdinalIgnoreCase))
             {
@@ -296,6 +285,10 @@ namespace VividWorld.Core.Config
             {
                 Presentation.FactOrder = new[] { "WHO", "CONTEXT", "WHEN", "WHERE", "WHAT", "WHY", "OUTCOME" };
             }
+            Presentation.Feelings ??= new FeelingsConfig();
+            Presentation.Feelings.AffectionHigh = (int)ClampTracked("presentation.feelings.affectionHigh", Presentation.Feelings.AffectionHigh, 0.0, 100.0, notices);
+            Presentation.Feelings.AffectionLow = (int)ClampTracked("presentation.feelings.affectionLow", Presentation.Feelings.AffectionLow, -100.0, 0.0, notices);
+            Presentation.Feelings.GrudgeThreshold = ClampTracked("presentation.feelings.grudgeThreshold", Presentation.Feelings.GrudgeThreshold, 0.0, 100.0, notices);
 
             // Consequences
             Consequences.BystanderMultiplier = ClampTracked("consequences.bystanderMultiplier", Consequences.BystanderMultiplier, 0.0, 1.0, notices);
@@ -338,233 +331,16 @@ namespace VividWorld.Core.Config
             Embellishment.ChancePerNegativeHonor = Math.Max(0.0, Math.Min(10.0, Embellishment.ChancePerNegativeHonor));
             Embellishment.MinHop = Math.Max(0, Embellishment.MinHop);
 
-            // Events: PrisonerDramaByProminence
-            int origRuler = Events.PrisonerDramaByProminence.Ruler;
-            Events.PrisonerDramaByProminence.Ruler = Math.Max(1, Math.Min(5, origRuler));
-            if (Events.PrisonerDramaByProminence.Ruler != origRuler && notices != null)
-            {
-                notices.Add(new ClampNotice
-                {
-                    Key = "events.prisonerDramaByProminence.ruler",
-                    Requested = origRuler,
-                    Applied = Events.PrisonerDramaByProminence.Ruler,
-                    AllowedRange = "1..5"
-                });
-            }
-
-            int origClanLeader = Events.PrisonerDramaByProminence.ClanLeader;
-            Events.PrisonerDramaByProminence.ClanLeader = Math.Max(1, Math.Min(5, origClanLeader));
-            if (Events.PrisonerDramaByProminence.ClanLeader != origClanLeader && notices != null)
-            {
-                notices.Add(new ClampNotice
-                {
-                    Key = "events.prisonerDramaByProminence.clanLeader",
-                    Requested = origClanLeader,
-                    Applied = Events.PrisonerDramaByProminence.ClanLeader,
-                    AllowedRange = "1..5"
-                });
-            }
-
-            int origNobleMember = Events.PrisonerDramaByProminence.NobleMember;
-            Events.PrisonerDramaByProminence.NobleMember = Math.Max(1, Math.Min(5, origNobleMember));
-            if (Events.PrisonerDramaByProminence.NobleMember != origNobleMember && notices != null)
-            {
-                notices.Add(new ClampNotice
-                {
-                    Key = "events.prisonerDramaByProminence.nobleMember",
-                    Requested = origNobleMember,
-                    Applied = Events.PrisonerDramaByProminence.NobleMember,
-                    AllowedRange = "1..5"
-                });
-            }
-
-            int origMinor = Events.PrisonerDramaByProminence.Minor;
-            Events.PrisonerDramaByProminence.Minor = Math.Max(1, Math.Min(5, origMinor));
-            if (Events.PrisonerDramaByProminence.Minor != origMinor && notices != null)
-            {
-                notices.Add(new ClampNotice
-                {
-                    Key = "events.prisonerDramaByProminence.minor",
-                    Requested = origMinor,
-                    Applied = Events.PrisonerDramaByProminence.Minor,
-                    AllowedRange = "1..5"
-                });
-            }
-
-            // Events: ReleaseDramaByProminence
-            int origRelRuler = Events.ReleaseDramaByProminence.Ruler;
-            Events.ReleaseDramaByProminence.Ruler = Math.Max(1, Math.Min(5, origRelRuler));
-            if (Events.ReleaseDramaByProminence.Ruler != origRelRuler && notices != null)
-            {
-                notices.Add(new ClampNotice
-                {
-                    Key = "events.releaseDramaByProminence.ruler",
-                    Requested = origRelRuler,
-                    Applied = Events.ReleaseDramaByProminence.Ruler,
-                    AllowedRange = "1..5"
-                });
-            }
-
-            int origRelClanLeader = Events.ReleaseDramaByProminence.ClanLeader;
-            Events.ReleaseDramaByProminence.ClanLeader = Math.Max(1, Math.Min(5, origRelClanLeader));
-            if (Events.ReleaseDramaByProminence.ClanLeader != origRelClanLeader && notices != null)
-            {
-                notices.Add(new ClampNotice
-                {
-                    Key = "events.releaseDramaByProminence.clanLeader",
-                    Requested = origRelClanLeader,
-                    Applied = Events.ReleaseDramaByProminence.ClanLeader,
-                    AllowedRange = "1..5"
-                });
-            }
-
-            int origRelNobleMember = Events.ReleaseDramaByProminence.NobleMember;
-            Events.ReleaseDramaByProminence.NobleMember = Math.Max(1, Math.Min(5, origRelNobleMember));
-            if (Events.ReleaseDramaByProminence.NobleMember != origRelNobleMember && notices != null)
-            {
-                notices.Add(new ClampNotice
-                {
-                    Key = "events.releaseDramaByProminence.nobleMember",
-                    Requested = origRelNobleMember,
-                    Applied = Events.ReleaseDramaByProminence.NobleMember,
-                    AllowedRange = "1..5"
-                });
-            }
-
-            int origRelMinor = Events.ReleaseDramaByProminence.Minor;
-            Events.ReleaseDramaByProminence.Minor = Math.Max(1, Math.Min(5, origRelMinor));
-            if (Events.ReleaseDramaByProminence.Minor != origRelMinor && notices != null)
-            {
-                notices.Add(new ClampNotice
-                {
-                    Key = "events.releaseDramaByProminence.minor",
-                    Requested = origRelMinor,
-                    Applied = Events.ReleaseDramaByProminence.Minor,
-                    AllowedRange = "1..5"
-                });
-            }
-
-            // Events: BanditCaptureDramaByProminence
-            Events.BanditCaptureDramaByProminence ??= new ProminenceDramaConfig
-            {
-                Ruler = 5,
-                ClanLeader = 5,
-                NobleMember = 3,
-                Minor = 2
-            };
-
-            int origBanditRuler = Events.BanditCaptureDramaByProminence.Ruler;
-            Events.BanditCaptureDramaByProminence.Ruler = Math.Max(1, Math.Min(5, origBanditRuler));
-            if (Events.BanditCaptureDramaByProminence.Ruler != origBanditRuler && notices != null)
-            {
-                notices.Add(new ClampNotice
-                {
-                    Key = "events.banditCaptureDramaByProminence.ruler",
-                    Requested = origBanditRuler,
-                    Applied = Events.BanditCaptureDramaByProminence.Ruler,
-                    AllowedRange = "1..5"
-                });
-            }
-
-            int origBanditClanLeader = Events.BanditCaptureDramaByProminence.ClanLeader;
-            Events.BanditCaptureDramaByProminence.ClanLeader = Math.Max(1, Math.Min(5, origBanditClanLeader));
-            if (Events.BanditCaptureDramaByProminence.ClanLeader != origBanditClanLeader && notices != null)
-            {
-                notices.Add(new ClampNotice
-                {
-                    Key = "events.banditCaptureDramaByProminence.clanLeader",
-                    Requested = origBanditClanLeader,
-                    Applied = Events.BanditCaptureDramaByProminence.ClanLeader,
-                    AllowedRange = "1..5"
-                });
-            }
-
-            int origBanditNobleMember = Events.BanditCaptureDramaByProminence.NobleMember;
-            Events.BanditCaptureDramaByProminence.NobleMember = Math.Max(1, Math.Min(5, origBanditNobleMember));
-            if (Events.BanditCaptureDramaByProminence.NobleMember != origBanditNobleMember && notices != null)
-            {
-                notices.Add(new ClampNotice
-                {
-                    Key = "events.banditCaptureDramaByProminence.nobleMember",
-                    Requested = origBanditNobleMember,
-                    Applied = Events.BanditCaptureDramaByProminence.NobleMember,
-                    AllowedRange = "1..5"
-                });
-            }
-
-            int origBanditMinor = Events.BanditCaptureDramaByProminence.Minor;
-            Events.BanditCaptureDramaByProminence.Minor = Math.Max(1, Math.Min(5, origBanditMinor));
-            if (Events.BanditCaptureDramaByProminence.Minor != origBanditMinor && notices != null)
-            {
-                notices.Add(new ClampNotice
-                {
-                    Key = "events.banditCaptureDramaByProminence.minor",
-                    Requested = origBanditMinor,
-                    Applied = Events.BanditCaptureDramaByProminence.Minor,
-                    AllowedRange = "1..5"
-                });
-            }
-
-            // Events: BanditReleaseDramaByProminence
-            Events.BanditReleaseDramaByProminence ??= new ProminenceDramaConfig
-            {
-                Ruler = 5,
-                ClanLeader = 4,
-                NobleMember = 2,
-                Minor = 1
-            };
-
-            int origRelBanditRuler = Events.BanditReleaseDramaByProminence.Ruler;
-            Events.BanditReleaseDramaByProminence.Ruler = Math.Max(1, Math.Min(5, origRelBanditRuler));
-            if (Events.BanditReleaseDramaByProminence.Ruler != origRelBanditRuler && notices != null)
-            {
-                notices.Add(new ClampNotice
-                {
-                    Key = "events.banditReleaseDramaByProminence.ruler",
-                    Requested = origRelBanditRuler,
-                    Applied = Events.BanditReleaseDramaByProminence.Ruler,
-                    AllowedRange = "1..5"
-                });
-            }
-
-            int origRelBanditClanLeader = Events.BanditReleaseDramaByProminence.ClanLeader;
-            Events.BanditReleaseDramaByProminence.ClanLeader = Math.Max(1, Math.Min(5, origRelBanditClanLeader));
-            if (Events.BanditReleaseDramaByProminence.ClanLeader != origRelBanditClanLeader && notices != null)
-            {
-                notices.Add(new ClampNotice
-                {
-                    Key = "events.banditReleaseDramaByProminence.clanLeader",
-                    Requested = origRelBanditClanLeader,
-                    Applied = Events.BanditReleaseDramaByProminence.ClanLeader,
-                    AllowedRange = "1..5"
-                });
-            }
-
-            int origRelBanditNobleMember = Events.BanditReleaseDramaByProminence.NobleMember;
-            Events.BanditReleaseDramaByProminence.NobleMember = Math.Max(1, Math.Min(5, origRelBanditNobleMember));
-            if (Events.BanditReleaseDramaByProminence.NobleMember != origRelBanditNobleMember && notices != null)
-            {
-                notices.Add(new ClampNotice
-                {
-                    Key = "events.banditReleaseDramaByProminence.nobleMember",
-                    Requested = origRelBanditNobleMember,
-                    Applied = Events.BanditReleaseDramaByProminence.NobleMember,
-                    AllowedRange = "1..5"
-                });
-            }
-
-            int origRelBanditMinor = Events.BanditReleaseDramaByProminence.Minor;
-            Events.BanditReleaseDramaByProminence.Minor = Math.Max(1, Math.Min(5, origRelBanditMinor));
-            if (Events.BanditReleaseDramaByProminence.Minor != origRelBanditMinor && notices != null)
-            {
-                notices.Add(new ClampNotice
-                {
-                    Key = "events.banditReleaseDramaByProminence.minor",
-                    Requested = origRelBanditMinor,
-                    Applied = Events.BanditReleaseDramaByProminence.Minor,
-                    AllowedRange = "1..5"
-                });
-            }
+            // Events: 份量的加成與門檻（份量是 1..10，加成可以是負的）
+            Events.WeightBonusByProminence.Ruler = ClampInt("events.weightBonusByProminence.ruler", Events.WeightBonusByProminence.Ruler, -9, 9, notices);
+            Events.WeightBonusByProminence.ClanLeader = ClampInt("events.weightBonusByProminence.clanLeader", Events.WeightBonusByProminence.ClanLeader, -9, 9, notices);
+            Events.WeightBonusByProminence.NobleMember = ClampInt("events.weightBonusByProminence.nobleMember", Events.WeightBonusByProminence.NobleMember, -9, 9, notices);
+            Events.WeightBonusByProminence.Minor = ClampInt("events.weightBonusByProminence.minor", Events.WeightBonusByProminence.Minor, -9, 9, notices);
+            Events.WeightBonusByClanStanding.Royal = ClampInt("events.weightBonusByClanStanding.royal", Events.WeightBonusByClanStanding.Royal, -9, 9, notices);
+            Events.WeightBonusByClanStanding.High = ClampInt("events.weightBonusByClanStanding.high", Events.WeightBonusByClanStanding.High, -9, 9, notices);
+            Events.WeightBonusByClanStanding.Ordinary = ClampInt("events.weightBonusByClanStanding.ordinary", Events.WeightBonusByClanStanding.Ordinary, -9, 9, notices);
+            Events.WeightBonusByClanStanding.Minor = ClampInt("events.weightBonusByClanStanding.minor", Events.WeightBonusByClanStanding.Minor, -9, 9, notices);
+            Events.HighClanMinTier = ClampInt("events.highClanMinTier", Events.HighClanMinTier, 1, 10, notices);
 
             // Debug
             Debug.FakeProducerEventsPerDay = Math.Max(0.0, Debug.FakeProducerEventsPerDay);
@@ -1005,6 +781,22 @@ namespace VividWorld.Core.Config
             return list.ToArray();
         }
 
+
+        private static int ClampInt(string key, int value, int min, int max, IList<ClampNotice>? notices)
+        {
+            int clamped = Math.Max(min, Math.Min(max, value));
+            if (clamped != value && notices != null)
+            {
+                notices.Add(new ClampNotice
+                {
+                    Key = key,
+                    Requested = value,
+                    Applied = clamped,
+                    AllowedRange = $"{min}..{max}"
+                });
+            }
+            return clamped;
+        }
 
         private static double ClampTracked(string key, double value, double min, double max, IList<ClampNotice>? notices)
         {

@@ -22,6 +22,7 @@ namespace VividWorld.Dialogue
     {
         private readonly VividWorldConfig _config;
         private RumorOfferSelector? _offerSelector;
+        internal RumorOfferSelector? OfferSelector => _offerSelector;
         private EventShardStore? _store;
         private RumorIndex? _index;
         private KnownByIndex? _knownBy;
@@ -144,8 +145,8 @@ namespace VividWorld.Dialogue
                 ModLog.Info($"Rumor mode: changed in settings '{before}' -> '{d.VolunteerMode}', applied now without reload");
                 if (_compat.RumorModeResult != null)
                 {
-                    ModLog.Info(RumorModeResolver.FormatModeLine(_compat.RumorModeResult, _offerSelector.ChatRelationGate,
-                        d.NpcVolunteerRelationGate, d.GistExtraHops, _compat.AskMinClanTier));
+                    ModLog.Info(RumorModeResolver.FormatModeLine(_compat.RumorModeResult, _offerSelector.ActiveVolunteerLine,
+                        d.AskWillingnessThreshold, d.SecretLine, d.BigNewsLine, _compat.AskMinClanTier));
                 }
                 ModLog.Flush();
             }
@@ -537,6 +538,17 @@ namespace VividWorld.Dialogue
                 _volunteerToldDelivered);
 
             dayTally.Increment(volunteerKey);
+            if (string.Equals(volunteerKey, ListenTallyKeys.VolunteerTold, StringComparison.Ordinal) && _volunteerDecision != null)
+            {
+                if (Enum.TryParse<VolunteerReasonCategory>(_volunteerDecision.ReasonCategory, out var cat))
+                {
+                    string reasonKey = ListenTallyClassifier.GetVolunteerReasonKey(cat);
+                    if (!string.Equals(reasonKey, ListenTallyKeys.VolunteerTold, StringComparison.Ordinal))
+                    {
+                        dayTally.Increment(reasonKey);
+                    }
+                }
+            }
             if (string.Equals(volunteerKey, ListenTallyKeys.NotInNetwork, StringComparison.Ordinal) && _currentConversationIsNoHero)
             {
                 dayTally.Increment(ListenTallyKeys.NotInNetworkNoHero);
@@ -568,6 +580,15 @@ namespace VividWorld.Dialogue
                 if (_askTold)
                 {
                     dayTally.Increment(ListenTallyKeys.AskTold);
+                    if (_cachedAskDecision != null)
+                    {
+                        if (_cachedAskDecision.AnswerMode == "familiar_closely_related")
+                            dayTally.Increment(ListenTallyKeys.AskToldFamiliarCloselyRelated);
+                        else if (_cachedAskDecision.AnswerMode == "familiar_big_news")
+                            dayTally.Increment(ListenTallyKeys.AskToldFamiliarBigNews);
+                        else if (_cachedAskDecision.AnswerMode == "unfamiliar_big_news")
+                            dayTally.Increment(ListenTallyKeys.AskToldUnfamiliarBigNews);
+                    }
                 }
                 else if (_cachedAskDecision != null)
                 {
@@ -630,7 +651,7 @@ namespace VividWorld.Dialogue
                 "vividworld_ask_news",
                 d.PlayerLineInputToken,
                 "vividworld_ask_answer",
-                "{=VividWorld_AskNews}Any news on the road?",
+                "{=!}{VIVIDWORLD_ASK_NEWS}",
                 PlayerCanAskCondition,
                 null,
                 d.PlayerLinePriority,
@@ -663,7 +684,7 @@ namespace VividWorld.Dialogue
                 "vividworld_ask_nothing",
                 "vividworld_ask_answer",
                 "hero_main_options",
-                "{=VividWorld_AskNothing}Nothing worth repeating.",
+                "{=!}{VIVIDWORLD_ASK_NOTHING}",
                 null,
                 OnAskNothing,
                 100,
@@ -674,7 +695,7 @@ namespace VividWorld.Dialogue
                 "vividworld_recovery_ask",
                 "hero_main_options",
                 "vividworld_volunteer_recovery",
-                "{=VividWorld_RecoveryAsk}You looked like you were about to say something.",
+                "{=!}{VIVIDWORLD_RECOVERY_ASK}",
                 RecoveryAvailableCondition,
                 null,
                 d.PlayerLinePriority,
@@ -962,7 +983,7 @@ namespace VividWorld.Dialogue
             }
         }
 
-        private void ApplyOfferAndRecord(RumorOffer offer, WorldEvent evt, string tellerHeroId, double day, string tellerName)
+        internal void ApplyOfferAndRecord(RumorOffer offer, WorldEvent evt, string tellerHeroId, double day, string tellerName)
         {
             if (_offerSelector == null || _store == null) return;
 
@@ -984,8 +1005,28 @@ namespace VividWorld.Dialogue
                 {
                     bool isUpdate = _playerHeardLog.Contains(offer.EventId);
                     var facts = PlayerKnownFacts.Of(evt, playerEntry, _offerSelector.Engine);
-                    bool recorded = _playerHeardLog.Record(evt, playerEntry, facts, day);
-                    if (recorded)
+
+                    // 這一次講述：誰、真正的手數（講者手數 + 1）、講了哪幾塊碎片，
+                    // 講的當下挑定的感想，以及組好的整句（原句欄位）——打開紀事時同一句重建，不重算。
+                    var c = offer.Composed;
+                    var feeling = c?.Feeling;
+                    var telling = new PlayerHeardSource
+                    {
+                        HeroId = tellerHeroId,
+                        Day = day,
+                        Hop = offer.PlayerHop,
+                        FactIds = _offerSelector.ToldFactIdsOf(offer, evt, tellerHeroId)
+                    };
+                    if (feeling != null && feeling.Applied)
+                    {
+                        telling.FeelingLineKey = feeling.LineKey;
+                        telling.FeelingAddressKey = feeling.AddressKey;
+                        telling.FeelingFocusHeroId = feeling.FocusHeroId;
+                    }
+                    telling.CaptureSpokenLine(c);
+
+                    var recorded = _playerHeardLog.RecordTelling(evt, playerEntry, facts, day, telling);
+                    if (recorded.Changed)
                     {
                         ModLog.Info(PlayerHeardLogFormatter.FormatTold(
                             isUpdate,
@@ -993,6 +1034,20 @@ namespace VividWorld.Dialogue
                             playerEntry.Hop,
                             facts.Count,
                             tellerName));
+                    }
+                    if (recorded.SourceChange != PlayerHeardSourceChange.None && recorded.Source != null)
+                    {
+                        ModLog.Info(PlayerHeardLogFormatter.FormatSourceChange(
+                            recorded.SourceChange,
+                            offer.EventId,
+                            tellerName,
+                            recorded.Source.Hop,
+                            recorded.Source.FactIds.Count,
+                            recorded.Source.HasFeeling,
+                            recorded.SourceCount,
+                            recorded.Source.HasSpokenLine,
+                            recorded.Source.FirstSentenceCandidate,
+                            recorded.Source.TrailingKind));
                     }
                 }
             }
@@ -1020,7 +1075,7 @@ namespace VividWorld.Dialogue
                         _volunteerToldDelivered = true;
 
                         string tierStr = _volunteerDecision?.Tier == VolunteerTier.Gist ? "gist" : "full";
-                        string deliveredMsg = $"Rumor delivered to player: event {_cachedVolunteerOffer.EventId} ({tierStr}, hop {_cachedVolunteerOffer.ResultingPlayerHop}, isRetell={_cachedVolunteerOffer.IsRetell}) from {hero.Name}";
+                        string deliveredMsg = $"Rumor delivered to player: event {_cachedVolunteerOffer.EventId} ({tierStr}, hop {_cachedVolunteerOffer.ResultingPlayerHop}, isRetell={_cachedVolunteerOffer.IsRetell}, heldBack={_cachedVolunteerOffer.HeldBack}, closing={_cachedVolunteerOffer.Composed.ClosingKey ?? "none"}) from {hero.Name}";
                         if (_config.Debug.ListenTally)
                         {
                             deliveredMsg += $" | tally: {ListenTallyKeys.VolunteerTold}";
@@ -1028,6 +1083,7 @@ namespace VividWorld.Dialogue
                         ModLog.Info(deliveredMsg);
                         ModLog.Info($"  text shown: \"{_renderedVolunteerTextPlain ?? _renderedVolunteerText}\"");
                         LogDeliveredPrefix(_cachedVolunteerOffer);
+                        LogDeliveredFeeling(_cachedVolunteerOffer);
                     }
                 }
             }
@@ -1097,6 +1153,12 @@ namespace VividWorld.Dialogue
                 _renderedVolunteerTextPlain = renderResult.PlainText;
                 MBTextManager.SetTextVariable("VIVIDWORLD_RUMOR", renderResult.DisplayText, false);
 
+                // 補救選項的文字：失敗只退回英文原句，不影響這個條件的回傳值。
+                FallbackTextRenderer.SetFixedLineVariable(
+                    "VIVIDWORLD_RECOVERY_ASK", "VividWorld_RecoveryAsk",
+                    "You looked like you were about to say something.",
+                    Hero.MainHero?.StringId, hero.StringId);
+
                 if (!_recoveryOfferedLogged)
                 {
                     _recoveryOfferedLogged = true;
@@ -1145,7 +1207,7 @@ namespace VividWorld.Dialogue
                         _recoveryUsed = true;
 
                         string tierStr = _volunteerDecision?.Tier == VolunteerTier.Gist ? "gist" : "full";
-                        string recDeliveredMsg = $"Rumor delivered to player (via recovery): event {_cachedVolunteerOffer.EventId} ({tierStr}, hop {_cachedVolunteerOffer.ResultingPlayerHop}, isRetell={_cachedVolunteerOffer.IsRetell}) from {hero.Name}";
+                        string recDeliveredMsg = $"Rumor delivered to player (via recovery): event {_cachedVolunteerOffer.EventId} ({tierStr}, hop {_cachedVolunteerOffer.ResultingPlayerHop}, isRetell={_cachedVolunteerOffer.IsRetell}, heldBack={_cachedVolunteerOffer.HeldBack}, closing={_cachedVolunteerOffer.Composed.ClosingKey ?? "none"}) from {hero.Name}";
                         if (_config.Debug.ListenTally)
                         {
                             recDeliveredMsg += $" | tally: {ListenTallyKeys.RecoveryUsed}";
@@ -1153,6 +1215,7 @@ namespace VividWorld.Dialogue
                         ModLog.Info(recDeliveredMsg);
                         ModLog.Info($"  text shown: \"{_renderedVolunteerTextPlain ?? _renderedVolunteerText}\"");
                         LogDeliveredPrefix(_cachedVolunteerOffer);
+                        LogDeliveredFeeling(_cachedVolunteerOffer);
                     }
                 }
             }
@@ -1314,12 +1377,34 @@ namespace VividWorld.Dialogue
                 // 那個狀態在 log 裡與「條件為假」長得一模一樣（L-22）。
                 ReportVolunteerMissIfAny(hero);
 
+                // 問消息的選項與 NPC 的保底回話（「沒什麼值得一提的事」，它的條件必須是 null）都由這裡設字：
+                // 玩家看得到這個選項才走得到那一句。選項文字在條件之後才解析，所以這裡設的變數畫面讀得到。
+                // 設字失敗不能改變這個條件的回傳值。
+                SetAskFixedLineVariables(hero);
+
                 return true;
             }
             catch (Exception ex)
             {
                 ModLog.Error("Error in PlayerCanAskCondition", ex);
                 return false;
+            }
+        }
+
+        private static void SetAskFixedLineVariables(Hero partner)
+        {
+            try
+            {
+                string? playerId = Hero.MainHero?.StringId;
+                string? partnerId = partner.StringId;
+                FallbackTextRenderer.SetFixedLineVariable(
+                    "VIVIDWORLD_ASK_NEWS", "VividWorld_AskNews", "Any news on the road?", playerId, partnerId);
+                FallbackTextRenderer.SetFixedLineVariable(
+                    "VIVIDWORLD_ASK_NOTHING", "VividWorld_AskNothing", "Nothing worth repeating.", partnerId, playerId);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn($"Could not set the ask-news dialogue line variables ({ex.GetType().Name}: {ex.Message}).");
             }
         }
 
@@ -1662,6 +1747,7 @@ namespace VividWorld.Dialogue
                         ModLog.Info(askMsg);
                         ModLog.Info($"  text shown: \"{_renderedAskTextPlain ?? _renderedAskText}\"");
                         LogDeliveredPrefix(_cachedOffer);
+                        LogDeliveredFeeling(_cachedOffer);
                     }
                 }
             }
@@ -1706,9 +1792,10 @@ namespace VividWorld.Dialogue
                     return false;
                 }
 
-                // 先渲染成玩家語言的字串再注入，跟 HasAskOfferCondition 同一個多載（規格 §9.2，已驗證）。
-                string text = new TextObject("{=" + key + "}" + fallback).ToString();
-                MBTextManager.SetTextVariable("VIVIDWORLD_ASK_REFUSAL", text, false);
+                // 取還沒解析的字串、套依性別選字的記號後再注入；說話的人是對話對象，聽的人是玩家。
+                FallbackTextRenderer.SetFixedLineVariable(
+                    "VIVIDWORLD_ASK_REFUSAL", key!, fallback,
+                    Hero.OneToOneConversationHero?.StringId, Hero.MainHero?.StringId);
                 return true;
             }
             catch (Exception ex)
@@ -1874,7 +1961,7 @@ namespace VividWorld.Dialogue
             }
         }
 
-        private HeroSocialProfile BuildSocialProfile(Hero hero)
+        internal HeroSocialProfile BuildSocialProfile(Hero hero)
         {
             var mainHero = Hero.MainHero;
             int relation = 0;
@@ -1986,20 +2073,7 @@ namespace VividWorld.Dialogue
                 }
 
                 var playerEntry = evt.EntryFor(playerHeroId);
-
                 bool involvesCared = false;
-                if (Hero.MainHero != null && evt.Participants != null)
-                {
-                    foreach (var participantHeroId in evt.Participants.Values)
-                    {
-                        var h = _heroLookup.Get(participantHeroId);
-                        if (h != null && h.GetRelation(Hero.MainHero) >= _config.Dialogue.ScoreRelevanceRelationGate)
-                        {
-                            involvesCared = true;
-                            break;
-                        }
-                    }
-                }
 
                 string? linkedId = evt.LinkedEventId;
                 bool isCorrection = !string.IsNullOrEmpty(linkedId) &&
@@ -2020,7 +2094,15 @@ namespace VividWorld.Dialogue
             return result;
         }
 
-        private static void LogDeliveredPrefix(RumorOffer? offer)
+        /// <summary>講給玩家聽的完整分享印一行感想判定（焦點人物、好感、恩怨、地位、挑中哪一句）；沒有感想時印原因。</summary>
+        internal static void LogDeliveredFeeling(RumorOffer? offer)
+        {
+            var feeling = offer?.Composed?.Feeling;
+            if (feeling == null) return;
+            ModLog.Info("  " + feeling.LogLine);
+        }
+
+        internal static void LogDeliveredPrefix(RumorOffer? offer)
         {
             if (offer == null) return;
             var prefix = offer.Prefix;
@@ -2087,6 +2169,23 @@ namespace VividWorld.Dialogue
             sw.Stop();
             result.ElapsedMilliseconds = sw.ElapsedMilliseconds;
             result.UnstampedEntriesCount = totalUnstamped;
+
+            // 目前還沒休眠的事件，依份量（1..10）各有幾則
+            try
+            {
+                foreach (var entry in _index.VisibleEntries(day))
+                {
+                    if (entry == null || entry.Dormant || string.IsNullOrEmpty(entry.EventId)) continue;
+                    var evt = _store.Load(entry.EventId, _index);
+                    if (evt == null) continue;
+                    result.ActiveEventsByWeight[evt.DramaWeightTen - 1]++;
+                }
+                result.WeightTallyAvailable = true;
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Listen Preview: could not tally active events by weight", ex);
+            }
             return result;
         }
 

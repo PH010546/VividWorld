@@ -890,6 +890,36 @@ namespace VividWorld.Core.Tests
         }
 
         [Fact]
+        public void GrudgeIndex_RebuildFrom_KeepsSource()
+        {
+            // 讀檔重建出來的帳本要跟寫入時一樣分得出「聽說來的」與「情境當場結下的」；
+            // 漏抄會讓聽說來的恩怨在讀檔後全部變回預設值 Situation。
+            var rumorIndex = new RumorIndex();
+            rumorIndex.Upsert(new RumorIndexEntry { EventId = "evt_mixed", HasGrudges = true });
+
+            var rebuilt = GrudgeIndex.RebuildFrom(rumorIndex, id => new WorldEvent
+            {
+                EventId = id,
+                Day = 10.0,
+                KnownBy = new List<KnownByEntry>
+                {
+                    new()
+                    {
+                        HeroId = "h_from",
+                        RelationImpacts = new List<RelationImpact>
+                        {
+                            new() { Scope = GrudgeScope.Personal, AboutHeroId = "h_rumor", Requested = -2.1, Source = GrudgeSource.Rumor },
+                            new() { Scope = GrudgeScope.Personal, AboutHeroId = "h_situation", Requested = -6.0, Source = GrudgeSource.Situation }
+                        }
+                    }
+                }
+            }, 100.0, out _, out _, out _);
+
+            Assert.Equal(GrudgeSource.Rumor, Assert.Single(rebuilt.Between("h_from", "h_rumor", GrudgeScope.Personal)).Source);
+            Assert.Equal(GrudgeSource.Situation, Assert.Single(rebuilt.Between("h_from", "h_situation", GrudgeScope.Personal)).Source);
+        }
+
+        [Fact]
         public void GrudgeIndex_RebuildFrom_LoadReturnsNull_IncrementsSkipped()
         {
             var rumorIndex = new RumorIndex();

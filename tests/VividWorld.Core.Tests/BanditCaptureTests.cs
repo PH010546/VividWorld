@@ -194,9 +194,9 @@ namespace VividWorld.Core.Tests
         }
 
         [Fact]
-        public void BanditCaptureDrama_ClassifiesAllFourProminenceTiers()
+        public void BanditCaptureWeightBonus_ClassifiesAllFourProminenceTiers()
         {
-            var dramaConfig = new ProminenceDramaConfig
+            var dramaConfig = new ProminenceWeightBonusConfig
             {
                 Ruler = 5,
                 ClanLeader = 5,
@@ -215,7 +215,7 @@ namespace VividWorld.Core.Tests
             };
             var rulerResult = PrisonerProminence.Classify(rulerFacts, dramaConfig);
             Assert.Equal(ProminenceTier.Ruler, rulerResult.Tier);
-            Assert.Equal(5, rulerResult.Drama);
+            Assert.Equal(5, rulerResult.Bonus);
 
             var clanLeaderFacts = new ProminenceFacts
             {
@@ -228,7 +228,7 @@ namespace VividWorld.Core.Tests
             };
             var clanLeaderResult = PrisonerProminence.Classify(clanLeaderFacts, dramaConfig);
             Assert.Equal(ProminenceTier.ClanLeader, clanLeaderResult.Tier);
-            Assert.Equal(5, clanLeaderResult.Drama);
+            Assert.Equal(5, clanLeaderResult.Bonus);
 
             var nobleMemberFacts = new ProminenceFacts
             {
@@ -241,7 +241,7 @@ namespace VividWorld.Core.Tests
             };
             var nobleResult = PrisonerProminence.Classify(nobleMemberFacts, dramaConfig);
             Assert.Equal(ProminenceTier.NobleMember, nobleResult.Tier);
-            Assert.Equal(3, nobleResult.Drama);
+            Assert.Equal(3, nobleResult.Bonus);
 
             var minorFacts = new ProminenceFacts
             {
@@ -255,68 +255,7 @@ namespace VividWorld.Core.Tests
             };
             var minorResult = PrisonerProminence.Classify(minorFacts, dramaConfig);
             Assert.Equal(ProminenceTier.Minor, minorResult.Tier);
-            Assert.Equal(2, minorResult.Drama);
-        }
-
-        [Fact]
-        public void ConfigMerge_AddsBanditCaptureDramaByProminence_PreservingExistingValues()
-        {
-            const string oldConfigJson = @"{
-  ""version"": 1,
-  ""events"": {
-    ""flushIntervalHours"": 12,
-    ""prisonerDramaByProminence"": {
-      ""ruler"": 5,
-      ""clanLeader"": 4,
-      ""nobleMember"": 3,
-      ""minor"": 2
-    }
-  },
-  ""presentation"": {
-    ""factOrder"": [""WHO"", ""WHAT"", ""OUTCOME"", ""WHERE""]
-  }
-}";
-
-            var defConfig = new VividWorldConfig();
-            string defConfigJson = VividJson.Write(defConfig);
-
-            var existingJObj = JObject.Parse(oldConfigJson);
-            var canonicalJObj = JObject.Parse(defConfigJson);
-
-            var result = ConfigMerge.AddMissingKeys(existingJObj, canonicalJObj);
-
-            Assert.NotEmpty(result.AddedPaths);
-            Assert.Contains(result.AddedPaths, p => p.Contains("banditCaptureDramaByProminence"));
-
-            var mergedObj = result.Merged;
-            Assert.Equal(12, (int)mergedObj["events"]!["flushIntervalHours"]!);
-            Assert.Equal(5, (int)mergedObj["events"]!["banditCaptureDramaByProminence"]!["ruler"]!);
-            Assert.Equal(5, (int)mergedObj["events"]!["banditCaptureDramaByProminence"]!["clanLeader"]!);
-            Assert.Equal(3, (int)mergedObj["events"]!["banditCaptureDramaByProminence"]!["nobleMember"]!);
-            Assert.Equal(2, (int)mergedObj["events"]!["banditCaptureDramaByProminence"]!["minor"]!);
-        }
-
-        [Fact]
-        public void Normalize_ClampsBanditCaptureDramaByProminence_ToValidRange()
-        {
-            var cfg = new VividWorldConfig();
-            cfg.Events.BanditCaptureDramaByProminence.Ruler = 99;
-            cfg.Events.BanditCaptureDramaByProminence.ClanLeader = 0;
-            cfg.Events.BanditCaptureDramaByProminence.NobleMember = -5;
-            cfg.Events.BanditCaptureDramaByProminence.Minor = 6;
-
-            var notices = new List<ClampNotice>();
-            cfg.Normalize(notices);
-
-            Assert.Equal(5, cfg.Events.BanditCaptureDramaByProminence.Ruler);
-            Assert.Equal(1, cfg.Events.BanditCaptureDramaByProminence.ClanLeader);
-            Assert.Equal(1, cfg.Events.BanditCaptureDramaByProminence.NobleMember);
-            Assert.Equal(5, cfg.Events.BanditCaptureDramaByProminence.Minor);
-
-            Assert.Contains(notices, n => n.Key == "events.banditCaptureDramaByProminence.ruler");
-            Assert.Contains(notices, n => n.Key == "events.banditCaptureDramaByProminence.clanLeader");
-            Assert.Contains(notices, n => n.Key == "events.banditCaptureDramaByProminence.nobleMember");
-            Assert.Contains(notices, n => n.Key == "events.banditCaptureDramaByProminence.minor");
+            Assert.Equal(2, minorResult.Bonus);
         }
 
         [Fact]

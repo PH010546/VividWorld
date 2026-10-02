@@ -71,6 +71,7 @@ namespace VividWorld
             var situationScan = new SituationScanBehavior(config); // SE3: 每日情境掃描
             EventCatalogStore.Load(config);
             SituationCatalogStore.Load(config);
+            FeelingCatalogStore.Load();
             SituationRunner.ResetSessionCounters();
             GrudgeApplier.ResetSessionCounters();
             SituationScanBehavior.ResetSessionState();
@@ -252,6 +253,12 @@ namespace VividWorld
 
                 string logLine = ChronicleLogFormatter.FormatOpen(playerId, currentDay, stats, maxEntries);
                 ModLog.Info(logLine);
+                foreach (var shown in entries)
+                {
+                    var headline = ChronicleEntryVM.ResolveHeadline(shown, heroLookup);
+                    shown.HeadlineText = headline.Text;
+                    ModLog.Info(ChronicleLogFormatter.FormatEntrySources(shown.EventId, shown.Sources, headline.Note));
+                }
                 ModLog.Flush();
 
                 var vm = new ChronicleWindowVM(entries, _config.Presentation, heroLookup);

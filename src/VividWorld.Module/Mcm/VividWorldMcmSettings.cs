@@ -77,13 +77,8 @@ namespace VividWorld.Mcm
         public float AskWillingnessThreshold { get; set; } = 5.0f;
 
 
-        [SettingPropertyInteger("{=VividWorld_MCM_NpcVolunteerRelationGate}Full-story relation gate", -100, 100, "0", Order = 1, RequireRestart = false,
-            HintText = "{=VividWorld_MCM_NpcVolunteerRelationGateHint}When someone brings up a rumor on their own, they tell the full story if their relation with you is at least this value. Below it, but at or above the Rumor mode threshold (Casual 0, Realistic 10), they only give you the gist. Your spouse, companions and clan members always tell the full story. If you set this lower than the Rumor mode threshold, this value wins.")]
-        [SettingPropertyGroup("{=VividWorld_MCM_Group_Dialogue}Dialogue", GroupOrder = 3)]
-        public int NpcVolunteerRelationGate { get; set; } = 30;
-
         [SettingPropertyDropdown("{=VividWorld_MCM_VolunteerMode}Rumor mode", Order = 0, RequireRestart = false,
-            HintText = "{=VividWorld_MCM_VolunteerModeHint}Auto: Realistic when a commoner mod such as Not-a-Noble or Lowborn is detected, otherwise Casual. Casual: anyone who doesn't dislike you may bring up rumors, and even a commoner may ask. Realistic: a lord must have relation 10 or higher to bring them up; with a commoner mod installed, you need clan tier 1 to ask. Takes effect right away; no need to reload.")]
+            HintText = "{=VividWorld_MCM_VolunteerModeHint}Auto: Realistic when a commoner mod such as Not-a-Noble or Lowborn is detected, otherwise Casual. Casual: as long as their personality does not mind chatting, NPCs will share what's happening to themselves and those close to them even with someone they just met, and commoners can also ask. Realistic: only NPCs who are very talkative or have a good rapport with you will bring up news on their own; with a commoner mod installed, you need clan tier 1 to ask. Takes effect right away; no need to reload.")]
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Dialogue}Dialogue", GroupOrder = 3)]
         public Dropdown<string> VolunteerMode { get; set; } = new Dropdown<string>(McmChoiceLists.VolunteerModes, 0);
 

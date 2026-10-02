@@ -21,7 +21,7 @@ namespace VividWorld.Core.Rumors
                 return Array.Empty<Fact>();
             }
 
-            int threshold = ThresholdAt(hop, evt.DramaWeight);
+            int threshold = ThresholdAt(hop, evt.DramaBand);
             int count = evt.Facts.Count;
             bool[] keep = new bool[count];
             int keptCount = 0;

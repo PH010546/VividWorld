@@ -176,15 +176,52 @@ namespace VividWorld.Core.Catalog
                     });
                 }
 
-                // 3. DramaWeight
+                // 3. DramaScale、DramaWeight
+                // 沒標明尺度的模板是舊寫法（dramaWeight 是 1..5 的段）；dramaScale 寫 10 才是 1..10 的份量。
+                int dramaScale = DramaScales.Legacy;
+                bool dramaScaleValid = true;
+                var scaleProp = templateObj.Property("dramaScale", StringComparison.OrdinalIgnoreCase);
+                if (scaleProp != null && scaleProp.Value.Type != JTokenType.Null)
+                {
+                    int parsedScale = 0;
+                    bool parsed = false;
+                    try
+                    {
+                        parsedScale = scaleProp.Value.Value<int>();
+                        parsed = true;
+                    }
+                    catch
+                    {
+                        parsed = false;
+                    }
+                    if (parsed && DramaScales.IsKnownScale(parsedScale))
+                    {
+                        dramaScale = parsedScale;
+                    }
+                    else
+                    {
+                        dramaScaleValid = false;
+                        templateIssues.Add(new CatalogIssue
+                        {
+                            TemplateIndex = i,
+                            TemplateType = templateType,
+                            Field = "dramaScale",
+                            Code = CatalogIssueCode.DramaOutOfRange,
+                            IsError = true,
+                            Detail = "dramaScale must be 10 (dramaWeight is 1..10) or omitted (dramaWeight is the old 1..5)."
+                        });
+                    }
+                }
+
                 int? dramaWeight = null;
                 var dramaProp = templateObj.Property("dramaWeight", StringComparison.OrdinalIgnoreCase);
-                if (dramaProp != null && dramaProp.Value.Type != JTokenType.Null)
+                if (dramaScaleValid && dramaProp != null && dramaProp.Value.Type != JTokenType.Null)
                 {
+                    int maxAllowed = dramaScale == DramaScales.Ten ? DramaScales.MaxWeight : DramaScales.MaxBand;
                     try
                     {
                         int dw = dramaProp.Value.Value<int>();
-                        if (!FactValidationRules.IsValidDramaWeight(dw))
+                        if (!FactValidationRules.IsValidDramaWeight(dw, dramaScale))
                         {
                             templateIssues.Add(new CatalogIssue
                             {
@@ -193,7 +230,7 @@ namespace VividWorld.Core.Catalog
                                 Field = "dramaWeight",
                                 Code = CatalogIssueCode.DramaOutOfRange,
                                 IsError = true,
-                                Detail = $"DramaWeight {dw} is out of range. Must be between 1 and 5."
+                                Detail = $"DramaWeight {dw} is out of range. Must be between 1 and {maxAllowed}."
                             });
                         }
                         else
@@ -210,7 +247,7 @@ namespace VividWorld.Core.Catalog
                             Field = "dramaWeight",
                             Code = CatalogIssueCode.DramaOutOfRange,
                             IsError = true,
-                            Detail = "DramaWeight must be an integer between 1 and 5."
+                            Detail = $"DramaWeight must be an integer between 1 and {maxAllowed}."
                         });
                     }
                 }
@@ -776,6 +813,189 @@ namespace VividWorld.Core.Catalog
                 // 9. retired：停用的型別不再產生、已存下來的也不再傳，事件資料保留
                 bool retired = templateObj.Property("retired", StringComparison.OrdinalIgnoreCase)?.Value?.Value<bool>() ?? false;
 
+                // 10. colocatedWitnessAsHearsay：同在一地的人在當地聽到消息（第 1 手、沒有指名來源），不算親眼看到
+                bool colocatedWitnessAsHearsay = templateObj.Property("colocatedWitnessAsHearsay", StringComparison.OrdinalIgnoreCase)?.Value?.Value<bool>() ?? false;
+
+                // 11. feelings／feelingOverrides：角色 → 感想類別。沒有這個欄位的模板講給玩家聽時不附感想
+                Dictionary<string, string>? feelings = null;
+                List<FeelingOverride>? feelingOverrides = null;
+                var feelingsProp = templateObj.Property("feelings", StringComparison.OrdinalIgnoreCase);
+                if (feelingsProp != null && feelingsProp.Value.Type != JTokenType.Null)
+                {
+                    if (feelingsProp.Value is not JObject feelingsObj)
+                    {
+                        templateIssues.Add(new CatalogIssue
+                        {
+                            TemplateIndex = i,
+                            TemplateType = templateType,
+                            Field = "feelings",
+                            Code = CatalogIssueCode.FeelingInvalid,
+                            IsError = true,
+                            Detail = "Template feelings must be a JSON object of role -> category."
+                        });
+                    }
+                    else
+                    {
+                        feelings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                        foreach (var prop in feelingsObj.Properties())
+                        {
+                            string? cat = prop.Value.Type == JTokenType.String ? prop.Value.Value<string>() : null;
+                            if (!roles.ContainsKey(prop.Name))
+                            {
+                                templateIssues.Add(new CatalogIssue
+                                {
+                                    TemplateIndex = i,
+                                    TemplateType = templateType,
+                                    Field = $"feelings.{prop.Name}",
+                                    Code = CatalogIssueCode.FeelingInvalid,
+                                    IsError = true,
+                                    Detail = $"Role '{prop.Name}' in feelings is not a declared role."
+                                });
+                            }
+                            else if (cat == null || !VividWorld.Core.Feelings.FeelingCategories.IsKnown(cat))
+                            {
+                                templateIssues.Add(new CatalogIssue
+                                {
+                                    TemplateIndex = i,
+                                    TemplateType = templateType,
+                                    Field = $"feelings.{prop.Name}",
+                                    Code = CatalogIssueCode.FeelingInvalid,
+                                    IsError = true,
+                                    Detail = $"Feeling category '{cat}' is not one of: {string.Join(", ", VividWorld.Core.Feelings.FeelingCategories.Ids)}."
+                                });
+                            }
+                            else
+                            {
+                                feelings[prop.Name] = cat;
+                            }
+                        }
+                    }
+                }
+
+                var feelingOverridesProp = templateObj.Property("feelingOverrides", StringComparison.OrdinalIgnoreCase);
+                if (feelingOverridesProp != null && feelingOverridesProp.Value.Type != JTokenType.Null)
+                {
+                    if (feelingOverridesProp.Value is not JArray overridesArr)
+                    {
+                        templateIssues.Add(new CatalogIssue
+                        {
+                            TemplateIndex = i,
+                            TemplateType = templateType,
+                            Field = "feelingOverrides",
+                            Code = CatalogIssueCode.FeelingInvalid,
+                            IsError = true,
+                            Detail = "Template feelingOverrides must be a JSON array."
+                        });
+                    }
+                    else
+                    {
+                        feelingOverrides = new List<FeelingOverride>();
+                        for (int oi = 0; oi < overridesArr.Count; oi++)
+                        {
+                            var ov = overridesArr[oi] as JObject;
+                            string? ovRole = ov?["role"]?.Value<string>();
+                            string? ovFact = ov?["whenFact"]?.Value<string>();
+                            string? ovCat = ov?["category"]?.Value<string>();
+                            if (string.IsNullOrEmpty(ovRole) || !roles.ContainsKey(ovRole!)
+                                || string.IsNullOrEmpty(ovFact)
+                                || ovCat == null || !VividWorld.Core.Feelings.FeelingCategories.IsKnown(ovCat))
+                            {
+                                templateIssues.Add(new CatalogIssue
+                                {
+                                    TemplateIndex = i,
+                                    TemplateType = templateType,
+                                    Field = $"feelingOverrides[{oi}]",
+                                    Code = CatalogIssueCode.FeelingInvalid,
+                                    IsError = true,
+                                    Detail = "Each override needs a declared 'role', a 'whenFact' text id and a known 'category'."
+                                });
+                                continue;
+                            }
+                            feelingOverrides.Add(new FeelingOverride { Role = ovRole!, WhenFact = ovFact!, Category = ovCat });
+                        }
+                    }
+                }
+
+                // 12. selfFeelingVariants：角色 → 個性版本清單（順序就是優先順序）
+                Dictionary<string, List<SelfFeelingVariantRule>>? selfFeelingVariants = null;
+                var sfvProp = templateObj.Property("selfFeelingVariants", StringComparison.OrdinalIgnoreCase);
+                if (sfvProp != null && sfvProp.Value.Type != JTokenType.Null)
+                {
+                    void SfvIssue(string field, string detail) => templateIssues.Add(new CatalogIssue
+                    {
+                        TemplateIndex = i,
+                        TemplateType = templateType,
+                        Field = field,
+                        Code = CatalogIssueCode.SelfFeelingVariantInvalid,
+                        IsError = true,
+                        Detail = detail
+                    });
+
+                    if (sfvProp.Value is not JObject sfvObj)
+                    {
+                        SfvIssue("selfFeelingVariants", "Template selfFeelingVariants must be a JSON object of role -> array of variants.");
+                    }
+                    else
+                    {
+                        selfFeelingVariants = new Dictionary<string, List<SelfFeelingVariantRule>>(StringComparer.OrdinalIgnoreCase);
+                        foreach (var prop in sfvObj.Properties())
+                        {
+                            string field = $"selfFeelingVariants.{prop.Name}";
+                            if (!roles.ContainsKey(prop.Name))
+                            {
+                                SfvIssue(field, $"Role '{prop.Name}' in selfFeelingVariants is not a declared role.");
+                                continue;
+                            }
+                            if (prop.Value is not JArray arr)
+                            {
+                                SfvIssue(field, "Each role needs a JSON array of variants.");
+                                continue;
+                            }
+                            var list = new List<SelfFeelingVariantRule>();
+                            for (int vi = 0; vi < arr.Count; vi++)
+                            {
+                                var vo = arr[vi] as JObject;
+                                string? tendency = vo?["tendency"]?.Type == JTokenType.String ? vo["tendency"]!.Value<string>() : null;
+                                string? trait = vo?["trait"]?.Type == JTokenType.String ? vo["trait"]!.Value<string>() : null;
+                                var minTok = vo?["min"];
+                                var maxTok = vo?["max"];
+                                bool hasMin = minTok != null && minTok.Type != JTokenType.Null;
+                                bool hasMax = maxTok != null && maxTok.Type != JTokenType.Null;
+                                bool minOk = !hasMin || minTok!.Type == JTokenType.Integer;
+                                bool maxOk = !hasMax || maxTok!.Type == JTokenType.Integer;
+                                string vfield = $"{field}[{vi}]";
+                                if (string.IsNullOrWhiteSpace(tendency) || !tendency!.All(char.IsLetterOrDigit))
+                                {
+                                    SfvIssue(vfield, "Each variant needs a 'tendency' name made of letters and digits.");
+                                }
+                                else if (list.Any(x => string.Equals(x.Tendency, tendency, StringComparison.Ordinal)))
+                                {
+                                    SfvIssue(vfield, $"Tendency '{tendency}' is declared twice for this role.");
+                                }
+                                else if (!SelfFeelingVariantSelector.IsKnownTrait(trait))
+                                {
+                                    SfvIssue(vfield, $"Trait '{trait}' is invalid. Expected honor, mercy, valor, calculating, or generosity.");
+                                }
+                                else if (hasMin == hasMax || !minOk || !maxOk)
+                                {
+                                    SfvIssue(vfield, "A variant needs exactly one integer threshold: 'min' or 'max'.");
+                                }
+                                else
+                                {
+                                    list.Add(new SelfFeelingVariantRule
+                                    {
+                                        Tendency = tendency!,
+                                        Trait = trait!.ToLowerInvariant(),
+                                        Min = hasMin ? minTok!.Value<int>() : (int?)null,
+                                        Max = hasMax ? maxTok!.Value<int>() : (int?)null
+                                    });
+                                }
+                            }
+                            selfFeelingVariants[prop.Name] = list;
+                        }
+                    }
+                }
+
                 allIssues.AddRange(templateIssues);
 
                 if (templateIssues.Any(issue => issue.IsError))
@@ -789,13 +1009,18 @@ namespace VividWorld.Core.Catalog
                         Type = templateType,
                         Origin = origin,
                         DramaWeight = dramaWeight,
+                        DramaScale = dramaScale,
                         LinkedTemplateType = linkedTemplateType,
                         Roles = roles,
                         KnowingRoles = knowingRoles,
                         Facts = facts,
                         Opinions = opinions,
                         SelfTell = selfTell,
-                        Retired = retired
+                        Retired = retired,
+                        ColocatedWitnessAsHearsay = colocatedWitnessAsHearsay,
+                        Feelings = feelings,
+                        FeelingOverrides = feelingOverrides,
+                        SelfFeelingVariants = selfFeelingVariants
                     });
                 }
             }

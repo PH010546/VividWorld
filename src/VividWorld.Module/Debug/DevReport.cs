@@ -56,12 +56,12 @@ namespace VividWorld.Debug
                 var entry = evt?.EntryFor(hero.StringId);
                 string source = !string.IsNullOrEmpty(entry?.SourceHeroId) ? entry!.SourceHeroId! : "witness";
                 string baseLine = string.Format(CultureInfo.InvariantCulture,
-                    "  {0,-16} | hop {1} | source: {2,-12} | day: {3:0.0} | drama: {4}",
+                    "  {0,-16} | hop {1} | source: {2,-12} | day: {3:0.0} | {4}",
                     eventId,
                     entry?.Hop ?? -1,
                     source,
                     entry?.LearnedDay ?? 0.0,
-                    evt?.DramaWeight ?? 0);
+                    evt != null ? DramaScales.Describe(evt.DramaWeight, evt.DramaScale) : "weight ?");
 
                 string suffix;
                 bool isSecretUnleaked = evt != null && evt.Origin == EventOrigin.Secret && (evt.State == null || !evt.State.Leaked);
@@ -439,15 +439,15 @@ namespace VividWorld.Debug
             sb.AppendLine(realEvents == null
                 ? "- Prisoner prominence this session: (unknown - behavior not wired)"
                 : string.Format(CultureInfo.InvariantCulture,
-                    "- Prisoner prominence this session: ruler {0}, clanLeader {1}, nobleMember {2}, minor {3} (drama {4}/{5}/{6}/{7}), failed {8}",
+                    "- Prisoner prominence this session: ruler {0}, clanLeader {1}, nobleMember {2}, minor {3} (weight bonus {4:+0;-0;+0}/{5:+0;-0;+0}/{6:+0;-0;+0}/{7:+0;-0;+0}), failed {8}",
                     realEvents.ProminenceRulerCount,
                     realEvents.ProminenceClanLeaderCount,
                     realEvents.ProminenceNobleMemberCount,
                     realEvents.ProminenceMinorCount,
-                    config.Events.PrisonerDramaByProminence.Ruler,
-                    config.Events.PrisonerDramaByProminence.ClanLeader,
-                    config.Events.PrisonerDramaByProminence.NobleMember,
-                    config.Events.PrisonerDramaByProminence.Minor,
+                    config.Events.WeightBonusByProminence.Ruler,
+                    config.Events.WeightBonusByProminence.ClanLeader,
+                    config.Events.WeightBonusByProminence.NobleMember,
+                    config.Events.WeightBonusByProminence.Minor,
                     realEvents.ProminenceFailedCount));
 
             var activeStamper = stamper ?? store?.Stamper;
@@ -578,7 +578,7 @@ namespace VividWorld.Debug
                     bool isSecretUnleaked = evt.Origin == EventOrigin.Secret && (evt.State == null || !evt.State.Leaked);
                     if (!isSecretUnleaked)
                     {
-                        int d = Math.Max(1, Math.Min(5, evt.DramaWeight));
+                        int d = evt.DramaBand;
                         dramaEventCount[d - 1]++;
                         foreach (var k in evt.KnownBy)
                         {
@@ -901,8 +901,8 @@ namespace VividWorld.Debug
             int maxHop = engine.MaxHopFor(evt);
             var sb = new StringBuilder();
             sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
-                "{0}  {1}  day {2:0.0}  drama {3}  maxHop {4}",
-                evt.EventId, evt.Type, evt.Day, evt.DramaWeight, maxHop));
+                "{0}  {1}  day {2:0.0}  {3}  maxHop {4}",
+                evt.EventId, evt.Type, evt.Day, DramaScales.Describe(evt.DramaWeight, evt.DramaScale), maxHop));
 
             var orderedKnowers = (evt.KnownBy ?? (IReadOnlyList<KnownByEntry>)Array.Empty<KnownByEntry>())
                 .OrderBy(k => k.Hop)
@@ -1061,7 +1061,7 @@ namespace VividWorld.Debug
                         i + 1, item.EventId, item.Hop, source, item.LearnedDay, item.Interest ?? 0.0, item.IsCorrection, item.Facts.Count));
                     bool isParticipant = item.Event.RoleOf(hero.StringId) != null;
                     var prefix = RumorPrefixSelector.SelectPrefix(item.Hop, item.SourceHeroId, false, item.IsCorrection, isParticipant);
-                    var composed = RumorTextComposer.Compose(item.Event, item.Facts, new PresentationConfig(), prefix, hero.StringId);
+                    var composed = RumorTextComposer.Compose(item.Event, item.Facts, new PresentationConfig(), prefix, hero.StringId, item.SourceHeroId);
                     string text = FallbackTextRenderer.RenderRecallMemory(composed, language, null);
                     sb.AppendLine($"      \"{text}\"");
                 }

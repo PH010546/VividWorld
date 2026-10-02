@@ -109,10 +109,19 @@ namespace VividWorld.Core.Ingest
                 return ValidationOutcome.Reject("KnowingRoles contains a role not found in event participants.");
             }
 
-            // 11. DramaWeight 非 null 且不在 1..5
-            if (s.DramaWeight.HasValue && !FactValidationRules.IsValidDramaWeight(s.DramaWeight.Value))
+            // 11. DramaWeight 非 null 且不在尺度允許的範圍（舊尺度 1..5、新尺度 1..10）
+            if (s.DramaWeight.HasValue)
             {
-                return ValidationOutcome.Reject("DramaWeight must be between 1 and 5 when specified.");
+                if (!VividWorld.Core.Events.DramaScales.IsKnownScale(s.DramaScale))
+                {
+                    return ValidationOutcome.Reject("DramaScale must be 5 (legacy 1..5) or 10 (1..10) when DramaWeight is specified.");
+                }
+                if (!FactValidationRules.IsValidDramaWeight(s.DramaWeight.Value, s.DramaScale))
+                {
+                    return ValidationOutcome.Reject(s.DramaScale == VividWorld.Core.Events.DramaScales.Ten
+                        ? "DramaWeight must be between 1 and 10 when specified."
+                        : "DramaWeight must be between 1 and 5 when specified.");
+                }
             }
 
             // 12. Origin 為 null

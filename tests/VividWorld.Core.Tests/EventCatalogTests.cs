@@ -745,28 +745,32 @@ namespace VividWorld.Core.Tests
             var t1 = catalog.Templates[0];
             Assert.Equal("duel_arranged", t1.Type);
             Assert.Equal(EventOrigin.Public, t1.Origin);
-            Assert.Equal(3, t1.DramaWeight);
+            Assert.Equal(6, t1.DramaWeight);
+            Assert.Equal(10, t1.DramaScale);
             Assert.Equal(4, t1.Facts.Count);
 
             // Template 2: tavern_quarrel
             var t2 = catalog.Templates[1];
             Assert.Equal("tavern_quarrel", t2.Type);
             Assert.Equal(EventOrigin.Public, t2.Origin);
-            Assert.Equal(4, t2.DramaWeight);
+            Assert.Equal(8, t2.DramaWeight);
+            Assert.Equal(10, t2.DramaScale);
             Assert.Equal(5, t2.Facts.Count);
 
             // Template 3: shared_meal
             var t3 = catalog.Templates[2];
             Assert.Equal("shared_meal", t3.Type);
             Assert.Equal(EventOrigin.Public, t3.Origin);
-            Assert.Equal(1, t3.DramaWeight);
+            Assert.Equal(2, t3.DramaWeight);
+            Assert.Equal(10, t3.DramaScale);
             Assert.Equal(4, t3.Facts.Count);
 
             // Template 4: duel
             var t4 = catalog.Templates[3];
             Assert.Equal("duel", t4.Type);
             Assert.Equal(EventOrigin.Public, t4.Origin);
-            Assert.Equal(5, t4.DramaWeight);
+            Assert.Equal(10, t4.DramaWeight);
+            Assert.Equal(10, t4.DramaScale);
             Assert.Equal(5, t4.Facts.Count);
             Assert.Equal("tavern_quarrel", t4.LinkedTemplateType);
 
@@ -774,7 +778,8 @@ namespace VividWorld.Core.Tests
             var t5 = catalog.Templates[4];
             Assert.Equal("covert_sabotage", t5.Type);
             Assert.Equal(EventOrigin.Secret, t5.Origin);
-            Assert.Equal(4, t5.DramaWeight);
+            Assert.Equal(8, t5.DramaWeight);
+            Assert.Equal(10, t5.DramaScale);
             Assert.Equal(8, t5.Facts.Count);
             Assert.Equal("duel_arranged", t5.LinkedTemplateType);
             Assert.Equal(2, t5.KnowingRoles.Count);

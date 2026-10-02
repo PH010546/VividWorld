@@ -60,7 +60,6 @@ namespace VividWorld.Core.Config
                 // Group 3: Dialogue
                 new McmExposedKey("dialogue.askRelationGate", McmKeyKind.Int, -100, 100),
                 new McmExposedKey("dialogue.askWillingnessThreshold", McmKeyKind.Double, -20.0, 40.0),
-                new McmExposedKey("dialogue.npcVolunteerRelationGate", McmKeyKind.Int, -100, 100),
                 new McmExposedKey("dialogue.volunteerMode", McmKeyKind.Dropdown, choices: new[] { "auto", "casual", "realistic" }),
                 new McmExposedKey("dialogue.sharesPerHeroPerDay", McmKeyKind.Int, 0, 10),
 
@@ -118,8 +117,6 @@ namespace VividWorld.Core.Config
                     return cfg.Dialogue.AskRelationGate;
                 case "dialogue.askWillingnessThreshold":
                     return cfg.Dialogue.AskWillingnessThreshold;
-                case "dialogue.npcVolunteerRelationGate":
-                    return cfg.Dialogue.NpcVolunteerRelationGate;
                 case "dialogue.volunteerMode":
                     return cfg.Dialogue.VolunteerMode;
                 case "dialogue.sharesPerHeroPerDay":
@@ -290,9 +287,6 @@ namespace VividWorld.Core.Config
                             break;
                         case "dialogue.askRelationGate":
                             cfg.Dialogue.AskRelationGate = iVal;
-                            break;
-                        case "dialogue.npcVolunteerRelationGate":
-                            cfg.Dialogue.NpcVolunteerRelationGate = iVal;
                             break;
                         case "dialogue.sharesPerHeroPerDay":
                             cfg.Dialogue.SharesPerHeroPerDay = iVal;

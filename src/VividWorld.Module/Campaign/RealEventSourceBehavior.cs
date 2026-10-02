@@ -10,6 +10,7 @@ using VividWorld.Core.Catalog;
 using VividWorld.Core.Config;
 using VividWorld.Core.Events;
 using VividWorld.Core.Ingest;
+using VividWorld.Core.Presentation;
 using VividWorld.Core.Rumors;
 
 namespace VividWorld.Campaign
@@ -73,17 +74,38 @@ namespace VividWorld.Campaign
 
         public override void RegisterEvents()
         {
+            CampaignEvents.BeforeHeroKilledEvent.AddNonSerializedListener(this, OnBeforeHeroKilled);
             CampaignEvents.HeroKilledEvent.AddNonSerializedListener(this, OnHeroKilled);
             CampaignEvents.HeroPrisonerTaken.AddNonSerializedListener(this, OnHeroPrisonerTaken);
             CampaignEvents.BeforeHeroesMarried.AddNonSerializedListener(this, OnHeroesMarried);
             CampaignEvents.OnGivenBirthEvent.AddNonSerializedListener(this, OnGivenBirth);
             CampaignEvents.HeroPrisonerReleased.AddNonSerializedListener(this, OnHeroPrisonerReleased);
-            ModLog.Info("RealEventSourceBehavior.RegisterEvents: subscribed to 5 campaign events.");
+            ModLog.Info("RealEventSourceBehavior.RegisterEvents: subscribed to 5 campaign events (plus the before-kill hook that records the victim's standing).");
         }
 
         public override void SyncData(IDataStore dataStore)
         {
             // No custom persistent state needed for real event hook listeners
+        }
+
+        // 死者死前的身分。遊戲在發出「某人死了」的通知之前，已經先替他的家族換了族長（國王也跟著換），
+        // 等通知到的時候再問「他是不是國王、是不是族長」只會得到否；所以在死前那一刻先記下來，通知到了再取用。
+        private readonly Dictionary<string, ProminenceResult> _standingBeforeDeath =
+            new Dictionary<string, ProminenceResult>(StringComparer.Ordinal);
+
+        private void OnBeforeHeroKilled(Hero victim, Hero killer, KillCharacterAction.KillCharacterActionDetail detail, bool showNotification)
+        {
+            try
+            {
+                if (victim == null || !_config.Events.Sources.HeroKilled) return;
+                // 正常情況下每一筆都會在緊接著的死亡通知裡取走；留下來的是被別的模組攔掉的死亡，不讓它無限累積
+                if (_standingBeforeDeath.Count > 64) _standingBeforeDeath.Clear();
+                _standingBeforeDeath[victim.StringId] = ClassifyPerson(victim);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("RealEventSourceBehavior.OnBeforeHeroKilled encountered an exception", ex);
+            }
         }
 
         private void OnHeroKilled(Hero victim, Hero killer, KillCharacterAction.KillCharacterActionDetail detail, bool showNotification)
@@ -105,7 +127,7 @@ namespace VividWorld.Campaign
                 bool isSecret = string.Equals(templateType, "hero_murdered", StringComparison.OrdinalIgnoreCase);
                 ModLog.Info($"RealEventSource: HeroKilled detail={detail} -> template '{templateType}' ({(isSecret ? "secret" : "public")})");
 
-                if (!string.Equals(templateType, "hero_died_naturally", StringComparison.OrdinalIgnoreCase) && killer == null)
+                if (!RealEventMapping.IsNaturalDeathTemplate(templateType) && killer == null)
                 {
                     ModLog.Info($"RealEventSource: HeroKilled template '{templateType}' requires killer but killer is null, skipped (victim={victim.StringId})");
                     return;
@@ -133,7 +155,36 @@ namespace VividWorld.Campaign
                     bindings["SETTLEMENT"] = fallbackResult.SettlementId!;
                 }
 
-                TrySubmit(templateType, bindings, $"HeroKilled detail={detail}", fallbackResult);
+                // 死亡的份量看死者本人的身分（國王、族長、一般家族成員、小勢力或沒家族）
+                ProminenceResult? victimProminence = null;
+                Exception? victimProminenceException = null;
+                try
+                {
+                    if (_standingBeforeDeath.TryGetValue(victim.StringId, out var standingBeforeDeath))
+                    {
+                        _standingBeforeDeath.Remove(victim.StringId);
+                        victimProminence = standingBeforeDeath;
+                        ModLog.Info($"  standing of {victim.StringId}: recorded before the death (leaders are replaced before the kill notification is sent)");
+                    }
+                    else
+                    {
+                        victimProminence = ClassifyPerson(victim);
+                        ModLog.Info($"  standing of {victim.StringId}: not recorded before the death, read now - a ruler or clan leader has already been replaced by this point and reads as an ordinary member");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    victimProminenceException = ex;
+                }
+
+                TrySubmit(
+                    templateType,
+                    bindings,
+                    $"HeroKilled detail={detail}",
+                    fallbackResult,
+                    victimProminence,
+                    victimProminenceException,
+                    victim.StringId);
             }
             catch (Exception ex)
             {
@@ -183,17 +234,7 @@ namespace VividWorld.Campaign
                 Exception? prominenceException = null;
                 try
                 {
-                    var facts = new ProminenceFacts
-                    {
-                        HeroId = prisoner.StringId,
-                        IsKingdomLeader = prisoner.IsKingdomLeader,
-                        KingdomId = prisoner.MapFaction?.StringId,
-                        IsClanLeader = prisoner.IsClanLeader,
-                        ClanId = prisoner.Clan?.StringId,
-                        ClanIsMinorFaction = prisoner.Clan?.IsMinorFaction ?? false,
-                        IsLord = prisoner.IsLord
-                    };
-                    prominenceResult = PrisonerProminence.Classify(facts, _config.Events.PrisonerDramaByProminence);
+                    prominenceResult = ClassifyPerson(prisoner);
                 }
                 catch (Exception ex)
                 {
@@ -255,17 +296,7 @@ namespace VividWorld.Campaign
             Exception? prominenceException = null;
             try
             {
-                var facts = new ProminenceFacts
-                {
-                    HeroId = prisoner.StringId,
-                    IsKingdomLeader = prisoner.IsKingdomLeader,
-                    KingdomId = prisoner.MapFaction?.StringId,
-                    IsClanLeader = prisoner.IsClanLeader,
-                    ClanId = prisoner.Clan?.StringId,
-                    ClanIsMinorFaction = prisoner.Clan?.IsMinorFaction ?? false,
-                    IsLord = prisoner.IsLord
-                };
-                prominenceResult = PrisonerProminence.Classify(facts, _config.Events.BanditCaptureDramaByProminence);
+                prominenceResult = ClassifyPerson(prisoner);
             }
             catch (Exception ex)
             {
@@ -405,6 +436,20 @@ namespace VividWorld.Campaign
                     ModLog.Info("  " + PlayerRescueEvaluator.FormatLog(playerRescueResult, captorPartyId, detail.ToString()));
                 }
 
+                string? releaseReason = null;
+                if (string.Equals(templateType, "hero_released", StringComparison.Ordinal))
+                {
+                    // 放人事件傳出的 party 是俘虜放人當下所在的隊伍：
+                    // 戰後放人時 party 是城鎮城堡＝城換了主人，否則＝關人的隊伍打輸；
+                    // 主動放人時 party 是玩家的隊伍（或隊長、主人是玩家）＝玩家放的，否則＝押人的隊伍沒了。
+                    bool partyIsSettlement = party != null && party.IsSettlement;
+                    bool actorIsPlayer = isMainParty
+                        || (party?.Owner != null && party.Owner == Hero.MainHero)
+                        || (party?.LeaderHero != null && party.LeaderHero == Hero.MainHero);
+                    releaseReason = ReleaseReasons.Classify(coreDetail, partyIsSettlement, actorIsPlayer);
+                    ModLog.Info($"  release reason: {releaseReason ?? "none"} (detail={detail}, partyIsSettlement={partyIsSettlement}, actorIsPlayer={actorIsPlayer}, captorKnown={captorHero != null})");
+                }
+
                 Hero? rescuerHero = null;
                 if (string.Equals(templateType, "hero_rescued_from_bandits", StringComparison.Ordinal))
                 {
@@ -443,6 +488,22 @@ namespace VividWorld.Campaign
                         }
                     }
                 }
+
+                // 逃脫時押著他的是聚落（人關在城鎮或城堡的牢裡）⇒ 不記看守的人：
+                // 城主多半人在外面，不是這件事的當事人，他要知道得跟別人一樣聽說（放人事件的 party：帳本 D-102）。
+                EscapeShapeChoice? escapeChoice = null;
+                string? heldSettlementId = null;
+                if (string.Equals(templateType, "hero_escaped_captivity", StringComparison.Ordinal))
+                {
+                    bool heldBySettlement = party != null && party.IsSettlement;
+                    if (heldBySettlement)
+                    {
+                        heldSettlementId = party!.Settlement?.StringId;
+                    }
+                    escapeChoice = TemplateVariants.ChooseEscapeShape(heldBySettlement, heldSettlementId, captorHero != null);
+                }
+                bool escapedFromDungeon = escapeChoice != null && escapeChoice.Shape == EscapeShape.FromDungeon;
+                bool captorIsParticipant = escapeChoice == null || escapeChoice.Shape == EscapeShape.WithCaptor;
 
                 Dictionary<string, string> bindings;
                 if (string.Equals(templateType, "hero_rescued_from_bandits", StringComparison.Ordinal))
@@ -484,19 +545,24 @@ namespace VividWorld.Campaign
                     {
                         ["PRISONER"] = prisoner.StringId
                     };
-                    if (captorHero != null)
+                    if (captorHero != null && captorIsParticipant)
                     {
                         bindings["CAPTOR"] = captorHero.StringId;
                     }
                 }
 
                 var probes = new List<SettlementProbe>();
+                if (escapedFromDungeon)
+                {
+                    // 人就關在這座城的牢裡：地點一定是這座城，不拿俘虜身上讀到的最近聚落來猜
+                    probes.Add(new SettlementProbe("party.Settlement (held in its dungeon)", () => heldSettlementId));
+                }
                 probes.AddRange(ProbesForHero("prisoner", prisoner));
-                if (party != null && party.IsSettlement)
+                if (party != null && party.IsSettlement && !escapedFromDungeon)
                 {
                     probes.Add(new SettlementProbe("party.Settlement", () => party.Settlement?.StringId));
                 }
-                if (captorHero != null)
+                if (captorHero != null && captorIsParticipant)
                 {
                     probes.AddRange(ProbesForHero("captor", captorHero));
                 }
@@ -515,22 +581,7 @@ namespace VividWorld.Campaign
                 Exception? prominenceException = null;
                 try
                 {
-                    var facts = new ProminenceFacts
-                    {
-                        HeroId = prisoner.StringId,
-                        IsKingdomLeader = prisoner.IsKingdomLeader,
-                        KingdomId = prisoner.MapFaction?.StringId,
-                        IsClanLeader = prisoner.IsClanLeader,
-                        ClanId = prisoner.Clan?.StringId,
-                        ClanIsMinorFaction = prisoner.Clan?.IsMinorFaction ?? false,
-                        IsLord = prisoner.IsLord
-                    };
-                    bool isBanditRelease = string.Equals(templateType, "hero_rescued_from_bandits", StringComparison.Ordinal)
-                        || string.Equals(templateType, "hero_escaped_bandits", StringComparison.Ordinal);
-                    var dramaConfig = isBanditRelease
-                        ? _config.Events.BanditReleaseDramaByProminence
-                        : _config.Events.ReleaseDramaByProminence;
-                    prominenceResult = PrisonerProminence.Classify(facts, dramaConfig);
+                    prominenceResult = ClassifyPerson(prisoner);
                 }
                 catch (Exception ex)
                 {
@@ -539,16 +590,6 @@ namespace VividWorld.Campaign
 
                 var catalog = EventCatalogStore.Catalog;
                 var baseTemplate = catalog.ByType(templateType);
-                int templateDrama = baseTemplate?.DramaWeight ?? 4;
-
-                if (prominenceResult != null)
-                {
-                    ModLog.Info($"  prominence: {prominenceResult.Describe(templateDrama)}");
-                }
-                else if (prominenceException != null)
-                {
-                    ModLog.Info($"  prominence: prisoner={prisoner.StringId} failed ({prominenceException.GetType().Name}) => drama {templateDrama} (template {templateDrama}, not overridden)");
-                }
 
                 if (captureEntry != null)
                 {
@@ -567,95 +608,22 @@ namespace VividWorld.Campaign
                 {
                     if (string.Equals(templateType, "hero_rescued_from_bandits", StringComparison.Ordinal) && rescuerHero == null)
                     {
-                        adaptedTemplate = new EventTemplate
-                        {
-                            Type = baseTemplate.Type,
-                            Origin = baseTemplate.Origin,
-                            DramaWeight = baseTemplate.DramaWeight,
-                            LinkedTemplateType = baseTemplate.LinkedTemplateType,
-                            Roles = new Dictionary<string, string> { ["prisoner"] = "{PRISONER}" },
-                            KnowingRoles = new HashSet<string>(baseTemplate.KnowingRoles),
-                            Facts = baseTemplate.Facts
-                                .Where(f => !string.Equals(f.Id, "what", StringComparison.OrdinalIgnoreCase))
-                                .Select(f =>
-                                {
-                                    if (string.Equals(f.Id, "who", StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        return new TemplateFact
-                                        {
-                                            Id = f.Id,
-                                            Category = f.Category,
-                                            TextId = "VividWorld_Fact_HeroRescuedFromBandits_WhoNoRescuer",
-                                            Text = "a band of {BANDITS} was routed, and {PRISONER} got away in the confusion",
-                                            Vars = new Dictionary<string, string>
-                                            {
-                                                ["BANDITS"] = "{BANDITS}",
-                                                ["PRISONER"] = "hero:{PRISONER}"
-                                            },
-                                            Fragility = f.Fragility,
-                                            Optional = f.Optional
-                                        };
-                                    }
-                                    return new TemplateFact
-                                    {
-                                        Id = f.Id,
-                                        Category = f.Category,
-                                        TextId = f.TextId,
-                                        Text = f.Text,
-                                        Vars = f.Vars != null ? new Dictionary<string, string>(f.Vars) : new Dictionary<string, string>(),
-                                        Fragility = f.Fragility,
-                                        Optional = f.Optional
-                                    };
-                                }).ToList()
-                        };
+                        adaptedTemplate = TemplateVariants.RescueWithoutRescuer(baseTemplate);
                     }
-                    else if (captorHero == null && !string.Equals(templateType, "hero_rescued_from_bandits", StringComparison.Ordinal) && !string.Equals(templateType, "hero_escaped_bandits", StringComparison.Ordinal))
+                    else if (string.Equals(templateType, "hero_released", StringComparison.Ordinal))
                     {
-                        bool isEscape = string.Equals(templateType, "hero_escaped_captivity", StringComparison.Ordinal);
-                        string whoNoCaptorTextId = isEscape
-                            ? "VividWorld_Fact_HeroEscaped_WhoNoCaptor"
-                            : "VividWorld_Fact_HeroReleased_WhoNoCaptor";
-                        // 英文介面不查字串表、直接用存進事件的英文，所以這裡要存沒有 {CAPTOR} 的那一句；
-                        // 沿用模板那句會在英文介面印成「someone set … free」。字與英文字串表同一句（帳本 D-88）。
-                        string whoNoCaptorText = isEscape
-                            ? "{PRISONER} slipped out of captivity"
-                            : "{PRISONER} got out of captivity";
-
-                        adaptedTemplate = new EventTemplate
+                        adaptedTemplate = TemplateVariants.Released(baseTemplate, releaseReason, captorKnown: captorHero != null);
+                        if (!adaptedTemplate.Roles.ContainsKey("captor"))
                         {
-                            Type = baseTemplate.Type,
-                            Origin = baseTemplate.Origin,
-                            DramaWeight = baseTemplate.DramaWeight,
-                            LinkedTemplateType = baseTemplate.LinkedTemplateType,
-                            Roles = new Dictionary<string, string> { ["prisoner"] = "{PRISONER}" },
-                            KnowingRoles = new HashSet<string>(baseTemplate.KnowingRoles),
-                            Facts = baseTemplate.Facts.Select(f =>
-                            {
-                                if (string.Equals(f.Id, "who", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    return new TemplateFact
-                                    {
-                                        Id = f.Id,
-                                        Category = f.Category,
-                                        TextId = whoNoCaptorTextId,
-                                        Text = whoNoCaptorText,
-                                        Vars = new Dictionary<string, string> { ["PRISONER"] = "hero:{PRISONER}" },
-                                        Fragility = f.Fragility,
-                                        Optional = f.Optional
-                                    };
-                                }
-                                return new TemplateFact
-                                {
-                                    Id = f.Id,
-                                    Category = f.Category,
-                                    TextId = f.TextId,
-                                    Text = f.Text,
-                                    Vars = f.Vars != null ? new Dictionary<string, string>(f.Vars) : new Dictionary<string, string>(),
-                                    Fragility = f.Fragility,
-                                    Optional = f.Optional
-                                };
-                            }).ToList()
-                        };
+                            // 這一種講法不提抓人的人（不知道是誰，或關人的城換了主人、分不出新舊主人）
+                            bindings.Remove("CAPTOR");
+                        }
+                        ModLog.Info($"  release template: {string.Join("_", adaptedTemplate.Facts.Select(f => SentenceCombinationEnumerator.ExtractSegment(f.TextId ?? string.Empty)))}");
+                    }
+                    else if (escapeChoice != null)
+                    {
+                        adaptedTemplate = TemplateVariants.EscapeFor(baseTemplate, escapeChoice.Shape);
+                        ModLog.Info("  " + escapeChoice.Log);
                     }
                 }
 
@@ -668,8 +636,7 @@ namespace VividWorld.Campaign
                     prominenceException,
                     prisoner.StringId,
                     linkedEventId,
-                    adaptedTemplate,
-                    skipProminenceLog: true);
+                    adaptedTemplate);
 
                 _releasesCount++;
                 if (detail == TaleWorlds.CampaignSystem.Actions.EndCaptivityDetail.ReleasedAfterEscape)
@@ -717,7 +684,30 @@ namespace VividWorld.Campaign
                     bindings["SETTLEMENT"] = fallbackResult.SettlementId!;
                 }
 
-                TrySubmit("heroes_married", bindings, "BeforeHeroesMarried", fallbackResult);
+                // 成親的份量看兩家的門第，取較高的那一家
+                List<FamilyParty>? marriageParties = null;
+                Exception? marriageException = null;
+                try
+                {
+                    marriageParties = new List<FamilyParty>
+                    {
+                        BuildFamilyParty("spouse_a", hero1),
+                        BuildFamilyParty("spouse_b", hero2)
+                    };
+                }
+                catch (Exception ex)
+                {
+                    marriageException = ex;
+                }
+
+                TrySubmit(
+                    "heroes_married",
+                    bindings,
+                    "BeforeHeroesMarried",
+                    fallbackResult,
+                    prominenceException: marriageException,
+                    prisonerIdForProminence: hero1.StringId,
+                    familyParties: marriageParties);
             }
             catch (Exception ex)
             {
@@ -769,12 +759,85 @@ namespace VividWorld.Campaign
                     bindings["SETTLEMENT"] = fallbackResult.SettlementId!;
                 }
 
-                TrySubmit("child_born", bindings, "OnGivenBirth", fallbackResult);
+                // 生子的份量看父母的門第，取較高的那一家；父親讀不到時只看母親這一邊
+                List<FamilyParty>? birthParties = null;
+                Exception? birthException = null;
+                try
+                {
+                    birthParties = new List<FamilyParty> { BuildFamilyParty("mother", mother) };
+                    Hero? father = child.Father ?? mother.Spouse;
+                    if (father != null)
+                    {
+                        birthParties.Add(BuildFamilyParty("father", father));
+                    }
+                    else
+                    {
+                        ModLog.Info($"  family: father of {child.StringId} not readable (child.Father and mother.Spouse are null), only the mother side counts");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    birthException = ex;
+                }
+
+                TrySubmit(
+                    "child_born",
+                    bindings,
+                    "OnGivenBirth",
+                    fallbackResult,
+                    prominenceException: birthException,
+                    prisonerIdForProminence: mother.StringId,
+                    familyParties: birthParties);
             }
             catch (Exception ex)
             {
                 ModLog.Error("RealEventSourceBehavior.OnGivenBirth encountered an exception", ex);
             }
+        }
+
+        /// <summary>判一個人的身分（國王、族長、一般家族成員、小勢力或沒家族），並帶上判定用到的原生值供日誌。</summary>
+        private ProminenceResult ClassifyPerson(Hero hero)
+        {
+            var clan = hero.Clan;
+            var facts = new ProminenceFacts
+            {
+                HeroId = hero.StringId,
+                IsKingdomLeader = hero.IsKingdomLeader,
+                KingdomId = hero.MapFaction?.StringId,
+                IsClanLeader = hero.IsClanLeader,
+                ClanId = clan?.StringId,
+                ClanIsMinorFaction = clan?.IsMinorFaction ?? false,
+                IsLord = hero.IsLord,
+                ClanTier = clan?.Tier,
+                ClanIsRuling = IsRulingClan(clan)
+            };
+            return PrisonerProminence.Classify(facts, _config.Events.WeightBonusByProminence);
+        }
+
+        /// <summary>這個家族是不是它所屬王國的王族。小勢力、沒加入王國的家族 <c>Kingdom</c> 可能是 null，一律當成不是。</summary>
+        private static bool IsRulingClan(Clan? clan)
+        {
+            var kingdom = clan?.Kingdom;
+            return clan != null && kingdom != null && kingdom.RulingClan == clan;
+        }
+
+        private ClanStandingResult ClassifyClanOf(Hero hero)
+        {
+            var clan = hero.Clan;
+            var facts = new ClanFacts
+            {
+                ClanId = clan?.StringId,
+                Tier = clan?.Tier,
+                IsMinorFaction = clan?.IsMinorFaction ?? false,
+                IsRuling = IsRulingClan(clan),
+                KingdomId = clan?.Kingdom?.StringId
+            };
+            return DramaWeightCalculator.ClassifyClan(facts, _config.Events);
+        }
+
+        private FamilyParty BuildFamilyParty(string role, Hero hero)
+        {
+            return new FamilyParty(role, hero.StringId, ClassifyPerson(hero), ClassifyClanOf(hero));
         }
 
         private static IEnumerable<SettlementProbe> ProbesForHero(string role, Hero? hero)
@@ -794,8 +857,8 @@ namespace VividWorld.Campaign
             string? prisonerIdForProminence = null,
             string? linkedEventId = null,
             EventTemplate? templateOverride = null,
-            bool skipProminenceLog = false,
-            IReadOnlyList<string>? hearsayKnowerHeroIds = null)
+            IReadOnlyList<string>? hearsayKnowerHeroIds = null,
+            IReadOnlyList<FamilyParty>? familyParties = null)
         {
             var catalog = EventCatalogStore.Catalog;
             var template = templateOverride ?? catalog.ByType(templateType);
@@ -814,9 +877,38 @@ namespace VividWorld.Campaign
                 return;
             }
 
-            if (prominenceResult != null)
+            // 份量＝模板寫的基礎分＋當事人的身分（或門第）加成，夾在 1..10；
+            // 傳多遠、記多久等機制讀的是它換成的段（1..5），不是這個數字本身
+            var weightLines = new List<string>();
+            int? baseScore = template.DramaWeightTen;
+            bool weightApplies = prominenceResult != null || prominenceException != null || familyParties != null;
+            if (weightApplies && baseScore.HasValue)
             {
-                submission.DramaWeight = prominenceResult.Drama;
+                WeightComputation computation;
+                if (familyParties != null)
+                {
+                    var family = DramaWeightCalculator.ComputeForFamily(baseScore.Value, familyParties);
+                    computation = family.Computation;
+                    weightLines.AddRange(family.DescribeLines());
+                }
+                else if (prominenceResult != null)
+                {
+                    computation = DramaWeightCalculator.Compute(baseScore.Value, prominenceResult.Bonus);
+                    weightLines.Add(prominenceResult.Describe());
+                }
+                else
+                {
+                    string pid = !string.IsNullOrEmpty(prisonerIdForProminence) ? prisonerIdForProminence! : "unknown";
+                    computation = DramaWeightCalculator.Compute(baseScore.Value, 0);
+                    weightLines.Add($"hero={pid} standing failed ({prominenceException!.GetType().Name}), bonus +0 (template base score kept)");
+                }
+                submission.DramaWeight = computation.Weight;
+                submission.DramaScale = DramaScales.Ten;
+                weightLines.Add(computation.Describe());
+            }
+            else if (weightApplies)
+            {
+                weightLines.Add("template has no weight, standing bonus not applied (the configured default weight is used)");
             }
 
             if (hearsayKnowerHeroIds != null && hearsayKnowerHeroIds.Count > 0)
@@ -900,17 +992,10 @@ namespace VividWorld.Campaign
             string boundVarsStr = string.Join(", ", boundParts);
             ModLog.Info($"RealEventSource: bound {templateType} as {eventId} ({boundVarsStr})");
 
-            // 模板沒寫 dramaWeight 時由 WorldEventStore 依設定解析，這裡不能自己猜一個數字（原本寫死 4）。
-            if (prominenceResult != null && !skipProminenceLog)
+            // 模板沒寫份量時由 WorldEventStore 依設定解析，這裡不能自己猜一個數字
+            foreach (var line in weightLines)
             {
-                ModLog.Info($"  prominence: {prominenceResult.Describe(template.DramaWeight)}");
-            }
-            else if (prominenceException != null && !skipProminenceLog)
-            {
-                string pid = !string.IsNullOrEmpty(prisonerIdForProminence) ? prisonerIdForProminence! : "unknown";
-                string resolved = _eventStore.Load(eventId!)?.DramaWeight.ToString(CultureInfo.InvariantCulture) ?? "?";
-                string templateStr = template.DramaWeight?.ToString(CultureInfo.InvariantCulture) ?? "unset";
-                ModLog.Info($"  prominence: prisoner={pid} failed ({prominenceException.GetType().Name}) => drama {resolved} (template {templateStr}, not overridden)");
+                ModLog.Info("  " + line);
             }
 
             var submittedFactIds = new HashSet<string>(submission.Facts.Select(f => f.Id), StringComparer.Ordinal);

@@ -6,15 +6,20 @@ namespace VividWorld.Core.Rumors
     public sealed class TopicCandidate
     {
         public string EventId { get; }
+        /// <summary>段（1..5）：選題的權重查表用的就是它。</summary>
         public int Drama { get; }
+
+        /// <summary>份量（1..10），只供日誌；沒給時當成段 × 2。</summary>
+        public int DramaWeight { get; }
         public double Tell { get; }
         public double Freshness { get; }
         public double Weight { get; }
 
-        public TopicCandidate(string eventId, int drama, double tell, double freshness, double weight)
+        public TopicCandidate(string eventId, int drama, double tell, double freshness, double weight, int dramaWeight = 0)
         {
             EventId = eventId ?? string.Empty;
             Drama = drama;
+            DramaWeight = dramaWeight > 0 ? dramaWeight : drama * 2;
             Tell = tell;
             Freshness = freshness;
             Weight = weight;

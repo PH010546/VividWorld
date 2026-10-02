@@ -19,7 +19,22 @@ namespace VividWorld.Core.Events
 
         public string? LinkedEventId { get; set; }
         public string? SituationId { get; set; }
-        public int DramaWeight { get; set; } = 3;                       // 1..5，匯入時解析定案
+        public int DramaWeight { get; set; } = 3;                       // 依 DramaScale：5＝舊的 1..5（段）、10＝1..10 的份量；匯入時解析定案
+
+        /// <summary>
+        /// <see cref="DramaWeight"/> 是哪一種尺度（<see cref="DramaScales"/>）。<b>缺欄位的舊事件必須落在舊尺度（5）</b>：
+        /// Newtonsoft 在 JSON 缺欄位時保留這個初始值，更新前存下來的事件因此仍當成 1..5 的段，傳多遠、記多久跟更新前一樣。
+        /// 新事件由匯入口寫成 10。
+        /// </summary>
+        public int DramaScale { get; set; } = DramaScales.Legacy;
+
+        /// <summary>份量（1..10）。舊尺度的事件＝段 × 2。計算屬性，不寫進磁碟。</summary>
+        [JsonIgnore]
+        public int DramaWeightTen => DramaScales.ToWeight(DramaWeight, DramaScale);
+
+        /// <summary>段（1..5）。傳播、記憶、保留、講給玩家的計分一律讀這個，不直接讀 <see cref="DramaWeight"/>。計算屬性，不寫進磁碟。</summary>
+        [JsonIgnore]
+        public int DramaBand => DramaScales.ToBand(DramaWeight, DramaScale);
         public Dictionary<string, string> Participants { get; set; } = new();   // role -> heroId
         public List<Fact> Facts { get; set; } = new();
         public List<KnownByEntry> KnownBy { get; set; } = new();

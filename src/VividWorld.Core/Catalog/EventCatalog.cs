@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using VividWorld.Core.Events;
 
 namespace VividWorld.Core.Catalog
 {
@@ -8,6 +10,10 @@ namespace VividWorld.Core.Catalog
         public IReadOnlyList<EventTemplate> Templates { get; }
         public IReadOnlyList<CatalogIssue> Issues { get; }
         public int SkippedCount { get; }
+
+        /// <summary>份量還用舊寫法（沒標 dramaScale、dramaWeight 是 1..5 的段）的模板型別，載入時印一行用。</summary>
+        public IReadOnlyList<string> LegacyDramaScaleTypes =>
+            Templates.Where(t => t.DramaWeight.HasValue && t.DramaScale != DramaScales.Ten).Select(t => t.Type).ToList();
 
         private readonly Dictionary<string, EventTemplate> _byType;
 

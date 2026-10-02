@@ -2,7 +2,8 @@
   {
     "type": "duel_arranged",
     "origin": "public",
-    "dramaWeight": 3,
+    "dramaWeight": 6,
+    "dramaScale": 10,
     "linkedEventId": null,
     "participants": {
       "challenger": "{MASTERMIND}",
@@ -52,7 +53,8 @@
   {
     "type": "tavern_quarrel",
     "origin": "public",
-    "dramaWeight": 4,
+    "dramaWeight": 8,
+    "dramaScale": 10,
     "linkedEventId": null,
     "participants": {
       "instigator": "{MASTERMIND}",
@@ -110,7 +112,8 @@
   {
     "type": "shared_meal",
     "origin": "public",
-    "dramaWeight": 1,
+    "dramaWeight": 2,
+    "dramaScale": 10,
     "linkedEventId": null,
     "participants": {
       "host": "{MASTERMIND}",
@@ -160,7 +163,8 @@
   {
     "type": "duel",
     "origin": "public",
-    "dramaWeight": 5,
+    "dramaWeight": 10,
+    "dramaScale": 10,
     "linkedEventId": "{LINKED_TAVERN_QUARREL}",
     "participants": {
       "duelist": "{MASTERMIND}",
@@ -221,7 +225,8 @@
   {
     "type": "covert_sabotage",
     "origin": "secret",
-    "dramaWeight": 4,
+    "dramaWeight": 8,
+    "dramaScale": 10,
     "linkedEventId": "{LINKED_DUEL_ARRANGED}",
     "participants": {
       "mastermind": "{MASTERMIND}",

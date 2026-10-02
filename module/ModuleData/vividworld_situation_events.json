@@ -3,11 +3,16 @@
     "type": "seat_dispute_demanded",
     "headline": "A seat at the high table was demanded",
     "origin": "public",
-    "dramaWeight": 3,
+    "dramaWeight": 5,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "slighted": "{SLIGHTED}",
       "favored": "{FAVORED}"
+    },
+    "feelings": {
+      "favored": "lost_face",
+      "slighted": "brash"
     },
     "knowingRoles": [],
     "opinion": [
@@ -18,7 +23,7 @@
         "id": "who",
         "category": "WHO",
         "textId": "VividWorld_Fact_SeatDisputeDemanded_Who",
-        "text": "{SLIGHTED} demanded that {FAVORED} give up the seat of honor",
+        "text": "{SLIGHTED} demanded in front of everyone that {FAVORED} give up the seat of honor",
         "vars": {
           "SLIGHTED": "hero:{SLIGHTED}",
           "FAVORED": "hero:{FAVORED}"
@@ -33,14 +38,13 @@
         "vars": {
           "SETTLEMENT": "settlement:{SETTLEMENT}"
         },
-        "fragility": 2,
-        "optional": true
+        "fragility": 2
       },
       {
         "id": "why",
         "category": "WHY",
         "textId": "VividWorld_Fact_SeatDisputeDemanded_Why",
-        "text": "saying the head of a house should not sit below a lesser member of another",
+        "text": "as the head of {SLIGHTED.his} house, {SLIGHTED.he} should not sit below a member of another",
         "vars": {},
         "fragility": 3
       },
@@ -59,10 +63,15 @@
     "headline": "A slight at the table was swallowed",
     "origin": "secret",
     "dramaWeight": 3,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "slighted": "{SLIGHTED}",
       "favored": "{FAVORED}"
+    },
+    "feelings": {
+      "slighted": "lost_face",
+      "favored": "pending"
     },
     "knowingRoles": [
       "slighted"
@@ -90,8 +99,7 @@
         "vars": {
           "SETTLEMENT": "settlement:{SETTLEMENT}"
         },
-        "fragility": 2,
-        "optional": true
+        "fragility": 2
       },
       {
         "id": "what",
@@ -107,11 +115,16 @@
     "type": "seat_dispute_yielded",
     "headline": "A seat was given up",
     "origin": "public",
-    "dramaWeight": 2,
+    "dramaWeight": 3,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "slighted": "{SLIGHTED}",
       "favored": "{FAVORED}"
+    },
+    "feelings": {
+      "slighted": "decent",
+      "favored": "cared"
     },
     "knowingRoles": [],
     "opinion": [
@@ -137,8 +150,7 @@
         "vars": {
           "SETTLEMENT": "settlement:{SETTLEMENT}"
         },
-        "fragility": 2,
-        "optional": true
+        "fragility": 2
       },
       {
         "id": "outcome",
@@ -154,12 +166,18 @@
     "type": "seat_dispute_walked_out",
     "headline": "A lord walked out of the hall",
     "origin": "public",
-    "dramaWeight": 3,
+    "dramaWeight": 6,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "slighted": "{SLIGHTED}",
       "favored": "{FAVORED}",
       "host": "{HOST}"
+    },
+    "feelings": {
+      "host": "lost_face",
+      "favored": "lost_face",
+      "slighted": "brash"
     },
     "knowingRoles": [],
     "opinion": [
@@ -185,14 +203,13 @@
         "vars": {
           "SETTLEMENT": "settlement:{SETTLEMENT}"
         },
-        "fragility": 2,
-        "optional": true
+        "fragility": 2
       },
       {
         "id": "why",
         "category": "WHY",
         "textId": "VividWorld_Fact_SeatDisputeWalkedOut_Why",
-        "text": "rather than sit below {FAVORED}",
+        "text": "on seeing {SLIGHTED.his} seat was below {FAVORED}'s",
         "vars": {
           "FAVORED": "hero:{FAVORED}"
         },
@@ -204,11 +221,16 @@
     "type": "advice_given_freely",
     "headline": "A veteran taught what he knew",
     "origin": "public",
-    "dramaWeight": 2,
+    "dramaWeight": 3,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "student": "{STUDENT}",
       "veteran": "{VETERAN}"
+    },
+    "feelings": {
+      "veteran": "decent",
+      "student": "cared"
     },
     "knowingRoles": [],
     "opinion": [
@@ -234,8 +256,7 @@
         "vars": {
           "SETTLEMENT": "settlement:{SETTLEMENT}"
         },
-        "fragility": 2,
-        "optional": true
+        "fragility": 2
       },
       {
         "id": "what",
@@ -252,10 +273,15 @@
     "headline": "A request for counsel was brushed off",
     "origin": "public",
     "dramaWeight": 2,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "student": "{STUDENT}",
       "veteran": "{VETERAN}"
+    },
+    "feelings": {
+      "student": "lost_face",
+      "veteran": "brash"
     },
     "knowingRoles": [],
     "opinion": [
@@ -266,7 +292,7 @@
         "id": "who",
         "category": "WHO",
         "textId": "VividWorld_Fact_AdviceBrushedOff_Who",
-        "text": "{VETERAN} gave {STUDENT} nothing but old sayings",
+        "text": "{VETERAN} gave {STUDENT} only a few things everyone already knows",
         "vars": {
           "VETERAN": "hero:{VETERAN}",
           "STUDENT": "hero:{STUDENT}"
@@ -281,8 +307,7 @@
         "vars": {
           "SETTLEMENT": "settlement:{SETTLEMENT}"
         },
-        "fragility": 2,
-        "optional": true
+        "fragility": 2
       },
       {
         "id": "what",
@@ -298,17 +323,28 @@
     "type": "advice_mocked",
     "headline": "A request for counsel was mocked",
     "origin": "public",
-    "dramaWeight": 3,
+    "dramaWeight": 5,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "student": "{STUDENT}",
       "veteran": "{VETERAN}"
+    },
+    "feelings": {
+      "student": "lost_face",
+      "veteran": "brash"
     },
     "selfTell": {
       "student": {
         "trait": "valor",
         "min": 1
       }
+    },
+    "selfFeelingVariants": {
+      "student": [
+        { "tendency": "Valor", "trait": "valor", "min": 2 },
+        { "tendency": "Calculating", "trait": "calculating", "min": 1 }
+      ]
     },
     "knowingRoles": [],
     "opinion": [
@@ -334,8 +370,7 @@
         "vars": {
           "SETTLEMENT": "settlement:{SETTLEMENT}"
         },
-        "fragility": 2,
-        "optional": true
+        "fragility": 2
       },
       {
         "id": "why",
@@ -362,10 +397,15 @@
     "headline": "A boast was told over the cups",
     "origin": "public",
     "dramaWeight": 1,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "speaker": "{SPEAKER}",
       "listener": "{LISTENER}"
+    },
+    "feelings": {
+      "speaker": "brash",
+      "listener": "pending"
     },
     "selfTell": {
       "speaker": "never"
@@ -394,14 +434,13 @@
         "vars": {
           "SETTLEMENT": "settlement:{SETTLEMENT}"
         },
-        "fragility": 2,
-        "optional": true
+        "fragility": 2
       },
       {
         "id": "what",
         "category": "WHAT",
         "textId": "VividWorld_Fact_TavernBoastTold_What",
-        "text": "and nobody at the table troubled to count the bodies",
+        "text": "and the others at the table only smiled",
         "vars": {},
         "fragility": 3
       }
@@ -412,7 +451,8 @@
     "retired": true,
     "headline": "A confidence was let slip over the cups",
     "origin": "secret",
-    "dramaWeight": 2,
+    "dramaWeight": 4,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "speaker": "{SPEAKER}",
@@ -462,11 +502,16 @@
     "type": "tavern_sour_words",
     "headline": "Sour words were spoken over the cups",
     "origin": "public",
-    "dramaWeight": 3,
+    "dramaWeight": 4,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "speaker": "{SPEAKER}",
       "listener": "{LISTENER}"
+    },
+    "feelings": {
+      "listener": "lost_face",
+      "speaker": "brash"
     },
     "selfTell": {
       "speaker": "never"
@@ -480,7 +525,7 @@
         "id": "who",
         "category": "WHO",
         "textId": "VividWorld_Fact_TavernSourWords_Who",
-        "text": "{SPEAKER} said something over the cups that stung {LISTENER} badly",
+        "text": "{SPEAKER} said something to {LISTENER} over the cups, and {LISTENER}'s face changed on the spot",
         "vars": {
           "SPEAKER": "hero:{SPEAKER}",
           "LISTENER": "hero:{LISTENER}"
@@ -495,8 +540,7 @@
         "vars": {
           "SETTLEMENT": "settlement:{SETTLEMENT}"
         },
-        "fragility": 2,
-        "optional": true
+        "fragility": 2
       },
       {
         "id": "what",
@@ -512,11 +556,16 @@
     "type": "tavern_good_word",
     "headline": "A good word was spoken over the cups",
     "origin": "public",
-    "dramaWeight": 2,
+    "dramaWeight": 3,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "speaker": "{SPEAKER}",
       "listener": "{LISTENER}"
+    },
+    "feelings": {
+      "speaker": "decent",
+      "listener": "cared"
     },
     "knowingRoles": [],
     "opinion": [
@@ -542,8 +591,7 @@
         "vars": {
           "SETTLEMENT": "settlement:{SETTLEMENT}"
         },
-        "fragility": 2,
-        "optional": true
+        "fragility": 2
       },
       {
         "id": "what",
@@ -559,11 +607,16 @@
     "type": "victory_credit_claimed",
     "headline": "The credit for a victory was claimed",
     "origin": "public",
-    "dramaWeight": 3,
+    "dramaWeight": 5,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "claimant": "{CLAIMANT}",
       "rival": "{RIVAL}"
+    },
+    "feelings": {
+      "rival": "lost_face",
+      "claimant": "brash"
     },
     "selfTell": {
       "claimant": "never"
@@ -591,8 +644,7 @@
         "vars": {
           "SETTLEMENT": "settlement:{SETTLEMENT}"
         },
-        "fragility": 2,
-        "optional": true
+        "fragility": 2
       },
       {
         "id": "why",
@@ -610,11 +662,16 @@
     "type": "victory_credit_deferred",
     "headline": "The credit for a victory was given away",
     "origin": "public",
-    "dramaWeight": 2,
+    "dramaWeight": 3,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "claimant": "{CLAIMANT}",
       "rival": "{RIVAL}"
+    },
+    "feelings": {
+      "claimant": "decent",
+      "rival": "cared"
     },
     "knowingRoles": [],
     "opinion": [
@@ -640,8 +697,7 @@
         "vars": {
           "SETTLEMENT": "settlement:{SETTLEMENT}"
         },
-        "fragility": 2,
-        "optional": true
+        "fragility": 2
       },
       {
         "id": "what",
@@ -660,7 +716,8 @@
     "retired": true,
     "headline": "A victory was belittled",
     "origin": "secret",
-    "dramaWeight": 3,
+    "dramaWeight": 6,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "claimant": "{CLAIMANT}",
@@ -711,12 +768,18 @@
     "type": "victory_credit_judged",
     "headline": "A dispute over credit was put to the host",
     "origin": "public",
-    "dramaWeight": 3,
+    "dramaWeight": 5,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "claimant": "{CLAIMANT}",
       "rival": "{RIVAL}",
       "host": "{HOST}"
+    },
+    "feelings": {
+      "claimant": "lost_face",
+      "host": "decent",
+      "rival": "cared"
     },
     "knowingRoles": [],
     "opinion": [
@@ -743,8 +806,7 @@
         "vars": {
           "SETTLEMENT": "settlement:{SETTLEMENT}"
         },
-        "fragility": 2,
-        "optional": true
+        "fragility": 2
       },
       {
         "id": "outcome",
@@ -762,11 +824,16 @@
     "type": "brawl_man_handed_over",
     "headline": "A retainer was handed over after a brawl",
     "origin": "public",
-    "dramaWeight": 3,
+    "dramaWeight": 4,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "aggrieved": "{AGGRIEVED}",
       "patron": "{PATRON}"
+    },
+    "feelings": {
+      "patron": "decent",
+      "aggrieved": "cared"
     },
     "knowingRoles": [],
     "opinion": [
@@ -792,8 +859,7 @@
         "vars": {
           "SETTLEMENT": "settlement:{SETTLEMENT}"
         },
-        "fragility": 2,
-        "optional": true
+        "fragility": 2
       },
       {
         "id": "what",
@@ -809,11 +875,16 @@
     "type": "brawl_shielded_own",
     "headline": "A lord shielded his own after a brawl",
     "origin": "public",
-    "dramaWeight": 3,
+    "dramaWeight": 5,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "aggrieved": "{AGGRIEVED}",
       "patron": "{PATRON}"
+    },
+    "feelings": {
+      "aggrieved": "lost_face",
+      "patron": "brash"
     },
     "knowingRoles": [],
     "opinion": [
@@ -824,7 +895,7 @@
         "id": "who",
         "category": "WHO",
         "textId": "VividWorld_Fact_BrawlShieldedOwn_Who",
-        "text": "{PATRON} refused to give up {PATRON.his} man to {AGGRIEVED}",
+        "text": "{PATRON}'s men and {AGGRIEVED}'s men fought, and {PATRON} refused to hand the man over to {AGGRIEVED}",
         "vars": {
           "PATRON": "hero:{PATRON}",
           "AGGRIEVED": "hero:{AGGRIEVED}"
@@ -839,8 +910,7 @@
         "vars": {
           "SETTLEMENT": "settlement:{SETTLEMENT}"
         },
-        "fragility": 2,
-        "optional": true
+        "fragility": 2
       },
       {
         "id": "why",
@@ -856,11 +926,16 @@
     "type": "brawl_counter_accused",
     "headline": "A brawl ended in counter-accusation",
     "origin": "public",
-    "dramaWeight": 4,
+    "dramaWeight": 6,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "aggrieved": "{AGGRIEVED}",
       "patron": "{PATRON}"
+    },
+    "feelings": {
+      "aggrieved": "lost_face",
+      "patron": "brash"
     },
     "knowingRoles": [],
     "opinion": [
@@ -871,7 +946,7 @@
         "id": "who",
         "category": "WHO",
         "textId": "VividWorld_Fact_BrawlCounterAccused_Who",
-        "text": "{PATRON} refused to hand anyone over and told the crowd it was {AGGRIEVED}'s man who drew first",
+        "text": "{PATRON}'s men and {AGGRIEVED}'s men fought, and {PATRON} refused to hand anyone over and said {AGGRIEVED}'s men struck first",
         "vars": {
           "PATRON": "hero:{PATRON}",
           "AGGRIEVED": "hero:{AGGRIEVED}"
@@ -886,8 +961,7 @@
         "vars": {
           "SETTLEMENT": "settlement:{SETTLEMENT}"
         },
-        "fragility": 2,
-        "optional": true
+        "fragility": 2
       },
       {
         "id": "what",
@@ -911,11 +985,16 @@
     "type": "brawl_hushed_up",
     "headline": "A brawl was hushed up",
     "origin": "secret",
-    "dramaWeight": 2,
+    "dramaWeight": 4,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "aggrieved": "{AGGRIEVED}",
       "patron": "{PATRON}"
+    },
+    "feelings": {
+      "aggrieved": "pending",
+      "patron": "pending"
     },
     "knowingRoles": [
       "aggrieved",
@@ -945,8 +1024,7 @@
         "vars": {
           "SETTLEMENT": "settlement:{SETTLEMENT}"
         },
-        "fragility": 2,
-        "optional": true
+        "fragility": 2
       },
       {
         "id": "what",
@@ -962,11 +1040,16 @@
     "type": "wager_struck",
     "headline": "A hunting wager was struck",
     "origin": "public",
-    "dramaWeight": 2,
+    "dramaWeight": 3,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "challenger": "{CHALLENGER}",
       "challenged": "{CHALLENGED}"
+    },
+    "feelings": {
+      "challenger": "pending",
+      "challenged": "pending"
     },
     "knowingRoles": [],
     "facts": [
@@ -989,8 +1072,7 @@
         "vars": {
           "SETTLEMENT": "settlement:{SETTLEMENT}"
         },
-        "fragility": 2,
-        "optional": true
+        "fragility": 2
       },
       {
         "id": "what",
@@ -1007,10 +1089,21 @@
     "headline": "A hunting wager was refused",
     "origin": "public",
     "dramaWeight": 2,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "challenger": "{CHALLENGER}",
       "challenged": "{CHALLENGED}"
+    },
+    "feelings": {
+      "challenger": "lost_face",
+      "challenged": "brash"
+    },
+    "selfFeelingVariants": {
+      "challenger": [
+        { "tendency": "Valor", "trait": "valor", "min": 1 },
+        { "tendency": "Mercy", "trait": "mercy", "min": 1 }
+      ]
     },
     "knowingRoles": [],
     "opinion": [
@@ -1036,14 +1129,13 @@
         "vars": {
           "SETTLEMENT": "settlement:{SETTLEMENT}"
         },
-        "fragility": 2,
-        "optional": true
+        "fragility": 2
       },
       {
         "id": "what",
         "category": "WHAT",
         "textId": "VividWorld_Fact_WagerRefused_What",
-        "text": "which the hall laughed at rather too long",
+        "text": "and the hall laughed for quite a while",
         "vars": {},
         "fragility": 3
       }
@@ -1053,11 +1145,16 @@
     "type": "wager_secret_stake",
     "headline": "A hunting wager had a hidden stake",
     "origin": "secret",
-    "dramaWeight": 2,
+    "dramaWeight": 4,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "challenger": "{CHALLENGER}",
       "challenged": "{CHALLENGED}"
+    },
+    "feelings": {
+      "challenger": "pending",
+      "challenged": "pending"
     },
     "knowingRoles": [
       "challenger",
@@ -1083,8 +1180,7 @@
         "vars": {
           "SETTLEMENT": "settlement:{SETTLEMENT}"
         },
-        "fragility": 2,
-        "optional": true
+        "fragility": 2
       },
       {
         "id": "what",

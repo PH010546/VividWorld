@@ -250,7 +250,7 @@ namespace VividWorld.Core.Tests
             allTemplates.AddRange(catEvents.Templates);
             allTemplates.AddRange(catSit.Templates);
 
-            Assert.Equal(34, allTemplates.Count);
+            Assert.Equal(36, allTemplates.Count);
 
             var enTable = EnglishStringTable.LoadFromFile(enPath);
             var cntTable = EnglishStringTable.LoadFromFile(cntPath);
@@ -262,8 +262,8 @@ namespace VividWorld.Core.Tests
             Assert.Contains("[hero_captured_by_bandits]", output);
             Assert.Contains("[hero_rescued_from_bandits]", output);
             Assert.Contains("[hero_escaped_bandits]", output);
-            Assert.Contains("Near Pravend", output);
-            Assert.Contains("在帕拉文德附近", output);
+            Assert.Contains("near Pravend", output);
+            Assert.Contains("帕拉汶德附近", output);
         }
     }
 }

@@ -229,9 +229,9 @@ namespace VividWorld.Core.Memory
             };
         }
 
-        private static bool IsKin(InterestHeroFacts knower, string knowerId, InterestHeroFacts pFacts, string pHeroId)
+        public static bool IsKin(InterestHeroFacts? knower, string knowerId, InterestHeroFacts? pFacts, string pHeroId)
         {
-            if (!string.IsNullOrEmpty(pHeroId))
+            if (knower != null && !string.IsNullOrEmpty(pHeroId))
             {
                 if (string.Equals(knower.FatherId, pHeroId, StringComparison.Ordinal)) return true;
                 if (string.Equals(knower.MotherId, pHeroId, StringComparison.Ordinal)) return true;
@@ -239,7 +239,7 @@ namespace VividWorld.Core.Memory
                 if (knower.SiblingIds != null && knower.SiblingIds.Contains(pHeroId)) return true;
             }
 
-            if (!string.IsNullOrEmpty(knowerId))
+            if (pFacts != null && !string.IsNullOrEmpty(knowerId))
             {
                 if (string.Equals(pFacts.FatherId, knowerId, StringComparison.Ordinal)) return true;
                 if (string.Equals(pFacts.MotherId, knowerId, StringComparison.Ordinal)) return true;

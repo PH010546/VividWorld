@@ -1262,7 +1262,7 @@ namespace VividWorld.Core.Tests
         {
             string ringLine = TellerLogFormatter.FormatWorldStatusTellerRing(
                 120, 8, 24, new[] { 1, 2, 3, 4, 5 }, 2, 1);
-            Assert.Equal("- Teller ring: 120 tellers, 8 per hour; this session turns 24, told by drama 1:1 2:2 3:3 4:4 5:5, skipped not eligible 2, left ring 1", ringLine);
+            Assert.Equal("- Teller ring: 120 tellers, 8 per hour; this session turns 24, told by band 1:1 2:2 3:3 4:4 5:5, skipped not eligible 2, left ring 1", ringLine);
 
             string reheardLine = TellerLogFormatter.FormatWorldStatusReheard(10, 5, 2);
             Assert.Equal("- Re-heard this session: counted 10, same teller ignored 5, same teller re-learned 2", reheardLine);
@@ -1276,11 +1276,11 @@ namespace VividWorld.Core.Tests
                 (5, 5, 25, 20)
             };
             string spreadLine = TellerLogFormatter.FormatWorldStatusSpreadByDrama(stats);
-            Assert.Contains("d1 2.0 / 1.0 (2 events)", spreadLine);
-            Assert.Contains("d2 - (0 events)", spreadLine);
-            Assert.Contains("d3 3.0 / 3.0 (1 events)", spreadLine);
-            Assert.Contains("d4 - (0 events)", spreadLine);
-            Assert.Contains("d5 5.0 / 4.0 (5 events)", spreadLine);
+            Assert.Contains("b1 2.0 / 1.0 (2 events)", spreadLine);
+            Assert.Contains("b2 - (0 events)", spreadLine);
+            Assert.Contains("b3 3.0 / 3.0 (1 events)", spreadLine);
+            Assert.Contains("b4 - (0 events)", spreadLine);
+            Assert.Contains("b5 5.0 / 4.0 (5 events)", spreadLine);
         }
 
         [Fact]
@@ -1298,7 +1298,7 @@ namespace VividWorld.Core.Tests
             };
             var choice = new TopicChoice("h1", candidates, new List<TopicExclusion>(), 0, "e1", 1.0);
             string withCand = TellerLogFormatter.FormatTopicsIfSpokeNow(choice, false, 0);
-            Assert.Contains("topics if he spoke now (in teller ring: no): e1 100.0% (drama 3, tell 1.00, fresh 0.90); excluded 0; inactive 0", withCand);
+            Assert.Contains("topics if he spoke now (in teller ring: no): e1 100.0% (weight 6/10 (band 3), tell 1.00, fresh 0.90); excluded 0; inactive 0", withCand);
         }
 
         #endregion

@@ -38,6 +38,24 @@ namespace VividWorld.Core.Persistence
                 action, eventId, hop, factCount, source);
         }
 
+        /// <summary>來源清單那邊：新增了誰、或更新了誰那一份（誰、手數、碎片數、有沒有感想、原句資訊）。</summary>
+        public static string FormatSourceChange(PlayerHeardSourceChange change, string eventId, string teller, int hop, int factCount, bool hasFeeling, int sourceCount, bool hasSpokenLine, string? firstCandidate, string? trailingKind)
+        {
+            string action = change == PlayerHeardSourceChange.Added ? "source added" : "source updated";
+            string spokenInfo = hasSpokenLine
+                ? string.Format(CultureInfo.InvariantCulture, "spoken line saved, candidate '{0}', followed by {1}", firstCandidate ?? "-", trailingKind ?? "none")
+                : "no spoken line";
+
+            return string.Format(CultureInfo.InvariantCulture,
+                "Player heard-log: {0} for {1} - {2} (hop {3}, {4} fact(s), {5}, {6}); {7} source(s) on the entry",
+                action, eventId, teller, hop, factCount, hasFeeling ? "with a feeling" : "no feeling", spokenInfo, sourceCount);
+        }
+
+        public static string FormatSourceChange(PlayerHeardSourceChange change, string eventId, string teller, int hop, int factCount, bool hasFeeling, int sourceCount)
+        {
+            return FormatSourceChange(change, eventId, teller, hop, factCount, hasFeeling, sourceCount, false, null, null);
+        }
+
         public static string FormatWriteFailed()
         {
             return "Player heard-log: write failed, will retry on the next flush";

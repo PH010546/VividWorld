@@ -136,7 +136,34 @@ namespace VividWorld.Core.Persistence
             return newIndex;
         }
 
-        private static List<WorldEvent>? ReadShardEvents(string content)
+        /// <summary>
+        /// 讀進來的事件裡，有幾則是份量改成 1..10 之前存下來的（沒有 <c>dramaScale</c> 欄位，份量欄位是 1..5 的段）。
+        /// 它們不改寫，讀的時候當成段、份量＝段 × 2，傳多遠、記多久跟更新前一樣。
+        /// </summary>
+        public int LegacyScaleEventsRead { get; private set; }
+
+        /// <summary>讀到舊份量尺度的事件時印一行用（同一個執行期只印一次）；沒設就不印。</summary>
+        public VividWorld.Core.Diagnostics.ILogSink? Log { get; set; }
+
+        private bool _legacyScaleNoted;
+
+        private List<WorldEvent>? ReadShardEvents(string content)
+        {
+            var events = ReadShardEventsCore(content);
+            if (events != null)
+            {
+                int legacy = events.Count(e => e != null && e.DramaScale != DramaScales.Ten);
+                LegacyScaleEventsRead += legacy;
+                if (legacy > 0 && !_legacyScaleNoted)
+                {
+                    _legacyScaleNoted = true;
+                    Log?.Info($"Event store: {legacy} event(s) in a shard were saved before the 1..10 weight scale (no dramaScale field); read as band x2 (weight = band x 2), spread and memory unchanged. Further shards of this kind are counted, not logged.");
+                }
+            }
+            return events;
+        }
+
+        private static List<WorldEvent>? ReadShardEventsCore(string content)
         {
             var events = VividJson.Read<List<WorldEvent>>(content);
             if (events != null) return events;

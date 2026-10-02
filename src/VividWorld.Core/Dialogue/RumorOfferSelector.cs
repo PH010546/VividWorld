@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using VividWorld.Core.Config;
 using VividWorld.Core.Events;
+using VividWorld.Core.Grudges;
+using VividWorld.Core.Memory;
 using VividWorld.Core.Persistence;
 using VividWorld.Core.Presentation;
 using VividWorld.Core.Rumors;
@@ -16,6 +18,10 @@ namespace VividWorld.Core.Dialogue
         private readonly string _playerHeroId;
         private readonly Func<string, VividWorld.Core.Catalog.EventTemplate?>? _getTemplate;
         private readonly IHeroTraitLookup? _traits;
+        private readonly VividWorld.Core.Feelings.FeelingResolver? _feelings;
+        private readonly IDialogueWorld? _dialogueWorld;
+        private readonly PlayerHeardLogStore? _playerHeardLog;
+        private readonly Func<string, WorldEvent?>? _getEvent;
 
         public RumorMode Mode { get; set; } = RumorMode.Casual;
 
@@ -25,13 +31,22 @@ namespace VividWorld.Core.Dialogue
             string playerHeroId,
             RumorMode? mode = null,
             Func<string, VividWorld.Core.Catalog.EventTemplate?>? getTemplate = null,
-            IHeroTraitLookup? traits = null)
+            IHeroTraitLookup? traits = null,
+            VividWorld.Core.Feelings.FeelingResolver? feelings = null,
+            IDialogueWorld? dialogueWorld = null,
+            PlayerHeardLogStore? playerHeardLog = null,
+            Func<string, WorldEvent?>? getEvent = null)
         {
             _config = cfg ?? throw new ArgumentNullException(nameof(cfg));
             _engine = engine ?? throw new ArgumentNullException(nameof(engine));
             _playerHeroId = playerHeroId ?? string.Empty;
             _getTemplate = getTemplate ?? _engine.TemplateProvider;
             _traits = traits ?? _engine.Traits;
+            _feelings = feelings;
+            _dialogueWorld = dialogueWorld;
+            _playerHeardLog = playerHeardLog;
+            _getEvent = getEvent;
+
             if (mode.HasValue)
             {
                 Mode = mode.Value;
@@ -43,15 +58,20 @@ namespace VividWorld.Core.Dialogue
         }
 
         public RumorEngine Engine => _engine;
+        public IDialogueWorld? DialogueWorld => _dialogueWorld;
+        public PlayerHeardLogStore? PlayerHeardLog => _playerHeardLog;
+        public Func<string, WorldEvent?>? GetEvent => _getEvent;
 
-        /// <summary>依傳聞模式決定的閒聊好感門檻（規格 §12.2、卡片 LISTEN1d）。</summary>
-        public int ChatRelationGate => Mode == RumorMode.Casual
-            ? _config.Dialogue.CasualChatRelationGate
-            : _config.Dialogue.RealisticChatRelationGate;
+        /// <summary>依當前傳聞模式決定的主動講述門檻線。</summary>
+        public double ActiveVolunteerLine => Mode == RumorMode.Casual
+            ? _config.Dialogue.CasualVolunteerLine
+            : _config.Dialogue.RealisticVolunteerLine;
+
+        /// <summary>相容既有呼叫端的整數閒聊門檻屬性。</summary>
+        public int ChatRelationGate => (int)ActiveVolunteerLine;
 
         /// <summary>
-        /// 計算傳聞到達玩家時的落點手數（單一真相來源，規格 §12.3、卡片 LISTEN1d §14(6)）。
-        /// 算式：min(TellerHop + 1 + GistExtraHops, max(TellerHop + 1, MaxHopFor(evt)))。
+        /// 計算傳聞到達玩家時的落點手數（單一真相來源）。
         /// 完整版固定為 TellerHop + 1。
         /// </summary>
         public static int ComputeLandingHop(int tellerHop, int maxHop, VolunteerTier tier, int gistExtraHops)
@@ -66,107 +86,126 @@ namespace VividWorld.Core.Dialogue
             return tellerHop + 1;
         }
 
-        /// <summary>實例輔助函式：取得指定事件在該層級下的落點手數。</summary>
-        public int ComputeLandingHop(WorldEvent evt, int tellerHop, VolunteerTier tier)
+        /// <summary>實例輔助函式：取得指定事件在講給玩家時的落點手數（固定為講述者手數 + 1）。</summary>
+        public int ComputeLandingHop(WorldEvent evt, int tellerHop, VolunteerTier tier = VolunteerTier.Full)
         {
-            int maxHop = _engine.MaxHopFor(evt);
-            return ComputeLandingHop(tellerHop, maxHop, tier, _config.Dialogue.GistExtraHops);
+            return tellerHop + 1;
         }
 
-        /// <summary>主動講述三個閘的**唯一**計算處（規格 §5.1、§7 行 1291-1293、LISTEN1d）。
-        /// `WillVolunteer` 只回答「行不行」，`DecideOnVolunteer` 還要回答「是哪一個閘擋的」——
-        /// 兩者都只准呼叫這裡。閘的述詞寫兩份，正是 M6a-fix2 那個 C-1 的成因。</summary>
-        private VolunteerRefusal EvaluateVolunteerGates(HeroSocialProfile? teller, double day,
-                                                        out bool isCloseKin,
-                                                        out VolunteerTier tier,
-                                                        out int chatGate,
-                                                        out int fullGate)
-        {
-            var d = _config.Dialogue;
-            isCloseKin = d.NpcVolunteerAlwaysForCloseKin &&
-                         (teller?.IsPlayerSpouse == true || teller?.IsPlayerCompanion == true || teller?.IsPlayerClanMember == true);
-            fullGate = d.NpcVolunteerRelationGate;
-            chatGate = ChatRelationGate;
-
-            // 1. 好感度或近親/夥伴（兩層門檻：完整 vs 大概）
-            if (teller == null)
-            {
-                tier = VolunteerTier.None;
-                return VolunteerRefusal.RelationGate;
-            }
-
-            int relation = teller.RelationWithPlayer;
-            if (relation >= fullGate || isCloseKin)
-            {
-                tier = VolunteerTier.Full;
-            }
-            else if (relation >= chatGate)
-            {
-                tier = VolunteerTier.Gist;
-            }
-            else
-            {
-                tier = VolunteerTier.None;
-                return VolunteerRefusal.RelationGate;
-            }
-
-            // 2. 每人每天分享上限
-            int cap = d.SharesPerHeroPerDay;
-            if (cap > 0 && teller.SharedToday >= cap)
-            {
-                return VolunteerRefusal.SharedToday;
-            }
-
-            return VolunteerRefusal.None;
-        }
-
-        public bool WillVolunteer(HeroSocialProfile teller, double day)
-        {
-            return EvaluateVolunteerGates(teller, day, out _, out _, out _, out _) == VolunteerRefusal.None;
-        }
-
-        /// <summary>詢問意願的**唯一**計算處（規格 §7）。
-        /// `WillAnswerAsk` 與 `DecideOnAsk` 都只准呼叫它，不准各寫一份——
-        /// 同一個述詞有兩份定義，正是 M6a-fix2 那個 C-1 的成因。</summary>
-        private void ComputeAskWillingness(HeroSocialProfile? teller,
-                                           out int relation, out double willingness, out double threshold)
+        /// <summary>
+        /// 計算講述者對玩家的溝通意願。
+        /// 意願 = 對玩家好感 + 6 × 仗義 + 4 × 榮譽 - 8 × 理性。
+        /// </summary>
+        public void ComputeWillingness(
+            HeroSocialProfile? teller,
+            out int relation,
+            out double generosityBonus,
+            out double honorBonus,
+            out double calculatingPenalty,
+            out double willingness)
         {
             var d = _config.Dialogue;
             var w = d.AskTraitWeights ?? new AskTraitWeights();
 
             relation = teller?.RelationWithPlayer ?? 0;
-            double generosity = teller?.Traits?.Generosity ?? 0;
-            double honor = teller?.Traits?.Honor ?? 0;
-            double calculating = teller?.Traits?.Calculating ?? 0;
+            double generosity = _traits?.Of(teller?.HeroId ?? string.Empty)?.Generosity ?? teller?.Traits?.Generosity ?? 0;
+            double honor = _traits?.Of(teller?.HeroId ?? string.Empty)?.Honor ?? teller?.Traits?.Honor ?? 0;
+            double calculating = _traits?.Of(teller?.HeroId ?? string.Empty)?.Calculating ?? teller?.Traits?.Calculating ?? 0;
 
-            willingness = relation
-                        + w.Generosity * generosity
-                        + w.Honor * honor
-                        + w.Calculating * calculating;
-            threshold = d.AskWillingnessThreshold;
+            generosityBonus = w.Generosity * generosity;
+            honorBonus = w.Honor * honor;
+            calculatingPenalty = w.Calculating * calculating;
+
+            willingness = relation + generosityBonus + honorBonus + calculatingPenalty;
+        }
+
+        /// <summary>說話的人跟玩家熟不熟、肯不肯答的判定結果，以及算出它的每一項。</summary>
+        public readonly struct PlayerStanding
+        {
+            public PlayerStanding(int relation, double generosityTerm, double honorTerm, double calculatingTerm,
+                                  double willingness, bool isCloseKin, double volunteerLine, double askThreshold)
+            {
+                Relation = relation;
+                GenerosityTerm = generosityTerm;
+                HonorTerm = honorTerm;
+                CalculatingTerm = calculatingTerm;
+                Willingness = willingness;
+                IsCloseKin = isCloseKin;
+                VolunteerLine = volunteerLine;
+                AskThreshold = askThreshold;
+            }
+
+            public int Relation { get; }
+            public double GenerosityTerm { get; }
+            public double HonorTerm { get; }
+            public double CalculatingTerm { get; }
+            public double Willingness { get; }
+            /// <summary>玩家的配偶、夥伴、家族成員：不看意願，直接算熟、也算信得過。</summary>
+            public bool IsCloseKin { get; }
+            public double VolunteerLine { get; }
+            public double AskThreshold { get; }
+
+            /// <summary>熟：會主動跟玩家講切身的事。</summary>
+            public bool IsFamiliar => IsCloseKin || Willingness >= VolunteerLine;
+
+            /// <summary>肯答：過了打聽的門檻，或已經算熟（會主動講的人被問不會不理）。</summary>
+            public bool CanAnswer => IsFamiliar || Willingness >= AskThreshold;
+        }
+
+        /// <summary>
+        /// 「熟不熟、肯不肯答」只在這裡算一次；主動講、被問、候選過濾、預覽都呼叫它，
+        /// 同一個判斷寫兩份遲早會各走各的。
+        /// </summary>
+        public PlayerStanding StandingWithPlayer(HeroSocialProfile? teller)
+        {
+            ComputeWillingness(teller, out int relation, out double gen, out double hon, out double calc, out double willingness);
+            bool isCloseKin = teller != null && _config.Dialogue.NpcVolunteerAlwaysForCloseKin &&
+                (teller.IsPlayerSpouse || teller.IsPlayerCompanion || teller.IsPlayerClanMember);
+            return new PlayerStanding(relation, gen, hon, calc, willingness, isCloseKin,
+                ActiveVolunteerLine, _config.Dialogue.AskWillingnessThreshold);
+        }
+
+        public bool WillVolunteer(HeroSocialProfile teller, double day)
+        {
+            if (teller == null) return false;
+            if (!StandingWithPlayer(teller).IsFamiliar) return false;
+
+            int cap = _config.Dialogue.SharesPerHeroPerDay;
+            if (cap > 0 && teller.SharedToday >= cap) return false;
+
+            return true;
         }
 
         public bool WillAnswerAsk(HeroSocialProfile teller)
         {
             if (teller == null) return false;
 
-            ComputeAskWillingness(teller, out int relation, out double willingness, out double threshold);
-            return relation >= _config.Dialogue.AskRelationGate && willingness >= threshold;
+            var standing = StandingWithPlayer(teller);
+            return standing.Relation >= _config.Dialogue.AskRelationGate && standing.CanAnswer;
         }
 
         public VolunteerDecision DecideOnVolunteer(HeroSocialProfile teller, IReadOnlyList<RumorCandidate> candidates, double day)
         {
             var d = _config.Dialogue;
-            int relation = teller?.RelationWithPlayer ?? 0;
-            var gate = EvaluateVolunteerGates(teller, day,
-                out bool isCloseKin, out VolunteerTier tier, out int chatGate, out int fullGate);
+            var standing = StandingWithPlayer(teller);
+            int relation = standing.Relation;
+            double gen = standing.GenerosityTerm, hon = standing.HonorTerm, calc = standing.CalculatingTerm;
+            double willingness = standing.Willingness;
+            double activeLine = standing.VolunteerLine;
+            bool isCloseKin = standing.IsCloseKin;
 
             var decision = new VolunteerDecision
             {
                 Relation = relation,
-                RelationGate = fullGate,
-                ChatRelationGate = chatGate,
-                Tier = tier,
+                RelationGate = (int)activeLine,
+                ChatRelationGate = (int)activeLine,
+                Willingness = willingness,
+                WillingnessLine = activeLine,
+                WillingnessPassed = standing.IsFamiliar,
+                GenerosityTerm = gen,
+                HonorTerm = hon,
+                CalculatingTerm = calc,
+                Tier = VolunteerTier.Full,
                 IsCloseKin = isCloseKin,
                 Day = day,
                 SharedToday = teller?.SharedToday ?? 0,
@@ -174,11 +213,17 @@ namespace VividWorld.Core.Dialogue
                 CandidateCount = candidates?.Count ?? 0
             };
 
-            // `teller == null` 時 EvaluateVolunteerGates 必定回 RelationGate，所以第二個條件是恆真的，
-            // 寫出來只為了讓可空性分析知道底下的 teller 不會是 null。
-            if (gate != VolunteerRefusal.None || teller == null)
+            if (teller == null || !standing.IsFamiliar)
             {
-                decision.Refusal = gate;
+                decision.Tier = VolunteerTier.None;
+                decision.Refusal = VolunteerRefusal.RelationGate;
+                return decision;
+            }
+
+            int cap = d.SharesPerHeroPerDay;
+            if (cap > 0 && teller.SharedToday >= cap)
+            {
+                decision.Refusal = VolunteerRefusal.SharedToday;
                 return decision;
             }
 
@@ -188,7 +233,7 @@ namespace VividWorld.Core.Dialogue
                 return decision;
             }
 
-            var classification = ClassifyCandidates(teller, candidates, day, tier);
+            var classification = ClassifyCandidates(teller, candidates, day, VolunteerTier.Full);
             decision.FilteredNotVisible = classification.FilteredNotVisible;
             decision.FilteredFutureTimeline = classification.FilteredFutureTimeline;
             decision.FilteredPlayerKnows = classification.FilteredPlayerKnows;
@@ -204,8 +249,47 @@ namespace VividWorld.Core.Dialogue
                 return decision;
             }
 
+            // 只有切身相關的三類才會主動講
+            var closelyRelated = new List<(RumorCandidate Candidate, VolunteerReasonCategory Category, string Why)>();
+            foreach (var c in classification.Eligible)
+            {
+                if (IsCloselyRelated(teller, c.Event, day, out var cat, out var why))
+                {
+                    closelyRelated.Add((c, cat, why));
+                }
+                else
+                {
+                    decision.FilterNotes.Add($"{c.Event.EventId}: eligible but not closely related to teller or player");
+                }
+            }
+
+            if (closelyRelated.Count == 0)
+            {
+                decision.Refusal = VolunteerRefusal.NoCloselyRelatedEvent;
+                return decision;
+            }
+
+            var sorted = closelyRelated
+                .OrderBy(x => x.Candidate.PlayerExistingHop.HasValue)
+                .ThenByDescending(x => GetEffectiveWeight(x.Candidate.Event))
+                .ThenByDescending(x => x.Candidate.Event.Day)
+                .ThenBy(x => x.Candidate.Event.EventId, StringComparer.Ordinal)
+                .ToList();
+
+            var best = sorted[0];
+            for (int i = 1; i < sorted.Count; i++)
+            {
+                var other = sorted[i];
+                decision.FilterNotes.Add($"{other.Candidate.Event.EventId}: closely related ({other.Category}) but lost to {best.Candidate.Event.EventId} (unread/weight/day/id)");
+            }
+
             decision.Refusal = VolunteerRefusal.None;
-            decision.Offer = CreateBestOffer(teller, classification.Eligible, day, tier);
+            decision.Offer = BuildOffer(best.Candidate, teller, day, VolunteerTier.Full, withFeeling: true);
+            decision.ReasonCategory = best.Category.ToString();
+            decision.ChosenTopicWeight = GetEffectiveWeight(best.Candidate.Event);
+            decision.ChosenTopicScale = DramaScales.BandOfWeight(decision.ChosenTopicWeight);
+            decision.ChosenTopicWhy = best.Why;
+
             return decision;
         }
 
@@ -220,13 +304,26 @@ namespace VividWorld.Core.Dialogue
             int cap = d.SharesPerHeroPerDay;
             int sharedToday = teller?.SharedToday ?? 0;
 
-            ComputeAskWillingness(teller, out int relation, out double willingness, out double threshold);
+            var standing = StandingWithPlayer(teller);
+            int relation = standing.Relation;
+            double gen = standing.GenerosityTerm, hon = standing.HonorTerm, calc = standing.CalculatingTerm;
+            double willingness = standing.Willingness;
+            double threshold = standing.AskThreshold;
+            double activeLine = standing.VolunteerLine;
+            bool isFamiliar = standing.IsFamiliar;
+            bool canAnswer = standing.CanAnswer;
 
             var decision = new AskDecision
             {
                 Relation = relation,
                 Willingness = willingness,
                 Threshold = threshold,
+                ActiveVolunteerLine = activeLine,
+                IsFamiliar = isFamiliar,
+                CanAnswer = canAnswer,
+                GenerosityTerm = gen,
+                HonorTerm = hon,
+                CalculatingTerm = calc,
                 SharedToday = sharedToday,
                 SharesPerHeroPerDay = cap,
                 CandidateCount = candidates?.Count ?? 0
@@ -244,7 +341,7 @@ namespace VividWorld.Core.Dialogue
                 return decision;
             }
 
-            if (willingness < threshold)
+            if (!canAnswer)
             {
                 decision.Refusal = AskRefusal.WillingnessGate;
                 return decision;
@@ -272,9 +369,120 @@ namespace VividWorld.Core.Dialogue
                 return decision;
             }
 
-            decision.Refusal = AskRefusal.None;
-            decision.Offer = CreateBestOffer(teller, classification.Eligible, day, VolunteerTier.Full);
-            return decision;
+            if (isFamiliar)
+            {
+                // 熟的人：先照三類切身挑；三類都沒有，就照大事挑，帶感想
+                var closelyRelated = new List<(RumorCandidate Candidate, VolunteerReasonCategory Category, string Why)>();
+                foreach (var c in classification.Eligible)
+                {
+                    if (IsCloselyRelated(teller, c.Event, day, out var cat, out var why))
+                    {
+                        closelyRelated.Add((c, cat, why));
+                    }
+                }
+
+                if (closelyRelated.Count > 0)
+                {
+                    var sorted = closelyRelated
+                        .OrderBy(x => x.Candidate.PlayerExistingHop.HasValue)
+                        .ThenByDescending(x => GetEffectiveWeight(x.Candidate.Event))
+                        .ThenByDescending(x => x.Candidate.Event.Day)
+                        .ThenBy(x => x.Candidate.Event.EventId, StringComparer.Ordinal)
+                        .ToList();
+
+                    var best = sorted[0];
+                    for (int i = 1; i < sorted.Count; i++)
+                    {
+                        decision.FilterNotes.Add($"{sorted[i].Candidate.Event.EventId}: closely related but lost to {best.Candidate.Event.EventId}");
+                    }
+
+                    decision.Refusal = AskRefusal.None;
+                    decision.Offer = BuildOffer(best.Candidate, teller, day, VolunteerTier.Full, withFeeling: true);
+                    decision.AnswerMode = "familiar_closely_related";
+                    decision.ReasonCategory = best.Category.ToString();
+                    decision.ChosenTopicWeight = GetEffectiveWeight(best.Candidate.Event);
+                    decision.ChosenTopicScale = DramaScales.BandOfWeight(decision.ChosenTopicWeight);
+                    decision.ChosenTopicWhy = best.Why;
+                    return decision;
+                }
+
+                decision.FilterNotes.Add("familiar hero has no closely related events; falling back to big news");
+
+                int bigNewsLine = d.BigNewsLine;
+                var bigNews = new List<RumorCandidate>();
+                foreach (var c in classification.Eligible)
+                {
+                    if (GetEffectiveWeight(c.Event) >= bigNewsLine)
+                    {
+                        bigNews.Add(c);
+                    }
+                    else
+                    {
+                        decision.FilterNotes.Add($"{c.Event.EventId}: weight {GetEffectiveWeight(c.Event)} < big news line {bigNewsLine}");
+                    }
+                }
+
+                if (bigNews.Count > 0)
+                {
+                    var sorted = SortCandidates(bigNews);
+                    var best = sorted[0];
+                    for (int i = 1; i < sorted.Count; i++)
+                    {
+                        decision.FilterNotes.Add($"{sorted[i].Event.EventId}: big news but lost to {best.Event.EventId}");
+                    }
+
+                    decision.Refusal = AskRefusal.None;
+                    decision.Offer = BuildOffer(best, teller, day, VolunteerTier.Full, withFeeling: true);
+                    decision.AnswerMode = "familiar_big_news";
+                    decision.ReasonCategory = "BigNews";
+                    decision.ChosenTopicWeight = GetEffectiveWeight(best.Event);
+                    decision.ChosenTopicScale = DramaScales.BandOfWeight(decision.ChosenTopicWeight);
+                    decision.ChosenTopicWhy = $"big news (weight {decision.ChosenTopicWeight} >= {bigNewsLine})";
+                    return decision;
+                }
+
+                decision.Refusal = AskRefusal.AllCandidatesFiltered;
+                return decision;
+            }
+            else
+            {
+                // 不熟但肯答的人：只講大事，不帶感想
+                int bigNewsLine = d.BigNewsLine;
+                var bigNews = new List<RumorCandidate>();
+                foreach (var c in classification.Eligible)
+                {
+                    if (GetEffectiveWeight(c.Event) >= bigNewsLine)
+                    {
+                        bigNews.Add(c);
+                    }
+                    else
+                    {
+                        decision.FilterNotes.Add($"{c.Event.EventId}: weight {GetEffectiveWeight(c.Event)} < big news line {bigNewsLine} (unfamiliar stranger only tells big news)");
+                    }
+                }
+
+                if (bigNews.Count > 0)
+                {
+                    var sorted = SortCandidates(bigNews);
+                    var best = sorted[0];
+                    for (int i = 1; i < sorted.Count; i++)
+                    {
+                        decision.FilterNotes.Add($"{sorted[i].Event.EventId}: big news but lost to {best.Event.EventId}");
+                    }
+
+                    decision.Refusal = AskRefusal.None;
+                    decision.Offer = BuildOffer(best, teller, day, VolunteerTier.Full, withFeeling: false);
+                    decision.AnswerMode = "unfamiliar_big_news";
+                    decision.ReasonCategory = "BigNews";
+                    decision.ChosenTopicWeight = GetEffectiveWeight(best.Event);
+                    decision.ChosenTopicScale = DramaScales.BandOfWeight(decision.ChosenTopicWeight);
+                    decision.ChosenTopicWhy = $"big news for stranger (weight {decision.ChosenTopicWeight} >= {bigNewsLine}, no feeling)";
+                    return decision;
+                }
+
+                decision.Refusal = AskRefusal.AllCandidatesFiltered;
+                return decision;
+            }
         }
 
         public RumorOffer? SelectOnAsk(HeroSocialProfile teller, IReadOnlyList<RumorCandidate> candidates, double day)
@@ -282,11 +490,16 @@ namespace VividWorld.Core.Dialogue
             return DecideOnAsk(teller, candidates, day).Offer;
         }
 
-        /// <summary>
-        /// 候選清單的分類與過濾（LISTEN1b 抽出）。
-        /// 把所有候選按四大原因過濾，回傳合格候選清單與各項過濾計數。
-        /// DecideOnVolunteer 與 DecideOnAsk 皆呼叫此方法。
-        /// </summary>
+        private List<RumorCandidate> SortCandidates(IEnumerable<RumorCandidate> candidates)
+        {
+            return candidates
+                .OrderBy(c => c.PlayerExistingHop.HasValue)
+                .ThenByDescending(c => GetEffectiveWeight(c.Event))
+                .ThenByDescending(c => c.Event.Day)
+                .ThenBy(c => c.Event.EventId, StringComparer.Ordinal)
+                .ToList();
+        }
+
         public CandidateClassification ClassifyCandidates(HeroSocialProfile teller, IReadOnlyList<RumorCandidate>? candidates, double day, VolunteerTier tier = VolunteerTier.Full)
         {
             var classification = new CandidateClassification();
@@ -295,12 +508,9 @@ namespace VividWorld.Core.Dialogue
                 return classification;
             }
 
-            // 每一則候選都必須落進四個桶的其中一個：合格、秘密未洩漏、玩家已知、其他。
-            // 診斷行印出來的數字要加得起來，
-            // 「三則全被濾掉，其中一則是因為玩家已知」這種話會讓人去追不存在的第二個原因。
             foreach (var c in candidates)
             {
-                var rejection = Evaluate(teller, c, day, tier, out string note);
+                var rejection = Evaluate(teller, c, day, out string note);
                 switch (rejection)
                 {
                     case CandidateRejection.None:
@@ -315,24 +525,23 @@ namespace VividWorld.Core.Dialogue
                         classification.FilteredFutureTimeline++;
                         break;
 
-                    // 三種都是「玩家已知」，桶維持一個（數字跟以往對得起來），
-                    // 但成因完全不同，理由寫進 FilterNotes——
-                    // 讓日誌答得出「他明明是目擊者，為什麼還是不講」。
                     case CandidateRejection.RetellDisabled:
-                    case CandidateRejection.RetellNotCloser:
                     case CandidateRejection.RetellNoNewFacts:
+                    case CandidateRejection.PlayerHeardEnding:
                         classification.FilteredPlayerKnows++;
                         if (!string.IsNullOrEmpty(note)) classification.FilterNotes.Add(note);
                         break;
 
-                    // 當事人自己不講（selfTell）或事件型別已停用（retired），算進既有的 filtered 計數並寫 FilterNotes
                     case CandidateRejection.WontTellOwn:
                     case CandidateRejection.RetiredType:
+                    case CandidateRejection.SecretHolderGist:
+                    case CandidateRejection.LeakedSecretHonorable:
+                    case CandidateRejection.LeakedSecretCautiousStranger:
+                    case CandidateRejection.SecretHolderNotWilling:
                         classification.FilteredOther++;
                         if (!string.IsNullOrEmpty(note)) classification.FilterNotes.Add(note);
                         break;
 
-                    // 候選壞掉、或講述者自己不知情——理論上進不了候選，但別讓它消失
                     default:
                         classification.FilteredOther++;
                         break;
@@ -342,68 +551,227 @@ namespace VividWorld.Core.Dialogue
             return classification;
         }
 
+        public int GetEffectiveWeight(WorldEvent evt)
+        {
+            if (evt == null) return DramaScales.MinWeight;
+            int weight = DramaScales.ToWeight(evt.DramaWeight, evt.DramaScale);
+            if (IsCaptivityEnding(evt) && !string.IsNullOrEmpty(evt.LinkedEventId))
+            {
+                WorldEvent? opening = _getEvent?.Invoke(evt.LinkedEventId!);
+                if (opening != null)
+                {
+                    int openingWeight = DramaScales.ToWeight(opening.DramaWeight, opening.DramaScale);
+                    if (openingWeight >= _config.Dialogue.BigNewsLine)
+                    {
+                        weight = Math.Max(weight, openingWeight);
+                    }
+                }
+            }
+            return weight;
+        }
+
+        private static bool IsCaptivityEnding(WorldEvent evt)
+        {
+            if (evt == null) return false;
+            return string.Equals(evt.Type, "hero_released", StringComparison.Ordinal)
+                || string.Equals(evt.Type, "hero_escaped_captivity", StringComparison.Ordinal)
+                || string.Equals(evt.Type, "hero_escaped_bandits", StringComparison.Ordinal)
+                || string.Equals(evt.Type, "hero_rescued_from_bandits", StringComparison.Ordinal);
+        }
+
+        public bool IsCloselyRelated(HeroSocialProfile teller, WorldEvent evt, double day, out VolunteerReasonCategory category, out string why)
+        {
+            category = VolunteerReasonCategory.None;
+            why = string.Empty;
+            if (teller == null || evt == null) return false;
+
+            string tellerId = teller.HeroId ?? string.Empty;
+            var involved = evt.Participants != null
+                ? evt.Participants.Values.ToList()
+                : new List<string>();
+
+            // 1. 跟說話的人密切相關
+            // a. 他自己
+            if (evt.RoleOf(tellerId) != null)
+            {
+                category = VolunteerReasonCategory.TellerSelf;
+                why = $"teller {tellerId} is involved as {evt.RoleOf(tellerId)}";
+                return true;
+            }
+
+            InterestHeroFacts? tellerFacts = _dialogueWorld?.InterestFacts(tellerId);
+            InterestHeroFacts? playerFacts = _dialogueWorld?.InterestFacts(_playerHeroId);
+
+            int highAffection = _config.Presentation?.Feelings?.AffectionHigh ?? 30;
+            int lowAffection = _config.Presentation?.Feelings?.AffectionLow ?? -30;
+            double grudgeThreshold = _config.Presentation?.Feelings?.GrudgeThreshold ?? 4.0;
+
+            foreach (var p in involved)
+            {
+                if (string.Equals(p, tellerId, StringComparison.Ordinal)) continue;
+                InterestHeroFacts? pFacts = _dialogueWorld?.InterestFacts(p);
+
+                // b. 他的親人 (父母、配偶、兄弟姊妹、子女)
+                if (InterestCalculator.IsKin(tellerFacts, tellerId, pFacts, p))
+                {
+                    category = VolunteerReasonCategory.TellerKin;
+                    why = $"teller's kin {p} is involved";
+                    return true;
+                }
+
+                // c. 他同家族的人
+                if (tellerFacts != null && pFacts != null &&
+                    !string.IsNullOrEmpty(tellerFacts.ClanId) &&
+                    string.Equals(tellerFacts.ClanId, pFacts.ClanId, StringComparison.Ordinal))
+                {
+                    category = VolunteerReasonCategory.TellerClan;
+                    why = $"teller's clan member {p} is involved (clan {tellerFacts.ClanId})";
+                    return true;
+                }
+
+                // d. 他好感 >= 30 或 <= -30 的人
+                if (_dialogueWorld != null)
+                {
+                    int? aff = _dialogueWorld.Affection(tellerId, p);
+                    if (aff.HasValue && (aff.Value >= highAffection || aff.Value <= lowAffection))
+                    {
+                        category = VolunteerReasonCategory.TellerRelation;
+                        why = $"teller has strong feeling toward participant {p} (relation {aff.Value})";
+                        return true;
+                    }
+                }
+
+                // e. 他記著恩怨淨額絕對值 >= 4 的人
+                if (_dialogueWorld != null)
+                {
+                    var all = _dialogueWorld.PersonalGrudges(tellerId, p);
+                    if (all != null && all.Count > 0)
+                    {
+                        var kept = all.Where(e => !string.Equals(e.EventId, evt.EventId, StringComparison.Ordinal)).ToList();
+                        var replay = GrudgeDecay.Replay(kept, GrudgeScope.Personal, _config.Situations, _traits?.Of(tellerId) ?? teller.Traits, day);
+                        if (Math.Abs(replay.Value) >= grudgeThreshold)
+                        {
+                            category = VolunteerReasonCategory.TellerGrudge;
+                            why = $"teller holds grudge against participant {p} (net {replay.Value:F1})";
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            // 2. 跟玩家密切相關
+            foreach (var p in involved)
+            {
+                InterestHeroFacts? pFacts = _dialogueWorld?.InterestFacts(p);
+
+                // a. 玩家的家族成員 (含夥伴)
+                if (_dialogueWorld != null && (_dialogueWorld.IsPlayerClanMember(p) || _dialogueWorld.IsPlayerCompanion(p)))
+                {
+                    category = VolunteerReasonCategory.PlayerRelated;
+                    why = $"participant {p} is player clan member or companion";
+                    return true;
+                }
+
+                // b. 玩家的親人、配偶
+                if (_dialogueWorld != null && (_dialogueWorld.IsPlayerSpouse(p) || InterestCalculator.IsKin(playerFacts, _playerHeroId, pFacts, p)))
+                {
+                    category = VolunteerReasonCategory.PlayerRelated;
+                    why = $"participant {p} is player's spouse or kin";
+                    return true;
+                }
+
+                // c. 跟玩家好感 >= 30 或 <= -30 的人
+                if (_dialogueWorld != null)
+                {
+                    int? aff = _dialogueWorld.Affection(_playerHeroId, p);
+                    if (aff.HasValue && (aff.Value >= highAffection || aff.Value <= lowAffection))
+                    {
+                        category = VolunteerReasonCategory.PlayerRelated;
+                        why = $"participant {p} has strong relation with player ({aff.Value})";
+                        return true;
+                    }
+                }
+
+                // d. 玩家效忠的國王
+                if (_dialogueWorld != null && !string.IsNullOrEmpty(_dialogueWorld.PlayerKingdomLeaderId))
+                {
+                    if (string.Equals(p, _dialogueWorld.PlayerKingdomLeaderId, StringComparison.Ordinal))
+                    {
+                        category = VolunteerReasonCategory.PlayerRelated;
+                        why = $"participant {p} is player's sovereign king";
+                        return true;
+                    }
+                }
+            }
+
+            // 3. 他上次親口告訴玩家的那件事的後續
+            if (!string.IsNullOrEmpty(evt.LinkedEventId) && _playerHeardLog?.DidTellerTellPlayer(evt.LinkedEventId!, tellerId) == true)
+            {
+                category = VolunteerReasonCategory.Sequel;
+                why = $"sequel to event {evt.LinkedEventId} which teller previously told player";
+                return true;
+            }
+
+            return false;
+        }
+
         public double Score(RumorCandidate candidate, double day)
         {
             if (candidate?.Event == null) return 0.0;
-
-            var evt = candidate.Event;
-            var d = _config.Dialogue;
-            var s = _config.Scheduling;
-
-            double lifetime = s.RumorLifetimeDays > 0 ? s.RumorLifetimeDays : 120.0;
-            double freshness = Math.Max(0.0, Math.Min(1.0, 1.0 - (day - evt.Day) / lifetime));
-
-            int maxHop = _engine.MaxHopFor(evt);
-            double detail = Math.Max(0.0, Math.Min(1.0, (double)(maxHop - candidate.TellerHop) / Math.Max(1, maxHop)));
-
-            double relevance = candidate.InvolvesHeroPlayerCaresAbout ? 1.0 : 0.0;
-
-            double drama = Math.Max(1, Math.Min(5, evt.DramaWeight));
-            double dramaNorm = drama / 5.0;
-
-            double baseScore = d.ScoreDrama * dramaNorm
-                             + d.ScoreFreshness * freshness
-                             + d.ScoreDetail * detail
-                             + d.ScoreRelevance * relevance;
-
-            bool isRetell = candidate.PlayerExistingHop.HasValue;
-            return baseScore * (isRetell ? d.ScoreRetellMultiplier : 1.0);
+            return GetEffectiveWeight(candidate.Event);
         }
 
-        private RumorOffer CreateBestOffer(HeroSocialProfile teller, List<RumorCandidate> eligible, double day, VolunteerTier tier = VolunteerTier.Full)
+        public RumorOffer BuildOffer(RumorCandidate candidate, HeroSocialProfile teller, double day, VolunteerTier tier = VolunteerTier.Full, bool withFeeling = true)
         {
-            // 確定性排序：Score 降序 -> Day 降序 -> EventId 升序 (字典序)
-            var sorted = eligible.OrderByDescending(c => Score(c, day))
-                                 .ThenByDescending(c => c.Event.Day)
-                                 .ThenBy(c => c.Event.EventId, StringComparer.Ordinal)
-                                 .ToList();
+            if (candidate?.Event == null) throw new ArgumentNullException(nameof(candidate));
+            bool isRetell = candidate.PlayerExistingHop.HasValue;
+            int resultingPlayerHop = candidate.TellerHop + 1;
+            var retainedFacts = _engine.FactsAtHop(candidate.Event, resultingPlayerHop, teller.HeroId);
+            bool isParticipant = candidate.Event.RoleOf(teller.HeroId) != null;
+            var prefix = RumorPrefixSelector.SelectPrefix(candidate.TellerHop, candidate.SourceHeroId, isRetell, candidate.IsCorrection, isParticipant);
 
-            var best = sorted[0];
-            bool isRetell = best.PlayerExistingHop.HasValue;
-            int resultingPlayerHop = ComputeLandingHop(best.Event, best.TellerHop, tier);
-            var retainedFacts = _engine.FactsAtHop(best.Event, resultingPlayerHop, teller.HeroId);
-            bool isParticipant = best.Event.RoleOf(teller.HeroId) != null;
-            var prefix = RumorPrefixSelector.SelectPrefix(best.TellerHop, best.SourceHeroId, isRetell, best.IsCorrection, isParticipant);
-            var composed = RumorTextComposer.Compose(best.Event, retainedFacts, _config.Presentation, prefix, teller.HeroId);
+            var composed = RumorTextComposer.Compose(
+                candidate.Event,
+                retainedFacts,
+                _config.Presentation,
+                prefix,
+                teller.HeroId,
+                candidate.SourceHeroId,
+                // 不帶感想的那種回答（不熟的人被問）連當事人自己的句尾也不接：不夠熟就不講心情。
+                // 這個旗標也記進玩家紀錄，紀事重組原句時才會是同一句。
+                isGist: !withFeeling,
+                heldBack: false,
+                template: _getTemplate?.Invoke(candidate.Event.Type),
+                speakerTraits: _traits?.Of(teller.HeroId));
+
+            if (withFeeling && _feelings != null)
+            {
+                composed.Feeling = _feelings.Resolve(candidate.Event, teller.HeroId, isGist: false);
+            }
+            else
+            {
+                composed.Feeling = null;
+            }
 
             return new RumorOffer
             {
-                EventId = best.Event.EventId,
-                TellerHop = best.TellerHop,
+                EventId = candidate.Event.EventId,
+                TellerHop = candidate.TellerHop,
                 ResultingPlayerHop = resultingPlayerHop,
+                ToldFactIds = retainedFacts.Select(f => f.Id).ToList(),
                 Composed = composed,
                 IsRetell = isRetell,
-                IsCorrection = best.IsCorrection,
-                SourceHeroId = best.SourceHeroId,
+                IsCorrection = candidate.IsCorrection,
+                SourceHeroId = candidate.SourceHeroId,
                 Prefix = prefix,
-                Score = Score(best, day),
-                SpeakerRole = composed.SpeakerRole
+                Score = Score(candidate, day),
+                SpeakerRole = composed.SpeakerRole,
+                IsGist = false,
+                HeldBack = false
             };
         }
 
-        /// <summary>候選資格的**唯一**判定處：`DecideOnAsk` 與 `DecideOnVolunteer` 都只准呼叫它。
-        /// 同一個述詞有兩份定義，正是 M6a-fix2 那個 C-1 的成因。</summary>
-        private CandidateRejection Evaluate(HeroSocialProfile teller, RumorCandidate candidate, double day, VolunteerTier tier, out string note)
+        private CandidateRejection Evaluate(HeroSocialProfile teller, RumorCandidate candidate, double day, out string note)
         {
             note = string.Empty;
             if (candidate?.Event == null) return CandidateRejection.EventMissing;
@@ -412,21 +780,20 @@ namespace VividWorld.Core.Dialogue
             // 事件必須對傳聞系統可見
             if (!evt.IsVisibleToRumorSystem) return CandidateRejection.NotVisible;
 
-            // 日期比今天晚 ⇒ 來自一條被抹掉的時間線（規格 §2.2.1）。
-            // 判斷在 EventVisibility，這裡不自己寫一份。
+            // 日期比今天晚 ⇒ 來自一條被抹掉的時間線
             if (!EventVisibility.IsVisibleOn(evt, day)) return CandidateRejection.FutureTimeline;
 
             // 講述者必須知情
             if (!evt.IsKnownBy(teller.HeroId)) return CandidateRejection.TellerDoesNotKnow;
 
-            // 停用的事件型別：已存下來的也不再傳，事件資料保留
+            // 停用的事件型別
             if (_getTemplate != null && VividWorld.Core.Catalog.RetiredTypeEvaluator.IsRetired(evt, _getTemplate))
             {
                 note = $"{evt.EventId}: retired type";
                 return CandidateRejection.RetiredType;
             }
 
-            // 當事人自己不講（selfTell）
+            // 當事人自己不講 (selfTell)
             if (_getTemplate != null)
             {
                 var selfTell = VividWorld.Core.Catalog.SelfTellEvaluator.Evaluate(evt, teller.HeroId, _getTemplate, _traits);
@@ -434,6 +801,59 @@ namespace VividWorld.Core.Dialogue
                 {
                     note = $"{evt.EventId}: {selfTell.ReasonText}";
                     return CandidateRejection.WontTellOwn;
+                }
+            }
+
+            // 玩家已經聽過某次被俘的結局 ⇒ 那次被俘的開頭不再講給他
+            if (_playerHeardLog?.HasHeardEndingFor(evt.EventId) == true)
+            {
+                note = $"{evt.EventId}: player already heard ending for this captivity event";
+                return CandidateRejection.PlayerHeardEnding;
+            }
+
+            // 秘密過濾
+            var standing = StandingWithPlayer(teller);
+            double will = standing.Willingness;
+            bool isFamiliar = standing.IsFamiliar;
+
+            if (evt.Origin == EventOrigin.Secret)
+            {
+                bool isHolder = IsSecretHolder(evt, teller.HeroId);
+                if (!isHolder)
+                {
+                    // 走漏的秘密，旁人講
+                    double honor = _traits?.Of(teller.HeroId)?.Honor ?? teller.Traits?.Honor ?? 0;
+                    double valor = _traits?.Of(teller.HeroId)?.Valor ?? teller.Traits?.Valor ?? 0;
+
+                    if (honor >= 1)
+                    {
+                        note = $"{evt.EventId}: leaked secret, teller honor {honor:+0;-0;0} >= 1 - honorable people do not spread secrets";
+                        return CandidateRejection.LeakedSecretHonorable;
+                    }
+
+                    if (valor <= -1 && !isFamiliar)
+                    {
+                        note = $"{evt.EventId}: leaked secret, teller valor {valor:+0;-0;0} <= -1 and not familiar with player";
+                        return CandidateRejection.LeakedSecretCautiousStranger;
+                    }
+                }
+                else
+                {
+                    // 秘密的當事人講自己的秘密
+                    bool isCloseTrust = teller.IsPlayerSpouse || teller.IsPlayerCompanion || teller.IsPlayerClanMember;
+                    if (_dialogueWorld != null)
+                    {
+                        isCloseTrust = isCloseTrust
+                            || _dialogueWorld.IsPlayerSpouse(teller.HeroId)
+                            || _dialogueWorld.IsPlayerCompanion(teller.HeroId)
+                            || _dialogueWorld.IsPlayerClanMember(teller.HeroId);
+                    }
+
+                    if (!isCloseTrust && will < _config.Dialogue.SecretLine)
+                    {
+                        note = $"{evt.EventId}: secret holder willingness {will:F1} < secret line {_config.Dialogue.SecretLine:F1}";
+                        return CandidateRejection.SecretHolderNotWilling;
+                    }
                 }
             }
 
@@ -452,16 +872,7 @@ namespace VividWorld.Core.Dialogue
                 return CandidateRejection.RetellDisabled;
             }
 
-            int newHop = ComputeLandingHop(evt, candidate.TellerHop, tier);
-
-            // TellerHop + 1 < PlayerExistingHop (or landing hop < PlayerExistingHop)
-            if (newHop >= playerHop)
-            {
-                note = $"{evt.EventId}: teller is at hop {candidate.TellerHop}, so retelling lands the player at hop {newHop} - no closer than the hop {playerHop} they already have";
-                return CandidateRejection.RetellNotCloser;
-            }
-
-            // 檢查新碎片：newFactIds \ knownFactIds ≠ ∅
+            int newHop = candidate.TellerHop + 1;
             var newFacts = _engine.FactsAtHop(evt, newHop, teller.HeroId);
             var newFactIds = new HashSet<string>(newFacts.Select(f => f.Id));
 
@@ -482,17 +893,30 @@ namespace VividWorld.Core.Dialogue
                 knownFactIds = new HashSet<string>(oldFacts.Select(f => f.Id));
             }
 
-            // newFactIds 中是否有任何不在 knownFactIds 中的 Fact
             if (newFactIds.Any(id => !knownFactIds.Contains(id)))
             {
                 return CandidateRejection.None;
             }
 
-            // 更近的來源，卻一個新碎片都給不出來——這不是缺陷，是保留曲線在這兩個 hop 之間還沒開始失真。
-            // 把兩邊的碎片數印出來，看的人才不用去猜。
-            note = $"{evt.EventId}: teller at hop {candidate.TellerHop} would give hop {newHop} ({newFactIds.Count} facts), "
-                 + $"but the player's hop {playerHop} already holds all {knownFactIds.Count} of them - nothing new to add";
+            note = $"{evt.EventId}: teller at hop {candidate.TellerHop} would give {newFactIds.Count} fact(s) (detail level {newHop}), "
+                 + $"but the player (heard at hop {playerHop}) already knows all {knownFactIds.Count} of them - nothing new to add";
             return CandidateRejection.RetellNoNewFacts;
+        }
+
+        private bool IsSecretHolder(WorldEvent evt, string heroId)
+        {
+            if (evt.Origin != EventOrigin.Secret) return false;
+            string? role = evt.RoleOf(heroId);
+            if (role == null) return false;
+            var knowing = _getTemplate?.Invoke(evt.Type)?.KnowingRoles;
+            if (knowing == null || knowing.Count == 0) return true;
+            return knowing.Any(k => string.Equals(k, role, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public List<string> ToldFactIdsOf(RumorOffer offer, WorldEvent evt, string tellerHeroId)
+        {
+            if (offer.ToldFactIds != null) return offer.ToldFactIds.ToList();
+            return _engine.FactsAtHop(evt, offer.ResultingPlayerHop, tellerHeroId).Select(f => f.Id).ToList();
         }
 
         public void ApplyOffer(RumorOffer offer, WorldEvent evt, string tellerHeroId, double day)
@@ -502,22 +926,17 @@ namespace VividWorld.Core.Dialogue
             var entry = evt.EntryFor(_playerHeroId);
             if (entry == null)
             {
-                // KnownFactIds 當場寫下來，不要留給日後重述判定去從 (hop, 來源) 反推第二次。
-                // 反推目前算得出同一個答案，但那是同一件事的第二份定義（C-1 的形狀），
-                // 而且潤色策略一旦不是純函數就會兩邊對不上。
                 evt.KnownBy.Add(new KnownByEntry
                 {
                     HeroId = _playerHeroId,
-                    Hop = offer.ResultingPlayerHop,
+                    Hop = offer.PlayerHop,
                     LearnedDay = day,
                     SourceHeroId = tellerHeroId,
-                    KnownFactIds = _engine.FactsAtHop(evt, offer.ResultingPlayerHop, tellerHeroId)
-                                          .Select(f => f.Id).ToList()
+                    KnownFactIds = ToldFactIdsOf(offer, evt, tellerHeroId)
                 });
                 return;
             }
 
-            // 重述更新五條
             int oldHop = entry.Hop;
             string oldSource = entry.SourceHeroId ?? string.Empty;
 
@@ -525,20 +944,14 @@ namespace VividWorld.Core.Dialogue
                 ? new HashSet<string>(entry.KnownFactIds)
                 : new HashSet<string>(_engine.FactsAtHop(evt, oldHop, oldSource).Select(f => f.Id));
 
-            var newFactIds = _engine.FactsAtHop(evt, offer.ResultingPlayerHop, tellerHeroId).Select(f => f.Id);
+            var newFactIds = ToldFactIdsOf(offer, evt, tellerHeroId);
             foreach (var id in newFactIds)
             {
                 oldFactIds.Add(id);
             }
 
-            // (2) KnownFactIds 具體化為聯集
             entry.KnownFactIds = oldFactIds.ToList();
-
-            // (5) Hop = min(舊, TellerHop + 1)
-            entry.Hop = Math.Min(entry.Hop, offer.ResultingPlayerHop);
-
-            // (5) LearnedDay 不動
-            // (5) SourceHeroId 更新為重述者
+            entry.Hop = Math.Min(entry.Hop, offer.PlayerHop);
             entry.SourceHeroId = tellerHeroId;
         }
     }

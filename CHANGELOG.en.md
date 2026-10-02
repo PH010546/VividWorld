@@ -10,6 +10,39 @@ Every release states three things:
 
 ## Unreleased
 
+## v0.9.6
+
+- **NPCs now tell news as one whole sentence, followed by a line of their own**: each rumor used to be a few fixed fragments joined with commas, word for word the same whoever told it.
+  Every kind of news, and every combination of "what is still remembered", now has its own complete sentence (string keys `VividWorld_Sentence_…`; fragments are joined as before only when the current language lacks that key, and `presentation.wholeSentences=false` falls back entirely).
+  People telling their own story end with how they feel about it, and temperament changes the tone (cruel, merciful, daring…); hearing it from someone involved, or having seen it, each has its own wording.
+  Dying of old age and dying in childbirth are told apart; a released prisoner says how the release came about; when someone escapes from a town's dungeon, the town's lord no longer tells it as an escape from their own hands.
+- **New: the speaker's own reaction**: when an NPC tells you news, the facts are followed by a line on what they think of the person involved. A friend, an enemy and a bystander tell the same event differently;
+  a grudge against a friend, or a debt owed to someone disliked, shows. How they refer to the person follows rank and affection. The lines live in `vividworld_feelings.json` (14 categories × 5 moods).
+  Only when an NPC tells the player; not between NPCs and not in the text pushed to AI dialogue mods.
+- **Who tells you things, and what, has been reworked**:
+  - **Bringing things up depends on relation plus personality** (relation + generosity ×6 + honor ×4 − calculating ×8, the same formula as answering questions); the line is 0 in Casual and 10 in Realistic. Your spouse, companions and clan members always count as close
+  - **They only bring up what touches them**: themselves, their kin and clan, people they like or dislike strongly, people they hold a grudge or a debt against; people tied to you; or the sequel to something they told you before
+  - **"Only the gist" is gone**: if they tell it, they tell it in full, with their reaction
+  - **When you ask**: someone not close but willing tells only the big news everyone is talking about (weight 5 or more), without a reaction; someone close tells what touches them first, big news otherwise. Anyone who would bring things up also answers when asked
+  - **Two different refusals**: "We hardly know each other. If it's news you want, ask someone else." from people who are not close, and "I have nothing to say to you." from people who dislike you
+  - A person only tells their own secret to someone very close (willingness 30); leaked secrets are not told by honest people, and cautious people tell them only to those close to them
+  - The "Full-story relation gate" setting is removed from MCM; the "what if I talk to everyone right now" preview also prints why each piece would be told and how many people give each reply
+- **News weight goes from 5 levels to 10**: weight = how serious the event is + the standing of the person (ruler +4 / clan leader +2 / ordinary clan member 0 / minor faction −2); marriages and births go by the clan's standing (royal +4 / clan tier 5 or above +2).
+  How far it spreads and how long it is remembered still come in five bands (two levels each). An ordinary person being captured is no longer as big as a death in battle; the fates of rulers and clan leaders and royal marriages travel furthest.
+- **The chronicle keeps each person's own words**: when two people told you about the same event, the chronicle shows two blocks, each "who: "the whole sentence they said"", with a small "at a remove of N" line beneath.
+  The hop count now only records how many times the news was passed on. Captures, releases and escapes name the person in the title.
+- **For translators**: pronouns now come from the string table (`VividWorld_Pronoun_<He|Him|His|Himself>_<M|F|N>`, `VividWorld_Self_Reflexive`) instead of English words fixed in code;
+  a new marker `{NAME:masculine|feminine}` picks a word by gender (NAME is an event role, `ME`, `YOU` or `FOCUS`), and the ten fixed lines of the dialogue menu can use it too. English and Traditional Chinese sentences are unaffected. See `CONTRIBUTING.md`.
+- Developer dialogue lines are gathered behind one entry with three categories (this person / the world / change things); new tools: "make them tell me a piece of news with a reaction" and "what reaction this person would give to each piece of news".
+- Existing campaigns continue as-is: the event format only gains a field marking the weight scale, old events are read as the former 1–5 (spreading and memory unchanged), and the new weights apply only to events after the update;
+  `player_heard.json` gains a per-person source list, old entries are read as a single source and show the facts alone when no spoken line was saved; hop counts of old entries are not changed. A few combinations in news from before the update have no whole sentence and are still told with joined fragments.
+  No config edits needed: `presentation.wholeSentences`, `presentation.feelings.*`, `dialogue.casualVolunteerLine` (0), `dialogue.realisticVolunteerLine` (10),
+  `dialogue.secretLine` (30), `dialogue.bigNewsLine` (5), `events.weightBonusByProminence`, `events.weightBonusByClanStanding` and `events.highClanMinTier` (5) are added automatically.
+  **These old keys stay in the file but are no longer read; if you changed them, set the new keys instead**: `dialogue.npcVolunteerRelationGate`, `casualChatRelationGate`, `realisticChatRelationGate`, `gistExtraHops`,
+  the six `dialogue.score*` keys and the four `events.*DramaByProminence` groups. The log prints one line for each at startup.
+
+- **Fix: after loading a save, the grudge ledger could no longer tell rumor-born grudges from ones made on the spot in a situation**: the ledger rebuild dropped the source, so every rumor-born grudge came back as a situation grudge. No feature reads that field yet, so players see no difference; this is groundwork for features that will. Existing campaigns continue as-is (the data was always saved correctly, only the rebuild dropped it); no config changes needed.
+
 ## v0.9.5
 
 - **New: heroes captured by bandits or deserters now become news**: previously, when a hero was taken by a party with no leader, VW could not tell who had taken them and skipped it

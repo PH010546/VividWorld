@@ -521,11 +521,11 @@ namespace VividWorld.Core.Tests
             var eventsArr = JArray.Parse(File.ReadAllText(eventsPath));
             var sitEventsArr = JArray.Parse(File.ReadAllText(sitEventsPath));
 
-            Assert.Equal(12, eventsArr.Count);
+            Assert.Equal(14, eventsArr.Count);
             Assert.Equal(22, sitEventsArr.Count);
 
             var all = eventsArr.Concat(sitEventsArr).ToList();
-            Assert.Equal(34, all.Count);
+            Assert.Equal(36, all.Count);
 
             foreach (var token in all)
             {
@@ -558,7 +558,7 @@ namespace VividWorld.Core.Tests
             var sitEventsArr = JArray.Parse(File.ReadAllText(sitEventsPath));
 
             var types = eventsArr.Concat(sitEventsArr).Select(t => (string)t["type"]!).ToList();
-            Assert.Equal(34, types.Count);
+            Assert.Equal(36, types.Count);
 
             foreach (var type in types)
             {
@@ -610,7 +610,7 @@ namespace VividWorld.Core.Tests
             Assert.Equal("Close", enDict["VividWorld_Chronicle_Close"]);
             Assert.Equal("關閉", cntDict["VividWorld_Chronicle_Close"]);
 
-            Assert.Equal("{HOPS} tellings removed", enDict["VividWorld_Chronicle_Hop"]);
+            Assert.Equal("at a remove of {HOPS}", enDict["VividWorld_Chronicle_Hop"]);
             Assert.Equal("傳了 {HOPS} 手", cntDict["VividWorld_Chronicle_Hop"]);
 
             Assert.Equal("you were there", enDict["VividWorld_Chronicle_HopZero"]);

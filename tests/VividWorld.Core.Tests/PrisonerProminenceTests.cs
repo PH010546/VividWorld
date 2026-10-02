@@ -7,7 +7,7 @@ namespace VividWorld.Core.Tests
 {
     public class PrisonerProminenceTests
     {
-        private readonly ProminenceDramaConfig _defaultCfg = new();
+        private readonly ProminenceWeightBonusConfig _defaultCfg = new();
 
         [Fact]
         public void Classify_Ruler_WhenIsKingdomLeader()
@@ -25,9 +25,11 @@ namespace VividWorld.Core.Tests
             var result = PrisonerProminence.Classify(facts, _defaultCfg);
 
             Assert.Equal(ProminenceTier.Ruler, result.Tier);
-            Assert.Equal(5, result.Drama);
+            Assert.Equal(4, result.Bonus);
             Assert.Equal("leader of kingdom empire", result.Reason);
-            Assert.Equal("prisoner=lord_1_1 -> ruler (leader of kingdom empire) => drama 5 (template 4)", result.Describe(4));
+            Assert.StartsWith("hero=lord_1_1 -> ruler (leader of kingdom empire) [", result.Describe());
+            Assert.EndsWith("] bonus +4", result.Describe());
+            Assert.Contains("clanTier=", result.Describe());
         }
 
         [Fact]
@@ -45,9 +47,11 @@ namespace VividWorld.Core.Tests
             var result = PrisonerProminence.Classify(facts, _defaultCfg);
 
             Assert.Equal(ProminenceTier.ClanLeader, result.Tier);
-            Assert.Equal(4, result.Drama);
+            Assert.Equal(2, result.Bonus);
             Assert.Equal("leader of clan clan_empire_north_3", result.Reason);
-            Assert.Equal("prisoner=lord_4_15 -> clanLeader (leader of clan clan_empire_north_3) => drama 4 (template 4)", result.Describe(4));
+            Assert.StartsWith("hero=lord_4_15 -> clanLeader (leader of clan clan_empire_north_3) [", result.Describe());
+            Assert.EndsWith("] bonus +2", result.Describe());
+            Assert.Contains("clanTier=", result.Describe());
         }
 
         [Fact]
@@ -66,9 +70,11 @@ namespace VividWorld.Core.Tests
             var result = PrisonerProminence.Classify(facts, _defaultCfg);
 
             Assert.Equal(ProminenceTier.NobleMember, result.Tier);
-            Assert.Equal(2, result.Drama);
+            Assert.Equal(0, result.Bonus);
             Assert.Equal("lord of clan clan_vlandia_7", result.Reason);
-            Assert.Equal("prisoner=lord_5_21 -> nobleMember (lord of clan clan_vlandia_7) => drama 2 (template 4)", result.Describe(4));
+            Assert.StartsWith("hero=lord_5_21 -> nobleMember (lord of clan clan_vlandia_7) [", result.Describe());
+            Assert.EndsWith("] bonus +0", result.Describe());
+            Assert.Contains("clanTier=", result.Describe());
         }
 
         [Fact]
@@ -87,9 +93,11 @@ namespace VividWorld.Core.Tests
             var result = PrisonerProminence.Classify(facts, _defaultCfg);
 
             Assert.Equal(ProminenceTier.Minor, result.Tier);
-            Assert.Equal(1, result.Drama);
+            Assert.Equal(-2, result.Bonus);
             Assert.Equal("no clan", result.Reason);
-            Assert.Equal("prisoner=CharacterObject_2829 -> minor (no clan) => drama 1 (template 4)", result.Describe(4));
+            Assert.StartsWith("hero=CharacterObject_2829 -> minor (no clan) [", result.Describe());
+            Assert.EndsWith("] bonus -2", result.Describe());
+            Assert.Contains("clanTier=", result.Describe());
         }
 
         [Fact]
@@ -108,9 +116,11 @@ namespace VividWorld.Core.Tests
             var result = PrisonerProminence.Classify(facts, _defaultCfg);
 
             Assert.Equal(ProminenceTier.Minor, result.Tier);
-            Assert.Equal(1, result.Drama);
+            Assert.Equal(-2, result.Bonus);
             Assert.Equal("clan clan_minor_2 is a minor faction", result.Reason);
-            Assert.Equal("prisoner=CharacterObject_4096 -> minor (clan clan_minor_2 is a minor faction) => drama 1 (template 4)", result.Describe(4));
+            Assert.StartsWith("hero=CharacterObject_4096 -> minor (clan clan_minor_2 is a minor faction) [", result.Describe());
+            Assert.EndsWith("] bonus -2", result.Describe());
+            Assert.Contains("clanTier=", result.Describe());
         }
 
         [Fact]
@@ -129,9 +139,11 @@ namespace VividWorld.Core.Tests
             var result = PrisonerProminence.Classify(facts, _defaultCfg);
 
             Assert.Equal(ProminenceTier.Minor, result.Tier);
-            Assert.Equal(1, result.Drama);
+            Assert.Equal(-2, result.Bonus);
             Assert.Equal("not a lord, clan player_faction", result.Reason);
-            Assert.Equal("prisoner=CharacterObject_4111 -> minor (not a lord, clan player_faction) => drama 1 (template 4)", result.Describe(4));
+            Assert.StartsWith("hero=CharacterObject_4111 -> minor (not a lord, clan player_faction) [", result.Describe());
+            Assert.EndsWith("] bonus -2", result.Describe());
+            Assert.Contains("clanTier=", result.Describe());
         }
 
         [Fact]
@@ -150,13 +162,13 @@ namespace VividWorld.Core.Tests
             var result = PrisonerProminence.Classify(facts, _defaultCfg);
 
             Assert.Equal(ProminenceTier.Ruler, result.Tier);
-            Assert.Equal(5, result.Drama);
+            Assert.Equal(4, result.Bonus);
         }
 
         [Fact]
         public void Classify_RespectsCustomConfigDrama()
         {
-            var customCfg = new ProminenceDramaConfig
+            var customCfg = new ProminenceWeightBonusConfig
             {
                 NobleMember = 3
             };
@@ -171,7 +183,7 @@ namespace VividWorld.Core.Tests
             var result = PrisonerProminence.Classify(facts, customCfg);
 
             Assert.Equal(ProminenceTier.NobleMember, result.Tier);
-            Assert.Equal(3, result.Drama);
+            Assert.Equal(3, result.Bonus);
         }
 
         [Fact]
@@ -209,11 +221,11 @@ namespace VividWorld.Core.Tests
             var result = PrisonerProminence.Classify(facts, null);
 
             Assert.Equal(ProminenceTier.Ruler, result.Tier);
-            Assert.Equal(5, result.Drama);
+            Assert.Equal(4, result.Bonus);
         }
 
         [Fact]
-        public void Describe_TemplateWithoutDrama_PrintsUnset()
+        public void Describe_ListsTheValuesTheClassificationUsed()
         {
             var facts = new ProminenceFacts
             {
@@ -224,7 +236,7 @@ namespace VividWorld.Core.Tests
 
             var result = PrisonerProminence.Classify(facts, _defaultCfg);
 
-            Assert.Equal("prisoner=lord_5_21 -> nobleMember (lord of clan clan_vlandia_7) => drama 2 (template unset)", result.Describe(null));
+            Assert.Equal("hero=lord_5_21 -> nobleMember (lord of clan clan_vlandia_7) [isKingdomLeader=no, isClanLeader=no, clan=clan_vlandia_7, clanTier=?, clanIsMinorFaction=no, clanIsRuling=no, isLord=yes] bonus +0", result.Describe());
         }
     }
 }

@@ -22,11 +22,18 @@
     <string id="VividWorld_Dev_NpcRecall" text="(dev) 這位 NPC 記得什麼" />
     <string id="VividWorld_Dev_AiPushPreview" text="(dev) AI 串接：這位 NPC 會被交出去什麼" />
     <string id="VividWorld_Dev_CaptureByBandits" text="(dev) 讓最近的盜匪抓走對話對象" />
+    <string id="VividWorld_Dev_Menu" text="(dev) VW 開發者工具" />
+    <string id="VividWorld_Dev_Menu_Person" text="(dev) 看這個人" />
+    <string id="VividWorld_Dev_Menu_World" text="(dev) 看世界" />
+    <string id="VividWorld_Dev_Menu_Act" text="(dev) 動手改東西" />
+    <string id="VividWorld_Dev_Menu_Back" text="(dev) 返回" />
+    <string id="VividWorld_Dev_TellWithFeeling" text="(dev) 讓他把一則會附感想的消息講給我聽" />
 
     <!-- Dialogue and presentation strings -->
     <string id="VividWorld_AskNews" text="最近路上有什麼消息嗎？" />
     <string id="VividWorld_AskNothing" text="沒什麼值得一提的事。" />
-    <string id="VividWorld_AskRefuseUnwilling" text="這種事，我不方便多說。" />
+    <string id="VividWorld_AskRefuseUnwilling" text="你我還不熟，要打聽消息，找別人吧。" />
+    <string id="VividWorld_AskRefuseDisliked" text="我跟你沒什麼好說的。" />
     <string id="VividWorld_AskRefuseNothingHeard" text="最近沒聽到什麼消息。" />
     <string id="VividWorld_AskRefuseForgotten" text="好像聽誰提過些什麼……一時想不起來了。" />
     <string id="VividWorld_AskRefuseOutdated" text="我聽說的那些，現在大概都不是那麼回事了。" />
@@ -85,7 +92,9 @@
     <string id="VividWorld_EventType_hero_murdered" text="謀殺" />
     <string id="VividWorld_EventType_hero_executed" text="處決" />
     <string id="VividWorld_EventType_hero_died_in_battle" text="戰死沙場" />
-    <string id="VividWorld_EventType_hero_died_naturally" text="壽終正寢" />
+    <string id="VividWorld_EventType_hero_died_naturally" text="過世" />
+    <string id="VividWorld_EventType_hero_died_of_old_age" text="年老過世" />
+    <string id="VividWorld_EventType_hero_died_in_labor" text="難產過世" />
     <string id="VividWorld_EventType_hero_taken_prisoner" text="被俘" />
     <string id="VividWorld_EventType_heroes_married" text="成婚" />
     <string id="VividWorld_EventType_child_born" text="麟兒誕生" />
@@ -116,6 +125,12 @@
     <string id="VividWorld_EventType_wager_struck" text="打了一場狩獵賭局" />
     <string id="VividWorld_EventType_wager_refused" text="狩獵賭局被回絕" />
     <string id="VividWorld_EventType_wager_secret_stake" text="狩獵賭局有暗盤" />
+    <string id="VividWorld_EventTypeNamed_hero_taken_prisoner" text="{PRISONER}被俘" />
+    <string id="VividWorld_EventTypeNamed_hero_released" text="{PRISONER}獲釋" />
+    <string id="VividWorld_EventTypeNamed_hero_escaped_captivity" text="{PRISONER}脫逃" />
+    <string id="VividWorld_EventTypeNamed_hero_captured_by_bandits" text="{PRISONER}被盜匪俘虜" />
+    <string id="VividWorld_EventTypeNamed_hero_rescued_from_bandits" text="{PRISONER}從盜匪手裡獲救" />
+    <string id="VividWorld_EventTypeNamed_hero_escaped_bandits" text="{PRISONER}從盜匪手裡逃脫" />
 
     <!-- Real event template 1: hero_murdered -->
     <string id="VividWorld_Fact_HeroMurdered_Who" text="{KILLER}殘忍地謀殺了{VICTIM}" />
@@ -126,20 +141,26 @@
     <!-- Real event template 2: hero_executed -->
     <string id="VividWorld_Fact_HeroExecuted_Who" text="{KILLER}公開處決了{VICTIM}" />
     <string id="VividWorld_Fact_HeroExecuted_Where" text="在{SETTLEMENT}" />
-    <string id="VividWorld_Fact_HeroExecuted_What" text="劊子手的利斧在眾目睽睽之下斬落了貴族的頭顱" />
-    <string id="VividWorld_Fact_HeroExecuted_Outcome" text="這場處決震撼了整個大陸" />
+    <string id="VividWorld_Fact_HeroExecuted_What" text="劊子手當著圍觀的人，一斧砍下了他的頭" />
+    <string id="VividWorld_Fact_HeroExecuted_Outcome" text="行刑之後，屍首交還給了他的族人" />
 
     <!-- Real event template 3: hero_died_in_battle -->
     <string id="VividWorld_Fact_HeroDiedInBattle_Who" text="{VICTIM}在戰場上被{KILLER}陣斬" />
     <string id="VividWorld_Fact_HeroDiedInBattle_Where" text="在{SETTLEMENT}附近的戰場上" />
-    <string id="VividWorld_Fact_HeroDiedInBattle_What" text="在盾牌與長矛的猛烈交鋒中英勇奮戰" />
-    <string id="VividWorld_Fact_HeroDiedInBattle_Outcome" text="這位戰士在沙場上迎來了光榮的結局" />
+    <string id="VividWorld_Fact_HeroDiedInBattle_What" text="兩邊的盾牌長矛撞成一片" />
+    <string id="VividWorld_Fact_HeroDiedInBattle_Outcome" text="戰事結束後，他的遺體送回了族人那裡" />
 
     <!-- Real event template 4: hero_died_naturally -->
     <string id="VividWorld_Fact_HeroDiedNaturally_Who" text="{VICTIM}與世長辭" />
     <string id="VividWorld_Fact_HeroDiedNaturally_Where" text="在{SETTLEMENT}" />
     <string id="VividWorld_Fact_HeroDiedNaturally_What" text="在親族的陪伴與哀悼中平靜離世" />
-    <string id="VividWorld_Fact_HeroDiedNaturally_Outcome" text="眾人向這位逝者一生的榮耀致敬" />
+    <string id="VividWorld_Fact_HeroDiedNaturally_Outcome" text="出殯那天，很多人都去送行" />
+    <string id="VividWorld_Fact_HeroDiedOfOldAge_Who" text="{VICTIM}壽終正寢" />
+    <string id="VividWorld_Fact_HeroDiedOfOldAge_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_HeroDiedOfOldAge_Outcome" text="出殯那天，很多人都去送行" />
+    <string id="VividWorld_Fact_HeroDiedInLabor_Who" text="{VICTIM}難產過世" />
+    <string id="VividWorld_Fact_HeroDiedInLabor_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_HeroDiedInLabor_Outcome" text="出殯那天，很多人都去送行" />
 
     <!-- Real event template 5: hero_taken_prisoner -->
     <string id="VividWorld_Fact_HeroTakenPrisoner_Who" text="{CAPTOR}俘虜了{PRISONER}" />
@@ -153,30 +174,40 @@
     <string id="VividWorld_Fact_HeroReleased_Where" text="在{SETTLEMENT}附近" />
     <string id="VividWorld_Fact_HeroReleased_What" text="條件談妥，看守便讓開了" />
     <string id="VividWorld_Fact_HeroReleased_Outcome" text="就這樣重獲自由" />
+    <string id="VividWorld_Fact_HeroReleased_Ransom" text="贖金付清之後" />
+    <string id="VividWorld_Fact_HeroReleased_Peace" text="兩邊不打了之後" />
+    <string id="VividWorld_Fact_HeroReleased_Defeated" text="{CAPTOR}的隊伍吃了敗仗之後" />
+    <string id="VividWorld_Fact_HeroReleased_SettlementOwnerChanged" text="{SETTLEMENT}換了主人之後" />
+    <string id="VividWorld_Fact_HeroReleased_PlayerChoice" text="{CAPTOR}的手下敗將，沒要贖金就放了" />
+    <string id="VividWorld_Fact_HeroReleased_Disbanded" text="{CAPTOR}的隊伍解散之後" />
+    <string id="VividWorld_Fact_HeroReleased_WhoDefeated" text="{PRISONER}從{CAPTOR}那裡被放了出來" />
+    <string id="VividWorld_Fact_HeroReleased_WhoPlayerChoice" text="{CAPTOR}讓{PRISONER}自由離去" />
+    <string id="VividWorld_Fact_HeroReleased_WhoDisbanded" text="{CAPTOR}的隊伍解散了，押在隊上的{PRISONER}也被放了" />
 
     <!-- Real event template: hero_escaped_captivity -->
     <string id="VividWorld_Fact_HeroEscaped_Who" text="{PRISONER}從{CAPTOR}手裡逃了出來" />
     <string id="VividWorld_Fact_HeroEscaped_WhoNoCaptor" text="{PRISONER}從牢裡逃了出來" />
+    <string id="VividWorld_Fact_HeroEscaped_WhereDungeon" text="從{SETTLEMENT}的牢裡" />
     <string id="VividWorld_Fact_HeroEscaped_Where" text="在{SETTLEMENT}附近" />
-    <string id="VividWorld_Fact_HeroEscaped_What" text="看守稀疏，而夜很長" />
+    <string id="VividWorld_Fact_HeroEscaped_What" text="夜裡看守的人少" />
     <string id="VividWorld_Fact_HeroEscaped_Outcome" text="誰也沒看清他往哪裡跑了" />
 
     <!-- Real event template 6: heroes_married -->
     <string id="VividWorld_Fact_HeroesMarried_Who" text="{SPOUSE_A}與{SPOUSE_B}締結了良緣" />
     <string id="VividWorld_Fact_HeroesMarried_Where" text="在{SETTLEMENT}" />
-    <string id="VividWorld_Fact_HeroesMarried_What" text="在盛大的宴席與眾人祝福中交換了誓言" />
-    <string id="VividWorld_Fact_HeroesMarried_Outcome" text="兩家就此結為姻親" />
+    <string id="VividWorld_Fact_HeroesMarried_What" text="喜宴辦得很熱鬧" />
+    <string id="VividWorld_Fact_HeroesMarried_Outcome" text="兩人當著滿堂賓客交換了誓言" />
 
     <!-- Real event template 7: child_born -->
-    <string id="VividWorld_Fact_ChildBorn_Who" text="{MOTHER}順利誕下了新生兒{CHILD}" />
+    <string id="VividWorld_Fact_ChildBorn_Who" text="{MOTHER}生了個孩子，叫{CHILD}" />
     <string id="VividWorld_Fact_ChildBorn_Where" text="在{SETTLEMENT}" />
-    <string id="VividWorld_Fact_ChildBorn_What" text="母子平安，新生兒健康茁壯" />
-    <string id="VividWorld_Fact_ChildBorn_Outcome" text="家族上下皆為新血脈的到來感到無比欣喜" />
+    <string id="VividWorld_Fact_ChildBorn_What" text="生了好久，孩子很健康" />
+    <string id="VividWorld_Fact_ChildBorn_Outcome" text="族人都去看過孩子" />
 
     <!-- Situation 1: seat_dispute -->
     <string id="VividWorld_Fact_SeatDisputeDemanded_Who" text="{SLIGHTED}當眾要{FAVORED}把上座讓出來" />
     <string id="VividWorld_Fact_SeatDisputeDemanded_Where" text="在{SETTLEMENT}的大廳裡" />
-    <string id="VividWorld_Fact_SeatDisputeDemanded_Why" text="說一家之主不該坐在別家晚輩的下首" />
+    <string id="VividWorld_Fact_SeatDisputeDemanded_Why" text="他是一家之主，不該坐在別家的人下首" />
     <string id="VividWorld_Fact_SeatDisputeDemanded_Outcome" text="整個大廳一下子安靜下來" />
     <string id="VividWorld_Fact_SeatDisputeEndured_Who" text="{SLIGHTED}忍下了坐在{FAVORED}下首這口氣" />
     <string id="VividWorld_Fact_SeatDisputeEndured_Where" text="在{SETTLEMENT}的大廳裡" />
@@ -186,9 +217,10 @@
     <string id="VividWorld_Fact_SeatDisputeYielded_Outcome" text="還舉杯敬了對方" />
     <string id="VividWorld_Fact_SeatDisputeWalkedOut_Who" text="{SLIGHTED}拂袖離開了{HOST}的宴席" />
     <string id="VividWorld_Fact_SeatDisputeWalkedOut_Where" text="在{SETTLEMENT}" />
-    <string id="VividWorld_Fact_SeatDisputeWalkedOut_Why" text="寧可走人也不肯坐在{FAVORED}下首" />
+    <string id="VividWorld_Fact_SeatDisputeWalkedOut_Why" text="一看他的座位排在{FAVORED}下首" />
     <string id="VividWorld_Dev_TriggerSituation" text="(dev) 在他身上觸發情境" />
     <string id="VividWorld_Dev_GrudgeLedger" text="(dev) 他的恩怨帳本" />
+    <string id="VividWorld_Dev_Feelings" text="(dev) 他對每則他知道的消息會附哪一句感想？" />
     <string id="VividWorld_Dev_ScanToday" text="(dev) 今天的情境掃描" />
     <string id="VividWorld_Dev_Snapshots" text="(dev) 快照狀態" />
 
@@ -196,7 +228,7 @@
     <string id="VividWorld_Fact_AdviceGivenFreely_Who" text="{VETERAN}把當年那一仗真正是怎麼打贏的，講給{STUDENT}聽" />
     <string id="VividWorld_Fact_AdviceGivenFreely_Where" text="在{SETTLEMENT}" />
     <string id="VividWorld_Fact_AdviceGivenFreely_What" text="連自己當年犯的錯都沒有藏" />
-    <string id="VividWorld_Fact_AdviceBrushedOff_Who" text="{VETERAN}對{STUDENT}只講了幾句場面話" />
+    <string id="VividWorld_Fact_AdviceBrushedOff_Who" text="{VETERAN}只回了{STUDENT}幾句誰都知道的道理" />
     <string id="VividWorld_Fact_AdviceBrushedOff_Where" text="在{SETTLEMENT}" />
     <string id="VividWorld_Fact_AdviceBrushedOff_What" text="一杯還沒喝完就把話題帶開了" />
     <string id="VividWorld_Fact_AdviceMocked_Who" text="{VETERAN}當著滿廳的人拿{STUDENT}請教的事說笑" />
@@ -210,11 +242,11 @@
     <string id="VividWorld_Fact_TavernGoodWord_What" text="還說自己不是喝醉了才這麼講" />
     <string id="VividWorld_Fact_TavernBoastTold_Who" text="{SPEAKER}向{LISTENER}吹噓自己的戰功，一杯比一杯誇張" />
     <string id="VividWorld_Fact_TavernBoastTold_Where" text="在{SETTLEMENT}的酒館裡" />
-    <string id="VividWorld_Fact_TavernBoastTold_What" text="同桌的人誰也懶得去對那個數字" />
+    <string id="VividWorld_Fact_TavernBoastTold_What" text="同桌的人聽了只是笑笑" />
     <string id="VividWorld_Fact_TavernConfidence_Who" text="{SPEAKER}私下跟{LISTENER}訴苦，說自家金庫快見底了" />
     <string id="VividWorld_Fact_TavernConfidence_Where" text="在{SETTLEMENT}的酒桌上" />
     <string id="VividWorld_Fact_TavernConfidence_What" text="還交代這話不要再傳出去" />
-    <string id="VividWorld_Fact_TavernSourWords_Who" text="{SPEAKER}酒後說了一句話，讓{LISTENER}很是記恨" />
+    <string id="VividWorld_Fact_TavernSourWords_Who" text="{SPEAKER}酒後對{LISTENER}說了句話，{LISTENER}當場變了臉" />
     <string id="VividWorld_Fact_TavernSourWords_Where" text="在{SETTLEMENT}的酒館裡" />
     <string id="VividWorld_Fact_TavernSourWords_What" text="酒醒之後也沒有收回去" />
 
@@ -236,10 +268,10 @@
     <string id="VividWorld_Fact_BrawlManHandedOver_Who" text="{PATRON}把先動手的人交了出去，向{AGGRIEVED}賠了不是" />
     <string id="VividWorld_Fact_BrawlManHandedOver_Where" text="在{SETTLEMENT}" />
     <string id="VividWorld_Fact_BrawlManHandedOver_What" text="就在市集上，當著一整條街的人" />
-    <string id="VividWorld_Fact_BrawlShieldedOwn_Who" text="{PATRON}不肯把自己的人交給{AGGRIEVED}" />
+    <string id="VividWorld_Fact_BrawlShieldedOwn_Who" text="{PATRON}的手下跟{AGGRIEVED}的人打了起來，{PATRON}不肯把人交給{AGGRIEVED}" />
     <string id="VividWorld_Fact_BrawlShieldedOwn_Where" text="在{SETTLEMENT}" />
     <string id="VividWorld_Fact_BrawlShieldedOwn_Why" text="說自家的人自家管，輪不到別家開口" />
-    <string id="VividWorld_Fact_BrawlCounterAccused_Who" text="{PATRON}不肯交出鬧事的人，反而當眾說先動手的是{AGGRIEVED}的人" />
+    <string id="VividWorld_Fact_BrawlCounterAccused_Who" text="{PATRON}的手下跟{AGGRIEVED}的人打了起來，{PATRON}不肯交人，還說是{AGGRIEVED}的人先動的手" />
     <string id="VividWorld_Fact_BrawlCounterAccused_Where" text="在{SETTLEMENT}" />
     <string id="VividWorld_Fact_BrawlCounterAccused_What" text="要對方先給個交代" />
     <string id="VividWorld_Fact_BrawlCounterAccused_Outcome" text="兩家誰也不讓" />
@@ -253,7 +285,7 @@
     <string id="VividWorld_Fact_WagerStruck_What" text="旁邊半個大廳的人也跟著下注" />
     <string id="VividWorld_Fact_WagerRefused_Who" text="{CHALLENGED}不接{CHALLENGER}的賭，還把這事當笑話講" />
     <string id="VividWorld_Fact_WagerRefused_Where" text="在{SETTLEMENT}" />
-    <string id="VividWorld_Fact_WagerRefused_What" text="大廳裡的人笑得有點久" />
+    <string id="VividWorld_Fact_WagerRefused_What" text="大廳裡的人笑了好一陣子" />
     <string id="VividWorld_Fact_WagerSecretStake_Who" text="{CHALLENGER}跟{CHALLENGED}為下一場狩獵押的不只是銀子" />
     <string id="VividWorld_Fact_WagerSecretStake_Where" text="在{SETTLEMENT}" />
     <string id="VividWorld_Fact_WagerSecretStake_What" text="押的是什麼，兩個人都沒透露" />
@@ -265,6 +297,8 @@
     <string id="VividWorld_Chronicle_Hop" text="傳了 {HOPS} 手" />
     <string id="VividWorld_Chronicle_HopZero" text="你當時在場" />
     <string id="VividWorld_Chronicle_SourceUnknown" text="不知道是誰說的" />
+    <string id="VividWorld_Chronicle_Quote" text="{NAME}：「{LINE}」" />
+    <string id="VividWorld_Chronicle_Plain" text="{NAME}：{FACTS}" />
 
     <!-- SNAP1：快照管理 -->
     <string id="VividWorld_Snapshots_Title" text="Vivid World 快照管理" />
@@ -329,11 +363,9 @@
     <string id="VividWorld_MCM_AskRelationGate" text="打聽傳聞好感度門檻" />
     <string id="VividWorld_MCM_AskRelationGateHint" text="NPC 願意回答你打聽傳聞前，所需的最低個人好感度。" />
     <string id="VividWorld_MCM_AskWillingnessThreshold" text="打聽意願判定門檻" />
-    <string id="VividWorld_MCM_AskWillingnessThresholdHint" text="領主願不願意回答你的門檻。計分同時看他對你的好感度與他的個性（慷慨與榮譽加分、算計扣分），未達此值就不開口。" />
-    <string id="VividWorld_MCM_NpcVolunteerRelationGate" text="完整分享好感度門檻" />
-    <string id="VividWorld_MCM_NpcVolunteerRelationGateHint" text="NPC 主動聊起傳聞時，對你的好感度達到這個值就講完整的來龍去脈；沒達到、但達到傳聞模式的門檻（暢玩 0、寫實 10）時，只講個大概。配偶、同伴與家族成員一律講完整版。設得比傳聞模式的門檻低時，以這一格為準。" />
+    <string id="VividWorld_MCM_AskWillingnessThresholdHint" text="領主願不願意回答你的門檻。計分同時看他對你的好感度與他的個性（慷慨、誠實加分，謀略扣分），未達此值就不開口。" />
     <string id="VividWorld_MCM_VolunteerMode" text="傳聞模式" />
-    <string id="VividWorld_MCM_VolunteerModeHint" text="自動：偵測到 Not-a-Noble、Lowborn 這類平民身分模組時用寫實，否則用暢玩。暢玩：不討厭你的人就可能主動聊起傳聞，平民也能開口打聽。寫實：好感度 10 以上才會主動聊；裝了平民身分模組時，家族等級要到 1 才能開口打聽。改了馬上生效，不必重新讀檔。" />
+    <string id="VividWorld_MCM_VolunteerModeHint" text="自動：偵測到 Not-a-Noble、Lowborn 這類平民身分模組時用寫實，否則用暢玩。暢玩：只要個性不排斥閒聊，對剛認識的你也會主動聊起自己和身邊的事，平民也能開口打聽。寫實：要個性很健談、或對你有一定好感，才會主動聊；裝了平民身分模組時，家族等級要到 1 才能開口打聽。改了馬上生效，不必重新讀檔。" />
     <string id="VividWorld_MCM_VolunteerMode_Auto" text="自動" />
     <string id="VividWorld_MCM_VolunteerMode_Casual" text="暢玩" />
     <string id="VividWorld_MCM_VolunteerMode_Realistic" text="寫實" />
@@ -380,10 +412,10 @@
     <!-- 模式通知 -->
     <string id="VividWorld_ModeNotice_Title" text="Vivid World" />
     <string id="VividWorld_ModeNotice_Button" text="知道了" />
-    <string id="VividWorld_ModeNotice_PopupRealistic_Mcm" text="偵測到你安裝了 {MODS}。這類模組讓平民很難接近貴族，所以 Vivid World 已自動改用「寫實模式」：領主對你的好感度要到 10 以上，才會主動跟你聊起各地的傳聞。想讓大家都願意跟你閒聊，可以到 MCM 的 Vivid World 設定，把「傳聞模式」改成「暢玩」。" />
-    <string id="VividWorld_ModeNotice_PopupRealistic_NoMcm" text="偵測到你安裝了 {MODS}。這類模組讓平民很難接近貴族，所以 Vivid World 已自動改用「寫實模式」：領主對你的好感度要到 10 以上，才會主動跟你聊起各地的傳聞。想讓大家都願意跟你閒聊，可以打開 config.json，把 &quot;volunteerMode&quot; 改成 &quot;casual&quot;。" />
-    <string id="VividWorld_ModeNotice_PopupCasual_Mcm" text="Vivid World 已經開始運作：各地發生的事，會在領主和流浪者之間口耳相傳。跟他們說話時，不討厭你的人可能會主動提起聽來的消息；交情越好，講得越完整。想要更寫實（對你有好感的人才會聊），可以到 MCM 的 Vivid World 設定，把「傳聞模式」改成「寫實」。" />
-    <string id="VividWorld_ModeNotice_PopupCasual_NoMcm" text="Vivid World 已經開始運作：各地發生的事，會在領主和流浪者之間口耳相傳。跟他們說話時，不討厭你的人可能會主動提起聽來的消息；交情越好，講得越完整。想要更寫實（對你有好感的人才會聊），可以打開 config.json，把 &quot;volunteerMode&quot; 改成 &quot;realistic&quot;。" />
+    <string id="VividWorld_ModeNotice_PopupRealistic_Mcm" text="偵測到你安裝了 {MODS}。這類模組讓平民很難接近貴族，所以 Vivid World 已自動改用「寫實模式」：領主要對你有一定好感、或個性很健談，才會主動跟你聊起自己和身邊的事。想讓更多人願意跟你閒聊，可以到 MCM 的 Vivid World 設定，把「傳聞模式」改成「暢玩」。" />
+    <string id="VividWorld_ModeNotice_PopupRealistic_NoMcm" text="偵測到你安裝了 {MODS}。這類模組讓平民很難接近貴族，所以 Vivid World 已自動改用「寫實模式」：領主要對你有一定好感、或個性很健談，才會主動跟你聊起自己和身邊的事。想讓更多人願意跟你閒聊，可以打開 config.json，把 &quot;volunteerMode&quot; 改成 &quot;casual&quot;。" />
+    <string id="VividWorld_ModeNotice_PopupCasual_Mcm" text="Vivid World 已經開始運作：各地發生的事，會在領主和流浪者之間口耳相傳。跟他們說話時，願意閒聊的人會主動提起自己和身邊的事；你也可以開口問路上有什麼消息。交情越好，聽得到的越多。想要更寫實（要有交情才會聊），可以到 MCM 的 Vivid World 設定，把「傳聞模式」改成「寫實」。" />
+    <string id="VividWorld_ModeNotice_PopupCasual_NoMcm" text="Vivid World 已經開始運作：各地發生的事，會在領主和流浪者之間口耳相傳。跟他們說話時，願意閒聊的人會主動提起自己和身邊的事；你也可以開口問路上有什麼消息。交情越好，聽得到的越多。想要更寫實（要有交情才會聊），可以打開 config.json，把 &quot;volunteerMode&quot; 改成 &quot;realistic&quot;。" />
     <string id="VividWorld_ModeNotice_MessageRealistic_Mcm" text="Vivid World：傳聞模式為寫實（偵測到 {MODS}），可在 MCM 調整。" />
     <string id="VividWorld_ModeNotice_MessageRealistic_NoMcm" text="Vivid World：傳聞模式為寫實（偵測到 {MODS}），可在 config.json 調整。" />
     <string id="VividWorld_ModeNotice_MessageCasual_Mcm" text="Vivid World：傳聞模式為暢玩，可在 MCM 調整。" />
@@ -393,6 +425,19 @@
     <string id="VividWorld_Self_Subject" text="我" />
     <string id="VividWorld_Self_Object" text="我" />
     <string id="VividWorld_Self_Possessive" text="我" />
+    <string id="VividWorld_Pronoun_He_M" text="他" />
+    <string id="VividWorld_Pronoun_He_F" text="她" />
+    <string id="VividWorld_Pronoun_He_N" text="他" />
+    <string id="VividWorld_Pronoun_Him_M" text="他" />
+    <string id="VividWorld_Pronoun_Him_F" text="她" />
+    <string id="VividWorld_Pronoun_Him_N" text="他" />
+    <string id="VividWorld_Pronoun_His_M" text="他的" />
+    <string id="VividWorld_Pronoun_His_F" text="她的" />
+    <string id="VividWorld_Pronoun_His_N" text="他的" />
+    <string id="VividWorld_Pronoun_Himself_M" text="他自己" />
+    <string id="VividWorld_Pronoun_Himself_F" text="她自己" />
+    <string id="VividWorld_Pronoun_Himself_N" text="他自己" />
+    <string id="VividWorld_Self_Reflexive" text="我自己" />
     <string id="VividWorld_Fact_HeroMurdered_Who_Self_KILLER" text="{VICTIM}怎麼死的，我比誰都清楚" />
     <string id="VividWorld_Fact_HeroMurdered_Where_Self_KILLER" text="那天在{SETTLEMENT}附近" />
     <string id="VividWorld_Fact_HeroMurdered_What_Self_KILLER" text="那可不是什麼意外……" />
@@ -571,22 +616,23 @@
     <string id="VividWorld_Fact_HeroCapturedByBandits_Who_Self_PRISONER" text="我落到一夥{BANDITS}手裡" />
     <string id="VividWorld_Fact_HeroCapturedByBandits_Where" text="在{SETTLEMENT}附近" />
     <string id="VividWorld_Fact_HeroCapturedByBandits_Where_Self_PRISONER" text="在{SETTLEMENT}附近" />
-    <string id="VividWorld_Fact_HeroCapturedByBandits_What" text="人被綁著，跟著他們在荒野裡走" />
+    <string id="VividWorld_Fact_HeroCapturedByBandits_What" text="被綁起來往荒野裡帶走了" />
     <string id="VividWorld_Fact_HeroCapturedByBandits_What_Self_PRISONER" text="被綁著跟他們在荒野裡走，一路挨餓受凍" />
-    <string id="VividWorld_Fact_HeroCapturedByBandits_Outcome" text="沒人知道那夥人打算拿他怎麼辦" />
+    <string id="VividWorld_Fact_HeroCapturedByBandits_Outcome" text="之後就再也沒有他的消息" />
     <string id="VividWorld_Fact_HeroCapturedByBandits_Outcome_Self_PRISONER" text="那幾天我真以為自己回不去了" />
     <string id="VividWorld_Fact_HeroRescuedFromBandits_Who" text="{RESCUER}打散了一夥{BANDITS}，把{PRISONER}救了出來" />
     <string id="VividWorld_Fact_HeroRescuedFromBandits_Who_Self_PRISONER" text="{RESCUER}打散了那夥{BANDITS}，把我救了出來" />
     <string id="VividWorld_Fact_HeroRescuedFromBandits_Who_Self_RESCUER" text="我打散了那夥{BANDITS}，把{PRISONER}救了出來" />
     <string id="VividWorld_Fact_HeroRescuedFromBandits_WhoNoRescuer" text="一夥{BANDITS}被人打散，{PRISONER}趁亂得救" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_OutcomeNoRescuer" text="後來平安回到了自己人那裡" />
     <string id="VividWorld_Fact_HeroRescuedFromBandits_WhoNoRescuer_Self_PRISONER" text="那夥{BANDITS}被人打散，我趁亂得救" />
     <string id="VividWorld_Fact_HeroRescuedFromBandits_Where" text="在{SETTLEMENT}附近" />
     <string id="VividWorld_Fact_HeroRescuedFromBandits_Where_Self_PRISONER" text="在{SETTLEMENT}附近" />
     <string id="VividWorld_Fact_HeroRescuedFromBandits_Where_Self_RESCUER" text="在{SETTLEMENT}附近" />
-    <string id="VividWorld_Fact_HeroRescuedFromBandits_What" text="還派人護送他上路" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_What" text="他沒受什麼重傷" />
     <string id="VividWorld_Fact_HeroRescuedFromBandits_What_Self_PRISONER" text="繩子一割開，我腿都軟了" />
     <string id="VividWorld_Fact_HeroRescuedFromBandits_What_Self_RESCUER" text="他人還算完好，就是餓壞了" />
-    <string id="VividWorld_Fact_HeroRescuedFromBandits_Outcome" text="他總算平安回來了" />
+    <string id="VividWorld_Fact_HeroRescuedFromBandits_Outcome" text="還派人一路護送他回去" />
     <string id="VividWorld_Fact_HeroRescuedFromBandits_Outcome_Self_PRISONER" text="這條命是撿回來的" />
     <string id="VividWorld_Fact_HeroRescuedFromBandits_Outcome_Self_RESCUER" text="我派人護送他上路" />
     <string id="VividWorld_Fact_HeroEscapedBandits_Who" text="{PRISONER}從一夥{BANDITS}手裡逃了出來" />
@@ -597,5 +643,647 @@
     <string id="VividWorld_Fact_HeroEscapedBandits_What_Self_PRISONER" text="趁看守睡著，我把繩子磨斷了" />
     <string id="VividWorld_Fact_HeroEscapedBandits_Outcome" text="一路摸黑走回了有人煙的地方" />
     <string id="VividWorld_Fact_HeroEscapedBandits_Outcome_Self_PRISONER" text="摸黑走了一整夜才看到燈火" />
+    <!-- Whole sentence templates: HeroDiedInBattle -->
+    <string id="VividWorld_Sentence_HeroDiedInBattle_Who_Where_What_Outcome" text="{SETTLEMENT}附近那一仗，兩邊的盾牌長矛撞成一片，{VICTIM}就是在那時候死在{KILLER}手上的。戰事結束後，他的遺體送回了族人那裡" />
+    <string id="VividWorld_Sentence_HeroDiedInBattle_Who_Where_What" text="{SETTLEMENT}附近那一仗，兩邊的盾牌長矛撞成一片，{VICTIM}就是在那時候死在{KILLER}手上的" />
+    <string id="VividWorld_Sentence_HeroDiedInBattle_Who_Where_What_From_KILLER" text="{SETTLEMENT}附近那一仗打得很兇，{VICTIM}就是那時死在他手上的" />
+    <string id="VividWorld_Sentence_HeroDiedInBattle_Who_What_From_KILLER" text="有一仗打得很兇，{VICTIM}就是那時死在他手上的" />
+    <string id="VividWorld_Sentence_HeroDiedInBattle_Who_Where" text="{SETTLEMENT}附近打了一仗，{VICTIM}就死在{KILLER}手上" />
+    <string id="VividWorld_Sentence_HeroDiedInBattle_Who" text="{VICTIM}在戰場上死在{KILLER}手上" />
+    <string id="VividWorld_Sentence_HeroDiedInBattle_Who_Where_What_Outcome_Self_KILLER" text="{SETTLEMENT}附近那一仗打得很兇，盾牌長矛撞成一片，{VICTIM}就是那時死在我手上的" />
+    <string id="VividWorld_Sentence_HeroDiedInBattle_Who_What_Outcome_Self_KILLER" text="有一仗打得很兇，盾牌長矛撞成一片，{VICTIM}就是那時死在我手上的" />
+    <string id="VividWorld_SelfFeeling_HeroDiedInBattle_KILLER" text="戰場上本來就是你死我活，沒什麼好說的" />
+    <!-- Whole sentence templates: HeroExecuted -->
+    <string id="VividWorld_Sentence_HeroExecuted_Who_Where_What_Outcome" text="{KILLER}在{SETTLEMENT}下令公開處決{VICTIM}，劊子手當著圍觀的人，一斧砍下了他的頭。行刑之後，屍首交還給了他的族人" />
+    <string id="VividWorld_Sentence_HeroExecuted_Who_Where_What" text="{KILLER}在{SETTLEMENT}下令公開處決{VICTIM}，劊子手當著圍觀的人，一斧砍下了他的頭" />
+    <string id="VividWorld_Sentence_HeroExecuted_Who_Where_What_From_KILLER" text="他在{SETTLEMENT}下令把{VICTIM}當著所有人的面斬了首" />
+    <string id="VividWorld_Sentence_HeroExecuted_Who_What_From_KILLER" text="他下令把{VICTIM}當著所有人的面斬了首" />
+    <string id="VividWorld_Sentence_HeroExecuted_Who_Where" text="{KILLER}在{SETTLEMENT}把{VICTIM}公開處決了" />
+    <string id="VividWorld_Sentence_HeroExecuted_Who" text="{KILLER}公開處決了{VICTIM}" />
+    <string id="VividWorld_Sentence_HeroExecuted_Who_Where_What_Outcome_Self_KILLER" text="我在{SETTLEMENT}下令，把{VICTIM}當著所有人的面斬了首" />
+    <string id="VividWorld_Sentence_HeroExecuted_Who_What_Outcome_Self_KILLER" text="我下令把{VICTIM}當著所有人的面斬了首" />
+    <string id="VividWorld_SelfFeeling_HeroExecuted_KILLER" text="事情總得有個了斷" />
+    <!-- Whole sentence templates: HeroMurdered -->
+    <string id="VividWorld_Sentence_HeroMurdered_Who_Where_What_Outcome_Self_KILLER" text="那天在{SETTLEMENT}附近，{VICTIM}是怎麼死的，我比誰都清楚，那可不是什麼意外……" />
+    <string id="VividWorld_Sentence_HeroMurdered_Who_What_Outcome_Self_KILLER" text="{VICTIM}是怎麼死的，我比誰都清楚，那可不是什麼意外……" />
+    <string id="VividWorld_Sentence_HeroMurdered_Who_Where_What_From_KILLER" text="{VICTIM}死在{SETTLEMENT}附近，那並不是出了什麼意外，而是他自己暗中下的手。他話說到一半就不肯往下講了" />
+    <string id="VividWorld_Sentence_HeroMurdered_Who_What_From_KILLER" text="{VICTIM}不是出了什麼意外，是他自己暗中下的手。他話說到一半就不肯往下講了" />
+    <string id="VividWorld_Sentence_HeroMurdered_Who_Where" text="{VICTIM}是在{SETTLEMENT}附近被{KILLER}殺的" />
+    <string id="VividWorld_Sentence_HeroMurdered_Who" text="{VICTIM}是{KILLER}殺的" />
+    <string id="VividWorld_SelfFeeling_HeroMurdered_KILLER" text="算了，這話你就當沒聽過" />
+    <!-- Whole sentence templates: HeroTakenPrisoner -->
+    <string id="VividWorld_Sentence_HeroTakenPrisoner_Who_Where_What_Outcome" text="{CAPTOR}在{SETTLEMENT}附近俘虜了{PRISONER}，繳了他的兵刃，派人嚴加看管，之後就把他押走了" />
+    <string id="VividWorld_Sentence_HeroTakenPrisoner_Who_Where_What" text="{CAPTOR}在{SETTLEMENT}附近俘虜了{PRISONER}，繳了他的兵刃，派人嚴加看管" />
+    <string id="VividWorld_Sentence_HeroTakenPrisoner_Who_Where_What_From_CAPTOR" text="他在{SETTLEMENT}附近抓了{PRISONER}，繳了他的兵器，派人看緊了" />
+    <string id="VividWorld_Sentence_HeroTakenPrisoner_Who_What_From_CAPTOR" text="他抓了{PRISONER}，繳了他的兵器，派人看緊了" />
+    <string id="VividWorld_Sentence_HeroTakenPrisoner_Who_Where" text="{PRISONER}在{SETTLEMENT}附近被{CAPTOR}俘虜了" />
+    <string id="VividWorld_Sentence_HeroTakenPrisoner_Who" text="{CAPTOR}俘虜了{PRISONER}" />
+    <string id="VividWorld_Sentence_HeroTakenPrisoner_Who_Where_What_Outcome_Self_CAPTOR" text="我在{SETTLEMENT}附近抓了{PRISONER}，繳了他的兵器，派人看緊了" />
+    <string id="VividWorld_Sentence_HeroTakenPrisoner_Who_What_Outcome_Self_CAPTOR" text="我抓了{PRISONER}，繳了他的兵器，派人看緊了" />
+    <string id="VividWorld_SelfFeeling_HeroTakenPrisoner_CAPTOR" text="這一仗總算沒白打" />
+    <string id="VividWorld_SelfFeeling_HeroTakenPrisoner_CAPTOR_Cruel" text="人先關著，吃點苦頭也好" />
+    <string id="VividWorld_SelfFeeling_HeroTakenPrisoner_CAPTOR_Mercy" text="人我會好生看管，不會為難" />
+    <!-- Whole sentence templates: HeroesMarried -->
+    <string id="VividWorld_Sentence_HeroesMarried_Who_Where_What_Outcome" text="{SPOUSE_A}和{SPOUSE_B}在{SETTLEMENT}成親，喜宴熱熱鬧鬧的，兩人就當著滿堂賓客交換了誓言" />
+    <string id="VividWorld_Sentence_HeroesMarried_Who_Where_What" text="{SPOUSE_A}和{SPOUSE_B}在{SETTLEMENT}成親了，喜宴辦得很熱鬧" />
+    <string id="VividWorld_Sentence_HeroesMarried_Who_Where_What_From_SPOUSE_A" text="他跟{SPOUSE_B}在{SETTLEMENT}成親了，喜宴辦得很熱鬧" />
+    <string id="VividWorld_Sentence_HeroesMarried_Who_Where_What_From_SPOUSE_B" text="他跟{SPOUSE_A}在{SETTLEMENT}成親了，喜宴辦得很熱鬧" />
+    <string id="VividWorld_Sentence_HeroesMarried_Who_What_From_SPOUSE_A" text="他跟{SPOUSE_B}成親了，喜宴辦得很熱鬧" />
+    <string id="VividWorld_Sentence_HeroesMarried_Who_What_From_SPOUSE_B" text="他跟{SPOUSE_A}成親了，喜宴辦得很熱鬧" />
+    <string id="VividWorld_Sentence_HeroesMarried_Who_Where" text="{SPOUSE_A}和{SPOUSE_B}在{SETTLEMENT}成親了" />
+    <string id="VividWorld_Sentence_HeroesMarried_Who" text="{SPOUSE_A}和{SPOUSE_B}成親了" />
+    <string id="VividWorld_Sentence_HeroesMarried_Who_Where_What_Outcome_Self_SPOUSE_A" text="我跟{SPOUSE_B}在{SETTLEMENT}成親了，那天來了滿堂的客人，我們就當著大家的面交換了誓言" />
+    <string id="VividWorld_Sentence_HeroesMarried_Who_Where_What_Outcome_Self_SPOUSE_B" text="我跟{SPOUSE_A}在{SETTLEMENT}成親了，那天來了滿堂的客人，我們就當著大家的面交換了誓言" />
+    <string id="VividWorld_Sentence_HeroesMarried_Who_What_Outcome_Self_SPOUSE_A" text="我跟{SPOUSE_B}成親了，那天來了滿堂的客人，我們就當著大家的面交換了誓言" />
+    <string id="VividWorld_Sentence_HeroesMarried_Who_What_Outcome_Self_SPOUSE_B" text="我跟{SPOUSE_A}成親了，那天來了滿堂的客人，我們就當著大家的面交換了誓言" />
+    <string id="VividWorld_SelfFeeling_HeroesMarried_SPOUSE_A" text="那一天我不會忘" />
+    <string id="VividWorld_SelfFeeling_HeroesMarried_SPOUSE_B" text="那一天我不會忘" />
+    <!-- Whole sentence templates: ChildBorn -->
+    <string id="VividWorld_Sentence_ChildBorn_Who_Where_What_Outcome_Self_MOTHER" text="我在{SETTLEMENT}生下了{CHILD}。生了好久才生下來，孩子很健康" />
+    <string id="VividWorld_Sentence_ChildBorn_Who_What_Outcome_Self_MOTHER" text="我生下了{CHILD}。生了好久才生下來，孩子很健康" />
+    <string id="VividWorld_Sentence_ChildBorn_Who_Where_What_From_MOTHER" text="她在{SETTLEMENT}生了個孩子，取名叫{CHILD}。生了好久才生下來，孩子很健康" />
+    <string id="VividWorld_Sentence_ChildBorn_Who_What_From_MOTHER" text="她生了個孩子，取名叫{CHILD}。生了好久才生下來，孩子很健康" />
+    <string id="VividWorld_Sentence_ChildBorn_Who_Where_What" text="{MOTHER}在{SETTLEMENT}生了好久，才生下一個健康的孩子，取名叫{CHILD}" />
+    <string id="VividWorld_Sentence_ChildBorn_Who_Where" text="{MOTHER}在{SETTLEMENT}生了個孩子，叫{CHILD}" />
+    <string id="VividWorld_Sentence_ChildBorn_Who" text="{MOTHER}生了個孩子，叫{CHILD}" />
+    <string id="VividWorld_SelfFeeling_ChildBorn_MOTHER" text="抱著孩子的那一刻，什麼辛苦都值得了" />
+    <!-- Whole sentence templates: HeroDiedOfOldAge -->
+    <string id="VividWorld_Sentence_HeroDiedOfOldAge_Who_Where_Outcome" text="{VICTIM}在{SETTLEMENT}壽終正寢了，出殯那天去送他的人很多" />
+    <string id="VividWorld_Sentence_HeroDiedOfOldAge_Who_Where_Outcome_Witness" text="{VICTIM}出殯那天，{SETTLEMENT}很多人都去送他。聽說他是壽終正寢的" />
+    <string id="VividWorld_Sentence_HeroDiedOfOldAge_Who_Where" text="{VICTIM}在{SETTLEMENT}壽終正寢了" />
+    <string id="VividWorld_Sentence_HeroDiedOfOldAge_Who" text="{VICTIM}壽終正寢了" />
+    <!-- Whole sentence templates: HeroDiedInLabor -->
+    <string id="VividWorld_Sentence_HeroDiedInLabor_Who_Where_Outcome" text="{VICTIM}在{SETTLEMENT}生孩子時難產過世了，出殯那天去送她的人很多" />
+    <string id="VividWorld_Sentence_HeroDiedInLabor_Who_Where_Outcome_Witness" text="{VICTIM}出殯那天，{SETTLEMENT}很多人都去送她。聽說她是生孩子時難產過世的" />
+    <string id="VividWorld_Sentence_HeroDiedInLabor_Who_Where" text="{VICTIM}在{SETTLEMENT}生孩子時難產過世了" />
+    <string id="VividWorld_Sentence_HeroDiedInLabor_Who" text="{VICTIM}是生孩子時難產過世的" />
+    <!-- Whole sentence templates: HeroDiedNaturally -->
+    <string id="VividWorld_Sentence_HeroDiedNaturally_Who_Where_What" text="{VICTIM}在{SETTLEMENT}過世了，出殯那天去送他的人很多" />
+    <string id="VividWorld_Sentence_HeroDiedNaturally_Who_Where_What_Outcome" text="{VICTIM}出殯那天，{SETTLEMENT}很多人都去送他" />
+    <string id="VividWorld_Sentence_HeroDiedNaturally_Who_Where" text="{VICTIM}在{SETTLEMENT}過世了" />
+    <string id="VividWorld_Sentence_HeroDiedNaturally_Who" text="{VICTIM}過世了" />
+    <!-- Whole sentence templates: HeroCapturedByBandits -->
+    <string id="VividWorld_Sentence_HeroCapturedByBandits_Who_Where_What_Outcome" text="{PRISONER}在{SETTLEMENT}附近落到一夥{BANDITS}手裡，被綁起來往荒野裡帶走了，之後就再也沒有他的消息" />
+    <string id="VividWorld_Sentence_HeroCapturedByBandits_Who_Where_What" text="{PRISONER}在{SETTLEMENT}附近落到一夥{BANDITS}手裡，被綁起來往荒野裡帶走了" />
+    <string id="VividWorld_Sentence_HeroCapturedByBandits_Who_What" text="{PRISONER}落到一夥{BANDITS}手裡，被綁起來往荒野裡帶走了" />
+    <string id="VividWorld_Sentence_HeroCapturedByBandits_Who_Where" text="{PRISONER}在{SETTLEMENT}附近落到一夥{BANDITS}手裡了" />
+    <string id="VividWorld_Sentence_HeroCapturedByBandits_Who" text="{PRISONER}落到一夥{BANDITS}手裡" />
+    <!-- Whole sentence templates: HeroRescuedFromBandits -->
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_Who_Where_What_Outcome" text="{RESCUER}在{SETTLEMENT}附近打散了一夥{BANDITS}，把{PRISONER}救了出來。{PRISONER}看樣子沒受什麼傷，{RESCUER}還派人一路護送他回去" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_Who_Where_What" text="{RESCUER}在{SETTLEMENT}附近打散了一夥{BANDITS}，把{PRISONER}救了出來，{PRISONER}看樣子沒受什麼傷" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_Who_Where_What_From_RESCUER" text="他在{SETTLEMENT}附近打散了一夥{BANDITS}，把{PRISONER}救了出來，{PRISONER}沒受什麼傷，就是餓壞了" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_Who_What_From_RESCUER" text="他打散了一夥{BANDITS}，把{PRISONER}救了出來，{PRISONER}沒受什麼傷，就是餓壞了" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_Who_Where_What_From_PRISONER" text="{RESCUER}在{SETTLEMENT}附近打散了那夥{BANDITS}，把他救了出來。他沒受什麼傷，就是餓壞了" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_Who_What_From_PRISONER" text="{RESCUER}打散了那夥{BANDITS}，把他救了出來。他沒受什麼傷，就是餓壞了" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_Who_Where" text="{RESCUER}在{SETTLEMENT}附近打散了一夥{BANDITS}，把{PRISONER}救了出來" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_Who" text="{RESCUER}打散了一夥{BANDITS}，把{PRISONER}救了出來" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_Who_Where_What_Outcome_Self_RESCUER" text="我在{SETTLEMENT}附近打散了一夥{BANDITS}，把{PRISONER}救了出來，他沒受什麼傷，就是餓壞了" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_Who_What_Outcome_Self_RESCUER" text="我打散了一夥{BANDITS}，把{PRISONER}救了出來，他沒受什麼傷，就是餓壞了" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_Who_Where_What_Outcome_Self_PRISONER" text="{RESCUER}在{SETTLEMENT}附近打散了那夥{BANDITS}，把我救了出來，還派人送我回去" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_Who_What_Outcome_Self_PRISONER" text="{RESCUER}打散了那夥{BANDITS}，把我救了出來，還派人送我回去" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_WhoNoRescuer_Where_What_OutcomeNoRescuer" text="{SETTLEMENT}附近有一夥{BANDITS}被人打散了，被他們綁著的{PRISONER}趁亂得救。他看樣子沒受什麼傷，後來平安回到了自己人那裡" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_WhoNoRescuer_Where_What" text="{SETTLEMENT}附近有一夥{BANDITS}被人打散了，被他們綁著的{PRISONER}趁亂得救。他看樣子沒受什麼傷" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_WhoNoRescuer_Where_What_From_PRISONER" text="那夥{BANDITS}在{SETTLEMENT}附近被人打散，他趁亂得救了，沒受什麼傷，就是餓壞了" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_WhoNoRescuer_What_From_PRISONER" text="那夥{BANDITS}被人打散，他趁亂得救了，沒受什麼傷，就是餓壞了" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_WhoNoRescuer_Where" text="{SETTLEMENT}附近有一夥{BANDITS}被人打散了，{PRISONER}趁亂得救" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_WhoNoRescuer" text="有一夥{BANDITS}被人打散了，{PRISONER}趁亂得救" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_WhoNoRescuer_Where_What_OutcomeNoRescuer_Self_PRISONER" text="那夥{BANDITS}在{SETTLEMENT}附近被人打散，我趁亂脫了身，一路找回了自己人那裡" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_WhoNoRescuer_What_OutcomeNoRescuer_Self_PRISONER" text="那夥{BANDITS}被人打散，我趁亂脫了身，一路找回了自己人那裡" />
+    <string id="VividWorld_SelfFeeling_HeroRescuedFromBandits_RESCUER" text="還好去得及時" />
+    <string id="VividWorld_SelfFeeling_HeroRescuedFromBandits_PRISONER" text="繩子割開的時候我腿都軟了，這條命是撿回來的" />
+    <string id="VividWorld_SelfFeeling_HeroRescuedFromBandits_WhoNoRescuer_PRISONER" text="這條命是撿回來的" />
+    <!-- Whole sentence templates: HeroEscaped -->
+    <string id="VividWorld_Sentence_HeroEscaped_Who_Where_What_Outcome" text="{PRISONER}在{SETTLEMENT}趁夜裡看守的人少，從{CAPTOR}手中逃了出來，誰也沒看清他往哪跑了" />
+    <string id="VividWorld_Sentence_HeroEscaped_Who_Where_What_Outcome_From_CAPTOR" text="{PRISONER}是在{SETTLEMENT}附近趁夜裡看守的人少，從他手中逃掉的" />
+    <string id="VividWorld_Sentence_HeroEscaped_Who_Where_What_Outcome_From_PRISONER" text="他在{SETTLEMENT}附近趁夜裡看守的人少，從{CAPTOR}手中逃了出來" />
+    <string id="VividWorld_Sentence_HeroEscaped_Who_What_Outcome_From_CAPTOR" text="{PRISONER}是趁夜裡看守的人少，從他手中逃掉的" />
+    <string id="VividWorld_Sentence_HeroEscaped_Who_What_Outcome_From_PRISONER" text="他趁夜裡看守的人少，從{CAPTOR}手中逃了出來" />
+    <string id="VividWorld_Sentence_HeroEscaped_Who_Where" text="{PRISONER}在{SETTLEMENT}附近從{CAPTOR}手中逃了出來" />
+    <string id="VividWorld_Sentence_HeroEscaped_Who" text="{PRISONER}從{CAPTOR}手中逃了出來" />
+    <string id="VividWorld_Sentence_HeroEscaped_Who_Where_What_Outcome_Self_CAPTOR" text="在{SETTLEMENT}附近，{PRISONER}趁夜裡看守的人少，從我手中逃掉了，等發現的時候早就不見人影了" />
+    <string id="VividWorld_Sentence_HeroEscaped_Who_What_Outcome_Self_CAPTOR" text="{PRISONER}趁夜裡看守的人少，從我手中逃掉了，等發現的時候早就不見人影了" />
+    <string id="VividWorld_Sentence_HeroEscaped_Who_Where_What_Outcome_Self_PRISONER" text="在{SETTLEMENT}附近，我趁夜裡看守的人少，從{CAPTOR}手中逃出來了" />
+    <string id="VividWorld_Sentence_HeroEscaped_Who_What_Outcome_Self_PRISONER" text="我趁夜裡看守的人少，從{CAPTOR}手中逃出來了" />
+    <string id="VividWorld_Sentence_HeroEscaped_WhoNoCaptor_Where_What_Outcome" text="{PRISONER}在{SETTLEMENT}趁夜裡看守的人少，從牢裡逃了出來，誰也沒看清他往哪跑了" />
+    <string id="VividWorld_Sentence_HeroEscaped_WhoNoCaptor_Where_What_Outcome_From_PRISONER" text="他在{SETTLEMENT}附近趁夜裡看守的人少，從牢裡逃了出來" />
+    <string id="VividWorld_Sentence_HeroEscaped_WhoNoCaptor_What_Outcome_From_PRISONER" text="他趁夜裡看守的人少，從牢裡逃了出來" />
+    <string id="VividWorld_Sentence_HeroEscaped_WhoNoCaptor_Where" text="{PRISONER}在{SETTLEMENT}附近從牢裡逃了出來" />
+    <string id="VividWorld_Sentence_HeroEscaped_WhoNoCaptor" text="{PRISONER}從牢裡逃了出來" />
+    <string id="VividWorld_Sentence_HeroEscaped_WhoNoCaptor_Where_What_Outcome_Self_PRISONER" text="在{SETTLEMENT}附近，我趁夜裡看守的人少，從牢裡逃出來了" />
+    <string id="VividWorld_Sentence_HeroEscaped_WhoNoCaptor_What_Outcome_Self_PRISONER" text="我趁夜裡看守的人少，從牢裡逃出來了" />
+    <string id="VividWorld_Sentence_HeroEscaped_WhoNoCaptor_WhereDungeon_What_Outcome" text="{PRISONER}趁夜裡看守的人少，從{SETTLEMENT}的牢裡逃了出來，誰也沒看清他往哪跑了" />
+    <string id="VividWorld_Sentence_HeroEscaped_WhoNoCaptor_WhereDungeon_What_Outcome_From_PRISONER" text="他趁夜裡看守的人少，從{SETTLEMENT}的牢裡逃了出來" />
+    <string id="VividWorld_Sentence_HeroEscaped_WhoNoCaptor_WhereDungeon" text="{PRISONER}從{SETTLEMENT}的牢裡逃了出來" />
+    <string id="VividWorld_Sentence_HeroEscaped_WhoNoCaptor_WhereDungeon_What_Outcome_Self_PRISONER" text="我趁夜裡看守的人少，從{SETTLEMENT}的牢裡逃出來了" />
+    <string id="VividWorld_Sentence_HeroEscaped_WhoNoCaptor_WhereDungeon_Self_PRISONER" text="我從{SETTLEMENT}的牢裡逃了出來" />
+    <string id="VividWorld_SelfFeeling_HeroEscaped_CAPTOR" text="說來丟臉" />
+    <string id="VividWorld_SelfFeeling_HeroEscaped_CAPTOR_Cruel" text="下回再落到我手裡，可不會這麼客氣了" />
+    <string id="VividWorld_SelfFeeling_HeroEscaped_CAPTOR_Calculating" text="到手的贖金，就這麼飛了" />
+    <string id="VividWorld_SelfFeeling_HeroEscaped_PRISONER" text="我一路都沒敢回頭" />
+    <string id="VividWorld_SelfFeeling_HeroEscaped_PRISONER_Valor" text="想關住我，沒那麼容易" />
+    <!-- Whole sentence templates: HeroEscapedBandits -->
+    <string id="VividWorld_Sentence_HeroEscapedBandits_Who_Where_What_Outcome" text="{PRISONER}在{SETTLEMENT}附近被一夥{BANDITS}綁著，趁看守睡著磨斷繩子逃出來了" />
+    <string id="VividWorld_Sentence_HeroEscapedBandits_Who_Where_What_Outcome_From_PRISONER" text="那夥{BANDITS}把他綁在{SETTLEMENT}附近，他趁看守睡著把繩子磨斷逃了出來，摸黑走了一整夜才看到人煙" />
+    <string id="VividWorld_Sentence_HeroEscapedBandits_Who_What_Outcome_From_PRISONER" text="他是趁{BANDITS}的看守睡著，把繩子磨斷逃出來的，摸黑走了一整夜才看到人煙" />
+    <string id="VividWorld_Sentence_HeroEscapedBandits_Who_Where" text="{PRISONER}在{SETTLEMENT}附近從一夥{BANDITS}手裡逃了出來" />
+    <string id="VividWorld_Sentence_HeroEscapedBandits_Who" text="{PRISONER}從{BANDITS}手裡逃出來了" />
+    <string id="VividWorld_Sentence_HeroEscapedBandits_Who_Where_What_Outcome_Self_PRISONER" text="那夥{BANDITS}把我綁在{SETTLEMENT}附近，我趁看守睡著把繩子磨斷，摸黑走了一整夜才看到燈火" />
+    <string id="VividWorld_Sentence_HeroEscapedBandits_Who_What_Outcome_Self_PRISONER" text="我趁那夥{BANDITS}的看守睡著，把繩子磨斷逃了出來，摸黑走了一整夜才看到燈火" />
+    <string id="VividWorld_SelfFeeling_HeroEscapedBandits_PRISONER" text="那幾天我真以為自己回不去了" />
+    <!-- Whole sentence templates: HeroReleased -->
+    <string id="VividWorld_Sentence_HeroReleased_Who_Where_Ransom" text="{CAPTOR}收了贖金，在{SETTLEMENT}附近把{PRISONER}放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Where_Ransom_Witness" text="{PRISONER}在{SETTLEMENT}被放了出來。聽說是{CAPTOR}收了贖金才放的人" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Ransom" text="{CAPTOR}收了贖金，把{PRISONER}放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Where_Ransom_From_CAPTOR" text="他收了贖金，在{SETTLEMENT}附近把{PRISONER}放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Ransom_From_CAPTOR" text="他收了贖金，把{PRISONER}放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Where_Ransom_From_PRISONER" text="{CAPTOR}收了贖金，在{SETTLEMENT}附近把他放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Ransom_From_PRISONER" text="{CAPTOR}收了贖金，把他放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who" text="{CAPTOR}把{PRISONER}放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Where_Ransom_Self_CAPTOR" text="我收了贖金，在{SETTLEMENT}附近把{PRISONER}放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Ransom_Self_CAPTOR" text="我收了贖金，把{PRISONER}放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Where_Ransom_Self_PRISONER" text="{CAPTOR}收了贖金，在{SETTLEMENT}附近把我放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Ransom_Self_PRISONER" text="{CAPTOR}收了贖金，把我放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Where_Peace" text="兩邊不打了，{CAPTOR}就在{SETTLEMENT}附近把{PRISONER}放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Where_Peace_Witness" text="{PRISONER}在{SETTLEMENT}被放了出來。聽說是兩邊不打了，{CAPTOR}才放的人" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Peace" text="兩邊不打了，{CAPTOR}就把{PRISONER}放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Where_Peace_From_CAPTOR" text="兩邊既然不打了，他就在{SETTLEMENT}附近把{PRISONER}放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Peace_From_CAPTOR" text="兩邊既然不打了，他就把{PRISONER}放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Where_Peace_From_PRISONER" text="兩邊不打了，{CAPTOR}就在{SETTLEMENT}附近把他放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Peace_From_PRISONER" text="兩邊不打了，{CAPTOR}就把他放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Where_Peace_Self_CAPTOR" text="兩邊既然不打了，我就在{SETTLEMENT}附近把{PRISONER}放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Peace_Self_CAPTOR" text="兩邊既然不打了，我就把{PRISONER}放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Where_Peace_Self_PRISONER" text="兩邊不打了，{CAPTOR}就在{SETTLEMENT}附近把我放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Peace_Self_PRISONER" text="兩邊不打了，{CAPTOR}就把我放了" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDefeated_Where_Defeated" text="{CAPTOR}在{SETTLEMENT}附近吃了敗仗，押在他那裡的{PRISONER}也被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDefeated_Where_Defeated_Witness" text="{CAPTOR}在{SETTLEMENT}吃了敗仗，押在他那裡的{PRISONER}也被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDefeated_Defeated" text="{CAPTOR}吃了敗仗，押在他那裡的{PRISONER}也被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDefeated_Where_Defeated_From_CAPTOR" text="他在{SETTLEMENT}附近吃了敗仗，連押著的{PRISONER}都被放走了" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDefeated_Defeated_From_CAPTOR" text="他吃了敗仗，連押著的{PRISONER}都被放走了" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDefeated_Where_Defeated_From_PRISONER" text="{CAPTOR}在{SETTLEMENT}附近吃了敗仗，他也就被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDefeated_Defeated_From_PRISONER" text="{CAPTOR}吃了敗仗，他也就被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDefeated" text="{PRISONER}從{CAPTOR}那裡被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDefeated_Where_Defeated_Self_CAPTOR" text="我在{SETTLEMENT}附近吃了敗仗，連押著的{PRISONER}都被放走了" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDefeated_Defeated_Self_CAPTOR" text="我吃了敗仗，連押著的{PRISONER}都被放走了" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDefeated_Where_Defeated_Self_PRISONER" text="{CAPTOR}在{SETTLEMENT}附近吃了敗仗，我也就被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDefeated_Defeated_Self_PRISONER" text="{CAPTOR}吃了敗仗，我也就被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoNoCaptor_Where_SettlementOwnerChanged" text="{SETTLEMENT}換了主人，關在那裡的{PRISONER}就被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoNoCaptor_Where_SettlementOwnerChanged_Witness" text="{SETTLEMENT}換了主人之後，關在牢裡的{PRISONER}就被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoNoCaptor_Where_SettlementOwnerChanged_From_PRISONER" text="{SETTLEMENT}換了主人，他就從那裡的牢裡被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoNoCaptor_Where_SettlementOwnerChanged_Self_PRISONER" text="{SETTLEMENT}換了主人，我也就從那裡的牢裡被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoPlayerChoice_Where_PlayerChoice" text="{CAPTOR}在{SETTLEMENT}讓手下敗將{PRISONER}自由離去了" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoPlayerChoice_PlayerChoice" text="{CAPTOR}讓手下敗將{PRISONER}自由離去了" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoPlayerChoice_Where_PlayerChoice_From_PRISONER" text="他敗給了{CAPTOR}，{CAPTOR}沒要贖金，在{SETTLEMENT}就讓他走了" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoPlayerChoice_PlayerChoice_From_PRISONER" text="他敗給了{CAPTOR}，{CAPTOR}沒要贖金，就讓他走了" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoPlayerChoice" text="{CAPTOR}讓{PRISONER}自由離去了" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoPlayerChoice_Where_PlayerChoice_Self_PRISONER" text="我敗給了{CAPTOR}，他沒要贖金，在{SETTLEMENT}就讓我走了" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoPlayerChoice_PlayerChoice_Self_PRISONER" text="我敗給了{CAPTOR}，他沒要贖金，就讓我走了" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDisbanded_Where_Disbanded" text="{CAPTOR}的隊伍在{SETTLEMENT}附近解散了，押在隊上的{PRISONER}也被放了" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDisbanded_Where_Disbanded_Witness" text="{CAPTOR}的隊伍在{SETTLEMENT}解散了，押在隊上的{PRISONER}也被放了" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDisbanded_Disbanded" text="{CAPTOR}的隊伍解散了，押在隊上的{PRISONER}也被放了" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDisbanded_Where_Disbanded_From_CAPTOR" text="他的隊伍在{SETTLEMENT}附近解散了，押著的{PRISONER}也就放了" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDisbanded_Disbanded_From_CAPTOR" text="他的隊伍解散了，押著的{PRISONER}也就放了" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDisbanded_Where_Disbanded_From_PRISONER" text="{CAPTOR}的隊伍在{SETTLEMENT}附近解散了，他也就被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDisbanded_Disbanded_From_PRISONER" text="{CAPTOR}的隊伍解散了，他也就被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDisbanded" text="{CAPTOR}的隊伍解散了，押著的{PRISONER}也被放了" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDisbanded_Where_Disbanded_Self_CAPTOR" text="我的隊伍在{SETTLEMENT}附近解散了，押著的{PRISONER}也就放了" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDisbanded_Disbanded_Self_CAPTOR" text="我的隊伍解散了，押著的{PRISONER}也就放了" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDisbanded_Where_Disbanded_Self_PRISONER" text="{CAPTOR}的隊伍在{SETTLEMENT}附近解散了，我也就被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoDisbanded_Disbanded_Self_PRISONER" text="{CAPTOR}的隊伍解散了，我也就被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoNoCaptor_Where" text="{PRISONER}在{SETTLEMENT}附近從牢裡被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoNoCaptor_Where_Witness" text="{PRISONER}在{SETTLEMENT}從牢裡被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoNoCaptor_Where_From_PRISONER" text="他在{SETTLEMENT}附近從牢裡被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoNoCaptor_Where_Self_PRISONER" text="我在{SETTLEMENT}附近從牢裡被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoNoCaptor" text="{PRISONER}從牢裡被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoNoCaptor_From_PRISONER" text="他從牢裡被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoNoCaptor_Self_PRISONER" text="我從牢裡被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Where_What_Outcome" text="{PRISONER}在{SETTLEMENT}被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Where_What" text="{CAPTOR}在{SETTLEMENT}附近把{PRISONER}放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Where" text="{CAPTOR}在{SETTLEMENT}附近把{PRISONER}放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Where_What_From_CAPTOR" text="他在{SETTLEMENT}附近把{PRISONER}放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Where_What_From_PRISONER" text="{CAPTOR}在{SETTLEMENT}附近把他放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_What_From_CAPTOR" text="他把{PRISONER}放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_What_From_PRISONER" text="{CAPTOR}把他放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Where_What_Outcome_Self_CAPTOR" text="我在{SETTLEMENT}附近把{PRISONER}放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_What_Outcome_Self_CAPTOR" text="我把{PRISONER}放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Where_What_Outcome_Self_PRISONER" text="{CAPTOR}在{SETTLEMENT}附近把我放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_What_Outcome_Self_PRISONER" text="{CAPTOR}把我放了" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoNoCaptor_Where_What_Outcome" text="{PRISONER}在{SETTLEMENT}從牢裡被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoNoCaptor_Where_What" text="{PRISONER}在{SETTLEMENT}附近從牢裡被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoNoCaptor_Where_What_From_PRISONER" text="他在{SETTLEMENT}附近從牢裡被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoNoCaptor_What_From_PRISONER" text="他從牢裡被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoNoCaptor_Where_What_Outcome_Self_PRISONER" text="我在{SETTLEMENT}附近從牢裡被放了出來" />
+    <string id="VividWorld_Sentence_HeroReleased_WhoNoCaptor_What_Outcome_Self_PRISONER" text="我從牢裡被放了出來" />
+    <string id="VividWorld_SelfFeeling_HeroReleased_Ransom_CAPTOR" text="收了錢就放人，說話得算話" />
+    <string id="VividWorld_SelfFeeling_HeroReleased_Peace_CAPTOR" text="仗都不打了，人也沒必要再關著" />
+    <string id="VividWorld_SelfFeeling_HeroReleased_Defeated_CAPTOR" text="這一仗輸得難看" />
+    <string id="VividWorld_SelfFeeling_HeroReleased_Disbanded_CAPTOR" text="人都遣散了，總不能帶著他走" />
+    <string id="VividWorld_SelfFeeling_HeroReleased_CAPTOR" text="人放了，這事就算了結" />
+    <string id="VividWorld_SelfFeeling_HeroReleased_PRISONER" text="走出來那一刻，總算又能好好喘口氣" />
+    <string id="VividWorld_SelfFeeling_HeroReleased_Peace_PRISONER" text="總算能回家了" />
+    <string id="VividWorld_SelfFeeling_HeroReleased_Defeated_PRISONER" text="運氣總算站到我這邊了" />
+    <string id="VividWorld_SelfFeeling_HeroReleased_SettlementOwnerChanged_PRISONER" text="總算又見到天日了" />
+    <string id="VividWorld_SelfFeeling_HeroReleased_PlayerChoice_PRISONER" text="這份情我記下了" />
+    <string id="VividWorld_SelfFeeling_HeroReleased_Disbanded_PRISONER" text="運氣總算站到我這邊了" />
+    <!-- Whole sentence templates: SeatDisputeDemanded -->
+    <string id="VividWorld_Sentence_SeatDisputeDemanded_Who_Where_Why_Outcome" text="在{SETTLEMENT}的那場宴會上，{SLIGHTED}被排在{FAVORED}下首。他是族長，當眾就要{FAVORED}把上座讓出來，整個大廳一下子都安靜了" />
+    <string id="VividWorld_Sentence_SeatDisputeDemanded_Who_Where_Why_Outcome_From_SLIGHTED" text="在{SETTLEMENT}的那場宴會上，他被排在{FAVORED}下首，就當眾要{FAVORED}把上座讓出來，整個大廳一下子都安靜了" />
+    <string id="VividWorld_Sentence_SeatDisputeDemanded_Who_Where_Why_Outcome_From_FAVORED" text="在{SETTLEMENT}的那場宴會上，{SLIGHTED}被排在他下首，就當眾要他把上座讓出來，整個大廳一下子都安靜了" />
+    <string id="VividWorld_Sentence_SeatDisputeDemanded_Who_Where" text="{SLIGHTED}在{SETTLEMENT}的宴席上，當眾要{FAVORED}把上座讓出來" />
+    <string id="VividWorld_Sentence_SeatDisputeDemanded_Who" text="{SLIGHTED}當眾，要{FAVORED}把上座讓出來" />
+    <string id="VividWorld_Sentence_SeatDisputeDemanded_Who_Where_Why_Outcome_Self_SLIGHTED" text="在{SETTLEMENT}的那場宴會上，我的座位排在{FAVORED}下首，我當眾就要他把上座讓出來，整個大廳一下子都安靜了" />
+    <string id="VividWorld_Sentence_SeatDisputeDemanded_Who_Where_Why_Outcome_Self_FAVORED" text="在{SETTLEMENT}的那場宴會上，{SLIGHTED}的座位排在我下首，他當眾就要我把上座讓出來，整個大廳一下子都安靜了" />
+    <string id="VividWorld_SelfFeeling_SeatDisputeDemanded_SLIGHTED" text="我是一家之主，哪有坐在別家一個不當家的人下首的道理" />
+    <string id="VividWorld_SelfFeeling_SeatDisputeDemanded_FAVORED" text="當著那麼多人，我臉上真是掛不住" />
+    <!-- Whole sentence templates: SeatDisputeEndured -->
+    <string id="VividWorld_Sentence_SeatDisputeEndured_Who_Where_What_From_SLIGHTED" text="他在{SETTLEMENT}的宴席上被排在{FAVORED}下首，當場一句話也沒說，就這麼把這口氣忍了下來" />
+    <string id="VividWorld_Sentence_SeatDisputeEndured_Who_Where" text="{SLIGHTED}在{SETTLEMENT}的宴席上被排在{FAVORED}下首，他把這口氣忍了下來" />
+    <string id="VividWorld_Sentence_SeatDisputeEndured_Who" text="{SLIGHTED}被排在{FAVORED}下首，他也就把這口氣忍了" />
+    <string id="VividWorld_Sentence_SeatDisputeEndured_Who_Where_What_Self_SLIGHTED" text="{SETTLEMENT}那場宴席，我被排在{FAVORED}下首，當場一句話也沒說，就這麼忍了" />
+    <string id="VividWorld_Sentence_SeatDisputeEndured_Who_Where_What_Self_FAVORED" text="{SETTLEMENT}那場宴席他坐在我下首，當場一句話也沒說，那口氣是忍下來的" />
+    <string id="VividWorld_Sentence_SeatDisputeEndured_Who_Where_Self_FAVORED" text="{SETTLEMENT}那場宴席{SLIGHTED}坐在我下首，那口氣他是忍下來的" />
+    <string id="VividWorld_Sentence_SeatDisputeEndured_Who_Self_FAVORED" text="{SLIGHTED}坐在我下首那回，那口氣他是忍下來的" />
+    <string id="VividWorld_SelfFeeling_SeatDisputeEndured_SLIGHTED" text="當著那麼多人，我總不能當場翻臉，那頓飯吃得一點味道也沒有" />
+    <string id="VividWorld_SelfFeeling_SeatDisputeEndured_FAVORED" text="我當時還真沒看出來" />
+    <!-- Whole sentence templates: SeatDisputeYielded -->
+    <string id="VividWorld_Sentence_SeatDisputeYielded_Who_Where_Outcome" text="{SLIGHTED}在{SETTLEMENT}的宴席上把上座讓給了{FAVORED}，還敬了他一杯" />
+    <string id="VividWorld_Sentence_SeatDisputeYielded_Who_Where_Outcome_From_SLIGHTED" text="他在{SETTLEMENT}的宴席上沒跟{FAVORED}爭，把上座讓了出去，還敬了{FAVORED}一杯" />
+    <string id="VividWorld_Sentence_SeatDisputeYielded_Who_Where_Outcome_From_FAVORED" text="{SLIGHTED}在{SETTLEMENT}的宴席上把上座讓給了他，還敬了他一杯" />
+    <string id="VividWorld_Sentence_SeatDisputeYielded_Who_Where" text="{SLIGHTED}在{SETTLEMENT}的宴席上把上座讓給了{FAVORED}" />
+    <string id="VividWorld_Sentence_SeatDisputeYielded_Who" text="{SLIGHTED}把上座讓給了{FAVORED}" />
+    <string id="VividWorld_Sentence_SeatDisputeYielded_Who_Where_Outcome_Self_SLIGHTED" text="那天在{SETTLEMENT}的宴席上，我沒跟{FAVORED}爭，把上座讓給了他，還敬了他一杯" />
+    <string id="VividWorld_Sentence_SeatDisputeYielded_Who_Where_Outcome_Self_FAVORED" text="{SLIGHTED}在{SETTLEMENT}的宴席上把上座讓給了我，還敬了我一杯" />
+    <string id="VividWorld_SelfFeeling_SeatDisputeYielded_SLIGHTED" text="一個座位而已，犯不著傷和氣" />
+    <string id="VividWorld_SelfFeeling_SeatDisputeYielded_FAVORED" text="這份情我記著" />
+    <!-- Whole sentence templates: SeatDisputeWalkedOut -->
+    <string id="VividWorld_Sentence_SeatDisputeWalkedOut_Who_Where_Why" text="{HOST}在{SETTLEMENT}擺宴，{SLIGHTED}一看座位排在{FAVORED}下首，起身就走了" />
+    <string id="VividWorld_Sentence_SeatDisputeWalkedOut_Who_Where_Why_From_SLIGHTED" text="{HOST}在{SETTLEMENT}擺宴，他的座位排在{FAVORED}下首，他起身就走了" />
+    <string id="VividWorld_Sentence_SeatDisputeWalkedOut_Who_Where_Why_From_FAVORED" text="{HOST}在{SETTLEMENT}擺宴，{SLIGHTED}不肯坐在他下首，起身就走了" />
+    <string id="VividWorld_Sentence_SeatDisputeWalkedOut_Who_Where_Why_From_HOST" text="他在{SETTLEMENT}擺宴，{SLIGHTED}不肯坐在{FAVORED}下首，起身就走了" />
+    <string id="VividWorld_Sentence_SeatDisputeWalkedOut_Who" text="{SLIGHTED}在{HOST}的宴席上起身走人了" />
+    <string id="VividWorld_Sentence_SeatDisputeWalkedOut_Who_Where_Why_Self_SLIGHTED" text="{HOST}在{SETTLEMENT}擺宴，我的座位排在{FAVORED}下首，我起身就走了" />
+    <string id="VividWorld_Sentence_SeatDisputeWalkedOut_Who_Where_Why_Self_FAVORED" text="{HOST}在{SETTLEMENT}擺宴，{SLIGHTED}不肯坐在我下首，起身就走了" />
+    <string id="VividWorld_Sentence_SeatDisputeWalkedOut_Who_Where_Why_Self_HOST" text="我在{SETTLEMENT}擺宴，{SLIGHTED}不肯坐在{FAVORED}下首，起身就走了" />
+    <string id="VividWorld_SelfFeeling_SeatDisputeWalkedOut_SLIGHTED" text="要我坐在他下首，這頓飯我寧可不吃" />
+    <string id="VividWorld_SelfFeeling_SeatDisputeWalkedOut_FAVORED" text="我又沒招他惹他" />
+    <string id="VividWorld_SelfFeeling_SeatDisputeWalkedOut_HOST" text="我這個主人的臉往哪擺" />
+    <!-- Whole sentence templates: AdviceGivenFreely -->
+    <string id="VividWorld_Sentence_AdviceGivenFreely_Who_Where_What" text="{STUDENT}在{SETTLEMENT}向{VETERAN}請教，{VETERAN}就把當年那一仗怎麼打贏的，一五一十講給他聽，連自己犯過的錯都沒藏" />
+    <string id="VividWorld_Sentence_AdviceGivenFreely_Who_Where_What_From_STUDENT" text="他在{SETTLEMENT}向{VETERAN}請教，{VETERAN}把當年那一仗怎麼打贏的都講給他聽了，連自己犯過的錯都沒藏" />
+    <string id="VividWorld_Sentence_AdviceGivenFreely_Who_Where_What_From_VETERAN" text="{STUDENT}在{SETTLEMENT}來向他請教，他就把當年那一仗怎麼打贏的都講了，連自己犯過的錯也沒藏" />
+    <string id="VividWorld_Sentence_AdviceGivenFreely_Who_Where" text="{VETERAN}在{SETTLEMENT}把當年那一仗怎麼打贏的，都講給{STUDENT}聽了" />
+    <string id="VividWorld_Sentence_AdviceGivenFreely_Who" text="{VETERAN}把當年那一仗怎麼打贏的，都講給{STUDENT}聽了" />
+    <string id="VividWorld_Sentence_AdviceGivenFreely_Who_Where_What_Self_STUDENT" text="我在{SETTLEMENT}去向{VETERAN}請教，他把當年那一仗怎麼打贏的，一五一十都講給我聽，連自己犯過的錯都沒藏" />
+    <string id="VividWorld_Sentence_AdviceGivenFreely_Who_Where_What_Self_VETERAN" text="{STUDENT}在{SETTLEMENT}來向我請教，我就把當年那一仗怎麼打贏的都講給他聽了，連我自己犯過的錯也沒藏" />
+    <string id="VividWorld_SelfFeeling_AdviceGivenFreely_STUDENT" text="這份人情我記下了" />
+    <string id="VividWorld_SelfFeeling_AdviceGivenFreely_VETERAN" text="肯學的人，我就肯教" />
+    <!-- Whole sentence templates: AdviceBrushedOff -->
+    <string id="VividWorld_Sentence_AdviceBrushedOff_Who_Where_What" text="{STUDENT}在{SETTLEMENT}向{VETERAN}請教，{VETERAN}只回了他幾句誰都知道的道理，一杯酒還沒喝完，就把話題岔開了" />
+    <string id="VividWorld_Sentence_AdviceBrushedOff_Who_Where_What_From_STUDENT" text="他在{SETTLEMENT}去向{VETERAN}請教，{VETERAN}只說了幾句誰都知道的道理，酒還沒喝完就把話題岔開了" />
+    <string id="VividWorld_Sentence_AdviceBrushedOff_Who_Where_What_From_VETERAN" text="{STUDENT}在{SETTLEMENT}來向他請教，他只說了幾句誰都知道的道理，就把話題岔開了" />
+    <string id="VividWorld_Sentence_AdviceBrushedOff_Who_Where" text="{STUDENT}在{SETTLEMENT}向{VETERAN}請教，{VETERAN}只回了他幾句誰都知道的道理" />
+    <string id="VividWorld_Sentence_AdviceBrushedOff_Who" text="{STUDENT}向{VETERAN}請教，{VETERAN}只回了他幾句誰都知道的道理" />
+    <string id="VividWorld_Sentence_AdviceBrushedOff_Who_Where_What_Self_STUDENT" text="我在{SETTLEMENT}去向{VETERAN}請教，他只說了幾句誰都知道的道理，酒還沒喝完就把話題岔開了" />
+    <string id="VividWorld_Sentence_AdviceBrushedOff_Who_Where_What_Self_VETERAN" text="{STUDENT}在{SETTLEMENT}來向我請教，我只說了幾句誰都知道的道理，就把話題岔開了" />
+    <string id="VividWorld_SelfFeeling_AdviceBrushedOff_STUDENT" text="看來他是沒把我放在眼裡" />
+    <string id="VividWorld_SelfFeeling_AdviceBrushedOff_VETERAN" text="打仗的本事是拿命換來的，哪能隨便教人" />
+    <!-- Whole sentence templates: AdviceMocked -->
+    <string id="VividWorld_Sentence_AdviceMocked_Who_Where_Why_Outcome" text="{VETERAN}在{SETTLEMENT}當著滿廳的人，拿{STUDENT}請教的事說笑，說有些人該先學會坐得住。{STUDENT}走出大廳的時候，後面還有人在笑" />
+    <string id="VividWorld_Sentence_AdviceMocked_Who_Where_Why_Outcome_From_VETERAN" text="{STUDENT}在{SETTLEMENT}來請教他，被他當著大家的面拿來開了個玩笑，說有些人該先學會坐得住" />
+    <string id="VividWorld_Sentence_AdviceMocked_Who_Where_Why_Outcome_From_STUDENT" text="他在{SETTLEMENT}去請教{VETERAN}，{VETERAN}當著大家的面拿他開玩笑，還說有些人該先學會坐得住。他走出大廳的時候，後面還有人在笑" />
+    <string id="VividWorld_Sentence_AdviceMocked_Who_Where" text="{VETERAN}在{SETTLEMENT}當著滿廳的人，拿{STUDENT}請教的事說笑" />
+    <string id="VividWorld_Sentence_AdviceMocked_Who" text="{VETERAN}當著滿廳的人拿{STUDENT}請教的事說笑" />
+    <string id="VividWorld_Sentence_AdviceMocked_Who_Where_Why_Outcome_Self_VETERAN" text="{STUDENT}在{SETTLEMENT}來請教我，被我當著大家的面拿來開了個玩笑，我說有些人該先學會坐得住" />
+    <string id="VividWorld_Sentence_AdviceMocked_Who_Where_Why_Outcome_Self_STUDENT" text="我在{SETTLEMENT}去請教{VETERAN}，他當著大家的面拿我開玩笑，還說有些人該先學會坐得住。我走出大廳的時候，後面還有人在笑" />
+    <string id="VividWorld_SelfFeeling_AdviceMocked_VETERAN" text="吃點虧，下回才記得住" />
+    <string id="VividWorld_SelfFeeling_AdviceMocked_STUDENT" text="這口氣我嚥不下去" />
+    <string id="VividWorld_SelfFeeling_AdviceMocked_STUDENT_Valor" text="下回上了戰場，看誰才該被笑" />
+    <string id="VividWorld_SelfFeeling_AdviceMocked_STUDENT_Calculating" text="這筆帳我先記著，日子還長" />
+    <!-- Whole sentence templates: TavernBoastTold -->
+    <string id="VividWorld_Sentence_TavernBoastTold_Who_Where_What" text="{SPEAKER}在{SETTLEMENT}的酒館裡跟{LISTENER}講自己的戰功，越喝說得越誇張，同桌的人聽了只是笑笑" />
+    <string id="VividWorld_Sentence_TavernBoastTold_Who_Where_What_From_LISTENER" text="{SPEAKER}在{SETTLEMENT}的酒館裡跟他講自己的戰功，越喝說得越誇張，同桌的人聽了都只是笑笑" />
+    <string id="VividWorld_Sentence_TavernBoastTold_Who_Where" text="{SPEAKER}在{SETTLEMENT}的酒館裡跟{LISTENER}講自己的戰功，越喝說得越誇張" />
+    <string id="VividWorld_Sentence_TavernBoastTold_Who" text="{SPEAKER}喝了酒跟{LISTENER}講自己的戰功，越說越誇張" />
+    <string id="VividWorld_Sentence_TavernBoastTold_Who_Where_What_Self_LISTENER" text="{SPEAKER}在{SETTLEMENT}的酒館裡跟我講他的戰功，越喝說得越誇張，同桌的人聽了都只是笑笑" />
+    <string id="VividWorld_SelfFeeling_TavernBoastTold_LISTENER" text="那些數字我一個也不信" />
+    <!-- Whole sentence templates: TavernSourWords -->
+    <string id="VividWorld_Sentence_TavernSourWords_Who_Where_What" text="{SPEAKER}在{SETTLEMENT}的酒館裡喝了酒，對{LISTENER}說了句話，{LISTENER}當場就變了臉。{SPEAKER}酒醒之後，也沒把話收回去" />
+    <string id="VividWorld_Sentence_TavernSourWords_Who_Where_What_Witness" text="{SPEAKER}在{SETTLEMENT}的酒館裡喝了酒，對{LISTENER}說了句話，{LISTENER}當場就變了臉。聽說他酒醒之後也沒把話收回去" />
+    <string id="VividWorld_Sentence_TavernSourWords_Who_Where_What_From_LISTENER" text="{SPEAKER}在{SETTLEMENT}的酒館裡喝了酒，對他說了句重話，酒醒之後也沒收回去" />
+    <string id="VividWorld_Sentence_TavernSourWords_Who" text="{SPEAKER}喝了酒對{LISTENER}說了句話，讓{LISTENER}當場變了臉" />
+    <string id="VividWorld_Sentence_TavernSourWords_Who_Where_What_Self_LISTENER" text="{SPEAKER}在{SETTLEMENT}的酒館裡喝了酒，對我說了句重話，酒醒之後也沒收回去" />
+    <string id="VividWorld_SelfFeeling_TavernSourWords_LISTENER" text="喝醉說錯話我能體諒，酒醒了還不收回，那就是真心話了" />
+    <!-- Whole sentence templates: TavernGoodWord -->
+    <string id="VividWorld_Sentence_TavernGoodWord_Who_Where_What" text="在{SETTLEMENT}的酒館裡，同桌的人拿{LISTENER}取笑，{SPEAKER}站出來替他說話，還說自己可不是喝醉了才這麼講" />
+    <string id="VividWorld_Sentence_TavernGoodWord_Who_Where_What_From_SPEAKER" text="同桌的人在{SETTLEMENT}的酒館裡拿{LISTENER}取笑，他站出來替{LISTENER}說話，還說自己可不是喝醉了才這麼講" />
+    <string id="VividWorld_Sentence_TavernGoodWord_Who_Where_What_From_LISTENER" text="同桌的人在{SETTLEMENT}的酒館裡拿他取笑，{SPEAKER}站出來替他說話，還說自己可不是喝醉了才這麼講" />
+    <string id="VividWorld_Sentence_TavernGoodWord_Who_Where" text="同桌的人在{SETTLEMENT}的酒館裡拿{LISTENER}取笑，{SPEAKER}站出來替他說話" />
+    <string id="VividWorld_Sentence_TavernGoodWord_Who" text="有人拿{LISTENER}取笑，{SPEAKER}站出來替他說話" />
+    <string id="VividWorld_Sentence_TavernGoodWord_Who_Where_What_Self_SPEAKER" text="同桌的人在{SETTLEMENT}的酒館裡拿{LISTENER}取笑，我站出來替他說話，還跟他們說我可不是喝醉了才這麼講" />
+    <string id="VividWorld_Sentence_TavernGoodWord_Who_Where_What_Self_LISTENER" text="同桌的人在{SETTLEMENT}的酒館裡拿我取笑，{SPEAKER}站出來替我說話，還說他可不是喝醉了才這麼講" />
+    <string id="VividWorld_SelfFeeling_TavernGoodWord_SPEAKER" text="看不過去就是看不過去" />
+    <string id="VividWorld_SelfFeeling_TavernGoodWord_LISTENER" text="這份情我不會忘" />
+    <!-- Whole sentence templates: VictoryCreditClaimed -->
+    <string id="VividWorld_Sentence_VictoryCreditClaimed_Who_Where_Why" text="{CLAIMANT}在{SETTLEMENT}的大廳裡，當著滿廳的人說上一場勝仗是他的功勞，還說{RIVAL}是等敵陣都垮了才趕到的" />
+    <string id="VividWorld_Sentence_VictoryCreditClaimed_Who_Where_Why_From_RIVAL" text="{CLAIMANT}在{SETTLEMENT}的大廳裡，當著滿廳的人說上一場勝仗是他的功勞，還說他是等敵陣都垮了才趕到的" />
+    <string id="VividWorld_Sentence_VictoryCreditClaimed_Who_Where" text="{CLAIMANT}在{SETTLEMENT}的大廳裡，當著滿廳的人說上一場勝仗是他的功勞" />
+    <string id="VividWorld_Sentence_VictoryCreditClaimed_Who" text="{CLAIMANT}當著滿廳的人說上一場勝仗是他的功勞" />
+    <string id="VividWorld_Sentence_VictoryCreditClaimed_Who_Where_Why_Self_RIVAL" text="{CLAIMANT}在{SETTLEMENT}的大廳裡，當著滿廳的人說上一場勝仗是他的功勞，還說我是等敵陣都垮了才趕到的" />
+    <string id="VividWorld_SelfFeeling_VictoryCreditClaimed_RIVAL" text="這話我可不認" />
+    <!-- Whole sentence templates: VictoryCreditDeferred -->
+    <string id="VividWorld_Sentence_VictoryCreditDeferred_Who_Where_What" text="大家在{SETTLEMENT}的大廳裡本來要敬{CLAIMANT}，他把上一場勝仗的功勞讓給了{RIVAL}" />
+    <string id="VividWorld_Sentence_VictoryCreditDeferred_Who_Where_What_From_CLAIMANT" text="大家在{SETTLEMENT}的大廳裡本來要敬他，他把上一場勝仗的功勞讓給了{RIVAL}" />
+    <string id="VividWorld_Sentence_VictoryCreditDeferred_Who_Where_What_From_RIVAL" text="大家在{SETTLEMENT}的大廳裡本來要敬{CLAIMANT}，{CLAIMANT}把上一場勝仗的功勞讓給了他" />
+    <string id="VividWorld_Sentence_VictoryCreditDeferred_Who_Where" text="{CLAIMANT}在{SETTLEMENT}的大廳裡，把上一場勝仗的功勞讓給了{RIVAL}" />
+    <string id="VividWorld_Sentence_VictoryCreditDeferred_Who" text="{CLAIMANT}把上一場勝仗的功勞讓給了{RIVAL}" />
+    <string id="VividWorld_Sentence_VictoryCreditDeferred_Who_Where_What_Self_CLAIMANT" text="大家在{SETTLEMENT}的大廳裡本來要敬我，我把上一場勝仗的功勞讓給了{RIVAL}" />
+    <string id="VividWorld_Sentence_VictoryCreditDeferred_Who_Where_What_Self_RIVAL" text="大家在{SETTLEMENT}的大廳裡本來要敬{CLAIMANT}，他把上一場勝仗的功勞讓給了我" />
+    <string id="VividWorld_SelfFeeling_VictoryCreditDeferred_CLAIMANT" text="那一仗他確實出了大力" />
+    <string id="VividWorld_SelfFeeling_VictoryCreditDeferred_RIVAL" text="這份人情我欠下了" />
+    <!-- Whole sentence templates: VictoryCreditJudged -->
+    <string id="VividWorld_Sentence_VictoryCreditJudged_Who_Where_Outcome" text="{CLAIMANT}和{RIVAL}在{SETTLEMENT}的大廳裡爭上一場勝仗的功勞，{HOST}出面裁定，把功勞判給了{RIVAL}" />
+    <string id="VividWorld_Sentence_VictoryCreditJudged_Who_Where_Outcome_From_CLAIMANT" text="他跟{RIVAL}在{SETTLEMENT}爭上一場勝仗的功勞，{HOST}出面裁定，把功勞判給了{RIVAL}" />
+    <string id="VividWorld_Sentence_VictoryCreditJudged_Who_Where_Outcome_From_RIVAL" text="他跟{CLAIMANT}在{SETTLEMENT}爭上一場勝仗的功勞，{HOST}出面裁定，把功勞判給了他" />
+    <string id="VividWorld_Sentence_VictoryCreditJudged_Who_Where_Outcome_From_HOST" text="{CLAIMANT}和{RIVAL}在{SETTLEMENT}爭上一場勝仗的功勞，是他出面把功勞判給了{RIVAL}" />
+    <string id="VividWorld_Sentence_VictoryCreditJudged_Who" text="{CLAIMANT}和{RIVAL}爭上一場勝仗的功勞，是{HOST}出面裁定的" />
+    <string id="VividWorld_Sentence_VictoryCreditJudged_Who_Where_Outcome_Self_HOST" text="{CLAIMANT}和{RIVAL}在{SETTLEMENT}的大廳裡爭上一場勝仗的功勞，我出面裁定，把功勞判給了{RIVAL}" />
+    <string id="VividWorld_Sentence_VictoryCreditJudged_Who_Where_Outcome_Self_CLAIMANT" text="我跟{RIVAL}在{SETTLEMENT}的大廳裡爭上一場勝仗的功勞，{HOST}出面裁定，把功勞判給了他" />
+    <string id="VividWorld_Sentence_VictoryCreditJudged_Who_Where_Outcome_Self_RIVAL" text="我跟{CLAIMANT}在{SETTLEMENT}的大廳裡爭上一場勝仗的功勞，{HOST}出面裁定，把功勞判給了我" />
+    <string id="VividWorld_SelfFeeling_VictoryCreditJudged_HOST" text="我照實情判，誰也別說我偏心" />
+    <string id="VividWorld_SelfFeeling_VictoryCreditJudged_CLAIMANT" text="我心裡當然不服" />
+    <string id="VividWorld_SelfFeeling_VictoryCreditJudged_RIVAL" text="總算還我一個公道" />
+    <!-- Whole sentence templates: BrawlManHandedOver -->
+    <string id="VividWorld_Sentence_BrawlManHandedOver_Who_Where_What" text="在{SETTLEMENT}的市集上，{PATRON}當著一整條街的人，把先動手的那個手下交給了{AGGRIEVED}，還向他賠了不是" />
+    <string id="VividWorld_Sentence_BrawlManHandedOver_Who_Where_What_From_PATRON" text="先動手的是他的人，他就在{SETTLEMENT}的市集上，當著一整條街的人把那人交給了{AGGRIEVED}，還賠了不是" />
+    <string id="VividWorld_Sentence_BrawlManHandedOver_Who_Where_What_From_AGGRIEVED" text="{PATRON}在{SETTLEMENT}的市集上，當著一整條街的人把先動手的那個手下交給了他，還向他賠了不是" />
+    <string id="VividWorld_Sentence_BrawlManHandedOver_Who_Where" text="{PATRON}在{SETTLEMENT}把先動手的手下交給了{AGGRIEVED}，還向他賠了不是" />
+    <string id="VividWorld_Sentence_BrawlManHandedOver_Who" text="{PATRON}把先動手的手下交給了{AGGRIEVED}，還向他賠了不是" />
+    <string id="VividWorld_Sentence_BrawlManHandedOver_Who_Where_What_Self_PATRON" text="先動手的是我的人，我就在{SETTLEMENT}的市集上，當著一整條街的人把他交給了{AGGRIEVED}，還跟{AGGRIEVED}賠了不是" />
+    <string id="VividWorld_Sentence_BrawlManHandedOver_Who_Where_What_Self_AGGRIEVED" text="{PATRON}在{SETTLEMENT}的市集上，當著一整條街的人把先動手的那個手下交給了我，還跟我賠了不是" />
+    <string id="VividWorld_SelfFeeling_BrawlManHandedOver_PATRON" text="理虧就是理虧，我認" />
+    <string id="VividWorld_SelfFeeling_BrawlManHandedOver_AGGRIEVED" text="這事就算過去了" />
+    <!-- Whole sentence templates: BrawlShieldedOwn -->
+    <string id="VividWorld_Sentence_BrawlShieldedOwn_Who_Where_Why" text="{PATRON}的手下跟{AGGRIEVED}的人在{SETTLEMENT}的市集上打了起來。事後{AGGRIEVED}找{PATRON}要人，{PATRON}不肯交，說自家的人自家管，輪不到別家開口" />
+    <string id="VividWorld_Sentence_BrawlShieldedOwn_Who_Where_Why_From_PATRON" text="他的手下跟{AGGRIEVED}的人在{SETTLEMENT}的市集上打了起來，{AGGRIEVED}事後來找他要人，他沒交，跟{AGGRIEVED}說自家的人自家管，輪不到別家開口" />
+    <string id="VividWorld_Sentence_BrawlShieldedOwn_Who_Where_Why_From_AGGRIEVED" text="{PATRON}的手下跟他的人在{SETTLEMENT}的市集上打了起來，他去找{PATRON}要人，{PATRON}不肯交，還說自家的人自家管，輪不到別家開口" />
+    <string id="VividWorld_Sentence_BrawlShieldedOwn_Who_Where" text="{PATRON}的手下在{SETTLEMENT}跟{AGGRIEVED}的人打了一架，{PATRON}不肯把人交給{AGGRIEVED}" />
+    <string id="VividWorld_Sentence_BrawlShieldedOwn_Who" text="{PATRON}的手下跟{AGGRIEVED}的人打架，{PATRON}不肯把人交出來" />
+    <string id="VividWorld_Sentence_BrawlShieldedOwn_Who_Where_Why_Self_PATRON" text="我的手下跟{AGGRIEVED}的人在{SETTLEMENT}的市集上打了起來。{AGGRIEVED}事後來找我要人，我沒交，跟他說自家的人自家管，輪不到別家開口" />
+    <string id="VividWorld_Sentence_BrawlShieldedOwn_Who_Where_Why_Self_AGGRIEVED" text="{PATRON}的手下跟我的人在{SETTLEMENT}的市集上打了起來。我去找{PATRON}要人，他不肯交，還說自家的人自家管，輪不到別家開口" />
+    <string id="VividWorld_SelfFeeling_BrawlShieldedOwn_PATRON" text="這種事我不會讓步" />
+    <string id="VividWorld_SelfFeeling_BrawlShieldedOwn_AGGRIEVED" text="我聽了一肚子火" />
+    <!-- Whole sentence templates: BrawlCounterAccused -->
+    <string id="VividWorld_Sentence_BrawlCounterAccused_Who_Where_What_Outcome" text="{PATRON}的手下跟{AGGRIEVED}的人在{SETTLEMENT}的市集上打了起來。{AGGRIEVED}要{PATRON}交人，{PATRON}不但不交，還當著大家的面說是{AGGRIEVED}的人先動的手，要{AGGRIEVED}先給個交代。兩家就這麼僵著，誰也不讓" />
+    <string id="VividWorld_Sentence_BrawlCounterAccused_Who_Where_What_Outcome_From_PATRON" text="他的手下跟{AGGRIEVED}的人在{SETTLEMENT}的市集上打了起來。{AGGRIEVED}來找他要人，可先動手的是{AGGRIEVED}那邊的人，他就要{AGGRIEVED}先給個交代，兩家就這麼槓上了" />
+    <string id="VividWorld_Sentence_BrawlCounterAccused_Who_Where_What_Outcome_From_AGGRIEVED" text="他的人跟{PATRON}的手下在{SETTLEMENT}的市集上打了起來。他去找{PATRON}要人，{PATRON}不交，反倒說是他的人先動的手，還要他先給個交代，兩家就這麼槓上了" />
+    <string id="VividWorld_Sentence_BrawlCounterAccused_Who_Where" text="{PATRON}跟{AGGRIEVED}兩家的人在{SETTLEMENT}打了一架，{PATRON}不肯交人，還當著大家的面說是{AGGRIEVED}的人先動的手" />
+    <string id="VividWorld_Sentence_BrawlCounterAccused_Who" text="{PATRON}跟{AGGRIEVED}兩家的人打架，{PATRON}不肯交人，還說是{AGGRIEVED}的人先動的手" />
+    <string id="VividWorld_Sentence_BrawlCounterAccused_Who_Where_What_Outcome_Self_PATRON" text="我的手下跟{AGGRIEVED}的人在{SETTLEMENT}的市集上打了起來。{AGGRIEVED}來找我要人，可先動手的是他那邊的人，我就要他先給個交代，兩家就這麼槓上了" />
+    <string id="VividWorld_Sentence_BrawlCounterAccused_Who_Where_What_Outcome_Self_AGGRIEVED" text="我的人跟{PATRON}的手下在{SETTLEMENT}的市集上打了起來。我去找{PATRON}要人，他不交，反倒說是我的人先動的手，還要我先給個交代，兩家就這麼槓上了" />
+    <string id="VividWorld_SelfFeeling_BrawlCounterAccused_PATRON" text="這件事錯不在我" />
+    <string id="VividWorld_SelfFeeling_BrawlCounterAccused_AGGRIEVED" text="簡直顛倒黑白" />
+    <!-- Whole sentence templates: BrawlHushedUp -->
+    <string id="VividWorld_Sentence_BrawlHushedUp_Who_Where_What_From_AGGRIEVED" text="他跟{PATRON}在{SETTLEMENT}講好了，市集那場架就這麼壓下來，兩家從此都不再提" />
+    <string id="VividWorld_Sentence_BrawlHushedUp_Who_Where_What_From_PATRON" text="他跟{AGGRIEVED}在{SETTLEMENT}講好了，市集那場架就這麼壓下來，兩家從此都不再提" />
+    <string id="VividWorld_Sentence_BrawlHushedUp_Who_Where" text="{AGGRIEVED}跟{PATRON}在{SETTLEMENT}講好，把市集那場架壓了下來" />
+    <string id="VividWorld_Sentence_BrawlHushedUp_Who" text="{AGGRIEVED}跟{PATRON}講好，把市集那場架壓了下來" />
+    <string id="VividWorld_Sentence_BrawlHushedUp_Who_Where_What_Self_AGGRIEVED" text="我跟{PATRON}在{SETTLEMENT}講好了，市集那場架就這麼壓下來，兩家從此都不再提" />
+    <string id="VividWorld_Sentence_BrawlHushedUp_Who_Where_What_Self_PATRON" text="我跟{AGGRIEVED}在{SETTLEMENT}講好了，市集那場架就這麼壓下來，兩家從此都不再提" />
+    <string id="VividWorld_SelfFeeling_BrawlHushedUp_AGGRIEVED" text="鬧大了對誰都沒好處……這事你聽聽就算了" />
+    <string id="VividWorld_SelfFeeling_BrawlHushedUp_PATRON" text="鬧大了對誰都沒好處……這事你聽聽就算了" />
+    <!-- Whole sentence templates: WagerStruck -->
+    <string id="VividWorld_Sentence_WagerStruck_Who_Where_What" text="{CHALLENGER}在{SETTLEMENT}跟{CHALLENGED}為下一場狩獵打了賭，大廳裡有一半的人也跟著下注" />
+    <string id="VividWorld_Sentence_WagerStruck_Who_Where_What_From_CHALLENGER" text="他在{SETTLEMENT}跟{CHALLENGED}為下一場狩獵打了賭，大廳裡有一半的人也跟著下注" />
+    <string id="VividWorld_Sentence_WagerStruck_Who_Where_What_From_CHALLENGED" text="{CHALLENGER}在{SETTLEMENT}找他為下一場狩獵打賭，他接了，大廳裡有一半的人也跟著下注" />
+    <string id="VividWorld_Sentence_WagerStruck_Who_Where" text="{CHALLENGER}跟{CHALLENGED}在{SETTLEMENT}為下一場狩獵打了賭" />
+    <string id="VividWorld_Sentence_WagerStruck_Who" text="{CHALLENGER}跟{CHALLENGED}為下一場狩獵打了賭" />
+    <string id="VividWorld_Sentence_WagerStruck_Who_Where_What_Self_CHALLENGER" text="我在{SETTLEMENT}跟{CHALLENGED}為下一場狩獵打了個賭，大廳裡有一半的人也跟著下注" />
+    <string id="VividWorld_Sentence_WagerStruck_Who_Where_What_Self_CHALLENGED" text="{CHALLENGER}在{SETTLEMENT}找我為下一場狩獵打賭，我接了，大廳裡有一半的人也跟著下注" />
+    <string id="VividWorld_SelfFeeling_WagerStruck_CHALLENGER" text="這場我贏定了" />
+    <string id="VividWorld_SelfFeeling_WagerStruck_CHALLENGED" text="他既然敢開口，我就奉陪" />
+    <!-- Whole sentence templates: WagerRefused -->
+    <string id="VividWorld_Sentence_WagerRefused_Who_Where_What" text="{CHALLENGER}在{SETTLEMENT}找{CHALLENGED}為下一場狩獵打賭，{CHALLENGED}沒接，還拿這事開了個玩笑，大廳裡的人笑了好一陣子" />
+    <string id="VividWorld_Sentence_WagerRefused_Who_Where_What_From_CHALLENGER" text="他在{SETTLEMENT}找{CHALLENGED}打賭，{CHALLENGED}沒接，還拿這事開玩笑，大廳裡的人笑了好一陣子" />
+    <string id="VividWorld_Sentence_WagerRefused_Who_Where_What_From_CHALLENGED" text="{CHALLENGER}在{SETTLEMENT}找他打賭，他沒接，還拿這事開了個玩笑，大廳裡的人笑了好一陣子" />
+    <string id="VividWorld_Sentence_WagerRefused_Who_Where" text="{CHALLENGER}在{SETTLEMENT}找{CHALLENGED}打賭，{CHALLENGED}沒接，還拿這事開玩笑" />
+    <string id="VividWorld_Sentence_WagerRefused_Who" text="{CHALLENGER}找{CHALLENGED}打賭，{CHALLENGED}沒接，還拿這事開玩笑" />
+    <string id="VividWorld_Sentence_WagerRefused_Who_Where_What_Self_CHALLENGER" text="我在{SETTLEMENT}找{CHALLENGED}為下一場狩獵打賭，他沒接，還拿這事開玩笑，大廳裡的人笑了好一陣子" />
+    <string id="VividWorld_Sentence_WagerRefused_Who_Where_What_Self_CHALLENGED" text="{CHALLENGER}在{SETTLEMENT}找我為下一場狩獵打賭，我沒接，還拿這事開了個玩笑，大廳裡的人笑了好一陣子" />
+    <string id="VividWorld_SelfFeeling_WagerRefused_CHALLENGER" text="這筆帳我記下了" />
+    <string id="VividWorld_SelfFeeling_WagerRefused_CHALLENGER_Valor" text="連賭都不敢，還談什麼打獵" />
+    <string id="VividWorld_SelfFeeling_WagerRefused_CHALLENGER_Mercy" text="不肯就算了，本來也只是圖個熱鬧" />
+    <string id="VividWorld_SelfFeeling_WagerRefused_CHALLENGED" text="這種賭，我犯不著陪他玩" />
+    <!-- Whole sentence templates: WagerSecretStake -->
+    <string id="VividWorld_Sentence_WagerSecretStake_Who_Where_What_From_CHALLENGER" text="他跟{CHALLENGED}在{SETTLEMENT}為下一場狩獵打了賭，押的不只是銀子，至於押了什麼，他不肯說" />
+    <string id="VividWorld_Sentence_WagerSecretStake_Who_Where_What_From_CHALLENGED" text="他跟{CHALLENGER}在{SETTLEMENT}為下一場狩獵打了賭，押的不只是銀子，至於押了什麼，他不肯說" />
+    <string id="VividWorld_Sentence_WagerSecretStake_Who_Where" text="{CHALLENGER}跟{CHALLENGED}在{SETTLEMENT}為下一場狩獵打了賭，押的不只是銀子" />
+    <string id="VividWorld_Sentence_WagerSecretStake_Who" text="{CHALLENGER}跟{CHALLENGED}為下一場狩獵打了賭，押的不只是銀子" />
+    <string id="VividWorld_Sentence_WagerSecretStake_Who_Where_What_Self_CHALLENGER" text="我跟{CHALLENGED}在{SETTLEMENT}為下一場狩獵打了個賭，押的不只是銀子。押了什麼，這我可不能說" />
+    <string id="VividWorld_Sentence_WagerSecretStake_Who_Where_What_Self_CHALLENGED" text="我跟{CHALLENGER}在{SETTLEMENT}為下一場狩獵打了個賭，押的不只是銀子。押了什麼，這我可不能說" />
+    <string id="VividWorld_SelfFeeling_WagerSecretStake_CHALLENGER" text="到時候你就知道了" />
+    <string id="VividWorld_SelfFeeling_WagerSecretStake_CHALLENGED" text="到時候你就知道了" />
+    <!-- Speaker tells only the gist: first-person sentences, then one closing line when they held something back -->
+    <string id="VividWorld_Sentence_AdviceBrushedOff_Who_Where_Self_STUDENT" text="我在{SETTLEMENT}去向{VETERAN}請教，他只回了我幾句誰都知道的道理" />
+    <string id="VividWorld_Sentence_AdviceBrushedOff_Who_Where_Self_VETERAN" text="{STUDENT}在{SETTLEMENT}來向我請教，我只回了他幾句誰都知道的道理" />
+    <string id="VividWorld_Sentence_AdviceGivenFreely_Who_Where_Self_STUDENT" text="我在{SETTLEMENT}去向{VETERAN}請教，他把當年那一仗怎麼打贏的都講給我聽了" />
+    <string id="VividWorld_Sentence_AdviceGivenFreely_Who_Where_Self_VETERAN" text="{STUDENT}在{SETTLEMENT}來向我請教，我就把當年那一仗怎麼打贏的都講給他聽了" />
+    <string id="VividWorld_Sentence_AdviceMocked_Who_Where_Self_STUDENT" text="我在{SETTLEMENT}去請教{VETERAN}，他當著滿廳的人拿我開玩笑" />
+    <string id="VividWorld_Sentence_AdviceMocked_Who_Where_Self_VETERAN" text="{STUDENT}在{SETTLEMENT}來請教我，被我當著滿廳的人拿來開了個玩笑" />
+    <string id="VividWorld_Sentence_BrawlCounterAccused_Who_Where_Self_AGGRIEVED" text="我的人跟{PATRON}的手下在{SETTLEMENT}打了一架，{PATRON}不肯交人，反倒說是我的人先動的手" />
+    <string id="VividWorld_Sentence_BrawlCounterAccused_Who_Where_Self_PATRON" text="我的手下跟{AGGRIEVED}的人在{SETTLEMENT}打了一架。{AGGRIEVED}來找我要人，可先動手的是他那邊的人，我沒交" />
+    <string id="VividWorld_Sentence_BrawlManHandedOver_Who_Where_Self_AGGRIEVED" text="{PATRON}在{SETTLEMENT}把先動手的那個手下交給了我，還跟我賠了不是" />
+    <string id="VividWorld_Sentence_BrawlManHandedOver_Who_Where_Self_PATRON" text="先動手的是我的人，我在{SETTLEMENT}把他交給了{AGGRIEVED}，還跟{AGGRIEVED}賠了不是" />
+    <string id="VividWorld_Sentence_BrawlShieldedOwn_Who_Where_Self_AGGRIEVED" text="{PATRON}的手下在{SETTLEMENT}跟我的人打了一架，{PATRON}不肯把人交給我" />
+    <string id="VividWorld_Sentence_BrawlShieldedOwn_Who_Where_Self_PATRON" text="我的手下在{SETTLEMENT}跟{AGGRIEVED}的人打了一架，我沒把人交給他" />
+    <string id="VividWorld_Sentence_ChildBorn_Who_Where_Self_MOTHER" text="我在{SETTLEMENT}生下了{CHILD}" />
+    <string id="VividWorld_Sentence_ChildBorn_Who_Self_MOTHER" text="我生下了{CHILD}" />
+    <string id="VividWorld_Sentence_HeroDiedInBattle_Who_Where_Self_KILLER" text="在{SETTLEMENT}那一仗，{VICTIM}死在了我手上" />
+    <string id="VividWorld_Sentence_HeroDiedInBattle_Who_Self_KILLER" text="{VICTIM}是在戰場上死在我手上的" />
+    <string id="VividWorld_Sentence_HeroEscapedBandits_Who_Where_Self_PRISONER" text="我在{SETTLEMENT}附近從一夥{BANDITS}手裡逃了出來" />
+    <string id="VividWorld_Sentence_HeroEscapedBandits_Who_Self_PRISONER" text="我從一夥{BANDITS}手裡逃了出來" />
+    <string id="VividWorld_Sentence_HeroEscaped_Who_Where_Self_PRISONER" text="我在{SETTLEMENT}附近從{CAPTOR}手中逃了出來" />
+    <string id="VividWorld_Sentence_HeroEscaped_Who_Self_PRISONER" text="我從{CAPTOR}手中逃了出來" />
+    <string id="VividWorld_Sentence_HeroEscaped_Who_Where_Self_CAPTOR" text="{PRISONER}在{SETTLEMENT}附近從我手中逃掉了" />
+    <string id="VividWorld_Sentence_HeroEscaped_Who_Self_CAPTOR" text="{PRISONER}從我手中逃掉了" />
+    <string id="VividWorld_Sentence_HeroEscaped_WhoNoCaptor_Where_Self_PRISONER" text="我在{SETTLEMENT}附近從牢裡逃了出來" />
+    <string id="VividWorld_Sentence_HeroEscaped_WhoNoCaptor_Self_PRISONER" text="我從牢裡逃了出來" />
+    <string id="VividWorld_Sentence_HeroExecuted_Who_Where_Self_KILLER" text="我在{SETTLEMENT}把{VICTIM}公開處決了" />
+    <string id="VividWorld_Sentence_HeroExecuted_Who_Self_KILLER" text="我把{VICTIM}公開處決了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Where_Self_CAPTOR" text="我在{SETTLEMENT}附近把{PRISONER}放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Self_CAPTOR" text="我把{PRISONER}放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Where_Self_PRISONER" text="{CAPTOR}在{SETTLEMENT}附近把我放了" />
+    <string id="VividWorld_Sentence_HeroReleased_Who_Self_PRISONER" text="{CAPTOR}把我放了" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_Who_Where_Self_RESCUER" text="我在{SETTLEMENT}附近打散了一夥{BANDITS}，把{PRISONER}救了出來" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_Who_Self_RESCUER" text="我打散了一夥{BANDITS}，把{PRISONER}救了出來" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_Who_Where_Self_PRISONER" text="{RESCUER}在{SETTLEMENT}附近打散了那夥{BANDITS}，把我救了出來" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_Who_Self_PRISONER" text="{RESCUER}打散了那夥{BANDITS}，把我救了出來" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_WhoNoRescuer_Where_Self_PRISONER" text="那夥{BANDITS}在{SETTLEMENT}附近被人打散，我趁亂脫了身" />
+    <string id="VividWorld_Sentence_HeroRescuedFromBandits_WhoNoRescuer_Self_PRISONER" text="那夥{BANDITS}被人打散，我趁亂脫了身" />
+    <string id="VividWorld_Sentence_HeroTakenPrisoner_Who_Where_Self_CAPTOR" text="我在{SETTLEMENT}附近抓了{PRISONER}" />
+    <string id="VividWorld_Sentence_HeroTakenPrisoner_Who_Self_CAPTOR" text="我抓了{PRISONER}" />
+    <string id="VividWorld_Sentence_HeroesMarried_Who_Where_Self_SPOUSE_A" text="我跟{SPOUSE_B}在{SETTLEMENT}成親了" />
+    <string id="VividWorld_Sentence_HeroesMarried_Who_Self_SPOUSE_A" text="我跟{SPOUSE_B}成親了" />
+    <string id="VividWorld_Sentence_HeroesMarried_Who_Where_Self_SPOUSE_B" text="我跟{SPOUSE_A}在{SETTLEMENT}成親了" />
+    <string id="VividWorld_Sentence_HeroesMarried_Who_Self_SPOUSE_B" text="我跟{SPOUSE_A}成親了" />
+    <string id="VividWorld_Sentence_SeatDisputeDemanded_Who_Where_Self_SLIGHTED" text="在{SETTLEMENT}的那場宴會上，我當眾要{FAVORED}把上座讓出來" />
+    <string id="VividWorld_Sentence_SeatDisputeDemanded_Who_Where_Self_FAVORED" text="在{SETTLEMENT}的那場宴會上，{SLIGHTED}當眾要我把上座讓出來" />
+    <string id="VividWorld_Sentence_SeatDisputeYielded_Who_Where_Self_SLIGHTED" text="那天在{SETTLEMENT}的宴席上，我把上座讓給了{FAVORED}" />
+    <string id="VividWorld_Sentence_SeatDisputeYielded_Who_Where_Self_FAVORED" text="{SLIGHTED}在{SETTLEMENT}的宴席上把上座讓給了我" />
+    <string id="VividWorld_Sentence_TavernBoastTold_Who_Where_Self_LISTENER" text="{SPEAKER}在{SETTLEMENT}的酒館裡跟我講他的戰功，越喝說得越誇張" />
+    <string id="VividWorld_Sentence_TavernGoodWord_Who_Where_Self_LISTENER" text="同桌的人在{SETTLEMENT}的酒館裡拿我取笑，{SPEAKER}站出來替我說話" />
+    <string id="VividWorld_Sentence_TavernGoodWord_Who_Where_Self_SPEAKER" text="同桌的人在{SETTLEMENT}的酒館裡拿{LISTENER}取笑，我站出來替他說話" />
+    <string id="VividWorld_Sentence_VictoryCreditClaimed_Who_Where_Self_RIVAL" text="{CLAIMANT}在{SETTLEMENT}的大廳裡，當著滿廳的人說上一場勝仗是他的功勞" />
+    <string id="VividWorld_Sentence_VictoryCreditDeferred_Who_Where_Self_CLAIMANT" text="我在{SETTLEMENT}的大廳裡，把上一場勝仗的功勞讓給了{RIVAL}" />
+    <string id="VividWorld_Sentence_VictoryCreditDeferred_Who_Where_Self_RIVAL" text="{CLAIMANT}在{SETTLEMENT}的大廳裡，把上一場勝仗的功勞讓給了我" />
+    <string id="VividWorld_Sentence_WagerRefused_Who_Where_Self_CHALLENGER" text="我在{SETTLEMENT}找{CHALLENGED}打賭，他沒接，還拿這事開玩笑" />
+    <string id="VividWorld_Sentence_WagerRefused_Who_Where_Self_CHALLENGED" text="{CHALLENGER}在{SETTLEMENT}找我打賭，我沒接，還拿這事開了個玩笑" />
+    <string id="VividWorld_Sentence_WagerStruck_Who_Where_Self_CHALLENGER" text="我在{SETTLEMENT}跟{CHALLENGED}為下一場狩獵打了個賭" />
+    <string id="VividWorld_Sentence_WagerStruck_Who_Where_Self_CHALLENGED" text="{CHALLENGER}在{SETTLEMENT}找我為下一場狩獵打賭，我接了" />
+    <string id="VividWorld_Closing_Self_1" text="其他的，以後有機會再跟你說吧" />
+    <string id="VividWorld_Closing_Self_2" text="其餘的，我就不多說了" />
+    <string id="VividWorld_Closing_Self_3" text="這事我就說到這裡" />
+    <string id="VividWorld_Closing_Witness_1" text="詳細的，我就不多說了" />
+    <string id="VividWorld_Closing_Witness_2" text="其他的，改天再跟你講吧" />
+    <string id="VividWorld_Closing_Witness_3" text="再多的，我就不方便說了" />
+    <string id="VividWorld_Closing_Heard_1" text="我聽到的不只這些，不過就先說到這裡吧" />
+    <string id="VividWorld_Closing_Heard_2" text="其他的，改天再說吧" />
+    <string id="VividWorld_Closing_Heard_3" text="細節就不多提了" />
+    <string id="VividWorld_Feeling_Killed_Close_1" text="{ADDRESS}就這麼走了，我到現在還不太敢信。" />
+    <string id="VividWorld_Feeling_Killed_Close_2" text="這種下場，{ADDRESS}不該受的。" />
+    <string id="VividWorld_Feeling_Killed_Neutral_1" text="打打殺殺的世道，誰也說不準哪天輪到自己。" />
+    <string id="VividWorld_Feeling_Killed_Neutral_2" text="{ADDRESS}這一走，家族裡的擔子不知道要落到誰肩上。" />
+    <string id="VividWorld_Feeling_Killed_Hostile_1" text="死了也好，這世上少一個礙眼的，我可不會替{ADDRESS}掉一滴眼淚。" />
+    <string id="VividWorld_Feeling_Killed_Hostile_2" text="{ADDRESS}落到這種下場，是自己招來的。" />
+    <string id="VividWorld_Feeling_Killed_Sore_1" text="{ADDRESS}就這麼走了，我到現在還不太敢信。前陣子心裡是有點疙瘩，現在想想，那些都不算什麼了。" />
+    <string id="VividWorld_Feeling_Killed_Sore_2" text="{ADDRESS}死得這麼突然，我心裡很不好受。我們之間那點不痛快，比起人命，實在算不了什麼。" />
+    <string id="VividWorld_Feeling_Killed_Owe_1" text="我跟{ADDRESS}向來處不來，說難過是騙人的。可人家待我不薄，這份情，我是沒機會還了。" />
+    <string id="VividWorld_Feeling_Killed_Owe_2" text="我不喜歡{ADDRESS}，這不假。可{he}對我有過恩，落得這樣的下場，我不覺得是{he}應得的。" />
+    <string id="VividWorld_Feeling_Died_Close_1" text="往後少了{ADDRESS}，日子總覺得空了一塊。" />
+    <string id="VividWorld_Feeling_Died_Close_2" text="{ADDRESS}走的時候，希望沒受什麼苦。" />
+    <string id="VividWorld_Feeling_Died_Neutral_1" text="人總有這麼一天，誰也躲不掉。" />
+    <string id="VividWorld_Feeling_Died_Neutral_2" text="{ADDRESS}留下的那些事，總得有人接手。" />
+    <string id="VividWorld_Feeling_Died_Hostile_1" text="要我去送{ADDRESS}最後一程？免了吧。" />
+    <string id="VividWorld_Feeling_Died_Hostile_2" text="{ADDRESS}這一走，我倒覺得耳根清靜了不少。" />
+    <string id="VividWorld_Feeling_Died_Sore_1" text="往後少了{ADDRESS}，日子總覺得空了一塊。以前那點不痛快，到了這時候，也沒那麼重要了。" />
+    <string id="VividWorld_Feeling_Died_Sore_2" text="聽到{ADDRESS}走了，我一時還回不過神來。之前心裡那點疙瘩，現在想起來都不值一提。" />
+    <string id="VividWorld_Feeling_Died_Owe_1" text="我跟{ADDRESS}向來說不到一塊，說不上傷心。可人家待我不薄，改天我還是到墳前去一趟吧。" />
+    <string id="VividWorld_Feeling_Died_Owe_2" text="我對{ADDRESS}沒什麼好感，這點不必裝。可欠人家的情還在，往後家裡人要是有難處，我會幫一把。" />
+    <string id="VividWorld_Feeling_Executor_Close_1" text="{ADDRESS}會這麼做，想必有不得已的地方。" />
+    <string id="VividWorld_Feeling_Executor_Close_2" text="我信得過{ADDRESS}，這件事我不想多猜。" />
+    <string id="VividWorld_Feeling_Executor_Neutral_1" text="手上沾了血，往後的路可就不好走了。" />
+    <string id="VividWorld_Feeling_Executor_Neutral_2" text="這麼一來，結下的仇可不小。" />
+    <string id="VividWorld_Feeling_Executor_Hostile_1" text="對手無寸鐵的人下這種手，{ADDRESS}還算什麼貴族。" />
+    <string id="VividWorld_Feeling_Executor_Hostile_2" text="{ADDRESS}心狠手辣，我早就看透了。往後誰還敢落到這種人手裡？" />
+    <string id="VividWorld_Feeling_Executor_Sore_1" text="{ADDRESS}這回不知道要結下多少仇家，我是真擔心。說實話，那股狠勁我自己也領教過，只是沒想到會狠到要人性命。" />
+    <string id="VividWorld_Feeling_Executor_Sore_2" text="我是想替{ADDRESS}說句話，這麼做總該有個苦衷。可那脾氣我自己也吃過虧，這話說起來，就沒那麼有把握了。" />
+    <string id="VividWorld_Feeling_Executor_Owe_1" text="{ADDRESS}下得了這種手，我一點也不意外。偏偏我還欠著{he}一份情，想到這裡，心裡實在不是滋味。" />
+    <string id="VividWorld_Feeling_Executor_Owe_2" text="{ADDRESS}我是不喜歡，可{he}幫我的時候，不像是下得了這種手的人。這件事，我一時還真不知道該怎麼看{he}。" />
+    <string id="VividWorld_Feeling_Victor_Close_1" text="{ADDRESS}這一仗打得漂亮。" />
+    <string id="VividWorld_Feeling_Victor_Close_2" text="有{ADDRESS}在陣前，會是這個結果，我一點也不意外。" />
+    <string id="VividWorld_Feeling_Victor_Neutral_1" text="打仗嘛，總有一邊占上風。" />
+    <string id="VividWorld_Feeling_Victor_Neutral_2" text="這一仗打完，{ADDRESS}說話的分量怕是要重了。" />
+    <string id="VividWorld_Feeling_Victor_Hostile_1" text="贏了一仗就得意忘形，{ADDRESS}遲早要在戰場上栽跟頭。" />
+    <string id="VividWorld_Feeling_Victor_Hostile_2" text="讓{ADDRESS}贏了這一仗，往後怕是更要目中無人了。" />
+    <string id="VividWorld_Feeling_Victor_Sore_1" text="{ADDRESS}這一仗打得漂亮，我聽了是真高興。之前心裡那點疙瘩，今天就不提了。" />
+    <string id="VividWorld_Feeling_Victor_Sore_2" text="{ADDRESS}這一仗打得好。{he}有時候是氣人，可上了戰場，我是服{he}的。" />
+    <string id="VividWorld_Feeling_Victor_Owe_1" text="我跟{ADDRESS}向來處不來，這一仗贏了，我是沒什麼好高興的。不過人家待我不薄，就姑且道聲恭喜吧。" />
+    <string id="VividWorld_Feeling_Captured_Close_1" text="希望{ADDRESS}在那裡沒受什麼委屈。" />
+    <string id="VividWorld_Feeling_Captured_Close_2" text="要是用得上錢，我這裡還拿得出一些。" />
+    <string id="VividWorld_Feeling_Captured_Neutral_1" text="這年頭出門在外，誰都可能碰上這種事。" />
+    <string id="VividWorld_Feeling_Captured_Neutral_2" text="{ADDRESS}被關這一陣子，手上的事怕是要耽擱了。" />
+    <string id="VividWorld_Feeling_Captured_Hostile_1" text="{ADDRESS}被關著也好，省得在外頭惹事。" />
+    <string id="VividWorld_Feeling_Captured_Hostile_2" text="關一陣子也好，讓{ADDRESS}學學什麼叫收斂。" />
+    <string id="VividWorld_Feeling_Captured_Sore_1" text="{ADDRESS}被人抓了，我心裡放不下。平常{he}氣我的那些事，這會兒想起來，倒寧可{he}好好地在我面前再氣我幾回。" />
+    <string id="VividWorld_Feeling_Captured_Sore_2" text="{ADDRESS}的贖金要是湊不齊，算我一份。{he}欠我的那聲對不起，等人出來了再跟{he}討。" />
+    <string id="VividWorld_Feeling_Captured_Owe_1" text="{ADDRESS}落到別人手裡，換作平常我才不管。可{he}幫過我一把，這回輪到{he}有事，我不能裝作沒聽見。" />
+    <string id="VividWorld_Feeling_Captured_Owe_2" text="我跟{ADDRESS}合不來，但欠的就是欠的。{he}的贖金要是差一點，我出一份，出完這筆，我跟{he}就兩清了。" />
+    <string id="VividWorld_Feeling_Freed_Close_1" text="{ADDRESS}平安出來就好，我總算能放下心了。" />
+    <string id="VividWorld_Feeling_Freed_Close_2" text="真想擺一桌酒，替{ADDRESS}壓壓驚。" />
+    <string id="VividWorld_Feeling_Freed_Neutral_1" text="能出來總是好事。" />
+    <string id="VividWorld_Feeling_Freed_Neutral_2" text="{ADDRESS}這一出來，之前丟下的那些事又有人管了。" />
+    <string id="VividWorld_Feeling_Freed_Hostile_1" text="{ADDRESS}這下又出來了，往後怕是不得清靜。" />
+    <string id="VividWorld_Feeling_Freed_Hostile_2" text="{ADDRESS}運氣倒是好，這樣也能出得來。" />
+    <string id="VividWorld_Feeling_Freed_Sore_1" text="{ADDRESS}平安出來了，我總算鬆了口氣。往後{he}要是再氣我，我大概也會多讓{he}幾分。" />
+    <string id="VividWorld_Feeling_Freed_Sore_2" text="{ADDRESS}能平安出來就好。改天我找{he}喝一杯，心裡那點不痛快，也趁這個機會當面跟{he}說說。" />
+    <string id="VividWorld_Feeling_Freed_Owe_1" text="{ADDRESS}出來了，我談不上高興，倒是鬆了口氣。{he}要是出不來，我欠{he}的那份情，這輩子都得掛在心上。" />
+    <string id="VividWorld_Feeling_LostPrisoner_Close_1" text="到手的人沒了，{ADDRESS}想必不好受。" />
+    <string id="VividWorld_Feeling_LostPrisoner_Close_2" text="{ADDRESS}這回吃了虧，下次會討回來的。" />
+    <string id="VividWorld_Feeling_LostPrisoner_Neutral_1" text="到手的人都看不住，這種事也是有的。" />
+    <string id="VividWorld_Feeling_LostPrisoner_Neutral_2" text="人沒了，贖金也就泡湯了。" />
+    <string id="VividWorld_Feeling_LostPrisoner_Hostile_1" text="{ADDRESS}連個人都看不住，也不過如此。" />
+    <string id="VividWorld_Feeling_LostPrisoner_Hostile_2" text="這一回，{ADDRESS}算是白忙了一場。" />
+    <string id="VividWorld_Feeling_LostPrisoner_Sore_1" text="到手的人就這麼沒了，這虧吃得不小，我聽了也覺得可惜。不過老實說，我自己也吃過{ADDRESS}的虧，如今換過來，心裡倒有一點點痛快。" />
+    <string id="VividWorld_Feeling_LostPrisoner_Sore_2" text="到手的人就這麼飛了，{ADDRESS}這回可是白忙一場。下回碰面，我非拿這件事虧{he}兩句不可，{he}平常可沒少讓我難堪。" />
+    <string id="VividWorld_Feeling_LostPrisoner_Owe_1" text="{ADDRESS}吃了這個虧，我一點也不同情。可{he}拉過我一把，這種時候去踩{he}一腳的事，我做不出來。" />
+    <string id="VividWorld_Feeling_Released_Close_1" text="{ADDRESS}該放就放，這樣做是對的。" />
+    <string id="VividWorld_Feeling_Released_Close_2" text="{ADDRESS}沒為難人，這點我敬重。" />
+    <string id="VividWorld_Feeling_Released_Neutral_1" text="人放了，這件事也就了了。" />
+    <string id="VividWorld_Feeling_Released_Neutral_2" text="放了也好，留著人也是白吃糧食。" />
+    <string id="VividWorld_Feeling_Released_Hostile_1" text="{ADDRESS}肯放人，八成是撈夠了好處。" />
+    <string id="VividWorld_Feeling_Released_Hostile_2" text="別以為放了人，之前的事就一筆勾銷了。" />
+    <string id="VividWorld_Feeling_Released_Sore_1" text="這件事上{ADDRESS}沒什麼可挑的，別的事另說。" />
+    <string id="VividWorld_Feeling_Released_Owe_1" text="{ADDRESS}我是不喜歡，可{he}做事還算照規矩，這回放人是這樣，當初幫我也是這樣。" />
+    <string id="VividWorld_Feeling_LostFace_Close_1" text="這口氣換作是我也咽不下，{ADDRESS}受委屈了。" />
+    <string id="VividWorld_Feeling_LostFace_Close_2" text="{ADDRESS}臉上怕是掛不住，改天我得去陪著喝兩杯。" />
+    <string id="VividWorld_Feeling_LostFace_Neutral_1" text="場面上的事，今天你丟臉，明天我丟臉，過幾天也就沒人記得了。" />
+    <string id="VividWorld_Feeling_LostFace_Neutral_2" text="丟了這回面子，{ADDRESS}往後說話就沒那麼有分量了。" />
+    <string id="VividWorld_Feeling_LostFace_Hostile_1" text="讓{ADDRESS}碰一鼻子灰也好，省得老是擺架子。" />
+    <string id="VividWorld_Feeling_LostFace_Hostile_2" text="{ADDRESS}也有今天，我聽了倒是挺痛快的。" />
+    <string id="VividWorld_Feeling_LostFace_Sore_1" text="{ADDRESS}被人這樣落面子，我聽了心裡也不好受。不過想到{he}之前對待我的方式，或許是現世報吧。" />
+    <string id="VividWorld_Feeling_LostFace_Sore_2" text="{ADDRESS}被人這樣給難堪，我聽了就有氣。{he}也沒少讓我難堪，可那是我跟{he}之間的事，輪不到外人這樣對{he}。" />
+    <string id="VividWorld_Feeling_LostFace_Owe_1" text="{ADDRESS}丟了面子，我聽了是有點痛快。可{he}幫過我，我這樣幸災樂禍，想想也不太厚道。" />
+    <string id="VividWorld_Feeling_Brash_Close_1" text="{ADDRESS}就是性子直，話說重了些，心倒不壞。" />
+    <string id="VividWorld_Feeling_Brash_Close_2" text="{ADDRESS}這回是有點過頭了，改天我勸勸。" />
+    <string id="VividWorld_Feeling_Brash_Neutral_1" text="這種場面上的事，看看熱鬧就好。" />
+    <string id="VividWorld_Feeling_Brash_Neutral_2" text="得罪了人，往後總是要還的。" />
+    <string id="VividWorld_Feeling_Brash_Hostile_1" text="{ADDRESS}一向這副德性，我一點也不意外。" />
+    <string id="VividWorld_Feeling_Brash_Hostile_2" text="{ADDRESS}這麼不給人留餘地，遲早要吃虧。" />
+    <string id="VividWorld_Feeling_Brash_Sore_1" text="{ADDRESS}什麼都好，就是有時候太不顧旁人。我自己也領教過幾回，改天碰面得勸勸{he}。" />
+    <string id="VividWorld_Feeling_Brash_Sore_2" text="{ADDRESS}這回是過頭了。被{he}這樣對待是什麼滋味，我是知道的，所以這一回，我沒辦法替{he}說話。" />
+    <string id="VividWorld_Feeling_Brash_Owe_1" text="{ADDRESS}幫過我是一回事，這樣做人，我還是看不慣。" />
+    <string id="VividWorld_Feeling_Brash_Owe_2" text="{ADDRESS}就是這副高高在上的樣子，連當初幫我的時候也是。受了{he}的好處還得看{he}的臉色，那種滋味我記得很清楚。" />
+    <string id="VividWorld_Feeling_Decent_Close_1" text="這才像{ADDRESS}會做的事。" />
+    <string id="VividWorld_Feeling_Decent_Close_2" text="{ADDRESS}就是這麼大方，我一向佩服。" />
+    <string id="VividWorld_Feeling_Decent_Neutral_1" text="肯這樣做的人不多，算是難得。" />
+    <string id="VividWorld_Feeling_Decent_Neutral_2" text="做這種人情，往後總會有回報的。" />
+    <string id="VividWorld_Feeling_Decent_Hostile_1" text="{ADDRESS}會這麼好心？我看是另有打算。" />
+    <string id="VividWorld_Feeling_Decent_Hostile_2" text="做給別人看的吧，我可不信這一套。" />
+    <string id="VividWorld_Feeling_Decent_Sore_1" text="{ADDRESS}做這種事，我一點也不意外，{he}向來待人厚道。就是對我，{he}有時候少了這份體貼。" />
+    <string id="VividWorld_Feeling_Decent_Sore_2" text="{ADDRESS}待人就是這麼實在。想想{he}給我的那些氣，多半也不是存心的。" />
+    <string id="VividWorld_Feeling_Decent_Owe_1" text="{ADDRESS}這份厚道不是做給人看的，我自己就受過。我不喜歡{he}，可這一點我得替{he}說句話。" />
+    <string id="VividWorld_Feeling_Decent_Owe_2" text="{ADDRESS}待人實在，這我領教過。就為了這個，我一直沒辦法痛痛快快地討厭{he}。" />
+    <string id="VividWorld_Feeling_Cared_Close_1" text="{ADDRESS}總算遇上了明白人，這是應得的。" />
+    <string id="VividWorld_Feeling_Cared_Close_2" text="有人肯這樣待{ADDRESS}，我聽了也高興。" />
+    <string id="VividWorld_Feeling_Cared_Neutral_1" text="有人照應，總是好事。" />
+    <string id="VividWorld_Feeling_Cared_Neutral_2" text="受了這份情，{ADDRESS}往後是要還的。" />
+    <string id="VividWorld_Feeling_Cared_Hostile_1" text="{ADDRESS}何德何能，也配讓人這樣相待？" />
+    <string id="VividWorld_Feeling_Cared_Hostile_2" text="平白撿了個人情，{ADDRESS}的運氣倒是好得很。" />
+    <string id="VividWorld_Feeling_Cared_Sore_1" text="有人肯這樣待{ADDRESS}，我替{he}高興。{he}嘗過這滋味，往後待我，說不定也會多幾分體貼。" />
+    <string id="VividWorld_Feeling_Cared_Owe_1" text="{ADDRESS}當初幫過我，如今輪到別人這樣待{he}，也算是好心有好報。我是不喜歡{he}，可這句話我說得出口。" />
+    <string id="VividWorld_Feeling_Joy_Close_1" text="這是好事，我真替{ADDRESS}高興。" />
+    <string id="VividWorld_Feeling_Joy_Close_2" text="改天得備份禮送過去才行。" />
+    <string id="VividWorld_Feeling_Joy_Neutral_1" text="這年頭能聽到件喜事，也算難得。" />
+    <string id="VividWorld_Feeling_Joy_Neutral_2" text="家裡添了人，往後的事可就多了。" />
+    <string id="VividWorld_Feeling_Joy_Hostile_1" text="{ADDRESS}的喜事，請帖送來我也不會去。" />
+    <string id="VividWorld_Feeling_Joy_Hostile_2" text="喜事？跟我可沒什麼關係。" />
+    <string id="VividWorld_Feeling_Joy_Sore_1" text="這是喜事，我替{ADDRESS}高興。喜酒我是一定要去喝的，平常{he}氣我的那些，就罰{he}多敬我幾杯。" />
+    <string id="VividWorld_Feeling_Joy_Sore_2" text="改天我得備份禮送過去。我跟{ADDRESS}那點疙瘩，正好趁這個機會放下。" />
+    <string id="VividWorld_Feeling_Joy_Owe_1" text="{ADDRESS}的喜事，我本來懶得過問。可{he}幫過我，禮不送說不過去，我叫人送一份去，人就不到了。" />
+    <string id="VividWorld_Feeling_Pending_Close_1" text="希望{ADDRESS}別因為這件事吃虧才好。" />
+    <string id="VividWorld_Feeling_Pending_Close_2" text="要是{ADDRESS}需要人幫忙，我不會袖手旁觀。" />
+    <string id="VividWorld_Feeling_Pending_Neutral_1" text="這件事往後怎麼樣，還有得瞧。" />
+    <string id="VividWorld_Feeling_Pending_Neutral_2" text="看看就好，跟我們沒多大關係。" />
+    <string id="VividWorld_Feeling_Pending_Hostile_1" text="{ADDRESS}最好別又鬧出什麼事來。" />
+    <string id="VividWorld_Feeling_Pending_Hostile_2" text="有{ADDRESS}在的地方，就少不了麻煩。" />
+    <string id="VividWorld_Feeling_Pending_Sore_1" text="但願{ADDRESS}別在這件事上吃虧。{he}有時候是氣人，可真要看{he}栽跟頭，我還是捨不得。" />
+    <string id="VividWorld_Feeling_Pending_Owe_1" text="{ADDRESS}的事，我向來不愛打聽。不過我欠著{he}一份情，這件事{he}要是真吃了虧，我會去問一聲。" />
+    <string id="VividWorld_Address_Higher_High" text="{NAME}大人" />
+    <string id="VividWorld_Address_Higher_Neutral" text="{NAME}" />
+    <string id="VividWorld_Address_Higher_Low" text="那位大人物" />
+    <string id="VividWorld_Address_Equal_High" text="老朋友" />
+    <string id="VividWorld_Address_Equal_Neutral" text="{NAME}" />
+    <string id="VividWorld_Address_Equal_Low" text="那傢伙" />
+    <string id="VividWorld_Address_Lower_High" text="老朋友" />
+    <string id="VividWorld_Address_Lower_Neutral" text="{NAME}" />
+    <string id="VividWorld_Address_Lower_Low" text="那個人" />
   </strings>
 </base>

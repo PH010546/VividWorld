@@ -134,6 +134,7 @@ namespace VividWorld.Core.Grudges
                             Requested = ri.Requested,
                             Delta = ri.Delta,
                             Scope = ri.Scope,
+                            Source = ri.Source,
                             LedgerOnly = ri.LedgerOnly,
                             EscalatedFrom = ri.EscalatedFrom
                         };

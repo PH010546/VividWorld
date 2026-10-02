@@ -118,7 +118,9 @@ namespace VividWorld.Core.Tests
             foreach (var template in templates)
             {
                 // 卡片明訂：除只有死者一個角色的 hero_died_naturally 之外全部涵蓋
-                if (string.Equals(template.Type, "hero_died_naturally", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(template.Type, "hero_died_naturally", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(template.Type, "hero_died_of_old_age", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(template.Type, "hero_died_in_labor", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }

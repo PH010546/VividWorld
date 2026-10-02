@@ -3,11 +3,16 @@
     "type": "hero_murdered",
     "headline": "Murder",
     "origin": "secret",
-    "dramaWeight": 5,
+    "dramaWeight": 8,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "victim": "{VICTIM}",
       "killer": "{KILLER}"
+    },
+    "feelings": {
+      "victim": "killed",
+      "killer": "executor"
     },
     "knowingRoles": [
       "killer"
@@ -60,11 +65,19 @@
     "type": "hero_executed",
     "headline": "Execution",
     "origin": "public",
-    "dramaWeight": 5,
+    "dramaWeight": 8,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "victim": "{VICTIM}",
       "killer": "{KILLER}"
+    },
+    "feelings": {
+      "victim": "killed",
+      "killer": "executor"
+    },
+    "selfTell": {
+      "victim": "never"
     },
     "knowingRoles": [],
     "opinion": [
@@ -97,7 +110,7 @@
         "id": "what",
         "category": "WHAT",
         "textId": "VividWorld_Fact_HeroExecuted_What",
-        "text": "the headsman's axe severed the noble head before assembled crowds",
+        "text": "the headsman took off {VICTIM.his} head with a single stroke of the axe before the crowd",
         "vars": {},
         "fragility": 3
       },
@@ -105,7 +118,7 @@
         "id": "outcome",
         "category": "OUTCOME",
         "textId": "VividWorld_Fact_HeroExecuted_Outcome",
-        "text": "the execution sent shockwaves across the continent",
+        "text": "afterward the body was handed back to {VICTIM.his} kin",
         "vars": {},
         "fragility": 4
       }
@@ -115,11 +128,19 @@
     "type": "hero_died_in_battle",
     "headline": "Fallen in Battle",
     "origin": "public",
-    "dramaWeight": 4,
+    "dramaWeight": 6,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "victim": "{VICTIM}",
       "killer": "{KILLER}"
+    },
+    "feelings": {
+      "victim": "killed",
+      "killer": "victor"
+    },
+    "selfTell": {
+      "victim": "never"
     },
     "knowingRoles": [],
     "facts": [
@@ -149,7 +170,7 @@
         "id": "what",
         "category": "WHAT",
         "textId": "VividWorld_Fact_HeroDiedInBattle_What",
-        "text": "fighting bravely amidst the clash of shields and spears",
+        "text": "the two lines crashed together in a mass of shields and spears",
         "vars": {},
         "fragility": 3
       },
@@ -157,7 +178,7 @@
         "id": "outcome",
         "category": "OUTCOME",
         "textId": "VividWorld_Fact_HeroDiedInBattle_Outcome",
-        "text": "the warrior met an honorable end on the field of war",
+        "text": "when the fighting was over, the body was sent back to {VICTIM.his} kin",
         "vars": {},
         "fragility": 4
       }
@@ -165,12 +186,19 @@
   },
   {
     "type": "hero_died_naturally",
-    "headline": "Natural Death",
+    "headline": "Passed Away",
     "origin": "public",
-    "dramaWeight": 2,
+    "dramaWeight": 4,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "victim": "{VICTIM}"
+    },
+    "feelings": {
+      "victim": "died"
+    },
+    "selfTell": {
+      "victim": "never"
     },
     "knowingRoles": [],
     "facts": [
@@ -207,9 +235,113 @@
         "id": "outcome",
         "category": "OUTCOME",
         "textId": "VividWorld_Fact_HeroDiedNaturally_Outcome",
-        "text": "mourners paid tribute to a life well-lived",
-        "vars": {},
+        "text": "many came to pay respects at the funeral",
+        "vars": {
+          "VICTIM": "hero:{VICTIM}"
+        },
         "fragility": 4
+      }
+    ]
+  },
+  {
+    "type": "hero_died_of_old_age",
+    "headline": "Died of Old Age",
+    "origin": "public",
+    "dramaWeight": 4,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "victim": "{VICTIM}"
+    },
+    "feelings": {
+      "victim": "died"
+    },
+    "selfTell": {
+      "victim": "never"
+    },
+    "knowingRoles": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_HeroDiedOfOldAge_Who",
+        "text": "{VICTIM} passed away peacefully of old age",
+        "vars": {
+          "VICTIM": "hero:{VICTIM}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_HeroDiedOfOldAge_Where",
+        "text": "at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_HeroDiedOfOldAge_Outcome",
+        "text": "many came to pay respects at the funeral",
+        "vars": {
+          "VICTIM": "hero:{VICTIM}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "hero_died_in_labor",
+    "headline": "Died in Childbirth",
+    "origin": "public",
+    "dramaWeight": 4,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "victim": "{VICTIM}"
+    },
+    "feelings": {
+      "victim": "died"
+    },
+    "selfTell": {
+      "victim": "never"
+    },
+    "knowingRoles": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_HeroDiedInLabor_Who",
+        "text": "{VICTIM} died in childbirth",
+        "vars": {
+          "VICTIM": "hero:{VICTIM}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_HeroDiedInLabor_Where",
+        "text": "at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_HeroDiedInLabor_Outcome",
+        "text": "many came to pay respects at the funeral",
+        "vars": {
+          "VICTIM": "hero:{VICTIM}"
+        },
+        "fragility": 3
       }
     ]
   },
@@ -217,11 +349,25 @@
     "type": "hero_taken_prisoner",
     "headline": "Captivity",
     "origin": "public",
-    "dramaWeight": 4,
+    "dramaWeight": 3,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "captor": "{CAPTOR}",
       "prisoner": "{PRISONER}"
+    },
+    "feelings": {
+      "captor": "victor",
+      "prisoner": "captured"
+    },
+    "selfTell": {
+      "prisoner": "never"
+    },
+    "selfFeelingVariants": {
+      "captor": [
+        { "tendency": "Cruel", "trait": "mercy", "max": -1 },
+        { "tendency": "Mercy", "trait": "mercy", "min": 1 }
+      ]
     },
     "knowingRoles": [],
     "facts": [
@@ -269,11 +415,16 @@
     "type": "heroes_married",
     "headline": "Marriage",
     "origin": "public",
-    "dramaWeight": 3,
+    "dramaWeight": 4,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "spouse_a": "{SPOUSE_A}",
       "spouse_b": "{SPOUSE_B}"
+    },
+    "feelings": {
+      "spouse_a": "joy",
+      "spouse_b": "joy"
     },
     "knowingRoles": [],
     "facts": [
@@ -303,7 +454,7 @@
         "id": "what",
         "category": "WHAT",
         "textId": "VividWorld_Fact_HeroesMarried_What",
-        "text": "vows were exchanged with grand feasting and celebration",
+        "text": "the wedding feast was a lively one",
         "vars": {},
         "fragility": 3
       },
@@ -311,7 +462,7 @@
         "id": "outcome",
         "category": "OUTCOME",
         "textId": "VividWorld_Fact_HeroesMarried_Outcome",
-        "text": "and so the two houses were joined by marriage",
+        "text": "and the two exchanged vows before a hall full of guests",
         "vars": {},
         "fragility": 4
       }
@@ -322,10 +473,16 @@
     "headline": "Birth",
     "origin": "public",
     "dramaWeight": 2,
+    "dramaScale": 10,
+    "colocatedWitnessAsHearsay": true,
     "linkedTemplateType": null,
     "roles": {
       "mother": "{MOTHER}",
       "child": "{CHILD}"
+    },
+    "feelings": {
+      "mother": "joy",
+      "child": "joy"
     },
     "selfTell": {
       "child": "never"
@@ -336,7 +493,7 @@
         "id": "who",
         "category": "WHO",
         "textId": "VividWorld_Fact_ChildBorn_Who",
-        "text": "{MOTHER} gave birth to a healthy child {CHILD}",
+        "text": "{MOTHER} gave birth to a child, {CHILD}",
         "vars": {
           "MOTHER": "hero:{MOTHER}",
           "CHILD": "hero:{CHILD}"
@@ -358,7 +515,7 @@
         "id": "what",
         "category": "WHAT",
         "textId": "VividWorld_Fact_ChildBorn_What",
-        "text": "the newborn arrived safely after a long labor",
+        "text": "it was a long labor, but the child is healthy",
         "vars": {},
         "fragility": 3
       },
@@ -366,7 +523,7 @@
         "id": "outcome",
         "category": "OUTCOME",
         "textId": "VividWorld_Fact_ChildBorn_Outcome",
-        "text": "the clan rejoiced at the blessing of a new heir",
+        "text": "the clan came to see the child",
         "vars": {},
         "fragility": 4
       }
@@ -376,12 +533,21 @@
     "type": "hero_released",
     "headline": "A prisoner was released",
     "origin": "public",
-    "dramaWeight": 4,
+    "dramaWeight": 2,
+    "dramaScale": 10,
     "linkedTemplateType": "hero_taken_prisoner",
     "roles": {
       "captor": "{CAPTOR}",
       "prisoner": "{PRISONER}"
     },
+    "feelings": {
+      "captor": "released",
+      "prisoner": "freed"
+    },
+    "feelingOverrides": [
+      { "role": "captor", "whenFact": "VividWorld_Fact_HeroReleased_WhoDefeated", "category": "lost_prisoner" },
+      { "role": "captor", "whenFact": "VividWorld_Fact_HeroReleased_Defeated", "category": "lost_prisoner" }
+    ],
     "knowingRoles": [],
     "facts": [
       {
@@ -407,20 +573,12 @@
         "optional": true
       },
       {
-        "id": "what",
-        "category": "WHAT",
-        "textId": "VividWorld_Fact_HeroReleased_What",
-        "text": "the terms were settled and the guards stood aside",
+        "id": "reason",
+        "category": "WHY",
+        "textId": "VividWorld_Fact_HeroReleased_Ransom",
+        "text": "after ransom was paid",
         "vars": {},
-        "fragility": 3
-      },
-      {
-        "id": "outcome",
-        "category": "OUTCOME",
-        "textId": "VividWorld_Fact_HeroReleased_Outcome",
-        "text": "and so {PRISONER.he} walked free",
-        "vars": {},
-        "fragility": 4
+        "fragility": 2
       }
     ]
   },
@@ -428,11 +586,26 @@
     "type": "hero_escaped_captivity",
     "headline": "A prisoner escaped",
     "origin": "public",
-    "dramaWeight": 4,
+    "dramaWeight": 2,
+    "dramaScale": 10,
+    "colocatedWitnessAsHearsay": true,
     "linkedTemplateType": "hero_taken_prisoner",
     "roles": {
       "captor": "{CAPTOR}",
       "prisoner": "{PRISONER}"
+    },
+    "feelings": {
+      "captor": "lost_prisoner",
+      "prisoner": "freed"
+    },
+    "selfFeelingVariants": {
+      "captor": [
+        { "tendency": "Cruel", "trait": "mercy", "max": -1 },
+        { "tendency": "Calculating", "trait": "calculating", "min": 1 }
+      ],
+      "prisoner": [
+        { "tendency": "Valor", "trait": "valor", "min": 1 }
+      ]
     },
     "knowingRoles": [],
     "facts": [
@@ -462,7 +635,7 @@
         "id": "what",
         "category": "WHAT",
         "textId": "VividWorld_Fact_HeroEscaped_What",
-        "text": "the guard was thin and the night was long",
+        "text": "the guards were few that night",
         "vars": {},
         "fragility": 3
       },
@@ -472,7 +645,7 @@
         "textId": "VividWorld_Fact_HeroEscaped_Outcome",
         "text": "and no one saw which way {PRISONER.he} went",
         "vars": {},
-        "fragility": 4
+        "fragility": 3
       }
     ]
   },
@@ -480,10 +653,17 @@
     "type": "hero_captured_by_bandits",
     "headline": "Captured by bandits",
     "origin": "public",
-    "dramaWeight": 4,
+    "dramaWeight": 5,
+    "dramaScale": 10,
     "linkedTemplateType": null,
     "roles": {
       "prisoner": "{PRISONER}"
+    },
+    "feelings": {
+      "prisoner": "captured"
+    },
+    "selfTell": {
+      "prisoner": "never"
     },
     "knowingRoles": [],
     "facts": [
@@ -513,7 +693,7 @@
         "id": "what",
         "category": "WHAT",
         "textId": "VividWorld_Fact_HeroCapturedByBandits_What",
-        "text": "bound and dragged along with them through the wilds",
+        "text": "tied up and carried off into the wilds",
         "vars": {},
         "fragility": 3
       },
@@ -521,7 +701,7 @@
         "id": "outcome",
         "category": "OUTCOME",
         "textId": "VividWorld_Fact_HeroCapturedByBandits_Outcome",
-        "text": "and no one knew what they meant to do with {PRISONER.him}",
+        "text": "and nothing has been heard of {PRISONER.him} since",
         "vars": {},
         "fragility": 4
       }
@@ -531,11 +711,16 @@
     "type": "hero_rescued_from_bandits",
     "headline": "Rescued from bandits",
     "origin": "public",
-    "dramaWeight": 4,
+    "dramaWeight": 3,
+    "dramaScale": 10,
     "linkedTemplateType": "hero_captured_by_bandits",
     "roles": {
       "prisoner": "{PRISONER}",
       "rescuer": "{RESCUER}"
+    },
+    "feelings": {
+      "prisoner": "freed",
+      "rescuer": "decent"
     },
     "knowingRoles": [],
     "facts": [
@@ -566,7 +751,7 @@
         "id": "what",
         "category": "WHAT",
         "textId": "VividWorld_Fact_HeroRescuedFromBandits_What",
-        "text": "and even had {PRISONER.him} escorted on {PRISONER.his} way",
+        "text": "{PRISONER.he} came through without serious injury",
         "vars": {},
         "fragility": 3
       },
@@ -574,7 +759,7 @@
         "id": "outcome",
         "category": "OUTCOME",
         "textId": "VividWorld_Fact_HeroRescuedFromBandits_Outcome",
-        "text": "and {PRISONER.he} made it home safe at last",
+        "text": "and had men escort {PRISONER.him} all the way home",
         "vars": {},
         "fragility": 4
       }
@@ -584,10 +769,15 @@
     "type": "hero_escaped_bandits",
     "headline": "Escaped from bandits",
     "origin": "public",
-    "dramaWeight": 4,
+    "dramaWeight": 3,
+    "dramaScale": 10,
+    "colocatedWitnessAsHearsay": true,
     "linkedTemplateType": "hero_captured_by_bandits",
     "roles": {
       "prisoner": "{PRISONER}"
+    },
+    "feelings": {
+      "prisoner": "freed"
     },
     "knowingRoles": [],
     "facts": [
@@ -627,7 +817,7 @@
         "textId": "VividWorld_Fact_HeroEscapedBandits_Outcome",
         "text": "and made {PRISONER.his} way back to where people live, in the dark",
         "vars": {},
-        "fragility": 4
+        "fragility": 3
       }
     ]
   }

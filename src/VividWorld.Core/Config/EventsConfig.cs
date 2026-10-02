@@ -16,12 +16,25 @@ namespace VividWorld.Core.Config
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
     }
 
-    public sealed class ProminenceDramaConfig
+    /// <summary>個人的事（死亡、被抓、被放、逃脫）：當事人本人的身分加在基礎分上的加成。份量是 1..10。</summary>
+    public sealed class ProminenceWeightBonusConfig
     {
-        public int Ruler { get; set; } = 5;
-        public int ClanLeader { get; set; } = 4;
-        public int NobleMember { get; set; } = 2;
-        public int Minor { get; set; } = 1;
+        public int Ruler { get; set; } = 4;
+        public int ClanLeader { get; set; } = 2;
+        public int NobleMember { get; set; } = 0;
+        public int Minor { get; set; } = -2;
+
+        [JsonExtensionData]
+        public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
+    }
+
+    /// <summary>家族的事（成親、生子）：門第加在基礎分上的加成。份量是 1..10。</summary>
+    public sealed class ClanStandingWeightBonusConfig
+    {
+        public int Royal { get; set; } = 4;
+        public int High { get; set; } = 2;
+        public int Ordinary { get; set; } = 0;
+        public int Minor { get; set; } = -2;
 
         [JsonExtensionData]
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
@@ -32,28 +45,15 @@ namespace VividWorld.Core.Config
         public string CatalogFile { get; set; } = "vividworld_events.json";
         public bool StrictCatalog { get; set; } = false;
         public EventSourcesConfig Sources { get; set; } = new();
-        public ProminenceDramaConfig PrisonerDramaByProminence { get; set; } = new();
-        public ProminenceDramaConfig ReleaseDramaByProminence { get; set; } = new()
-        {
-            Ruler = 4,
-            ClanLeader = 3,
-            NobleMember = 1,
-            Minor = 1
-        };
-        public ProminenceDramaConfig BanditCaptureDramaByProminence { get; set; } = new()
-        {
-            Ruler = 5,
-            ClanLeader = 5,
-            NobleMember = 3,
-            Minor = 2
-        };
-        public ProminenceDramaConfig BanditReleaseDramaByProminence { get; set; } = new()
-        {
-            Ruler = 5,
-            ClanLeader = 4,
-            NobleMember = 2,
-            Minor = 1
-        };
+
+        /// <summary>個人的事看本人的身分，加成加在模板寫的基礎分上。取代舊的四組 <c>*DramaByProminence</c>（1..5 的段，現在不再讀）。</summary>
+        public ProminenceWeightBonusConfig WeightBonusByProminence { get; set; } = new();
+
+        /// <summary>家族的事看門第，加成加在模板寫的基礎分上。</summary>
+        public ClanStandingWeightBonusConfig WeightBonusByClanStanding { get; set; } = new();
+
+        /// <summary>家族等級（<c>Clan.Tier</c>）達到這個數字以上算高等家族。</summary>
+        public int HighClanMinTier { get; set; } = 5;
 
         [JsonExtensionData]
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();

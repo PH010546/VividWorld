@@ -30,17 +30,17 @@ namespace VividWorld.Core.Tests
         }
 
         [Fact]
-        public void RealEventMapping_DiedInLabor_MapsToHeroDiedNaturally()
+        public void RealEventMapping_DiedInLabor_MapsToHeroDiedInLabor()
         {
-            Assert.Equal("hero_died_naturally", RealEventMapping.TemplateForKill(KillCharacterActionDetail.DiedInLabor));
-            Assert.Equal("hero_died_naturally", RealEventMapping.TemplateForKill(2));
+            Assert.Equal("hero_died_in_labor", RealEventMapping.TemplateForKill(KillCharacterActionDetail.DiedInLabor));
+            Assert.Equal("hero_died_in_labor", RealEventMapping.TemplateForKill(2));
         }
 
         [Fact]
-        public void RealEventMapping_DiedOfOldAge_MapsToHeroDiedNaturally()
+        public void RealEventMapping_DiedOfOldAge_MapsToHeroDiedOfOldAge()
         {
-            Assert.Equal("hero_died_naturally", RealEventMapping.TemplateForKill(KillCharacterActionDetail.DiedOfOldAge));
-            Assert.Equal("hero_died_naturally", RealEventMapping.TemplateForKill(3));
+            Assert.Equal("hero_died_of_old_age", RealEventMapping.TemplateForKill(KillCharacterActionDetail.DiedOfOldAge));
+            Assert.Equal("hero_died_of_old_age", RealEventMapping.TemplateForKill(3));
         }
 
         [Fact]

@@ -95,6 +95,9 @@ namespace VividWorld.Core.Dialogue
                             default: return ListenTallyKeys.VolunteerNoTopicForgottenOrOutdated;
                         }
 
+                    case VolunteerRefusal.NoCloselyRelatedEvent:
+                        return ListenTallyKeys.VolunteerBlockedNoCloselyRelated;
+
                     case VolunteerRefusal.AllCandidatesFiltered:
                         return ListenTallyKeys.VolunteerFiltered;
 
@@ -108,6 +111,21 @@ namespace VividWorld.Core.Dialogue
             }
 
             return ListenTallyKeys.VolunteerNotEvaluatedStartNotReached;
+        }
+
+        public static string GetVolunteerReasonKey(VolunteerReasonCategory category)
+        {
+            switch (category)
+            {
+                case VolunteerReasonCategory.TellerSelf: return ListenTallyKeys.VolunteerToldSelf;
+                case VolunteerReasonCategory.TellerKin: return ListenTallyKeys.VolunteerToldKin;
+                case VolunteerReasonCategory.TellerClan: return ListenTallyKeys.VolunteerToldClan;
+                case VolunteerReasonCategory.TellerRelation: return ListenTallyKeys.VolunteerToldRelation;
+                case VolunteerReasonCategory.TellerGrudge: return ListenTallyKeys.VolunteerToldGrudge;
+                case VolunteerReasonCategory.PlayerRelated: return ListenTallyKeys.VolunteerToldPlayerRelated;
+                case VolunteerReasonCategory.Sequel: return ListenTallyKeys.VolunteerToldSequel;
+                default: return ListenTallyKeys.VolunteerTold;
+            }
         }
 
         public static string ClassifyAsk(

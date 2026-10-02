@@ -43,12 +43,13 @@ namespace VividWorld.Core.Rumors
         }
 
         public IHeroTraitLookup Traits => _traits;
+        public long CampaignSeed => _campaignSeed;
         public Func<string, VividWorld.Core.Catalog.EventTemplate?>? TemplateProvider => _getTemplate;
 
         public int MaxHopFor(WorldEvent evt)
         {
             if (evt == null) return 0;
-            int drama = Math.Max(1, Math.Min(5, evt.DramaWeight));
+            int drama = evt.DramaBand;
             var dramaMaxHop = _config.Propagation.DramaMaxHop;
             if (dramaMaxHop == null || dramaMaxHop.Length == 0) return 3;
             int index = Math.Min(drama - 1, dramaMaxHop.Length - 1);
@@ -161,7 +162,7 @@ namespace VividWorld.Core.Rumors
                     else
                     {
                         var entry = evt.EntryFor(tellerHeroId)!;
-                        int drama = Math.Max(1, Math.Min(5, evt.DramaWeight));
+                        int drama = evt.DramaBand;
                         double tell = Forgetting.TellFactor(entry, _config.Memory);
 
                         double rawFreshness = _config.Scheduling.RumorLifetimeDays <= 0.0
@@ -175,7 +176,7 @@ namespace VividWorld.Core.Rumors
                             : 1.0;
 
                         double weight = topicDramaWeight * tell * freshness;
-                        candidates.Add(new TopicCandidate(evt.EventId, drama, tell, freshness, weight));
+                        candidates.Add(new TopicCandidate(evt.EventId, drama, tell, freshness, weight, evt.DramaWeightTen));
                     }
                 }
             }
@@ -247,7 +248,7 @@ namespace VividWorld.Core.Rumors
                 tellerTraitFactor = m;
             }
 
-            int drama = Math.Max(1, Math.Min(5, evt.DramaWeight));
+            int drama = evt.DramaBand;
             double dramaMultiplier = 1.0;
             var dtm = _config.Propagation.DramaTellMultiplier;
             if (dtm != null && dtm.Length > 0)
@@ -373,10 +374,12 @@ namespace VividWorld.Core.Rumors
             }
 
             int maxHop = MaxHopFor(evt);
-            bool allAtMaxHop = evt.KnownBy.Count > 0 && evt.KnownBy.All(k => k.Hop >= maxHop);
+            // 玩家不會把消息傳下去，他那一筆的手數不該決定傳播停不停：只看 NPC 知情者。
+            var npcHolders = evt.KnownBy.Where(k => k.HeroId != _playerHeroId).ToList();
+            bool allAtMaxHop = npcHolders.Count > 0 && npcHolders.All(k => k.Hop >= maxHop);
             if (allAtMaxHop)
             {
-                return DormancyReason.AllAtMaxHop(evt.KnownBy.Count, maxHop);
+                return DormancyReason.AllAtMaxHop(npcHolders.Count, maxHop);
             }
 
             double age = day - evt.Day;

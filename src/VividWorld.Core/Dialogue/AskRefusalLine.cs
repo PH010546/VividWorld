@@ -7,6 +7,7 @@ namespace VividWorld.Core.Dialogue
     {
         SharedToday,
         Unwilling,
+        Disliked,
         NothingHeard,
         Forgotten,
         Outdated,
@@ -18,13 +19,15 @@ namespace VividWorld.Core.Dialogue
     {
         public const string KeySharedToday = "VividWorld_AskRefuseSharedToday";
         public const string KeyUnwilling = "VividWorld_AskRefuseUnwilling";
+        public const string KeyDisliked = "VividWorld_AskRefuseDisliked";
         public const string KeyNothingHeard = "VividWorld_AskRefuseNothingHeard";
         public const string KeyForgotten = "VividWorld_AskRefuseForgotten";
         public const string KeyOutdated = "VividWorld_AskRefuseOutdated";
         public const string KeyPlayerKnows = "VividWorld_AskRefusePlayerKnows";
 
         public const string FallbackSharedToday = "I've said my piece for today. Come find me another time.";
-        public const string FallbackUnwilling = "That's not something I'd care to discuss.";
+        public const string FallbackUnwilling = "We hardly know each other. If it's news you want, ask someone else.";
+        public const string FallbackDisliked = "I have nothing to say to you.";
         public const string FallbackNothingHeard = "I haven't heard any news lately.";
         public const string FallbackForgotten = "Someone mentioned something... I can't quite recall what.";
         public const string FallbackOutdated = "Whatever I heard is likely no longer the case.";
@@ -46,7 +49,9 @@ namespace VividWorld.Core.Dialogue
 
                 case AskRefusal.RelationGate:
                 case AskRefusal.WillingnessGate:
-                    return AskRefusalLineKind.Unwilling;
+                    // 看的是好感是不是負的，不是被哪一道門檻擋下：門檻可以由玩家調成負數或正數，
+                    // 但「不熟」與「不想理你」的分界始終是好感正負。
+                    return decision.Relation < 0 ? AskRefusalLineKind.Disliked : AskRefusalLineKind.Unwilling;
 
                 case AskRefusal.NoKnownEvents:
                     var noTopic = ListenTallyClassifier.ClassifyNoTopic(knownCount, forgottenCount, outdatedCount);
@@ -82,6 +87,7 @@ namespace VividWorld.Core.Dialogue
             {
                 case AskRefusalLineKind.SharedToday: return KeySharedToday;
                 case AskRefusalLineKind.Unwilling: return KeyUnwilling;
+                case AskRefusalLineKind.Disliked: return KeyDisliked;
                 case AskRefusalLineKind.NothingHeard: return KeyNothingHeard;
                 case AskRefusalLineKind.Forgotten: return KeyForgotten;
                 case AskRefusalLineKind.Outdated: return KeyOutdated;
@@ -96,6 +102,7 @@ namespace VividWorld.Core.Dialogue
             {
                 case AskRefusalLineKind.SharedToday: return FallbackSharedToday;
                 case AskRefusalLineKind.Unwilling: return FallbackUnwilling;
+                case AskRefusalLineKind.Disliked: return FallbackDisliked;
                 case AskRefusalLineKind.NothingHeard: return FallbackNothingHeard;
                 case AskRefusalLineKind.Forgotten: return FallbackForgotten;
                 case AskRefusalLineKind.Outdated: return FallbackOutdated;
@@ -118,8 +125,9 @@ namespace VividWorld.Core.Dialogue
             int future = decision?.FilteredFutureTimeline ?? 0;
             int playerKnows = decision?.FilteredPlayerKnows ?? 0;
             int other = decision?.FilteredOther ?? 0;
+            int relation = decision?.Relation ?? 0;
 
-            return $"Ask refused line: {heroName} ({heroId}) -> {lineKey} (refusal {refusalReason}, known {knownCount}, forgotten {forgottenCount}, outdated {outdatedCount}, filtered notVisible {notVis} / future {future} / playerKnows {playerKnows} / other {other})";
+            return $"Ask refused line: {heroName} ({heroId}) -> {lineKey} (refusal {refusalReason}, relation {relation}, known {knownCount}, forgotten {forgottenCount}, outdated {outdatedCount}, filtered notVisible {notVis} / future {future} / playerKnows {playerKnows} / other {other})";
         }
 
         public static string FormatFallbackReason(AskDecision? decision, bool offerRenderedEmpty)

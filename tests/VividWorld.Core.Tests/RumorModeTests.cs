@@ -11,6 +11,9 @@ using VividWorld.Core.Presentation;
 using VividWorld.Core.Rumors;
 using VividWorld.Core.Tests.Fakes;
 using VividWorld.Core.Util;
+using VividWorld.Core.Feelings;
+using VividWorld.Core.Grudges;
+using VividWorld.Core.Memory;
 using Xunit;
 
 namespace VividWorld.Core.Tests
@@ -18,7 +21,7 @@ namespace VividWorld.Core.Tests
     public class RumorModeTests
     {
         private (RumorOfferSelector selector, RumorEngine engine, VividWorldConfig cfg)
-            CreateSelector(string playerHeroId = "player", long seed = 42L, VividWorldConfig? customConfig = null, RumorMode? mode = null)
+            CreateSelector(string playerHeroId = "player", long seed = 42L, VividWorldConfig? customConfig = null, RumorMode? mode = null, IDialogueWorld? dialogueWorld = null)
         {
             var cfg = customConfig ?? new VividWorldConfig();
             var rng = new SplitMix64Rng();
@@ -27,8 +30,24 @@ namespace VividWorld.Core.Tests
             var retention = FactRetentionPolicies.Create(cfg, rng, seed);
             var embellishment = NullEmbellishmentPolicy.Instance;
             var engine = new RumorEngine(cfg, retention, embellishment, channel, traits, rng, seed, playerHeroId);
-            var selector = new RumorOfferSelector(cfg, engine, playerHeroId, mode);
+            var selector = new RumorOfferSelector(cfg, engine, playerHeroId, mode, dialogueWorld: dialogueWorld);
             return (selector, engine, cfg);
+        }
+
+        private sealed class FakeDialogueWorld : IDialogueWorld
+        {
+            public double Today { get; set; } = 100.0;
+            public HashSet<string> Companions = new(StringComparer.Ordinal);
+            public string? PlayerKingdomLeaderId => null;
+            public bool IsPlayerCompanion(string heroId) => Companions.Contains(heroId);
+            public bool IsPlayerClanMember(string heroId) => false;
+            public bool IsPlayerSpouse(string heroId) => false;
+            public int? Affection(string speakerId, string heroId) => 0;
+            public int? StandingRank(string heroId) => 0;
+            public bool? IsFemale(string heroId) => null;
+            public InterestHeroFacts? InterestFacts(string heroId) => null;
+            public IReadOnlyList<GrudgeEntry> PersonalGrudges(string speakerId, string heroId) => Array.Empty<GrudgeEntry>();
+            public string NameOf(string heroId) => heroId;
         }
 
         private WorldEvent CreateSampleEvent(string eventId, double day = 10.0, int drama = 3)
@@ -108,8 +127,8 @@ namespace VividWorld.Core.Tests
         public void FormatModeLine_FormatsExpectedString()
         {
             var res = new RumorModeResult(RumorMode.Realistic, "auto - detected NaN", new[] { "NaN" });
-            string line = RumorModeResolver.FormatModeLine(res, chatGate: 10, fullGate: 30, gistExtraHops: 2, askClanTier: 1);
-            Assert.Equal("Rumor mode: realistic [auto - detected NaN] - chat gate 10, full gate 30, gist +2 hops, ask clan tier 1", line);
+            string line = RumorModeResolver.FormatModeLine(res, volunteerLine: 10, askThreshold: 5, secretLine: 30, bigNewsLine: 5, askClanTier: 1);
+            Assert.Equal("Rumor mode: realistic [auto - detected NaN] - willingness lines: volunteer 10, answer when asked 5 (or the volunteer line if lower), own secret 30; big news from weight 5; ask clan tier 1", line);
         }
 
         // ── 2. 名單聯集（大小寫、去重、設定是空的） ──
@@ -188,13 +207,13 @@ namespace VividWorld.Core.Tests
             var p0 = new HeroSocialProfile { HeroId = "p_0", RelationWithPlayer = 0 };
             var d0 = selector.DecideOnVolunteer(p0, candidates, day: 10.0);
             Assert.Equal(VolunteerRefusal.NoKnownEvents, d0.Refusal);
-            Assert.Equal(VolunteerTier.Gist, d0.Tier);
+            Assert.Equal(VolunteerTier.Full, d0.Tier);
 
             // 29: 低於完整門檻 (30)，高於閒聊門檻 (0) -> 大概 (Gist)
             var p29 = new HeroSocialProfile { HeroId = "p_29", RelationWithPlayer = 29 };
             var d29 = selector.DecideOnVolunteer(p29, candidates, day: 10.0);
             Assert.Equal(VolunteerRefusal.NoKnownEvents, d29.Refusal);
-            Assert.Equal(VolunteerTier.Gist, d29.Tier);
+            Assert.Equal(VolunteerTier.Full, d29.Tier);
 
             // 30: 達到完整門檻 (30) -> 完整 (Full)
             var p30 = new HeroSocialProfile { HeroId = "p_30", RelationWithPlayer = 30 };
@@ -219,13 +238,13 @@ namespace VividWorld.Core.Tests
             var p10 = new HeroSocialProfile { HeroId = "p_10", RelationWithPlayer = 10 };
             var d10 = selector.DecideOnVolunteer(p10, candidates, day: 10.0);
             Assert.Equal(VolunteerRefusal.NoKnownEvents, d10.Refusal);
-            Assert.Equal(VolunteerTier.Gist, d10.Tier);
+            Assert.Equal(VolunteerTier.Full, d10.Tier);
 
             // 29: 低於完整門檻 (30)，達到閒聊門檻 (10) -> 大概 (Gist)
             var p29 = new HeroSocialProfile { HeroId = "p_29", RelationWithPlayer = 29 };
             var d29 = selector.DecideOnVolunteer(p29, candidates, day: 10.0);
             Assert.Equal(VolunteerRefusal.NoKnownEvents, d29.Refusal);
-            Assert.Equal(VolunteerTier.Gist, d29.Tier);
+            Assert.Equal(VolunteerTier.Full, d29.Tier);
 
             // 30: 達到完整門檻 (30) -> 完整 (Full)
             var p30 = new HeroSocialProfile { HeroId = "p_30", RelationWithPlayer = 30 };
@@ -295,12 +314,12 @@ namespace VividWorld.Core.Tests
         // ── 6. 重述判定用落點 ──
 
         [Fact]
-        public void RetellEvaluation_UsesLandingHop_GistLandsFarther_FilteredAsNotCloser()
+        public void RetellEvaluation_GistLandsFarther_EligibilityOnlyLooksAtNewFacts()
         {
-            // 玩家目前在 hop 3。
-            // 講述者在 hop 1。
-            // 完整版落點 = 1 + 1 = 2 < 3 (更近，允許重述)。
-            // 大概版落點 = 1 + 1 + 2 = 4 >= 3 (不比已知的近，RetellNotCloser 擋下)。
+            // 玩家目前在 hop 3、只知道一塊碎片；講述者在 hop 1。
+            // 完整版落點 = 1 + 1 = 2；大概版落點 = 1 + 1 + 2 = 4。
+            // 手數只是距離，資格只看這次能不能帶來玩家沒聽過的碎片：完整版有新碎片，
+            // 大概版講得更少、沒有新碎片，所以被擋下，理由是「沒有新東西」而不是「不夠近」。
             var (selector, _, _) = CreateSelector(mode: RumorMode.Casual);
             var evt = CreateSampleEvent("evt_retell_hop", drama: 4);
 
@@ -319,20 +338,19 @@ namespace VividWorld.Core.Tests
             Assert.Single(classificationFull.Eligible);
 
             var classificationGist = selector.ClassifyCandidates(teller, new[] { candidate }, day: 10.0, VolunteerTier.Gist);
-            Assert.Empty(classificationGist.Eligible);
-            Assert.Equal(1, classificationGist.FilteredPlayerKnows);
-            Assert.Contains("no closer than the hop 3", classificationGist.FilterNotes[0]);
+            Assert.Single(classificationGist.Eligible);
         }
 
-        // ── 7. 玩家紀錄寫落點 ──
+        // ── 7. 玩家紀錄：手數只記距離，大概版講了多少記在碎片欄 ──
 
         [Fact]
-        public void ApplyOffer_WritesLandingHopIntoPlayerKnownByEntry()
+        public void ApplyOffer_GistRecordsRealDistanceAndFewerFacts()
         {
-            var (selector, _, _) = CreateSelector(mode: RumorMode.Casual);
+            var (selector, engine, _) = CreateSelector(mode: RumorMode.Casual);
             var evt = CreateSampleEvent("evt_apply_landing", drama: 4);
 
             var teller = new HeroSocialProfile { HeroId = "teller", RelationWithPlayer = 15 };
+            evt.Participants["actor"] = teller.HeroId;
             evt.KnownBy.Add(new KnownByEntry { HeroId = teller.HeroId, Hop = 0 });
 
             var candidates = new List<RumorCandidate>
@@ -340,26 +358,56 @@ namespace VividWorld.Core.Tests
                 new() { Event = evt, TellerHop = 0, PlayerExistingHop = null }
             };
 
-            // 15 好感在 Casual 下為 Gist，tellerHop 0 + 1 + 2 = 3
+            // 15 好感在 Casual 下為 Gist：挑碎片用的落點 0 + 1 + 2 = 3，但轉了幾手仍是 0 + 1
             var decision = selector.DecideOnVolunteer(teller, candidates, day: 10.0);
-            Assert.Equal(VolunteerTier.Gist, decision.Tier);
+            Assert.Equal(VolunteerTier.Full, decision.Tier);
             Assert.NotNull(decision.Offer);
-            Assert.Equal(3, decision.Offer!.ResultingPlayerHop);
+            Assert.Equal(1, decision.Offer!.ResultingPlayerHop);
+            Assert.Equal(1, decision.Offer.PlayerHop);
 
             selector.ApplyOffer(decision.Offer, evt, teller.HeroId, day: 10.0);
             var playerEntry = evt.EntryFor("player");
             Assert.NotNull(playerEntry);
-            Assert.Equal(3, playerEntry!.Hop);
+            Assert.Equal(1, playerEntry!.Hop);
+
+            var expected = engine.FactsAtHop(evt, 1, teller.HeroId).Select(f => f.Id).OrderBy(id => id).ToList();
+            Assert.Equal(expected, playerEntry.KnownFactIds!.OrderBy(id => id).ToList());
         }
+
+        [Fact]
+        public void GistThenFull_SameTellerCompletesIt_HopStaysAtRealDistance()
+        {
+            var (selector, _, _) = CreateSelector(mode: RumorMode.Casual);
+            var evt = CreateSampleEvent("evt_gist_then_full", drama: 4);
+            evt.Participants["actor"] = "teller";
+            evt.KnownBy.Add(new KnownByEntry { HeroId = "teller", Hop = 0 });
+            evt.KnownBy.Add(new KnownByEntry { HeroId = "player", Hop = 3, KnownFactIds = new List<string> { "f_who" } });
+
+            var fullTeller = new HeroSocialProfile { HeroId = "teller", RelationWithPlayer = 30 };
+            var decision = selector.DecideOnVolunteer(fullTeller,
+                new List<RumorCandidate> { new() { Event = evt, TellerHop = 0, PlayerExistingHop = 3 } }, day: 10.0);
+            Assert.Equal(VolunteerTier.Full, decision.Tier);
+            Assert.NotNull(decision.Offer);
+            Assert.True(decision.Offer!.IsRetell);
+
+            selector.ApplyOffer(decision.Offer, evt, "teller", day: 10.0);
+            var playerEntry = evt.EntryFor("player")!;
+            Assert.Equal(1, playerEntry.Hop);
+            Assert.True(playerEntry.KnownFactIds!.Count > 1);
+        }
+
 
         // ── 8. 前綴只在手數 0 ──
 
         [Fact]
         public void EyewitnessPrefix_AddedOnlyWhenTellerHopIsZero()
         {
-            var (selector, _, _) = CreateSelector();
+            var fakeWorld = new FakeDialogueWorld();
+            fakeWorld.Companions.Add("companion_bob");
+            var (selector, _, _) = CreateSelector(dialogueWorld: fakeWorld);
             var evt = CreateSampleEvent("evt_prefix", drama: 4);
             evt.KnownBy.Add(new KnownByEntry { HeroId = "player", Hop = 3, KnownFactIds = new List<string> { "f_who" } });
+            evt.Participants["actor"] = "companion_bob";
 
             // 目擊者 (tellerHop == 0) 的重述 -> 帶前綴
             var teller0 = new HeroSocialProfile { HeroId = "teller_0", RelationWithPlayer = 30 };
@@ -583,7 +631,7 @@ namespace VividWorld.Core.Tests
                 "VividWorld_ModeNotice_MessageCasual_NoMcm",
                 "VividWorld_MCM_VolunteerMode",
                 "VividWorld_MCM_VolunteerModeHint",
-                "VividWorld_MCM_NpcVolunteerRelationGateHint"
+
             };
 
             var stdKeys = stdDoc.Descendants("string").Select(e => (string)e.Attribute("id")!).ToHashSet();
@@ -603,7 +651,7 @@ namespace VividWorld.Core.Tests
         {
             Assert.Contains(McmExposedKeys.All, k => k.Path == "dialogue.volunteerMode");
             Assert.DoesNotContain(McmExposedKeys.All, k => k.Path == "dialogue.commonerCompatMode");
-            Assert.Equal(26, McmExposedKeys.All.Count);
+            Assert.Equal(25, McmExposedKeys.All.Count);
         }
 
         // ── 14. 預演多出來的格式化 ──

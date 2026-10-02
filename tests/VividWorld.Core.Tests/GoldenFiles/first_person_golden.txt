@@ -45,16 +45,16 @@ EN:  At SETTLEMENT.
 CNT: 在SETTLEMENT。
 
 [hero_executed | victim | what]
-EN:  The headsman's axe severed the noble head before assembled crowds.
-CNT: 劊子手的利斧在眾目睽睽之下斬落了貴族的頭顱。
+EN:  The headsman took off my head with a single stroke of the axe before the crowd.
+CNT: 劊子手當著圍觀的人，一斧砍下了他的頭。
 
 [hero_executed | victim | outcome]
-EN:  The execution sent shockwaves across the continent.
-CNT: 這場處決震撼了整個大陸。
+EN:  Afterward the body was handed back to my kin.
+CNT: 行刑之後，屍首交還給了他的族人。
 
 [hero_executed | killer | who]
-EN:  I had VICTIM executed in public.
-CNT: 我把VICTIM公開處決了。
+EN:  I had VICTIM publicly executed. Some things have to be settled once and for all.
+CNT: 我把VICTIM公開處決了。事情總得有個了斷。
 
 [hero_executed | killer | where]
 EN:  At SETTLEMENT.
@@ -77,16 +77,16 @@ EN:  On the field near SETTLEMENT.
 CNT: 在SETTLEMENT附近的戰場上。
 
 [hero_died_in_battle | victim | what]
-EN:  Fighting bravely amidst the clash of shields and spears.
-CNT: 在盾牌與長矛的猛烈交鋒中英勇奮戰。
+EN:  The two lines crashed together in a mass of shields and spears.
+CNT: 兩邊的盾牌長矛撞成一片。
 
 [hero_died_in_battle | victim | outcome]
-EN:  The warrior met an honorable end on the field of war.
-CNT: 這位戰士在沙場上迎來了光榮的結局。
+EN:  When the fighting was over, the body was sent back to my kin.
+CNT: 戰事結束後，他的遺體送回了族人那裡。
 
 [hero_died_in_battle | killer | who]
-EN:  I cut down VICTIM in battle.
-CNT: 我在戰場上斬了VICTIM。
+EN:  VICTIM fell by my hand on the battlefield. On the battlefield it's kill or be killed. There's nothing more to say.
+CNT: VICTIM是在戰場上死在我手上的。戰場上本來就是你死我活，沒什麼好說的。
 
 [hero_died_in_battle | killer | where]
 EN:  Near SETTLEMENT.
@@ -101,8 +101,8 @@ EN:  And on a battlefield it is kill or be killed, nothing more to say.
 CNT: 戰場上就是你死我活，沒什麼好說的。
 
 [hero_taken_prisoner | captor | who]
-EN:  I captured PRISONER.
-CNT: 我抓了PRISONER。
+EN:  I captured PRISONER. At least that battle wasn't for nothing.
+CNT: 我抓了PRISONER。這一仗總算沒白打。
 
 [hero_taken_prisoner | captor | where]
 EN:  Near SETTLEMENT.
@@ -133,8 +133,8 @@ EN:  And that is a taste I never want again.
 CNT: 那滋味，我這輩子都不想再嘗第二次。
 
 [heroes_married | spouse_a | who]
-EN:  SPOUSE_B and I were married.
-CNT: 我跟SPOUSE_B成親了。
+EN:  SPOUSE_B and I were married. I'll never forget that day.
+CNT: 我跟SPOUSE_B成親了。那一天我不會忘。
 
 [heroes_married | spouse_a | where]
 EN:  At SETTLEMENT.
@@ -149,8 +149,8 @@ EN:  And our two houses are family now; I will not forget that day.
 CNT: 從此我們兩家就是親家了，那一天我不會忘。
 
 [heroes_married | spouse_b | who]
-EN:  SPOUSE_A and I were married.
-CNT: 我跟SPOUSE_A成親了。
+EN:  SPOUSE_A and I were married. I'll never forget that day.
+CNT: 我跟SPOUSE_A成親了。那一天我不會忘。
 
 [heroes_married | spouse_b | where]
 EN:  At SETTLEMENT.
@@ -165,8 +165,8 @@ EN:  And our two houses are family now; I will not forget that day.
 CNT: 從此我們兩家就是親家了，那一天我不會忘。
 
 [child_born | mother | who]
-EN:  I gave birth to CHILD.
-CNT: 我生下了CHILD。
+EN:  I gave birth to CHILD. The moment I held them, it was all worth it.
+CNT: 我生下了CHILD。抱著孩子的那一刻，什麼辛苦都值得了。
 
 [child_born | mother | where]
 EN:  At SETTLEMENT.
@@ -181,56 +181,48 @@ EN:  And the moment I held the baby, every pain was worth it.
 CNT: 抱著孩子的那一刻，什麼辛苦都值得了。
 
 [child_born | child | who]
-EN:  MOTHER gave birth to a healthy child me.
-CNT: MOTHER順利誕下了新生兒我。
+EN:  MOTHER gave birth to a child, me.
+CNT: MOTHER生了個孩子，叫我。
 
 [child_born | child | where]
 EN:  At SETTLEMENT.
 CNT: 在SETTLEMENT。
 
 [child_born | child | what]
-EN:  The newborn arrived safely after a long labor.
-CNT: 母子平安，新生兒健康茁壯。
+EN:  It was a long labor, but the child is healthy.
+CNT: 生了好久，孩子很健康。
 
 [child_born | child | outcome]
-EN:  The clan rejoiced at the blessing of a new heir.
-CNT: 家族上下皆為新血脈的到來感到無比欣喜。
+EN:  The clan came to see the child.
+CNT: 族人都去看過孩子。
 
 [hero_released | captor | who]
-EN:  I set PRISONER free.
-CNT: 我放了PRISONER。
+EN:  I released PRISONER. They are free now, and that's the end of it.
+CNT: 我把PRISONER放了。人放了，這事就算了結。
 
 [hero_released | captor | where]
 EN:  Near SETTLEMENT.
 CNT: 在SETTLEMENT附近。
 
-[hero_released | captor | what]
-EN:  The terms were settled, and a word given is a word kept, so I told the guards to stand aside.
-CNT: 條件談妥了，說話得算話，我叫看守讓開。
-
-[hero_released | captor | outcome]
-EN:  And so I let them go.
-CNT: 他就這樣走了。
+[hero_released | captor | reason]
+EN:  After ransom was paid.
+CNT: 贖金付清之後。
 
 [hero_released | prisoner | who]
-EN:  CAPTOR set me free.
-CNT: CAPTOR把我放了。
+EN:  CAPTOR released me. The moment I walked out, I could finally breathe again.
+CNT: CAPTOR把我放了。走出來那一刻，總算又能好好喘口氣。
 
 [hero_released | prisoner | where]
 EN:  Near SETTLEMENT.
 CNT: 在SETTLEMENT附近。
 
-[hero_released | prisoner | what]
-EN:  The terms were settled and the guards stood aside.
-CNT: 條件談妥了，看守就讓開了。
-
-[hero_released | prisoner | outcome]
-EN:  And the moment I walked out, I could finally breathe again.
-CNT: 走出去那一刻，總算又能好好喘口氣。
+[hero_released | prisoner | reason]
+EN:  After ransom was paid.
+CNT: 贖金付清之後。
 
 [hero_escaped_captivity | captor | who]
-EN:  PRISONER got away from me.
-CNT: PRISONER從我手裡逃掉了。
+EN:  PRISONER got away from me. It shames me to say it.
+CNT: PRISONER從我手中逃掉了。說來丟臉。
 
 [hero_escaped_captivity | captor | where]
 EN:  Near SETTLEMENT.
@@ -245,8 +237,8 @@ EN:  And I am ashamed to say they was long gone by the time anyone noticed.
 CNT: 說來丟臉，等發現的時候早就不見人影了。
 
 [hero_escaped_captivity | prisoner | who]
-EN:  I got away from CAPTOR.
-CNT: 我從CAPTOR手裡逃出來了。
+EN:  I escaped from CAPTOR. I didn't dare look back the whole way.
+CNT: 我從CAPTOR手中逃了出來。我一路都沒敢回頭。
 
 [hero_escaped_captivity | prisoner | where]
 EN:  Near SETTLEMENT.
@@ -277,8 +269,8 @@ EN:  For a few days I truly thought I would never make it home.
 CNT: 那幾天我真以為自己回不去了。
 
 [hero_rescued_from_bandits | prisoner | who]
-EN:  RESCUER routed those BANDITS and freed me.
-CNT: RESCUER打散了那夥BANDITS，把我救了出來。
+EN:  RESCUER scattered that band of BANDITS and got me out. When they cut the ropes, my legs gave out. I'm lucky to be alive.
+CNT: RESCUER打散了那夥BANDITS，把我救了出來。繩子割開的時候我腿都軟了，這條命是撿回來的。
 
 [hero_rescued_from_bandits | prisoner | where]
 EN:  Near SETTLEMENT.
@@ -293,8 +285,8 @@ EN:  I count myself lucky to be alive.
 CNT: 這條命是撿回來的。
 
 [hero_rescued_from_bandits | rescuer | who]
-EN:  I routed those BANDITS and freed PRISONER.
-CNT: 我打散了那夥BANDITS，把PRISONER救了出來。
+EN:  I scattered a band of BANDITS and got PRISONER out. Good thing we got there in time.
+CNT: 我打散了一夥BANDITS，把PRISONER救了出來。還好去得及時。
 
 [hero_rescued_from_bandits | rescuer | where]
 EN:  Near SETTLEMENT.
@@ -309,8 +301,8 @@ EN:  And I had my men escort them on their way.
 CNT: 我派人護送他上路。
 
 [hero_escaped_bandits | prisoner | who]
-EN:  I escaped from those BANDITS.
-CNT: 我從那夥BANDITS手裡逃了出來。
+EN:  I escaped from a band of BANDITS. For days I truly thought I'd never make it home.
+CNT: 我從一夥BANDITS手裡逃了出來。那幾天我真以為自己回不去了。
 
 [hero_escaped_bandits | prisoner | where]
 EN:  Near SETTLEMENT.
@@ -369,8 +361,8 @@ EN:  I could hardly make a scene in front of everyone, but that meal tasted of n
 CNT: 當著那麼多人，我總不能當場翻臉，那頓飯吃得一點味道也沒有。
 
 [seat_dispute_endured | favored | who]
-EN:  SLIGHTED had to sit below me and let it pass.
-CNT: SLIGHTED坐在我下首，那口氣他忍下來了。
+EN:  The time SLIGHTED sat below me, they were swallowing it the whole time. I honestly didn't notice at the time.
+CNT: SLIGHTED坐在我下首那回，那口氣他是忍下來的。我當時還真沒看出來。
 
 [seat_dispute_endured | favored | where]
 EN:  In the hall of SETTLEMENT.
@@ -529,8 +521,8 @@ EN:  In a tavern in SETTLEMENT.
 CNT: 在SETTLEMENT的酒館裡。
 
 [tavern_boast_told | speaker | what]
-EN:  And nobody at the table troubled to count the bodies.
-CNT: 同桌的人誰也懶得去對那個數字。
+EN:  And the others at the table only smiled.
+CNT: 同桌的人聽了只是笑笑。
 
 [tavern_boast_told | listener | who]
 EN:  SPEAKER boasted to me of their deeds, and they grew with every cup.
@@ -545,8 +537,8 @@ EN:  Nobody at the table bothered to count, and I just smiled.
 CNT: 同桌的人誰也懶得去算他說的數字，我也只是笑笑。
 
 [tavern_sour_words | speaker | who]
-EN:  I said something over the cups that stung LISTENER badly.
-CNT: 我酒後說了一句話，讓LISTENER很是記恨。
+EN:  I said something to LISTENER over the cups, and LISTENER's face changed on the spot.
+CNT: 我酒後對LISTENER說了句話，LISTENER當場變了臉。
 
 [tavern_sour_words | speaker | where]
 EN:  In a tavern in SETTLEMENT.

@@ -654,7 +654,7 @@ namespace VividWorld.Core.Tests
         #region 9. ConfigMerge (1 個測試)
 
         [Fact]
-        public void ConfigMerge_AddsHeroPrisonerReleasedAndReleaseDramaByProminence()
+        public void ConfigMerge_AddsHeroPrisonerReleasedSwitch()
         {
             string oldJson = @"{
                 ""configVersion"": 1,
@@ -673,16 +673,8 @@ namespace VividWorld.Core.Tests
             var result = ConfigMerge.AddMissingKeys(existingJObj, canonicalJObj);
 
             Assert.Contains("events.sources.heroPrisonerReleased", result.AddedPaths);
-            Assert.Contains("events.releaseDramaByProminence.ruler", result.AddedPaths);
-            Assert.Contains("events.releaseDramaByProminence.clanLeader", result.AddedPaths);
-            Assert.Contains("events.releaseDramaByProminence.nobleMember", result.AddedPaths);
-            Assert.Contains("events.releaseDramaByProminence.minor", result.AddedPaths);
 
             Assert.True((bool?)result.Merged.SelectToken("events.sources.heroPrisonerReleased"));
-            Assert.Equal(4, (int?)result.Merged.SelectToken("events.releaseDramaByProminence.ruler"));
-            Assert.Equal(3, (int?)result.Merged.SelectToken("events.releaseDramaByProminence.clanLeader"));
-            Assert.Equal(1, (int?)result.Merged.SelectToken("events.releaseDramaByProminence.nobleMember"));
-            Assert.Equal(1, (int?)result.Merged.SelectToken("events.releaseDramaByProminence.minor"));
         }
 
         #endregion

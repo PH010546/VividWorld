@@ -20,6 +20,39 @@ namespace VividWorld.Core.Presentation
                 heroId, day, stats.Returned, stats.TotalKnown, maxEntries, stats.HiddenFuture);
         }
 
+        /// <summary>每一筆顯示出來的紀事印一行：有幾份來源，每份是誰、手數、碎片數、有沒有感想、是照原句重組還是照舊組事實。</summary>
+        /// <param name="headlineNote">標題用的是帶名字的版本還是退回的版本（與原因）；有給就接在行尾。</param>
+        public static string FormatEntrySources(string eventId, IReadOnlyList<ChronicleSource>? sources, string? headlineNote)
+        {
+            string line = FormatEntrySources(eventId, sources);
+            return string.IsNullOrEmpty(headlineNote) ? line : line + "; title: " + headlineNote;
+        }
+
+        public static string FormatEntrySources(string eventId, IReadOnlyList<ChronicleSource>? sources)
+        {
+            int count = sources?.Count ?? 0;
+            var sb = new System.Text.StringBuilder();
+            sb.Append(string.Format(CultureInfo.InvariantCulture,
+                "Chronicle entry {0}: {1} source(s)", eventId, count));
+            if (sources != null)
+            {
+                for (int i = 0; i < sources.Count; i++)
+                {
+                    var s = sources[i];
+                    sb.Append(i == 0 ? " - " : "; ");
+                    string modeStr = s.HasSpokenLine
+                        ? "reconstructed quote"
+                        : "facts (reason: no spoken line saved)";
+                    sb.Append(string.Format(CultureInfo.InvariantCulture,
+                        "{0} (hop {1}, {2} fact(s), {3}, {4})",
+                        string.IsNullOrEmpty(s.HeroId) ? "unknown" : s.HeroId,
+                        s.Hop, s.FactCount, s.Feeling != null ? "with a feeling" : "no feeling",
+                        modeStr));
+                }
+            }
+            return sb.ToString();
+        }
+
         public static string ComputeVerdict(
             int entryCount,
             IReadOnlyList<ChronicleRowLayout>? rows,

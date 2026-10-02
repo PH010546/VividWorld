@@ -52,6 +52,10 @@ namespace VividWorld.Core.Dialogue
         public Dictionary<string, int> VolunteerCounts { get; } = new(StringComparer.Ordinal);
         public Dictionary<string, List<string>> VolunteerNames { get; } = new(StringComparer.Ordinal);
 
+        // Volunteer told by reasons & silent by reasons
+        public Dictionary<string, int> VolunteerToldReasons { get; } = new(StringComparer.Ordinal);
+        public Dictionary<string, int> VolunteerSilentReasons { get; } = new(StringComparer.Ordinal);
+
         // 2. Volunteer Topic-Only counts & top 5 names
         public Dictionary<string, int> TopicOnlyCounts { get; } = new(StringComparer.Ordinal);
         public Dictionary<string, List<string>> TopicOnlyNames { get; } = new(StringComparer.Ordinal);
@@ -64,6 +68,22 @@ namespace VividWorld.Core.Dialogue
         public Dictionary<string, int> AskCounts { get; } = new(StringComparer.Ordinal);
         public Dictionary<string, List<string>> AskNames { get; } = new(StringComparer.Ordinal);
 
+        // Ask breakdown counts
+        public int AskFamiliarCloselyRelatedCount { get; set; }
+        public int AskFamiliarBigNewsCount { get; set; }
+        public int AskUnfamiliarBigNewsCount { get; set; }
+        public int AskUnwillingCount { get; set; }
+        public int AskNoTopicCount { get; set; }
+
+        // Topic distributions for both paths
+        public Dictionary<string, int> VolunteerTopicDistribution { get; } = new(StringComparer.Ordinal);
+        public Dictionary<string, int> AskTopicDistribution { get; } = new(StringComparer.Ordinal);
+
+        // Willingness distribution
+        public int WillingnessPassedActiveLineCount { get; set; }
+        public int WillingnessPassedAskThresholdCount { get; set; }
+        public int WillingnessPassedSecretLineCount { get; set; }
+
         // 3b. Ask refusal lines counts & top 5 names
         public Dictionary<string, int> AskRefusalCounts { get; } = new(StringComparer.Ordinal);
         public Dictionary<string, List<string>> AskRefusalNames { get; } = new(StringComparer.Ordinal);
@@ -71,6 +91,10 @@ namespace VividWorld.Core.Dialogue
         // 4. Relation histogram counts & top 5 names
         public Dictionary<string, int> RelationHist { get; } = new(StringComparer.Ordinal);
         public Dictionary<string, List<string>> RelationHistNames { get; } = new(StringComparer.Ordinal);
+
+        // 4b. 目前還沒休眠的事件，依份量（1..10）各有幾則
+        public bool WeightTallyAvailable { get; set; }
+        public int[] ActiveEventsByWeight { get; } = new int[10];
 
         // 5. Per-hero details for dev dialogue
         public List<ListenPreviewHeroDetail> HeroDetails { get; } = new();

@@ -227,14 +227,14 @@ namespace VividWorld.Campaign
                 }
             }
 
-            var interestRes = InterestCalculator.Compute(knowerFacts, entry.HeroId, participants, evt.DramaWeight, _config.Memory);
-            var spanRes = MemorySpan.Compute(startDay, interestRes.Interest, evt.DramaWeight, heardCount, oldForgetDay, _config.Memory);
+            var interestRes = InterestCalculator.Compute(knowerFacts, entry.HeroId, participants, evt.DramaBand, _config.Memory);
+            var spanRes = MemorySpan.Compute(startDay, interestRes.Interest, evt.DramaBand, heardCount, oldForgetDay, _config.Memory);
 
             entry.Interest = interestRes.Interest;
             entry.InterestSource = interestRes.InterestSource;
             entry.ForgetDay = spanRes.ForgetDay;
 
-            int drama = Math.Max(1, Math.Min(5, evt.DramaWeight));
+            int drama = evt.DramaBand;
             string logLine = MemoryLogFormatter.FormatCalculation(
                 entry.HeroId,
                 how,
@@ -250,7 +250,7 @@ namespace VividWorld.Campaign
             return true;
         }
 
-        private static InterestHeroFacts ToFacts(Hero hero)
+        internal static InterestHeroFacts ToFacts(Hero hero)
         {
             var siblingIds = hero.Siblings != null
                 ? hero.Siblings.Select(s => s.StringId).Where(s => !string.IsNullOrEmpty(s)).ToList()

@@ -89,6 +89,12 @@ namespace VividWorld.Campaign
                     }
                 }
 
+                var legacyScaleTypes = Catalog.LegacyDramaScaleTypes;
+                if (legacyScaleTypes.Count > 0)
+                {
+                    ModLog.Info($"Event catalog: {legacyScaleTypes.Count} template(s) use the old 1..5 dramaWeight writing (no dramaScale): {string.Join(", ", legacyScaleTypes)}. Read as band, weight = band x 2.");
+                }
+
                 int errorCount = Catalog.Issues.Count(i => i.IsError);
                 int warnCount = Catalog.Issues.Count(i => !i.IsError);
                 ModLog.Info($"Event catalog: loaded {Catalog.Templates.Count} template(s) from {foundPath}, skipped {Catalog.SkippedCount}, {errorCount} error(s) {warnCount} warning(s).");

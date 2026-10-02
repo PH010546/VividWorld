@@ -33,14 +33,26 @@ namespace VividWorld.Core.Events
                 case 4: // DiedInBattle
                     return "hero_died_in_battle";
                 case 2: // DiedInLabor
+                    return "hero_died_in_labor";
                 case 3: // DiedOfOldAge
-                    return "hero_died_naturally";
+                    return "hero_died_of_old_age";
                 case 0: // None
                 case 5: // WoundedInBattle
                 case 8: // Lost
                 default:
                     return null;
             }
+        }
+
+        /// <summary>
+        /// 自然死亡的三種消息（年老過世、難產過世，以及舊戰役裡已經記下、不分死法的那一種）：
+        /// 沒有兇手，送出事件時不需要殺人者。
+        /// </summary>
+        public static bool IsNaturalDeathTemplate(string? templateType)
+        {
+            return string.Equals(templateType, "hero_died_of_old_age", System.StringComparison.Ordinal)
+                || string.Equals(templateType, "hero_died_in_labor", System.StringComparison.Ordinal)
+                || string.Equals(templateType, "hero_died_naturally", System.StringComparison.Ordinal);
         }
 
         public static string? TemplateForRelease(EndCaptivityDetail detail)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using VividWorld.Core.Channels;
 using VividWorld.Core.Config;
+using VividWorld.Core.Diagnostics;
 using VividWorld.Core.Events;
 using VividWorld.Core.Rumors;
 
@@ -39,7 +40,8 @@ namespace VividWorld.Core.Ingest
                                 IHeroTraitLookup traits,
                                 PropagationConfig cfg,
                                 string playerHeroId,
-                                double day)
+                                double day,
+                                ILogSink? log = null)
         {
             if (evt == null || submission == null) return;
             evt.KnownBy ??= new List<KnownByEntry>();
@@ -127,14 +129,19 @@ namespace VividWorld.Core.Ingest
 
                         if (seen.Add(witnessHeroId))
                         {
+                            int hop = submission.ColocatedWitnessAsHearsay ? 1 : 0;
                             evt.KnownBy.Add(new KnownByEntry
                             {
                                 HeroId = witnessHeroId,
-                                Hop = 0,
+                                Hop = hop,
                                 LearnedDay = day,
                                 SourceHeroId = null
                             });
                             addedWitnesses++;
+                            if (submission.ColocatedWitnessAsHearsay)
+                            {
+                                log?.Info($"[Hop0Seeding] Witness {witnessHeroId} seeded as hop 1 hearsay for {evt.Type} (colocated witness as hearsay enabled)");
+                            }
                         }
                     }
                 }

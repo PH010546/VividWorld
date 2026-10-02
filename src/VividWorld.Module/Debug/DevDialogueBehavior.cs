@@ -15,6 +15,7 @@ using VividWorld.Core.Config;
 using VividWorld.Core.Diagnostics;
 using VividWorld.Core.Dialogue;
 using VividWorld.Core.Events;
+using VividWorld.Core.Feelings;
 using VividWorld.Core.Grudges;
 using VividWorld.Core.Ingest;
 using VividWorld.Core.Memory;
@@ -23,6 +24,7 @@ using VividWorld.Core.Rumors;
 using VividWorld.Core.Situations;
 using VividWorld.Core.Util;
 using VividWorld.Dialogue;
+using VividWorld.Presentation;
 
 namespace VividWorld.Debug
 {
@@ -30,9 +32,24 @@ namespace VividWorld.Debug
     {
         private const int DevDialoguePriority = 90;
         private const string TokenHeroMainOptions = "hero_main_options";
-        private const string TokenDevResult = "vividworld_dev_result";
-        private const string TokenDevCaptureResult = "vividworld_dev_capture_result";
         private const string TokenCloseWindow = "close_window";
+
+        private const string TokenDevCategoriesPrompt = "vividworld_dev_categories_prompt";
+        private const string TokenDevCategories = "vividworld_dev_categories";
+        private const string TokenDevBackToMain = "vividworld_dev_back_to_main";
+
+        private const string TokenDevPersonPrompt = "vividworld_dev_person_prompt";
+        private const string TokenDevPerson = "vividworld_dev_person";
+        private const string TokenDevResultPerson = "vividworld_dev_result_person";
+
+        private const string TokenDevWorldPrompt = "vividworld_dev_world_prompt";
+        private const string TokenDevWorld = "vividworld_dev_world";
+        private const string TokenDevResultWorld = "vividworld_dev_result_world";
+
+        private const string TokenDevActPrompt = "vividworld_dev_act_prompt";
+        private const string TokenDevAct = "vividworld_dev_act";
+        private const string TokenDevResultAct = "vividworld_dev_result_act";
+        private const string TokenDevCaptureResult = "vividworld_dev_capture_result";
 
         private readonly VividWorldConfig _config;
         private readonly WorldEventStore _eventStore;
@@ -45,6 +62,7 @@ namespace VividWorld.Debug
         private readonly SituationScanBehavior? _situationScan;
         private readonly SnapshotSessionState? _sessionState;
         private readonly string? _campaignId;
+        private readonly FeelingResolver? _feelings;
         private readonly int _rollbackCount;
         private readonly double _rollbackMaxDay;
         private readonly double _launchDay;
@@ -67,7 +85,8 @@ namespace VividWorld.Debug
             IHeroTraitLookup? traitLookup = null,
             SituationScanBehavior? situationScan = null,
             SnapshotSessionState? sessionState = null,
-            string? campaignId = null)
+            string? campaignId = null,
+            FeelingResolver? feelings = null)
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
@@ -83,6 +102,7 @@ namespace VividWorld.Debug
             _situationScan = situationScan;
             _sessionState = sessionState;
             _campaignId = campaignId;
+            _feelings = feelings;
         }
 
         public void RegisterDialogues(CampaignGameStarter starter)
@@ -93,11 +113,114 @@ namespace VividWorld.Debug
             // - Condition gate: for developers tuning in-game; changing JSON and reloading takes effect immediately.
             if (!_config.Debug.DebugDialogueEnabled) return;
 
+            // ── Single Main Options Entry ──
+            starter.AddPlayerLine(
+                "vividworld_dev_menu_entry",
+                TokenHeroMainOptions,
+                TokenDevCategoriesPrompt,
+                "{=VividWorld_Dev_Menu}(dev) VW developer tools",
+                Condition_AlwaysAvailable,
+                null,
+                DevDialoguePriority);
+
+            starter.AddDialogLine(
+                "vividworld_dev_categories_prompt_line",
+                TokenDevCategoriesPrompt,
+                TokenDevCategories,
+                "{=!}...",
+                null,
+                null,
+                100,
+                null);
+
+            // ── Category Level ──
+            starter.AddPlayerLine(
+                "vividworld_dev_menu_person",
+                TokenDevCategories,
+                TokenDevPersonPrompt,
+                "{=VividWorld_Dev_Menu_Person}(dev) About this person",
+                Condition_AlwaysAvailable,
+                null,
+                DevDialoguePriority);
+
+            starter.AddDialogLine(
+                "vividworld_dev_person_prompt_line",
+                TokenDevPersonPrompt,
+                TokenDevPerson,
+                "{=!}...",
+                null,
+                null,
+                100,
+                null);
+
+            starter.AddPlayerLine(
+                "vividworld_dev_menu_world",
+                TokenDevCategories,
+                TokenDevWorldPrompt,
+                "{=VividWorld_Dev_Menu_World}(dev) About the world",
+                Condition_AlwaysAvailable,
+                null,
+                DevDialoguePriority);
+
+            starter.AddDialogLine(
+                "vividworld_dev_world_prompt_line",
+                TokenDevWorldPrompt,
+                TokenDevWorld,
+                "{=!}...",
+                null,
+                null,
+                100,
+                null);
+
+            starter.AddPlayerLine(
+                "vividworld_dev_menu_act",
+                TokenDevCategories,
+                TokenDevActPrompt,
+                "{=VividWorld_Dev_Menu_Act}(dev) Actions and injections",
+                Condition_AlwaysAvailable,
+                null,
+                DevDialoguePriority);
+
+            starter.AddDialogLine(
+                "vividworld_dev_act_prompt_line",
+                TokenDevActPrompt,
+                TokenDevAct,
+                "{=!}...",
+                null,
+                null,
+                100,
+                null);
+
+            // Category return to main options.
+            // A player line must not lead straight to the main options: after the player picks a line,
+            // the engine runs the single highest-priority line waiting on the next token, player lines
+            // included, so the top option of the main menu would fire as if it had been clicked (D-43).
+            // Going through an NPC line first makes the engine show the main options as a normal list.
+            starter.AddPlayerLine(
+                "vividworld_dev_menu_back",
+                TokenDevCategories,
+                TokenDevBackToMain,
+                "{=VividWorld_Dev_Menu_Back}(dev) Back",
+                null,
+                null,
+                DevDialoguePriority);
+
+            starter.AddDialogLine(
+                "vividworld_dev_back_to_main_line",
+                TokenDevBackToMain,
+                TokenHeroMainOptions,
+                "{=!}...",
+                null,
+                () => ModLog.Info("[DevDialogue] back to the main options (through an NPC line, so no main-menu option is auto-selected)."),
+                100,
+                null);
+
+            // ── Category 1: About this person (8 tools) ──
             // 1. (dev) What do you know?
             starter.AddPlayerLine(
                 "vividworld_dev_known_events",
-                TokenHeroMainOptions,
-                TokenDevResult,
+                TokenDevPerson,
+                TokenDevResultPerson,
                 "{=VividWorld_Dev_KnownEvents}(dev) What do you know?",
                 Condition_AlwaysAvailable,
                 Consequence_KnownEvents,
@@ -106,210 +229,262 @@ namespace VividWorld.Debug
             // 2. (dev) Who can you reach right now?
             starter.AddPlayerLine(
                 "vividworld_dev_contacts",
-                TokenHeroMainOptions,
-                TokenDevResult,
+                TokenDevPerson,
+                TokenDevResultPerson,
                 "{=VividWorld_Dev_Contacts}(dev) Who can you reach right now?",
                 Condition_AlwaysAvailable,
                 Consequence_Contacts,
                 DevDialoguePriority);
 
-            // 3. (dev) Stage a public incident between us
-            starter.AddPlayerLine(
-                "vividworld_dev_inject_public",
-                TokenHeroMainOptions,
-                TokenDevResult,
-                "{=VividWorld_Dev_InjectPublic}(dev) Stage a public incident between us",
-                Condition_AllowInjection,
-                Consequence_InjectPublic,
-                DevDialoguePriority);
-
-            // 4. (dev) Stage a secret between us
-            starter.AddPlayerLine(
-                "vividworld_dev_inject_secret",
-                TokenHeroMainOptions,
-                TokenDevResult,
-                "{=VividWorld_Dev_InjectSecret}(dev) Stage a secret between us",
-                Condition_AllowInjection,
-                Consequence_InjectSecret,
-                DevDialoguePriority);
-
-            // 5. (dev) Simulate 24h of propagation
-            starter.AddPlayerLine(
-                "vividworld_dev_tick_24h",
-                TokenHeroMainOptions,
-                TokenDevResult,
-                "{=VividWorld_Dev_Tick24h}(dev) Simulate 24h of propagation",
-                Condition_AlwaysAvailable,
-                Consequence_Tick24h,
-                DevDialoguePriority);
-
-            // 6. (dev) World status
-            starter.AddPlayerLine(
-                "vividworld_dev_world_status",
-                TokenHeroMainOptions,
-                TokenDevResult,
-                "{=VividWorld_Dev_WorldStatus}(dev) World status",
-                Condition_AlwaysAvailable,
-                Consequence_WorldStatus,
-                DevDialoguePriority);
-
-            // 7. (dev) Reload config.json
-            starter.AddPlayerLine(
-                "vividworld_dev_reload_config",
-                TokenHeroMainOptions,
-                TokenDevResult,
-                "{=VividWorld_Dev_ReloadConfig}(dev) Reload config.json",
-                Condition_AlwaysAvailable,
-                Consequence_ReloadConfig,
-                DevDialoguePriority);
-
-            // 8. (dev) Force the newest secret to leak
-            starter.AddPlayerLine(
-                "vividworld_dev_force_leak",
-                TokenHeroMainOptions,
-                TokenDevResult,
-                "{=VividWorld_Dev_ForceLeak}(dev) Force the newest secret to leak",
-                Condition_AllowInjection,
-                Consequence_ForceLeak,
-                DevDialoguePriority);
-
-            // 9. (dev) Reset performance counters
-            starter.AddPlayerLine(
-                "vividworld_dev_reset_metrics",
-                TokenHeroMainOptions,
-                TokenDevResult,
-                "{=VividWorld_Dev_ResetMetrics}(dev) Reset performance counters",
-                Condition_AlwaysAvailable,
-                Consequence_ResetMetrics,
-                DevDialoguePriority);
-
-            // 10. (dev) Make this person like me more
-            starter.AddPlayerLine(
-                "vividworld_dev_boost_relation",
-                TokenHeroMainOptions,
-                TokenDevResult,
-                "{=VividWorld_Dev_BoostRelation}(dev) Make this person like me more",
-                Condition_AllowInjection,
-                Consequence_BoostRelation,
-                DevDialoguePriority);
-
-            // 11. (dev) Who else knows about this?
+            // 3. (dev) Who else knows about this?
             starter.AddPlayerLine(
                 "vividworld_dev_event_roster",
-                TokenHeroMainOptions,
-                TokenDevResult,
+                TokenDevPerson,
+                TokenDevResultPerson,
                 "{=VividWorld_Dev_EventRoster}(dev) Who else knows about this?",
                 Condition_AlwaysAvailable,
                 Consequence_EventRoster,
                 DevDialoguePriority);
 
-            // 12. (dev) Event catalog
-            starter.AddPlayerLine(
-                "vividworld_dev_event_catalog",
-                TokenHeroMainOptions,
-                TokenDevResult,
-                "{=VividWorld_Dev_EventCatalog}(dev) Event catalog",
-                Condition_AlwaysAvailable,
-                Consequence_EventCatalog,
-                DevDialoguePriority);
-
-            // 13. (dev) Trigger a situation here
-            starter.AddPlayerLine(
-                "vividworld_dev_trigger_situation",
-                TokenHeroMainOptions,
-                TokenDevResult,
-                "{=VividWorld_Dev_TriggerSituation}(dev) Trigger a situation here",
-                Condition_AllowInjection,
-                Consequence_TriggerSituation,
-                DevDialoguePriority);
-
-            // 14. (dev) His ledger of grudges
+            // 4. (dev) His ledger of grudges
             starter.AddPlayerLine(
                 "vividworld_dev_grudge_ledger",
-                TokenHeroMainOptions,
-                TokenDevResult,
+                TokenDevPerson,
+                TokenDevResultPerson,
                 "{=VividWorld_Dev_GrudgeLedger}(dev) His ledger of grudges",
                 Condition_AlwaysAvailable,
                 Consequence_GrudgeLedger,
                 DevDialoguePriority);
 
-            // 15. (dev) Today's situation scan
-            starter.AddPlayerLine(
-                "vividworld_dev_scan_today",
-                TokenHeroMainOptions,
-                TokenDevResult,
-                "{=VividWorld_Dev_ScanToday}(dev) Today's situation scan",
-                Condition_AlwaysAvailable,
-                Consequence_ScanToday,
-                DevDialoguePriority);
-
-            // 16. (dev) Snapshot state
-            starter.AddPlayerLine(
-                "vividworld_dev_snapshots",
-                TokenHeroMainOptions,
-                TokenDevResult,
-                "{=VividWorld_Dev_Snapshots}(dev) Snapshot state",
-                Condition_AlwaysAvailable,
-                Consequence_Snapshots,
-                DevDialoguePriority);
-
-            // 17. (dev) What the rumors he heard changed
+            // 5. (dev) What the rumors he heard changed
             starter.AddPlayerLine(
                 "vividworld_dev_opinion_shifts",
-                TokenHeroMainOptions,
-                TokenDevResult,
+                TokenDevPerson,
+                TokenDevResultPerson,
                 "{=VividWorld_Dev_OpinionShifts}(dev) What the rumors he heard changed",
                 Condition_AlwaysAvailable,
                 Consequence_OpinionShifts,
                 DevDialoguePriority);
 
-            // 18. (dev) Why do I hear so little?
-            starter.AddPlayerLine(
-                "vividworld_dev_why_hear_few",
-                TokenHeroMainOptions,
-                TokenDevResult,
-                "{=VividWorld_Dev_WhyHearFew}(dev) Why do I hear so little?",
-                Condition_AlwaysAvailable,
-                Consequence_WhyHearFew,
-                DevDialoguePriority);
-
-            // 19. (dev) What happens if I talk to everyone right now?
-            starter.AddPlayerLine(
-                "vividworld_dev_preview_talk_all",
-                TokenHeroMainOptions,
-                TokenDevResult,
-                "{=VividWorld_Dev_PreviewTalkAll}(dev) What happens if I talk to everyone right now?",
-                Condition_AlwaysAvailable,
-                Consequence_PreviewTalkAll,
-                DevDialoguePriority);
-
-            // 20. (dev) What does this NPC remember?
+            // 6. (dev) What does this NPC remember?
             starter.AddPlayerLine(
                 "vividworld_dev_npc_recall",
-                TokenHeroMainOptions,
-                TokenDevResult,
+                TokenDevPerson,
+                TokenDevResultPerson,
                 "{=VividWorld_Dev_NpcRecall}(dev) What does this NPC remember?",
                 Condition_AlwaysAvailable,
                 Consequence_NpcRecall,
                 DevDialoguePriority);
 
-            // 21. (dev) AI integration: what would be handed over for this NPC
+            // 7. (dev) AI integration: what would be handed over for this NPC
             starter.AddPlayerLine(
                 "vividworld_dev_ai_push_preview",
-                TokenHeroMainOptions,
-                TokenDevResult,
+                TokenDevPerson,
+                TokenDevResultPerson,
                 "{=VividWorld_Dev_AiPushPreview}(dev) AI integration: what would be handed over for this NPC",
                 Condition_AlwaysAvailable,
                 Consequence_AiPushPreview,
                 DevDialoguePriority);
 
-            // 22. (dev) Have closest bandits capture this NPC.
+            // 8. (dev) What would he add to each rumor he knows?
+            starter.AddPlayerLine(
+                "vividworld_dev_feelings",
+                TokenDevPerson,
+                TokenDevResultPerson,
+                "{=VividWorld_Dev_Feelings}(dev) What would he add to each rumor he knows?",
+                Condition_AlwaysAvailable,
+                Consequence_Feelings,
+                DevDialoguePriority);
+
+            // Return from person tools to categories
+            starter.AddPlayerLine(
+                "vividworld_dev_back_person",
+                TokenDevPerson,
+                TokenDevCategoriesPrompt,
+                "{=VividWorld_Dev_Menu_Back}(dev) Back",
+                null,
+                null,
+                DevDialoguePriority);
+
+            starter.AddDialogLine(
+                "vividworld_dev_result_person_line",
+                TokenDevResultPerson,
+                TokenDevPerson,
+                "{=!}{VIVIDWORLD_DEV_RESULT}",
+                null,
+                null,
+                100,
+                null);
+
+            // ── Category 2: About the world (8 tools) ──
+            // 1. (dev) World status
+            starter.AddPlayerLine(
+                "vividworld_dev_world_status",
+                TokenDevWorld,
+                TokenDevResultWorld,
+                "{=VividWorld_Dev_WorldStatus}(dev) World status",
+                Condition_AlwaysAvailable,
+                Consequence_WorldStatus,
+                DevDialoguePriority);
+
+            // 2. (dev) Event catalog
+            starter.AddPlayerLine(
+                "vividworld_dev_event_catalog",
+                TokenDevWorld,
+                TokenDevResultWorld,
+                "{=VividWorld_Dev_EventCatalog}(dev) Event catalog",
+                Condition_AlwaysAvailable,
+                Consequence_EventCatalog,
+                DevDialoguePriority);
+
+            // 3. (dev) Today's situation scan
+            starter.AddPlayerLine(
+                "vividworld_dev_scan_today",
+                TokenDevWorld,
+                TokenDevResultWorld,
+                "{=VividWorld_Dev_ScanToday}(dev) Today's situation scan",
+                Condition_AlwaysAvailable,
+                Consequence_ScanToday,
+                DevDialoguePriority);
+
+            // 4. (dev) Snapshot state
+            starter.AddPlayerLine(
+                "vividworld_dev_snapshots",
+                TokenDevWorld,
+                TokenDevResultWorld,
+                "{=VividWorld_Dev_Snapshots}(dev) Snapshot state",
+                Condition_AlwaysAvailable,
+                Consequence_Snapshots,
+                DevDialoguePriority);
+
+            // 5. (dev) Why do I hear so little?
+            starter.AddPlayerLine(
+                "vividworld_dev_why_hear_few",
+                TokenDevWorld,
+                TokenDevResultWorld,
+                "{=VividWorld_Dev_WhyHearFew}(dev) Why do I hear so little?",
+                Condition_AlwaysAvailable,
+                Consequence_WhyHearFew,
+                DevDialoguePriority);
+
+            // 6. (dev) What happens if I talk to everyone right now?
+            starter.AddPlayerLine(
+                "vividworld_dev_preview_talk_all",
+                TokenDevWorld,
+                TokenDevResultWorld,
+                "{=VividWorld_Dev_PreviewTalkAll}(dev) What happens if I talk to everyone right now?",
+                Condition_AlwaysAvailable,
+                Consequence_PreviewTalkAll,
+                DevDialoguePriority);
+
+            // 7. (dev) Reload config.json
+            starter.AddPlayerLine(
+                "vividworld_dev_reload_config",
+                TokenDevWorld,
+                TokenDevResultWorld,
+                "{=VividWorld_Dev_ReloadConfig}(dev) Reload config.json",
+                Condition_AlwaysAvailable,
+                Consequence_ReloadConfig,
+                DevDialoguePriority);
+
+            // 8. (dev) Reset performance counters
+            starter.AddPlayerLine(
+                "vividworld_dev_reset_metrics",
+                TokenDevWorld,
+                TokenDevResultWorld,
+                "{=VividWorld_Dev_ResetMetrics}(dev) Reset performance counters",
+                Condition_AlwaysAvailable,
+                Consequence_ResetMetrics,
+                DevDialoguePriority);
+
+            // Return from world tools to categories
+            starter.AddPlayerLine(
+                "vividworld_dev_back_world",
+                TokenDevWorld,
+                TokenDevCategoriesPrompt,
+                "{=VividWorld_Dev_Menu_Back}(dev) Back",
+                null,
+                null,
+                DevDialoguePriority);
+
+            starter.AddDialogLine(
+                "vividworld_dev_result_world_line",
+                TokenDevResultWorld,
+                TokenDevWorld,
+                "{=!}{VIVIDWORLD_DEV_RESULT}",
+                null,
+                null,
+                100,
+                null);
+
+            // ── Category 3: Actions and injections (8 tools) ──
+            // 1. (dev) Stage a public incident between us
+            starter.AddPlayerLine(
+                "vividworld_dev_inject_public",
+                TokenDevAct,
+                TokenDevResultAct,
+                "{=VividWorld_Dev_InjectPublic}(dev) Stage a public incident between us",
+                Condition_AllowInjection,
+                Consequence_InjectPublic,
+                DevDialoguePriority);
+
+            // 2. (dev) Stage a secret between us
+            starter.AddPlayerLine(
+                "vividworld_dev_inject_secret",
+                TokenDevAct,
+                TokenDevResultAct,
+                "{=VividWorld_Dev_InjectSecret}(dev) Stage a secret between us",
+                Condition_AllowInjection,
+                Consequence_InjectSecret,
+                DevDialoguePriority);
+
+            // 3. (dev) Force the newest secret to leak
+            starter.AddPlayerLine(
+                "vividworld_dev_force_leak",
+                TokenDevAct,
+                TokenDevResultAct,
+                "{=VividWorld_Dev_ForceLeak}(dev) Force the newest secret to leak",
+                Condition_AllowInjection,
+                Consequence_ForceLeak,
+                DevDialoguePriority);
+
+            // 4. (dev) Make this person like me more
+            starter.AddPlayerLine(
+                "vividworld_dev_boost_relation",
+                TokenDevAct,
+                TokenDevResultAct,
+                "{=VividWorld_Dev_BoostRelation}(dev) Make this person like me more",
+                Condition_AllowInjection,
+                Consequence_BoostRelation,
+                DevDialoguePriority);
+
+            // 5. (dev) Trigger a situation here
+            starter.AddPlayerLine(
+                "vividworld_dev_trigger_situation",
+                TokenDevAct,
+                TokenDevResultAct,
+                "{=VividWorld_Dev_TriggerSituation}(dev) Trigger a situation here",
+                Condition_AllowInjection,
+                Consequence_TriggerSituation,
+                DevDialoguePriority);
+
+            // 6. (dev) Simulate 24h of propagation
+            starter.AddPlayerLine(
+                "vividworld_dev_tick_24h",
+                TokenDevAct,
+                TokenDevResultAct,
+                "{=VividWorld_Dev_Tick24h}(dev) Simulate 24h of propagation",
+                Condition_AlwaysAvailable,
+                Consequence_Tick24h,
+                DevDialoguePriority);
+
+            // 7. (dev) Have closest bandits capture this NPC.
             // Ends the conversation instead of returning to main options: once the conversation hero is a
             // bandit prisoner, a native main-option condition reads the captor party's owner clan, which
-            // bandit parties do not have, and the conversation freezes (ledger D-98).
+            // bandit parties do not have, and the conversation freezes.
             starter.AddPlayerLine(
                 "vividworld_dev_capture_by_bandits",
-                TokenHeroMainOptions,
+                TokenDevAct,
                 TokenDevCaptureResult,
                 "{=VividWorld_Dev_CaptureByBandits}(dev) Have the closest bandits capture this person",
                 Condition_AllowInjection,
@@ -326,18 +501,37 @@ namespace VividWorld.Debug
                 100,
                 null);
 
-            // Shared return line to main options. Condition MUST be null so the dev subtree always has an unconditional exit edge.
+            // 8. (dev) Have him tell me a rumor with feeling
+            starter.AddPlayerLine(
+                "vividworld_dev_tell_with_feeling",
+                TokenDevAct,
+                TokenDevResultAct,
+                "{=VividWorld_Dev_TellWithFeeling}(dev) Have him tell me a rumor with feeling",
+                Condition_AllowInjection,
+                Consequence_TellWithFeeling,
+                DevDialoguePriority);
+
+            // Return from action tools to categories
+            starter.AddPlayerLine(
+                "vividworld_dev_back_act",
+                TokenDevAct,
+                TokenDevCategoriesPrompt,
+                "{=VividWorld_Dev_Menu_Back}(dev) Back",
+                null,
+                null,
+                DevDialoguePriority);
+
             starter.AddDialogLine(
-                "vividworld_dev_result_line",
-                TokenDevResult,
-                TokenHeroMainOptions,
+                "vividworld_dev_result_act_line",
+                TokenDevResultAct,
+                TokenDevAct,
                 "{=!}{VIVIDWORLD_DEV_RESULT}",
                 null,
                 null,
                 100,
                 null);
 
-            ModLog.Info("Registered 22 developer dialogue lines on hero_main_options.");
+            ModLog.Info("Registered 24 developer dialogue lines in 3 categories (person: 8, world: 8, act: 8) behind main menu entry.");
         }
 
         private static void SetResult(string line)
@@ -434,8 +628,12 @@ namespace VividWorld.Debug
                     ModLog.Info($"[DevDialogue] {msg}");
 
                     var evt = eventId != null ? _eventStore.Load(eventId) : null;
-                    int drama = evt?.DramaWeight ?? sub.DramaWeight ?? _config.Propagation.DefaultDrama;
-                    Finish($"(dev) injected {eventId} (public, drama {drama})");
+                    string drama = evt != null
+                        ? DramaScales.Describe(evt.DramaWeight, evt.DramaScale)
+                        : (sub.DramaWeight.HasValue
+                            ? DramaScales.Describe(sub.DramaWeight.Value, sub.DramaScale)
+                            : "weight (config default)");
+                    Finish($"(dev) injected {eventId} (public, {drama})");
                     _dialogs?.InvalidateCache();
                 }
                 else
@@ -824,7 +1022,7 @@ namespace VividWorld.Debug
                 foreach (var t in catalog.Templates)
                 {
                     string linked = string.IsNullOrEmpty(t.LinkedTemplateType) ? "-" : t.LinkedTemplateType!;
-                    sb.AppendLine($"  {t.Type} | {t.Origin} | drama {(t.DramaWeight.HasValue ? t.DramaWeight.Value.ToString() : "(config)")} | " +
+                    sb.AppendLine($"  {t.Type} | {t.Origin} | {(t.DramaWeight.HasValue ? DramaScales.Describe(t.DramaWeight.Value, t.DramaScale) + (t.DramaScale == DramaScales.Ten ? " base" : " (old 1..5 writing)") : "weight (config)")} | " +
                                   $"{t.Roles.Count} role(s) | {t.Facts.Count} fact(s) | linked: {linked}");
                 }
 
@@ -1292,6 +1490,182 @@ namespace VividWorld.Debug
             catch (Exception ex)
             {
                 ModLog.Error("Dev NPC recall dump failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        /// <summary>
+        /// 對話對象對他知道的每一則消息：焦點人物、好感／恩怨／地位怎麼算、會講的感想那一句。
+        /// 只讀，不改任何好感、恩怨或紀錄；一律照「完整分享講給玩家聽」算，不看他現在對玩家的交情夠不夠。
+        /// </summary>
+        private void Consequence_Feelings()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null)
+                {
+                    Finish("(dev) no conversation partner. See log.txt");
+                    return;
+                }
+
+                string heroName = hero.Name?.ToString() ?? hero.StringId;
+                if (_feelings == null)
+                {
+                    ModLog.Info("[DevDialogue] feelings: the feeling resolver is not available in this session.");
+                    Finish("(dev) feelings are not available in this session. See log.txt");
+                    return;
+                }
+
+                double day = CampaignTime.Now.ToDays;
+                var eventIds = _eventStore.KnownBy.EventsKnownBy(hero.StringId, day);
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                    "[DevDialogue] feelings {0} ({1}) on day {2:F1}: {3} known event(s), each computed as a full share to the player (read-only)",
+                    heroName, hero.StringId, day, eventIds.Count));
+
+                int applied = 0, none = 0, missing = 0;
+                foreach (var id in eventIds)
+                {
+                    var evt = _eventStore.Load(id);
+                    if (evt == null) { missing++; continue; }
+
+                    var decision = _feelings.Resolve(evt, hero.StringId, isGist: false);
+                    sb.AppendLine("  " + decision.LogLine);
+                    if (decision.Applied)
+                    {
+                        applied++;
+                        string? said = FallbackTextRenderer.RenderFeelingLine(decision, speakerHeroId: hero.StringId);
+                        sb.AppendLine("    would say: " + (said ?? "(the string table has no text for this line)"));
+                    }
+                    else
+                    {
+                        none++;
+                    }
+                }
+
+                ModLog.Info(sb.ToString().TrimEnd());
+                Finish(string.Format(CultureInfo.InvariantCulture,
+                    "(dev) {0}: feeling for {1} of {2} known rumor(s), none for {3}{4}. See log.txt",
+                    heroName, applied, eventIds.Count, none, missing > 0 ? $", {missing} not loadable" : string.Empty));
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev feelings dump failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_TellWithFeeling()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null)
+                {
+                    Finish("(dev) no conversation partner. See log.txt");
+                    return;
+                }
+
+                string heroName = hero.Name?.ToString() ?? hero.StringId;
+                string? playerHeroId = Hero.MainHero?.StringId;
+                if (string.IsNullOrEmpty(playerHeroId))
+                {
+                    Finish("(dev) main hero is not available. See log.txt");
+                    return;
+                }
+
+                if (_feelings == null)
+                {
+                    ModLog.Info("[DevDialogue] tell with feeling: feelings resolver is not available in this session.");
+                    Finish("(dev) feelings are not available in this session. See log.txt");
+                    return;
+                }
+
+                if (_dialogs == null || _dialogs.OfferSelector == null)
+                {
+                    ModLog.Info("[DevDialogue] tell with feeling: rumor dialog behavior is not available in this session.");
+                    Finish("(dev) rumor dialog behavior is not available in this session. See log.txt");
+                    return;
+                }
+
+                double day = CampaignTime.Now.ToDays;
+                var eventIds = _eventStore.KnownBy.EventsKnownBy(hero.StringId, day);
+
+                ModLog.Info($"[DevDialogue] forced feeling tell for {heroName} ({hero.StringId}) on day {day:F1}: {eventIds.Count} known event(s)");
+
+                var pickResult = ForcedFeelingRumorPicker.Pick(
+                    eventIds,
+                    id => _eventStore.Load(id),
+                    hero.StringId,
+                    playerHeroId!,
+                    day,
+                    _config.Memory,
+                    (evt, speakerId) => _feelings.Resolve(evt, speakerId, isGist: false),
+                    id => _dialogs.PlayerHeardLog != null && _dialogs.PlayerHeardLog.Contains(id));
+
+                foreach (var eval in pickResult.Evaluations)
+                {
+                    string detail = !string.IsNullOrEmpty(eval.Reason) ? $" ({eval.Reason})" : string.Empty;
+                    ModLog.Info($"  [{eval.Status}] {eval.EventId}{detail}");
+                }
+
+                if (pickResult.ChosenEvent == null)
+                {
+                    string noRumorMsg = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "(dev) {0}: no rumor with a feeling that you have not heard (known {1}: no feeling {2}, already heard {3}, forgotten {4}, not loadable {5})",
+                        heroName,
+                        pickResult.TotalKnown,
+                        pickResult.NoFeelingCount,
+                        pickResult.AlreadyHeardCount,
+                        pickResult.ForgottenCount,
+                        pickResult.NotLoadableCount);
+
+                    Finish(noRumorMsg);
+                    return;
+                }
+
+                var chosenEvent = pickResult.ChosenEvent;
+                var tellerEntry = chosenEvent.EntryFor(hero.StringId);
+                int tellerHop = tellerEntry?.Hop ?? 0;
+                string? sourceHeroId = tellerEntry?.SourceHeroId;
+
+                string? linkedId = chosenEvent.LinkedEventId;
+                bool isCorrection = !string.IsNullOrEmpty(linkedId) &&
+                    ((_dialogs.PlayerHeardLog != null && _dialogs.PlayerHeardLog.Contains(linkedId!)) ||
+                     (_eventStore.KnownBy != null && _eventStore.KnownBy.EventsKnownBy(playerHeroId!, day).Contains(linkedId!)));
+
+                var candidate = new RumorCandidate
+                {
+                    Event = chosenEvent,
+                    TellerHop = tellerHop,
+                    PlayerExistingHop = null,
+                    InvolvesHeroPlayerCaresAbout = false,
+                    SourceHeroId = sourceHeroId,
+                    IsCorrection = isCorrection
+                };
+
+                var tellerProfile = _dialogs.BuildSocialProfile(hero);
+                var offer = _dialogs.OfferSelector.BuildOffer(candidate, tellerProfile, day, VolunteerTier.Full);
+
+                var renderResult = FallbackTextRenderer.RenderBoth(offer.Composed, _config.Presentation);
+
+                _dialogs.ApplyOfferAndRecord(offer, chosenEvent, hero.StringId, day, heroName);
+
+                string deliveredMsg = $"Rumor delivered to player: event {offer.EventId} (full, hop {offer.ResultingPlayerHop}, isRetell={offer.IsRetell}, heldBack={offer.HeldBack}, closing={offer.Composed.ClosingKey ?? "none"}) from {hero.Name} (triggered via dev command; does not count against daily share limit)";
+                ModLog.Info(deliveredMsg);
+                ModLog.Info($"  text shown: \"{renderResult.PlainText ?? renderResult.DisplayText}\"");
+                RumorDialogBehavior.LogDeliveredPrefix(offer);
+                RumorDialogBehavior.LogDeliveredFeeling(offer);
+
+                Finish(renderResult.DisplayText);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev forced feeling tell failed", ex);
                 Finish("(dev) failed - see log.txt");
             }
         }

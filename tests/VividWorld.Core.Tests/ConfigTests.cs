@@ -88,7 +88,6 @@ namespace VividWorld.Core.Tests
             Assert.Equal(6, cfg.Scheduling.FlushIntervalHours);
 
             // Dialogue
-            Assert.Equal(30, cfg.Dialogue.NpcVolunteerRelationGate);
             Assert.True(cfg.Dialogue.NpcVolunteerAlwaysForCloseKin);
             Assert.Equal(1, cfg.Dialogue.SharesPerHeroPerDay);
             Assert.Equal(0, cfg.Dialogue.AskRelationGate);
@@ -97,20 +96,15 @@ namespace VividWorld.Core.Tests
             Assert.Equal(4.0, cfg.Dialogue.AskTraitWeights.Honor);
             Assert.Equal(-8.0, cfg.Dialogue.AskTraitWeights.Calculating);
             Assert.True(cfg.Dialogue.AllowRicherRetell);
-            Assert.Equal(0.5, cfg.Dialogue.ScoreRetellMultiplier);
-            Assert.Equal(2.0, cfg.Dialogue.ScoreDrama);
-            Assert.Equal(3.0, cfg.Dialogue.ScoreFreshness);
-            Assert.Equal(1.0, cfg.Dialogue.ScoreDetail);
-            Assert.Equal(4.0, cfg.Dialogue.ScoreRelevance);
-            Assert.Equal(20, cfg.Dialogue.ScoreRelevanceRelationGate);
             Assert.Equal("lord_start", cfg.Dialogue.NpcLineInputToken);
             Assert.Equal(105, cfg.Dialogue.NpcLinePriority);
             Assert.Equal("hero_main_options", cfg.Dialogue.PlayerLineInputToken);
             Assert.Equal(105, cfg.Dialogue.PlayerLinePriority);
             Assert.Equal("auto", cfg.Dialogue.VolunteerMode);
-            Assert.Equal(0, cfg.Dialogue.CasualChatRelationGate);
-            Assert.Equal(10, cfg.Dialogue.RealisticChatRelationGate);
-            Assert.Equal(2, cfg.Dialogue.GistExtraHops);
+            Assert.Equal(0.0, cfg.Dialogue.CasualVolunteerLine);
+            Assert.Equal(10.0, cfg.Dialogue.RealisticVolunteerLine);
+            Assert.Equal(30.0, cfg.Dialogue.SecretLine);
+            Assert.Equal(5, cfg.Dialogue.BigNewsLine);
 
             // Presentation
             Assert.Equal(50, cfg.Presentation.ChronicleMaxEntries);
@@ -119,6 +113,7 @@ namespace VividWorld.Core.Tests
             Assert.Equal(string.Empty, cfg.Presentation.FactSeparator);
             Assert.Equal(string.Empty, cfg.Presentation.SentenceEnd);
             Assert.True(cfg.Presentation.EncyclopediaLinksEnabled);
+            Assert.True(cfg.Presentation.WholeSentences);
 
             // Persistence
             Assert.Equal(100, cfg.Persistence.ShardDays);
@@ -167,16 +162,17 @@ namespace VividWorld.Core.Tests
             Assert.True(cfg.Events.Sources.HeroPrisonerReleased);
             Assert.True(cfg.Events.Sources.HeroesMarried);
             Assert.True(cfg.Events.Sources.ChildBorn);
-            Assert.NotNull(cfg.Events.PrisonerDramaByProminence);
-            Assert.Equal(5, cfg.Events.PrisonerDramaByProminence.Ruler);
-            Assert.Equal(4, cfg.Events.PrisonerDramaByProminence.ClanLeader);
-            Assert.Equal(2, cfg.Events.PrisonerDramaByProminence.NobleMember);
-            Assert.Equal(1, cfg.Events.PrisonerDramaByProminence.Minor);
-            Assert.NotNull(cfg.Events.ReleaseDramaByProminence);
-            Assert.Equal(4, cfg.Events.ReleaseDramaByProminence.Ruler);
-            Assert.Equal(3, cfg.Events.ReleaseDramaByProminence.ClanLeader);
-            Assert.Equal(1, cfg.Events.ReleaseDramaByProminence.NobleMember);
-            Assert.Equal(1, cfg.Events.ReleaseDramaByProminence.Minor);
+            Assert.NotNull(cfg.Events.WeightBonusByProminence);
+            Assert.Equal(4, cfg.Events.WeightBonusByProminence.Ruler);
+            Assert.Equal(2, cfg.Events.WeightBonusByProminence.ClanLeader);
+            Assert.Equal(0, cfg.Events.WeightBonusByProminence.NobleMember);
+            Assert.Equal(-2, cfg.Events.WeightBonusByProminence.Minor);
+            Assert.NotNull(cfg.Events.WeightBonusByClanStanding);
+            Assert.Equal(4, cfg.Events.WeightBonusByClanStanding.Royal);
+            Assert.Equal(2, cfg.Events.WeightBonusByClanStanding.High);
+            Assert.Equal(0, cfg.Events.WeightBonusByClanStanding.Ordinary);
+            Assert.Equal(-2, cfg.Events.WeightBonusByClanStanding.Minor);
+            Assert.Equal(5, cfg.Events.HighClanMinTier);
 
             // Situations
             Assert.Equal("vividworld_situations.json", cfg.Situations.CatalogFile);
@@ -278,11 +274,11 @@ namespace VividWorld.Core.Tests
             cfg.Propagation.ChannelWeights.KinAbroad = 50.0;
             cfg.Propagation.ChannelWeights.Kingdom = -2.0;
 
-            // §9.1 的四個評分權重都是正向項，負值會讓排序反轉。
-            cfg.Dialogue.ScoreDrama = -5.0;
-            cfg.Dialogue.ScoreFreshness = 500.0;
-            cfg.Dialogue.ScoreDetail = -0.1;
-            cfg.Dialogue.ScoreRelevance = -100.0;
+            // 對話意願線與大事門檻夾取
+            cfg.Dialogue.CasualVolunteerLine = -200.0;
+            cfg.Dialogue.RealisticVolunteerLine = 200.0;
+            cfg.Dialogue.SecretLine = 150.0;
+            cfg.Dialogue.BigNewsLine = 15;
             cfg.Dialogue.SharesPerHeroPerDay = -5;
 
             cfg.Normalize();
@@ -294,10 +290,10 @@ namespace VividWorld.Core.Tests
             Assert.Equal(10.0, cfg.Propagation.ChannelWeights.KinAbroad);
             Assert.Equal(0.0, cfg.Propagation.ChannelWeights.Kingdom);
 
-            Assert.Equal(0.0, cfg.Dialogue.ScoreDrama);
-            Assert.Equal(100.0, cfg.Dialogue.ScoreFreshness);
-            Assert.Equal(0.0, cfg.Dialogue.ScoreDetail);
-            Assert.Equal(0.0, cfg.Dialogue.ScoreRelevance);
+            Assert.Equal(-100.0, cfg.Dialogue.CasualVolunteerLine);
+            Assert.Equal(100.0, cfg.Dialogue.RealisticVolunteerLine);
+            Assert.Equal(100.0, cfg.Dialogue.SecretLine);
+            Assert.Equal(10, cfg.Dialogue.BigNewsLine);
             Assert.Equal(0, cfg.Dialogue.SharesPerHeroPerDay);
 
             // 合法值不得被動到。
@@ -309,8 +305,10 @@ namespace VividWorld.Core.Tests
             Assert.Equal(1.00, untouched.Propagation.ChannelWeights.SameClan);
             Assert.Equal(0.80, untouched.Propagation.ChannelWeights.KinAbroad);
             Assert.Equal(0.50, untouched.Propagation.ChannelWeights.Kingdom);
-            Assert.Equal(2.0, untouched.Dialogue.ScoreDrama);
-            Assert.Equal(4.0, untouched.Dialogue.ScoreRelevance);
+            Assert.Equal(0.0, untouched.Dialogue.CasualVolunteerLine);
+            Assert.Equal(10.0, untouched.Dialogue.RealisticVolunteerLine);
+            Assert.Equal(30.0, untouched.Dialogue.SecretLine);
+            Assert.Equal(5, untouched.Dialogue.BigNewsLine);
         }
 
         [Fact]
@@ -415,35 +413,34 @@ namespace VividWorld.Core.Tests
         }
 
         [Fact]
-        public void Normalize_ProminenceDrama_ClampsValuesAndProducesClampNotices()
+        public void Normalize_WeightBonusByProminence_ClampsValuesAndProducesClampNotices()
         {
             var cfg = new VividWorldConfig();
-            cfg.Events.PrisonerDramaByProminence.Ruler = 0;
-            cfg.Events.PrisonerDramaByProminence.Minor = 9;
+            cfg.Events.WeightBonusByProminence.Ruler = 40;
+            cfg.Events.WeightBonusByProminence.Minor = -30;
 
             var notices = new System.Collections.Generic.List<ClampNotice>();
             cfg.Normalize(notices);
 
-            Assert.Equal(1, cfg.Events.PrisonerDramaByProminence.Ruler);
-            Assert.Equal(5, cfg.Events.PrisonerDramaByProminence.Minor);
+            Assert.Equal(9, cfg.Events.WeightBonusByProminence.Ruler);
+            Assert.Equal(-9, cfg.Events.WeightBonusByProminence.Minor);
 
-            var noticeRuler = notices.Find(n => n.Key == "events.prisonerDramaByProminence.ruler");
+            var noticeRuler = notices.Find(n => n.Key == "events.weightBonusByProminence.ruler");
             Assert.NotNull(noticeRuler);
-            Assert.Equal(0, noticeRuler!.Requested);
-            Assert.Equal(1, noticeRuler.Applied);
-            Assert.Equal("1..5", noticeRuler.AllowedRange);
+            Assert.Equal(40, noticeRuler!.Requested);
+            Assert.Equal(9, noticeRuler.Applied);
+            Assert.Equal("-9..9", noticeRuler.AllowedRange);
 
-            var noticeMinor = notices.Find(n => n.Key == "events.prisonerDramaByProminence.minor");
+            var noticeMinor = notices.Find(n => n.Key == "events.weightBonusByProminence.minor");
             Assert.NotNull(noticeMinor);
-            Assert.Equal(9, noticeMinor!.Requested);
-            Assert.Equal(5, noticeMinor.Applied);
-            Assert.Equal("1..5", noticeMinor.AllowedRange);
+            Assert.Equal(-30, noticeMinor!.Requested);
+            Assert.Equal(-9, noticeMinor.Applied);
         }
 
         [Fact]
-        public void ConfigMerge_WithoutProminence_AddsAllFourKeysAndPreservesSources()
+        public void ConfigMerge_WithoutWeightBonusKeys_AddsThemAndPreservesSourcesAndTheUnusedOldKeys()
         {
-            // 舊設定：有自訂 sources，但沒有 prisonerDramaByProminence
+            // 舊設定：有自訂 sources，還有份量改版前的四組舊鍵；新鍵一個都沒有
             const string oldJson = @"{
   ""events"": {
     ""catalogFile"": ""custom_events.json"",
@@ -453,7 +450,8 @@ namespace VividWorld.Core.Tests
       ""heroPrisonerTaken"": true,
       ""heroesMarried"": false,
       ""childBorn"": true
-    }
+    },
+    ""prisonerDramaByProminence"": { ""ruler"": 5, ""clanLeader"": 4, ""nobleMember"": 3, ""minor"": 2 }
   }
 }";
             var existingJObj = Newtonsoft.Json.Linq.JObject.Parse(oldJson);
@@ -462,10 +460,15 @@ namespace VividWorld.Core.Tests
 
             var result = ConfigMerge.AddMissingKeys(existingJObj, canonicalJObj);
 
-            Assert.Contains("events.prisonerDramaByProminence.ruler", result.AddedPaths);
-            Assert.Contains("events.prisonerDramaByProminence.clanLeader", result.AddedPaths);
-            Assert.Contains("events.prisonerDramaByProminence.nobleMember", result.AddedPaths);
-            Assert.Contains("events.prisonerDramaByProminence.minor", result.AddedPaths);
+            Assert.Contains("events.weightBonusByProminence.ruler", result.AddedPaths);
+            Assert.Contains("events.weightBonusByProminence.clanLeader", result.AddedPaths);
+            Assert.Contains("events.weightBonusByProminence.nobleMember", result.AddedPaths);
+            Assert.Contains("events.weightBonusByProminence.minor", result.AddedPaths);
+            Assert.Contains("events.weightBonusByClanStanding.royal", result.AddedPaths);
+            Assert.Contains("events.weightBonusByClanStanding.high", result.AddedPaths);
+            Assert.Contains("events.weightBonusByClanStanding.ordinary", result.AddedPaths);
+            Assert.Contains("events.weightBonusByClanStanding.minor", result.AddedPaths);
+            Assert.Contains("events.highClanMinTier", result.AddedPaths);
 
             // 既有值維持不變
             Assert.Equal("custom_events.json", (string?)result.Merged.SelectToken("events.catalogFile"));
@@ -475,35 +478,77 @@ namespace VividWorld.Core.Tests
             Assert.False((bool?)result.Merged.SelectToken("events.sources.heroesMarried"));
             Assert.True((bool?)result.Merged.SelectToken("events.sources.childBorn"));
 
-            // 新補上的鍵有預設值
+            // 不再讀的舊鍵原樣留著，不刪不改
             Assert.Equal(5, (int?)result.Merged.SelectToken("events.prisonerDramaByProminence.ruler"));
-            Assert.Equal(4, (int?)result.Merged.SelectToken("events.prisonerDramaByProminence.clanLeader"));
-            Assert.Equal(2, (int?)result.Merged.SelectToken("events.prisonerDramaByProminence.nobleMember"));
-            Assert.Equal(1, (int?)result.Merged.SelectToken("events.prisonerDramaByProminence.minor"));
+            Assert.Equal(2, (int?)result.Merged.SelectToken("events.prisonerDramaByProminence.minor"));
+
+            // 新補上的鍵有預設值
+            Assert.Equal(4, (int?)result.Merged.SelectToken("events.weightBonusByProminence.ruler"));
+            Assert.Equal(2, (int?)result.Merged.SelectToken("events.weightBonusByProminence.clanLeader"));
+            Assert.Equal(0, (int?)result.Merged.SelectToken("events.weightBonusByProminence.nobleMember"));
+            Assert.Equal(-2, (int?)result.Merged.SelectToken("events.weightBonusByProminence.minor"));
+            Assert.Equal(4, (int?)result.Merged.SelectToken("events.weightBonusByClanStanding.royal"));
+            Assert.Equal(5, (int?)result.Merged.SelectToken("events.highClanMinTier"));
         }
 
         [Fact]
-        public void Normalize_ClampsReleaseDramaByProminence()
+        public void Normalize_ClampsClanStandingBonusAndHighClanTier()
         {
             var cfg = new VividWorldConfig();
-            cfg.Events.ReleaseDramaByProminence.Ruler = 10;
-            cfg.Events.ReleaseDramaByProminence.ClanLeader = -2;
-            cfg.Events.ReleaseDramaByProminence.NobleMember = 0;
-            cfg.Events.ReleaseDramaByProminence.Minor = 6;
+            cfg.Events.WeightBonusByClanStanding.Royal = 12;
+            cfg.Events.WeightBonusByClanStanding.High = -12;
+            cfg.Events.HighClanMinTier = 0;
 
             var notices = new List<ClampNotice>();
             cfg.Normalize(notices);
 
-            Assert.Equal(5, cfg.Events.ReleaseDramaByProminence.Ruler);
-            Assert.Equal(1, cfg.Events.ReleaseDramaByProminence.ClanLeader);
-            Assert.Equal(1, cfg.Events.ReleaseDramaByProminence.NobleMember);
-            Assert.Equal(5, cfg.Events.ReleaseDramaByProminence.Minor);
+            Assert.Equal(9, cfg.Events.WeightBonusByClanStanding.Royal);
+            Assert.Equal(-9, cfg.Events.WeightBonusByClanStanding.High);
+            Assert.Equal(1, cfg.Events.HighClanMinTier);
 
-            Assert.Equal(4, notices.Count(n => n.Key.StartsWith("events.releaseDramaByProminence")));
+            Assert.Equal(3, notices.Count(n => n.Key.StartsWith("events.weightBonusByClanStanding") || n.Key == "events.highClanMinTier"));
         }
 
         [Fact]
-        public void ConfigMerge_AddsReleaseSettings_WhenMissing()
+        public void LegacyConfigKeys_FindsTheFourUnusedKeys_AndDescribesThemOnce()
+        {
+            const string json = @"{ ""events"": {
+  ""prisonerDramaByProminence"": { ""ruler"": 5 },
+  ""releaseDramaByProminence"": { ""ruler"": 4 },
+  ""banditCaptureDramaByProminence"": { ""ruler"": 5 },
+  ""banditReleaseDramaByProminence"": { ""ruler"": 5 } } }";
+
+            var cfg = VividJson.Read<VividWorldConfig>(json)!;
+
+            var found = LegacyConfigKeys.FindUnusedEventKeys(cfg.Events);
+            Assert.Equal(new[]
+            {
+                "events.prisonerDramaByProminence",
+                "events.releaseDramaByProminence",
+                "events.banditCaptureDramaByProminence",
+                "events.banditReleaseDramaByProminence"
+            }, found);
+
+            string? note = LegacyConfigKeys.DescribeUnusedEventKeys(cfg.Events);
+            Assert.NotNull(note);
+            Assert.Contains("are no longer read", note);
+            Assert.Contains("events.weightBonusByProminence", note);
+
+            // 舊鍵留在未知鍵裡，整份寫回去也還在
+            string written = VividJson.Write(cfg);
+            Assert.Contains("prisonerDramaByProminence", written);
+        }
+
+        [Fact]
+        public void LegacyConfigKeys_NoOldKeys_NothingToSay()
+        {
+            var cfg = new VividWorldConfig();
+            Assert.Empty(LegacyConfigKeys.FindUnusedEventKeys(cfg.Events));
+            Assert.Null(LegacyConfigKeys.DescribeUnusedEventKeys(cfg.Events));
+        }
+
+        [Fact]
+        public void ConfigMerge_AddsReleaseSourceSwitch_WhenMissing()
         {
             string oldJson = @"{
   ""configVersion"": 1,
@@ -521,16 +566,7 @@ namespace VividWorld.Core.Tests
             var result = ConfigMerge.AddMissingKeys(existingJObj, canonicalJObj);
 
             Assert.Contains("events.sources.heroPrisonerReleased", result.AddedPaths);
-            Assert.Contains("events.releaseDramaByProminence.ruler", result.AddedPaths);
-            Assert.Contains("events.releaseDramaByProminence.clanLeader", result.AddedPaths);
-            Assert.Contains("events.releaseDramaByProminence.nobleMember", result.AddedPaths);
-            Assert.Contains("events.releaseDramaByProminence.minor", result.AddedPaths);
-
             Assert.True((bool?)result.Merged.SelectToken("events.sources.heroPrisonerReleased"));
-            Assert.Equal(4, (int?)result.Merged.SelectToken("events.releaseDramaByProminence.ruler"));
-            Assert.Equal(3, (int?)result.Merged.SelectToken("events.releaseDramaByProminence.clanLeader"));
-            Assert.Equal(1, (int?)result.Merged.SelectToken("events.releaseDramaByProminence.nobleMember"));
-            Assert.Equal(1, (int?)result.Merged.SelectToken("events.releaseDramaByProminence.minor"));
         }
 
         [Fact]

@@ -29,6 +29,12 @@ namespace VividWorld.Core.Catalog
         OpinionInvalid,
 
         /// <summary>模板 selfTell 欄位宣告無效（角色未在 roles 宣告、性格名非五種之一、min 非整數、秘密類模板不可宣告等）。</summary>
-        SelfTellInvalid
+        SelfTellInvalid,
+
+        /// <summary>模板 feelings／feelingOverrides 欄位宣告無效（角色未在 roles 宣告、類別不在清單裡等）。</summary>
+        FeelingInvalid,
+
+        /// <summary>模板 selfFeelingVariants 欄位宣告無效（角色未在 roles 宣告、傾向名空白或重複、特質名不對、門檻不是只有一邊的整數等）。</summary>
+        SelfFeelingVariantInvalid
     }
 }

@@ -67,7 +67,10 @@ namespace VividWorld.Core.Presentation
                     LinkedEventId = entry.LinkedEventId,
                     HeadlineTextId = "VividWorld_EventType_" + (entry.Type ?? string.Empty),
                     HeadlineFallback = headlineFallback,
+                    NamedHeadlineTextId = ChronicleHeadline.NamedTextIdFor(entry.Type),
+                    HeadlineNameVar = ChronicleHeadline.PrisonerVarOf(entry),
                     Body = body,
+                    Sources = BuildSources(entry),
                     DayLabel = string.Empty,
                     SourceHeroName = null
                 };
@@ -76,6 +79,60 @@ namespace VividWorld.Core.Presentation
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// 每份來源一塊：那一份講的碎片組成事實（順序照整筆紀錄的碎片順序），感想照存下來的鍵重建。
+        /// 沒有來源清單的舊紀錄得到合成的一份，內容就是整筆紀錄。
+        /// </summary>
+        private IReadOnlyList<ChronicleSource> BuildSources(PlayerHeardEntry entry)
+        {
+            var list = new List<ChronicleSource>();
+            foreach (var source in entry.EffectiveSources())
+            {
+                var told = new HashSet<string>(source.FactIds ?? new List<string>(), StringComparer.Ordinal);
+                var facts = entry.Facts.Where(f => told.Contains(f.Id)).ToList();
+                if (facts.Count == 0)
+                {
+                    // 來源清單裡的碎片代號一個也對不上整筆紀錄：寧可顯示整筆的內容，也不要留一塊空白
+                    facts = entry.Facts;
+                }
+
+                ComposedRumor body;
+                if (source.HasSpokenLine)
+                {
+                    body = RumorTextComposer.Reconstruct(facts, source, _cfg, entry.EventId);
+                }
+                else
+                {
+                    body = RumorTextComposer.Compose(facts, _cfg, isRetell: false);
+                }
+
+                var item = new ChronicleSource
+                {
+                    HeroId = source.HeroId,
+                    Day = source.Day,
+                    Hop = source.Hop,
+                    FactCount = facts.Count,
+                    HasSpokenLine = source.HasSpokenLine,
+                    Body = body
+                };
+
+                if (source.HasFeeling)
+                {
+                    item.Feeling = body.Feeling ?? new VividWorld.Core.Feelings.FeelingDecision
+                    {
+                        SpeakerId = source.HeroId ?? string.Empty,
+                        EventId = entry.EventId,
+                        LineKey = source.FeelingLineKey,
+                        AddressKey = source.FeelingAddressKey,
+                        FocusHeroId = source.FeelingFocusHeroId
+                    };
+                }
+
+                list.Add(item);
+            }
+            return list;
         }
     }
 

@@ -1133,7 +1133,7 @@ namespace VividWorld.Core.Tests
         public void MemoryLogFormatter_FormatDormancy_FormatsAllFourReasons()
         {
             var r1 = DormancyReason.ForMaxHop(5, 3);
-            Assert.Equal("Rumor evt_1 went dormant: all 5 knower(s) at max hop 3", MemoryLogFormatter.FormatDormancy("evt_1", r1));
+            Assert.Equal("Rumor evt_1 went dormant: all 5 NPC knower(s) at max hop 3 (the player is not counted)", MemoryLogFormatter.FormatDormancy("evt_1", r1));
 
             var r2 = DormancyReason.ForLifetime(125.4, 120.0);
             Assert.Equal("Rumor evt_2 went dormant: age 125.4d > lifetime 120.0d", MemoryLogFormatter.FormatDormancy("evt_2", r2));

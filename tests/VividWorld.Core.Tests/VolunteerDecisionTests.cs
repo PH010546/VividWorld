@@ -46,10 +46,12 @@ namespace VividWorld.Core.Tests
                 Refusal = VolunteerRefusal.RelationGate,
                 Relation = 12,
                 RelationGate = 30,
+                Willingness = 12,
+                WillingnessLine = 30,
                 IsCloseKin = false
             };
             string relLog = VolunteerDecision.FormatLog("埃隆", "lord_5_16", relDecision, knownCount: 3);
-            Assert.Contains("silent - relation 12 < gate 30", relLog);
+            Assert.Contains("silent - not familiar enough to bring things up: willingness 12.0 < line 30.0 (rel 12", relLog);
             Assert.Contains("(not close kin)", relLog);
             Assert.Contains("3 on file", relLog);
 

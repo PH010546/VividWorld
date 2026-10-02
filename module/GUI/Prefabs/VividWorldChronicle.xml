@@ -45,15 +45,16 @@
                                     <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="160" HorizontalAlignment="Right" VerticalAlignment="Center" Brush="Popup.Description.Text" Brush.FontSize="14" Brush.FontColor="#8E8A80FF" Brush.TextHorizontalAlignment="Right" Text="@DayText" />
                                   </Children>
                                 </Widget>
-                                <!-- Body: Rumor text -->
-                                <RichTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="16" MarginRight="16" MarginTop="8" MarginBottom="8" Brush="VividWorld.Chronicle.Body.Text" Brush.FontSize="15" Brush.TextHorizontalAlignment="Left" Text="@BodyText" Command.LinkClick="ExecuteLink" Command.LinkAlternateClick="ExecuteLink" />
-                                <!-- Provenance: Hops and Source -->
-                                <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="16" MarginRight="16" MarginBottom="12" StackLayout.LayoutMethod="HorizontalLeftToRight">
-                                  <Children>
-                                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Popup.Description.Text" Brush.FontSize="13" Brush.FontColor="#8E8A80FF" Brush.TextHorizontalAlignment="Left" Text="@HopText" />
-                                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginLeft="8" MarginRight="8" Brush="Popup.Description.Text" Brush.FontSize="13" Brush.FontColor="#8E8A80FF" Brush.TextHorizontalAlignment="Left" Text="·" />
-                                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Popup.Description.Text" Brush.FontSize="13" Brush.FontColor="#8E8A80FF" Brush.TextHorizontalAlignment="Left" Text="@SourceText" />
-                                  </Children>
+                                <!-- One block per person who told you: spoken line or plain facts, then provenance underneath -->
+                                <ListPanel DataSource="{Sources}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginBottom="8" StackLayout.LayoutMethod="VerticalTopToBottom">
+                                  <ItemTemplate>
+                                    <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+                                      <Children>
+                                        <RichTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="16" MarginRight="16" MarginTop="8" Brush="VividWorld.Chronicle.Body.Text" Brush.FontSize="15" Brush.TextHorizontalAlignment="Left" Text="@LineText" Command.LinkClick="ExecuteLink" Command.LinkAlternateClick="ExecuteLink" />
+                                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="16" MarginRight="16" MarginTop="4" MarginBottom="8" Brush="Popup.Description.Text" Brush.FontSize="13" Brush.FontColor="#8E8A80FF" Brush.TextHorizontalAlignment="Left" Text="@ProvenanceText" />
+                                      </Children>
+                                    </ListPanel>
+                                  </ItemTemplate>
                                 </ListPanel>
                               </Children>
                             </ListPanel>

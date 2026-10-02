@@ -63,25 +63,28 @@ but only so far — it is never wiped clean.
 
 ## Encountering it in play
 
-**Asking.** In conversation with any lord or wanderer, the menu gains the line *"Any news on the road?"* He relates
-what he knows; when he has nothing for you, he tells you why. **Getting nothing out of a
+**Asking.** In conversation with any lord or wanderer, the menu gains the line *"Any news on the road?"* Someone who
+barely knows you relates only the big news everyone is talking about; someone close to you starts with what touches
+him. When he has nothing for you, he tells you why. **Getting nothing out of a
 stranger is normal** — whether he will speak depends on his opinion of you together with his character. Below the
 threshold, nothing is forthcoming. This is by design.
 
-**Being told.** A lord or wanderer will sometimes open by relating news he has heard, unprompted. One on good terms
-with you tells the whole story; one you are merely acquainted with gives you the gist. Each person will only
+**Being told.** A lord or wanderer will sometimes open by relating news, unprompted. What he brings up is his own
+business and that of the people he cares about; whether he does depends, again, on his opinion of you together with
+his character. Having told it, he adds a line of his own — a friend, an enemy and a bystander tell the same event
+differently. Each person will only
 share so much with you in a day; once he has said enough, he will tell you to come back another time. Should another
 installed mod take over the greeting entirely, the menu gains the fallback line *"You looked like you
 were about to say something."*
 
 **Rumor mode.** The Vivid World page of the game's settings offers
-Auto, Casual and Realistic; a change takes effect immediately. Casual: anyone who does not dislike you
-may bring up rumors, and even a commoner may ask. Realistic: a lord must think somewhat well of you
-before he brings them up. Auto (the default): Realistic when a mod such as NaN or Lowborn is detected,
+Auto, Casual and Realistic; a change takes effect immediately. Casual: anyone whose character does not shy from talk
+may bring up his own affairs even to a new acquaintance, and even a commoner may ask. Realistic: he must be talkative
+by nature, or think somewhat well of you, before he brings them up. Auto (the default): Realistic when a mod such as NaN or Lowborn is detected,
 Casual otherwise.
 
 **Reviewing what you have heard.** Press **Ctrl+L** for *What you have heard*, which lists every piece
-of news that has reached you so far, marked with how many tellings removed it is and who told you.
+of news that has reached you so far, with each person's own words kept as a separate entry and how many tellings removed it is.
 Names of people and places in the text are clickable and lead to the game's encyclopedia.
 
 ---

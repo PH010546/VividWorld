@@ -90,7 +90,7 @@ namespace VividWorld.Core.Memory
             {
                 case DormancyKind.AllAtMaxHop:
                     return string.Format(CultureInfo.InvariantCulture,
-                        "Rumor {0} went dormant: all {1} knower(s) at max hop {2}",
+                        "Rumor {0} went dormant: all {1} NPC knower(s) at max hop {2} (the player is not counted)",
                         eventId, reason.Count, reason.MaxHop);
                 case DormancyKind.LifetimeExpired:
                     return string.Format(CultureInfo.InvariantCulture,

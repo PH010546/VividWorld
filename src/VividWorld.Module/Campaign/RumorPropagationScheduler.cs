@@ -377,7 +377,7 @@ namespace VividWorld.Campaign
                     }
 
                     _sessionTurns++;
-                    int drama = Math.Max(1, Math.Min(5, picked.DramaWeight));
+                    int drama = picked.DramaBand;
                     _sessionToldByDrama[drama - 1]++;
 
                     // M6.5：結算傳聞好感度變更

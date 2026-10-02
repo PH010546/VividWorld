@@ -65,6 +65,17 @@ namespace VividWorld.Core.Tests
             Assert.Equal(AskRefusalLineKind.Unwilling, result);
         }
 
+        [Theory]
+        [InlineData(AskRefusal.WillingnessGate, 0, AskRefusalLineKind.Unwilling)]
+        [InlineData(AskRefusal.WillingnessGate, -1, AskRefusalLineKind.Disliked)]
+        [InlineData(AskRefusal.RelationGate, -1, AskRefusalLineKind.Disliked)]
+        [InlineData(AskRefusal.RelationGate, 3, AskRefusalLineKind.Unwilling)]
+        public void AskRefusalLine_Choose_GateRefusal_SplitsByRelationSign(AskRefusal refusal, int relation, AskRefusalLineKind expected)
+        {
+            var decision = new AskDecision { Refusal = refusal, Relation = relation };
+            Assert.Equal(expected, AskRefusalLine.Choose(decision, 5, 0, 0));
+        }
+
         [Fact]
         public void AskRefusalLine_Choose_NoKnownEvents_NothingOnFile_ReturnsNothingHeard()
         {
@@ -197,7 +208,10 @@ namespace VividWorld.Core.Tests
         public void AskRefusalLine_GetStringKey_And_GetEnglishFallback_MatchesAllKinds()
         {
             Assert.Equal("VividWorld_AskRefuseUnwilling", AskRefusalLine.GetStringKey(AskRefusalLineKind.Unwilling));
-            Assert.Equal("That's not something I'd care to discuss.", AskRefusalLine.GetEnglishFallback(AskRefusalLineKind.Unwilling));
+            Assert.Equal("We hardly know each other. If it's news you want, ask someone else.", AskRefusalLine.GetEnglishFallback(AskRefusalLineKind.Unwilling));
+
+            Assert.Equal("VividWorld_AskRefuseDisliked", AskRefusalLine.GetStringKey(AskRefusalLineKind.Disliked));
+            Assert.Equal("I have nothing to say to you.", AskRefusalLine.GetEnglishFallback(AskRefusalLineKind.Disliked));
 
             Assert.Equal("VividWorld_AskRefuseNothingHeard", AskRefusalLine.GetStringKey(AskRefusalLineKind.NothingHeard));
             Assert.Equal("I haven't heard any news lately.", AskRefusalLine.GetEnglishFallback(AskRefusalLineKind.NothingHeard));
@@ -224,7 +238,8 @@ namespace VividWorld.Core.Tests
                 FilteredNotVisible = 1,
                 FilteredFutureTimeline = 2,
                 FilteredPlayerKnows = 3,
-                FilteredOther = 4
+                FilteredOther = 4,
+                Relation = -12
             };
 
             string line = AskRefusalLine.FormatRefusedLog(
@@ -232,7 +247,7 @@ namespace VividWorld.Core.Tests
                 knownCount: 10, forgottenCount: 5, outdatedCount: 2);
 
             Assert.Equal(
-                "Ask refused line: Derthert (lord_derthert) -> VividWorld_AskRefuseUnwilling (refusal RelationGate, known 10, forgotten 5, outdated 2, filtered notVisible 1 / future 2 / playerKnows 3 / other 4)",
+                "Ask refused line: Derthert (lord_derthert) -> VividWorld_AskRefuseUnwilling (refusal RelationGate, relation -12, known 10, forgotten 5, outdated 2, filtered notVisible 1 / future 2 / playerKnows 3 / other 4)",
                 line);
         }
 
@@ -286,8 +301,10 @@ namespace VividWorld.Core.Tests
             var cntDict = cntDoc.Descendants("string").ToDictionary(x => (string)x.Attribute("id")!, x => (string)x.Attribute("text")!);
 
             // 1. Unwilling
-            Assert.Equal("That's not something I'd care to discuss.", enDict["VividWorld_AskRefuseUnwilling"]);
-            Assert.Equal("這種事，我不方便多說。", cntDict["VividWorld_AskRefuseUnwilling"]);
+            Assert.Equal("We hardly know each other. If it's news you want, ask someone else.", enDict["VividWorld_AskRefuseUnwilling"]);
+            Assert.Equal("你我還不熟，要打聽消息，找別人吧。", cntDict["VividWorld_AskRefuseUnwilling"]);
+            Assert.Equal("I have nothing to say to you.", enDict["VividWorld_AskRefuseDisliked"]);
+            Assert.Equal("我跟你沒什麼好說的。", cntDict["VividWorld_AskRefuseDisliked"]);
 
             // 2. NothingHeard
             Assert.Equal("I haven't heard any news lately.", enDict["VividWorld_AskRefuseNothingHeard"]);

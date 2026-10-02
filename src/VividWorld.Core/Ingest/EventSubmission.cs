@@ -15,7 +15,13 @@ namespace VividWorld.Core.Ingest
 
         public string? LinkedEventId;
         public string? SituationId;
-        public int? DramaWeight;                                 // null → 匯入時由設定依 Type 解析
+        public int? DramaWeight;                                 // null → 匯入時由設定依 Type 解析；怎麼讀看 DramaScale
+
+        /// <summary>
+        /// <see cref="DramaWeight"/> 的尺度（<see cref="VividWorld.Core.Events.DramaScales"/>）：
+        /// 5（預設）＝呼叫的人給的是舊的 1..5，當成段、匯入時 × 2；10＝直接給 1..10 的份量。
+        /// </summary>
+        public int DramaScale = VividWorld.Core.Events.DramaScales.Legacy;
         public Dictionary<string, string> Participants = new();  // 不得為空
 
         /// <summary>參與者中「確實知道這件事」的角色名。空集合代表全部參與者都知道。
@@ -27,6 +33,7 @@ namespace VividWorld.Core.Ingest
         public List<string> InitialKnowerHeroIds = new();
         public List<string> HearsayKnowerHeroIds = new();
         public bool AutoResolveWitnesses = true;                 // 僅 Public 有效
+        public bool ColocatedWitnessAsHearsay = false;
     }
 
     public enum IngestResult

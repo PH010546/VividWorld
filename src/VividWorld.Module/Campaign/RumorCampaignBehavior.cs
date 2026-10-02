@@ -14,6 +14,7 @@ using VividWorld.Core.Config;
 using VividWorld.Core.Diagnostics;
 using VividWorld.Core.Dialogue;
 using VividWorld.Core.Events;
+using VividWorld.Core.Feelings;
 using VividWorld.Core.Grudges;
 using VividWorld.Core.Persistence;
 using VividWorld.Core.Presentation;
@@ -179,6 +180,7 @@ namespace VividWorld.Campaign
                 string eventsDir = VividWorldPaths.EventsDirectory(_campaignId);
                 var writer = new SystemFileWriter();
                 _store = new EventShardStore(eventsDir, _config.Persistence.ShardDays, writer, _config.Persistence.ShardCacheIdleFlushes);
+                _store.Log = ModLogSink.Instance;
                 _index = _store.LoadIndex();
                 ModLog.Info($"Event index: {_store.LastLoadNote}, {_index.Count} entries");
 
@@ -223,6 +225,8 @@ namespace VividWorld.Campaign
                 _engine = new RumorEngine(_config, retentionPolicy, embellishmentPolicy, _channel, _traitLookup, rng, campaignSeed, playerHeroId, EventCatalogStore.TemplateByType);
 
                 var stamper = new MemoryStamper(_config, _heroLookup, playerHeroId);
+                var feelingWorld = new GameFeelingWorld(_heroLookup, grudgeIndex);
+                var feelingResolver = new FeelingResolver(_config, FeelingCatalogStore.Catalog, feelingWorld, _traitLookup, EventCatalogStore.TemplateByType, campaignSeed);
 
                 _eventStore = new WorldEventStore(_config, _store, _index, _knownBy, _channel, _traitLookup, playerHeroId, campaignSeed, stamper, grudgeIndex);
                 stamper.SetStore(_eventStore);
@@ -292,28 +296,35 @@ namespace VividWorld.Campaign
                         _traitLookup,
                         _situationScan,
                         _sessionState,
-                        _campaignId);
+                        _campaignId,
+                        feelingResolver);
                     devDialogs.RegisterDialogues(starter);
 
                     // M6a 自答探針 1：在地化探針 (D-09)
                     RunLocalizationProbe();
                 }
 
-                // M6a-fix: 子行為依賴注入與對話註冊（行為註冊已在 SubModule.OnGameStart，見帳本 D-38）
                 if (_engine != null && _store != null && _index != null && _knownBy != null && _traitLookup != null && _heroLookup != null)
                 {
-                    var offerSelector = new RumorOfferSelector(_config, _engine, playerHeroId, getTemplate: EventCatalogStore.TemplateByType, traits: _traitLookup);
+                    var offerSelector = new RumorOfferSelector(
+                        _config,
+                        _engine,
+                        playerHeroId,
+                        getTemplate: EventCatalogStore.TemplateByType,
+                        traits: _traitLookup,
+                        feelings: feelingResolver,
+                        dialogueWorld: feelingWorld,
+                        playerHeardLog: PlayerHeardLog,
+                        getEvent: id => _store.Load(id, _index));
                     _dialogs.Initialize(offerSelector, _store, _index, _knownBy, _traitLookup, _heroLookup, _campaignId, stamper, PlayerHeardLog);
                     _dialogs.RegisterDialogues(starter);
 
                     var compat = _dialogs.CompatState;
-                    // 閒聊門檻只准由選擇器決定（它的 Mode 在 RegisterDialogues 裡已經照相容判定設好），不在這裡再寫一份。
                     int chatGate = offerSelector.ChatRelationGate;
-                    int fullGate = _config.Dialogue.NpcVolunteerRelationGate;
-                    int gistHops = _config.Dialogue.GistExtraHops;
                     int askClanTier = compat?.AskMinClanTier ?? 0;
                     var modeResult = compat?.RumorModeResult ?? RumorModeResolver.Resolve(_config.Dialogue.VolunteerMode, compat?.DetectedModules);
-                    ModLog.Info(RumorModeResolver.FormatModeLine(modeResult, chatGate, fullGate, gistHops, askClanTier));
+                    ModLog.Info(RumorModeResolver.FormatModeLine(modeResult, offerSelector.ActiveVolunteerLine,
+                        _config.Dialogue.AskWillingnessThreshold, _config.Dialogue.SecretLine, _config.Dialogue.BigNewsLine, askClanTier));
                 }
 
                 _pendingModeNotice = true;

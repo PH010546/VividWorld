@@ -208,8 +208,10 @@ namespace VividWorld.Core.Catalog
                 Day = day,
                 Origin = template.Origin,
                 DramaWeight = template.DramaWeight,
+                DramaScale = template.DramaScale,
                 LinkedEventId = !string.IsNullOrEmpty(template.LinkedTemplateType) ? linkedEventId : null,
                 AutoResolveWitnesses = (template.Origin == EventOrigin.Public),
+                ColocatedWitnessAsHearsay = template.ColocatedWitnessAsHearsay,
                 Participants = participants,
                 KnowingRoles = new HashSet<string>(template.KnowingRoles, StringComparer.Ordinal),
                 Facts = facts

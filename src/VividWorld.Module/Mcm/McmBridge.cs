@@ -254,7 +254,6 @@ namespace VividWorld.Mcm
                 case "scheduling.tellersPerHourlyTick": return s.TellersPerHourlyTick;
                 case "dialogue.askRelationGate": return s.AskRelationGate;
                 case "dialogue.askWillingnessThreshold": return (double)s.AskWillingnessThreshold;
-                case "dialogue.npcVolunteerRelationGate": return s.NpcVolunteerRelationGate;
                 case "dialogue.volunteerMode": return VolunteerModeOf(s.VolunteerMode);
                 case "dialogue.sharesPerHeroPerDay": return s.SharesPerHeroPerDay;
                 case "consequences.enabled": return s.ConsequencesEnabled;
@@ -313,7 +312,6 @@ namespace VividWorld.Mcm
             PushKey("scheduling.tellersPerHourlyTick", () => s.TellersPerHourlyTick = live.Scheduling.TellersPerHourlyTick);
             PushKey("dialogue.askRelationGate", () => s.AskRelationGate = live.Dialogue.AskRelationGate);
             PushKey("dialogue.askWillingnessThreshold", () => s.AskWillingnessThreshold = (float)live.Dialogue.AskWillingnessThreshold);
-            PushKey("dialogue.npcVolunteerRelationGate", () => s.NpcVolunteerRelationGate = live.Dialogue.NpcVolunteerRelationGate);
             PushKey("dialogue.volunteerMode", () =>
             {
                 // 選單上顯示「自動／暢玩／寫實」（MCM 直接顯示選項字串本身，帳本 X-39），
@@ -455,7 +453,6 @@ namespace VividWorld.Mcm
                 s.TellersPerHourlyTick,
                 s.AskRelationGate,
                 s.AskWillingnessThreshold.ToString("R", CultureInfo.InvariantCulture),
-                s.NpcVolunteerRelationGate,
                 VolunteerModeOf(s.VolunteerMode),
                 s.SharesPerHeroPerDay,
                 s.ConsequencesEnabled,
@@ -486,7 +483,6 @@ namespace VividWorld.Mcm
                 live.Scheduling.TellersPerHourlyTick,
                 live.Dialogue.AskRelationGate,
                 live.Dialogue.AskWillingnessThreshold.ToString("R", CultureInfo.InvariantCulture),
-                live.Dialogue.NpcVolunteerRelationGate,
                 live.Dialogue.VolunteerMode,
                 live.Dialogue.SharesPerHeroPerDay,
                 live.Consequences.Enabled,

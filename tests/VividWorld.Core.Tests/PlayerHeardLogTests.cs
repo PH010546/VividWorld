@@ -252,7 +252,7 @@ namespace VividWorld.Core.Tests
         }
 
         [Fact]
-        public void Record_NoNewFacts_ReturnsFalse_DoesNotMarkDirty()
+        public void Record_NoNewFacts_SameTeller_ReturnsFalse_DoesNotMarkDirty()
         {
             var writer = new FailingFileWriter();
             var store = new PlayerHeardLogStore("player_heard.json", writer);
@@ -276,7 +276,7 @@ namespace VividWorld.Core.Tests
             {
                 HeroId = PlayerHeroId,
                 Hop = 1,
-                SourceHeroId = "hero_teller_2",
+                SourceHeroId = "hero_teller_1",
                 LearnedDay = 12.0
             };
             bool recorded = store.Record(evt, retellEntry, new[] { evt.Facts[0] }, 12.0);

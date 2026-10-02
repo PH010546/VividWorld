@@ -1065,6 +1065,8 @@ namespace VividWorld.Core.Tests
             {
                 "hero_died_in_battle",
                 "hero_died_naturally",
+                "hero_died_of_old_age",
+                "hero_died_in_labor",
                 "hero_taken_prisoner",
                 "hero_released",
                 "hero_escaped_captivity",

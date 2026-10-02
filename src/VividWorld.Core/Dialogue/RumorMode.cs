@@ -64,10 +64,13 @@ namespace VividWorld.Core.Dialogue
         /// 格式化模式行（規格 §12.7）：
         /// Rumor mode: &lt;casual|realistic&gt; [&lt;auto - detected X, Y | auto - none detected | forced by config&gt;] - chat gate N, full gate 30, gist +2 hops, ask clan tier M
         /// </summary>
-        public static string FormatModeLine(RumorModeResult result, int chatGate, int fullGate, int gistExtraHops, int askClanTier)
+        public static string FormatModeLine(RumorModeResult result, double volunteerLine, double askThreshold, double secretLine, int bigNewsLine, int askClanTier)
         {
             if (result == null) throw new ArgumentNullException(nameof(result));
-            return $"Rumor mode: {result.ModeString} [{result.Reason}] - chat gate {chatGate}, full gate {fullGate}, gist +{gistExtraHops} hops, ask clan tier {askClanTier}";
+            return string.Format(
+                System.Globalization.CultureInfo.InvariantCulture,
+                "Rumor mode: {0} [{1}] - willingness lines: volunteer {2:0.#}, answer when asked {3:0.#} (or the volunteer line if lower), own secret {4:0.#}; big news from weight {5}; ask clan tier {6}",
+                result.ModeString, result.Reason, volunteerLine, askThreshold, secretLine, bigNewsLine, askClanTier);
         }
     }
 }

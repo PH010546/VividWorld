@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using VividWorld.Core.Config;
 
 namespace VividWorld.Core.Dialogue
@@ -22,7 +23,7 @@ namespace VividWorld.Core.Dialogue
             if (dialogueConfig == null) throw new ArgumentNullException(nameof(dialogueConfig));
 
             int chatGate = offerSelector.ChatRelationGate;
-            int fullGate = dialogueConfig.NpcVolunteerRelationGate;
+            int fullGate = (int)dialogueConfig.RealisticVolunteerLine;
             var modeResult = compat?.RumorModeResult ?? RumorModeResolver.Resolve(dialogueConfig.VolunteerMode, compat?.DetectedModules);
 
             var result = new ListenPreviewResult
@@ -43,7 +44,8 @@ namespace VividWorld.Core.Dialogue
                 ? $"tier {tierStr} < {result.AskMinClanTier} (BLOCKED)"
                 : $"tier {tierStr} >= {result.AskMinClanTier} (allowed)";
 
-            result.ModeLine = RumorModeResolver.FormatModeLine(modeResult, chatGate, fullGate, dialogueConfig.GistExtraHops, result.AskMinClanTier);
+            result.ModeLine = RumorModeResolver.FormatModeLine(modeResult, offerSelector.ActiveVolunteerLine,
+                dialogueConfig.AskWillingnessThreshold, dialogueConfig.SecretLine, dialogueConfig.BigNewsLine, result.AskMinClanTier);
 
             bool volCommonerBlocked = CommonerCompat.BlocksVolunteer(compat, playerClanTier);
 
@@ -65,7 +67,7 @@ namespace VividWorld.Core.Dialogue
 
                 bool isCloseKin = dialogueConfig.NpcVolunteerAlwaysForCloseKin &&
                     (p.Profile?.IsPlayerSpouse == true || p.Profile?.IsPlayerCompanion == true || p.Profile?.IsPlayerClanMember == true);
-                if (relation >= dialogueConfig.NpcVolunteerRelationGate || isCloseKin)
+                if (relation >= fullGate || isCloseKin)
                 {
                     result.HeroesMeetingVolunteerRelationGate++;
                 }
@@ -77,11 +79,17 @@ namespace VividWorld.Core.Dialogue
                 var profile = p.Profile ?? new HeroSocialProfile();
                 var candidates = p.Candidates ?? Array.Empty<RumorCandidate>();
 
+                offerSelector.ComputeWillingness(profile, out _, out _, out _, out _, out double will);
+                if (will >= offerSelector.ActiveVolunteerLine) result.WillingnessPassedActiveLineCount++;
+                if (will >= dialogueConfig.AskWillingnessThreshold) result.WillingnessPassedAskThresholdCount++;
+                if (will >= dialogueConfig.SecretLine) result.WillingnessPassedSecretLineCount++;
+
                 // 1. Volunteer path
                 string volKey;
                 if (volCommonerBlocked)
                 {
                     volKey = ListenTallyKeys.VolunteerBlockedCommonerTier;
+                    result.VolunteerSilentReasons["commonerTier"] = (result.VolunteerSilentReasons.TryGetValue("commonerTier", out int c) ? c : 0) + 1;
                 }
                 else
                 {
@@ -100,14 +108,23 @@ namespace VividWorld.Core.Dialogue
 
                     if (volKey == ListenTallyKeys.VolunteerTold)
                     {
-                        if (volDecision.Tier == VolunteerTier.Gist)
+                        result.VolunteerToldFullCount++;
+                        string reason = string.IsNullOrEmpty(volDecision.ReasonCategory) ? "other" : volDecision.ReasonCategory;
+                        result.VolunteerToldReasons[reason] = (result.VolunteerToldReasons.TryGetValue(reason, out int tc) ? tc : 0) + 1;
+                        var chosenEvt = candidates.FirstOrDefault(c => c.Event.EventId == volDecision.Offer?.EventId)?.Event;
+                        string evtType = chosenEvt?.Type ?? "unknown";
+                        result.VolunteerTopicDistribution[evtType] = (result.VolunteerTopicDistribution.TryGetValue(evtType, out int dc) ? dc : 0) + 1;
+                    }
+                    else
+                    {
+                        string silentReason = volDecision.Refusal switch
                         {
-                            result.VolunteerToldGistCount++;
-                        }
-                        else
-                        {
-                            result.VolunteerToldFullCount++;
-                        }
+                            VolunteerRefusal.RelationGate => "belowLine",
+                            VolunteerRefusal.NoCloselyRelatedEvent => "noCloselyRelated",
+                            VolunteerRefusal.SharedToday => "sharedToday",
+                            _ => "other"
+                        };
+                        result.VolunteerSilentReasons[silentReason] = (result.VolunteerSilentReasons.TryGetValue(silentReason, out int sc) ? sc : 0) + 1;
                     }
                 }
                 AddOutcome(result.VolunteerCounts, result.VolunteerNames, volKey, p.HeroName);
@@ -135,6 +152,28 @@ namespace VividWorld.Core.Dialogue
                     p.ForgottenCount,
                     p.OutdatedCount);
                 AddOutcome(result.AskCounts, result.AskNames, askKey, p.HeroName);
+
+                if (askDecision.Offer != null)
+                {
+                    var askEvt = candidates.FirstOrDefault(c => c.Event.EventId == askDecision.Offer.EventId)?.Event;
+                    string askType = askEvt?.Type ?? "unknown";
+                    result.AskTopicDistribution[askType] = (result.AskTopicDistribution.TryGetValue(askType, out int adc) ? adc : 0) + 1;
+
+                    if (askDecision.AnswerMode == "familiar_closely_related") result.AskFamiliarCloselyRelatedCount++;
+                    else if (askDecision.AnswerMode == "familiar_big_news") result.AskFamiliarBigNewsCount++;
+                    else if (askDecision.AnswerMode == "unfamiliar_big_news") result.AskUnfamiliarBigNewsCount++;
+                }
+                else
+                {
+                    if (askDecision.Refusal == AskRefusal.WillingnessGate || askDecision.Refusal == AskRefusal.RelationGate)
+                    {
+                        result.AskUnwillingCount++;
+                    }
+                    else
+                    {
+                        result.AskNoTopicCount++;
+                    }
+                }
 
                 // 3b. Ask refusal lines (as if the clan-tier gate passed)
                 if (askDecision.Offer != null)

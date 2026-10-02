@@ -16,6 +16,7 @@ namespace VividWorld.Core.Dialogue
         public const string VolunteerBlockedCommonerTier = "volunteer.blocked.commonerTier";
         public const string VolunteerBlockedLordAttack = "volunteer.blocked.lordAttack";
         public const string VolunteerBlockedRelationGate = "volunteer.blocked.relationGate";
+        public const string VolunteerBlockedNoCloselyRelated = "volunteer.blocked.noCloselyRelated";
         public const string VolunteerBlockedSharedToday = "volunteer.blocked.sharedToday";
 
         // Volunteer no topic
@@ -33,6 +34,13 @@ namespace VividWorld.Core.Dialogue
 
         // Volunteer delivered / chosen
         public const string VolunteerTold = "volunteer.told";
+        public const string VolunteerToldSelf = "volunteer.told.self";
+        public const string VolunteerToldKin = "volunteer.told.kin";
+        public const string VolunteerToldClan = "volunteer.told.clan";
+        public const string VolunteerToldRelation = "volunteer.told.relation";
+        public const string VolunteerToldGrudge = "volunteer.told.grudge";
+        public const string VolunteerToldPlayerRelated = "volunteer.told.playerRelated";
+        public const string VolunteerToldSequel = "volunteer.told.sequel";
         public const string VolunteerChosenNotDelivered = "volunteer.chosenNotDelivered";
 
         // Ask
@@ -40,6 +48,9 @@ namespace VividWorld.Core.Dialogue
         public const string AskBlockedCommonerTier = "ask.blocked.commonerTier";
         public const string AskAsked = "ask.asked";
         public const string AskTold = "ask.told";
+        public const string AskToldFamiliarCloselyRelated = "ask.told.familiarCloselyRelated";
+        public const string AskToldFamiliarBigNews = "ask.told.familiarBigNews";
+        public const string AskToldUnfamiliarBigNews = "ask.told.unfamiliarBigNews";
         public const string AskRefusedSharedToday = "ask.refused.sharedToday";
         public const string AskRefusedRelationGate = "ask.refused.relationGate";
         public const string AskRefusedWillingnessGate = "ask.refused.willingnessGate";

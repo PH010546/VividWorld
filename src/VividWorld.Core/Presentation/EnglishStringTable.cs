@@ -15,6 +15,8 @@ namespace VividWorld.Core.Presentation
 
         public int Count => _strings.Count;
 
+        public IEnumerable<string> Keys => _strings.Keys;
+
         public EnglishStringTable(Dictionary<string, string>? strings = null)
         {
             _strings = strings != null

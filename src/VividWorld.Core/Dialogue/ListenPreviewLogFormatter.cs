@@ -1,7 +1,9 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using VividWorld.Core.Events;
 
 namespace VividWorld.Core.Dialogue
 {
@@ -48,6 +50,7 @@ namespace VividWorld.Core.Dialogue
             "told",
             nameof(AskRefusalLineKind.SharedToday),
             nameof(AskRefusalLineKind.Unwilling),
+            nameof(AskRefusalLineKind.Disliked),
             nameof(AskRefusalLineKind.NothingHeard),
             nameof(AskRefusalLineKind.Forgotten),
             nameof(AskRefusalLineKind.Outdated),
@@ -82,6 +85,25 @@ namespace VividWorld.Core.Dialogue
 
             sb.AppendLine("[1. Volunteer Path (as-is)]");
             AppendCategoryList(sb, result.VolunteerCounts, result.VolunteerNames, VolunteerOrder, includeTopNames, result);
+            if (result.VolunteerToldReasons.Count > 0 || result.VolunteerSilentReasons.Count > 0)
+            {
+                sb.AppendLine("  Volunteer breakdown:");
+                if (result.VolunteerToldReasons.Count > 0)
+                {
+                    string toldReasons = string.Join(", ", result.VolunteerToldReasons.Select(kv => $"{kv.Key} {kv.Value}"));
+                    sb.AppendLine($"    Told reasons: {toldReasons}");
+                }
+                if (result.VolunteerSilentReasons.Count > 0)
+                {
+                    string silentReasons = string.Join(", ", result.VolunteerSilentReasons.Select(kv => $"{kv.Key} {kv.Value}"));
+                    sb.AppendLine($"    Silent reasons: {silentReasons}");
+                }
+                if (result.VolunteerTopicDistribution.Count > 0)
+                {
+                    string volTopics = string.Join(", ", result.VolunteerTopicDistribution.Select(kv => $"{kv.Key} {kv.Value}"));
+                    sb.AppendLine($"    Topics: {volTopics}");
+                }
+            }
             sb.AppendLine();
 
             sb.AppendLine("[2. Volunteer Path (Topic Only - ignoring relation, share cap)]");
@@ -97,6 +119,13 @@ namespace VividWorld.Core.Dialogue
                 sb.AppendLine("  (the ask line is hidden for everyone right now; counts below are as if the clan-tier gate passed)");
             }
             AppendCategoryList(sb, result.AskCounts, result.AskNames, AskOrder, includeTopNames);
+            sb.AppendLine("  Ask breakdown:");
+            sb.AppendLine($"    Familiar closely related {result.AskFamiliarCloselyRelatedCount}, Familiar big news {result.AskFamiliarBigNewsCount}, Unfamiliar big news {result.AskUnfamiliarBigNewsCount}, Unwilling {result.AskUnwillingCount}, No topic {result.AskNoTopicCount}");
+            if (result.AskTopicDistribution.Count > 0)
+            {
+                string askTopics = string.Join(", ", result.AskTopicDistribution.Select(kv => $"{kv.Key} {kv.Value}"));
+                sb.AppendLine($"    Topics: {askTopics}");
+            }
             sb.AppendLine();
 
             string askRefusalHeader = result.AskBlockedByClanTier
@@ -109,7 +138,37 @@ namespace VividWorld.Core.Dialogue
             sb.AppendLine("[4. Relation Histogram]");
             AppendHistogram(sb, result.RelationHist, result.RelationHistNames, includeTopNames);
 
+            sb.AppendLine();
+            sb.AppendLine("[4c. Willingness Distribution]");
+            sb.AppendLine($"  Passed active volunteer line: {result.WillingnessPassedActiveLineCount}");
+            sb.AppendLine($"  Passed ask threshold (5.0): {result.WillingnessPassedAskThresholdCount}");
+            sb.AppendLine($"  Passed secret line (30.0): {result.WillingnessPassedSecretLineCount}");
+
+            if (result.WeightTallyAvailable)
+            {
+                sb.AppendLine();
+                sb.AppendLine(FormatWeightTally(result.ActiveEventsByWeight));
+            }
+
             return sb.ToString().TrimEnd();
+        }
+
+        /// <summary>目前還沒休眠的事件，1..10 每一級各有幾則；括號裡是它們對應的段（傳多遠、記多久讀的是段）。</summary>
+        public static string FormatWeightTally(IReadOnlyList<int> counts)
+        {
+            var sb = new StringBuilder();
+            int total = 0;
+            var parts = new List<string>(DramaScales.MaxWeight);
+            for (int w = DramaScales.MinWeight; w <= DramaScales.MaxWeight; w++)
+            {
+                int n = counts != null && counts.Count >= w ? counts[w - 1] : 0;
+                total += n;
+                parts.Add($"{w}:{n}");
+            }
+            sb.Append("[4b. Active events by weight (not dormant)] ");
+            sb.Append(string.Join(" ", parts));
+            sb.Append($" (total {total}; weight 1-2 = band 1, 3-4 = band 2, 5-6 = band 3, 7-8 = band 4, 9-10 = band 5)");
+            return sb.ToString();
         }
 
         public static string FormatHeroTable(ListenPreviewResult result)

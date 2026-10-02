@@ -59,6 +59,22 @@ namespace VividWorld.Core.Presentation
         public const string CorrectionGeneralTextId = "VividWorld_Prefix_CorrectionGeneral";
         public const string CorrectionGeneralFallback = "Later, I heard it said that";
 
+        public static string? FallbackFor(string? textId)
+        {
+            if (string.IsNullOrEmpty(textId)) return null;
+            switch (textId)
+            {
+                case EyewitnessTextId: return EyewitnessFallback;
+                case HeardFromSourceTextId: return HeardFromSourceFallback;
+                case HeardGeneralTextId: return HeardGeneralFallback;
+                case CorrectionSourceTextId: return CorrectionSourceFallback;
+                case CorrectionGeneralTextId: return CorrectionGeneralFallback;
+                case RetellSelfTextId: return RetellSelfFallback;
+                case RumorTextComposer.RetellPrefixTextId: return RumorTextComposer.RetellPrefixFallback;
+                default: return null;
+            }
+        }
+
         public static RumorPrefix SelectPrefix(int hop, string? sourceHeroId, bool isRetell, bool isCorrection, bool isParticipant = false)
         {
             bool hasSource = !string.IsNullOrEmpty(sourceHeroId);

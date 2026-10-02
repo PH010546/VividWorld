@@ -50,6 +50,18 @@ namespace VividWorld
                     ModLog.Warn($"config.{n.Key} = {n.Requested} clamped to {n.Applied} (allowed {n.AllowedRange})");
                 }
 
+                var unusedKeysNote = LegacyConfigKeys.DescribeUnusedEventKeys(config.Events);
+                if (unusedKeysNote != null)
+                {
+                    ModLog.Info(unusedKeysNote);
+                }
+
+                var unusedDialogueNotes = LegacyConfigKeys.DescribeUnusedDialogueKeys(config.Dialogue);
+                foreach (var note in unusedDialogueNotes)
+                {
+                    ModLog.Info(note);
+                }
+
                 if (Enum.TryParse<LogLevel>(config.LogLevel, true, out var parsedLevel))
                 {
                     ModLog.Level = parsedLevel;

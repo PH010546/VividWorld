@@ -67,9 +67,11 @@ namespace VividWorld.Campaign
                     }
 
                     var hop0Entries = evt?.KnownBy?.Where(k => k.Hop == 0).ToList() ?? new List<KnownByEntry>();
-                    var hop0HeroIds = new HashSet<string>(hop0Entries.Select(k => k.HeroId).Where(id => !string.IsNullOrEmpty(id)), StringComparer.Ordinal);
+                    var allKnownIds = new HashSet<string>(evt?.KnownBy?.Select(k => k.HeroId).Where(id => !string.IsNullOrEmpty(id)) ?? Enumerable.Empty<string>(), StringComparer.Ordinal);
 
-                    int witnessCount = hop0Entries.Count(k => !participantIds.Contains(k.HeroId));
+                    int witnessCount = template.ColocatedWitnessAsHearsay
+                        ? (evt?.KnownBy?.Count(k => !participantIds.Contains(k.HeroId) && k.Hop == 1 && k.SourceHeroId == null) ?? 0)
+                        : hop0Entries.Count(k => !participantIds.Contains(k.HeroId));
 
                     var presentHeroes = EligibilityLabel.GetPresentHeroesAtSettlement(anchorSettlement);
                     string? playerHeroId = Hero.MainHero?.StringId;
@@ -82,7 +84,7 @@ namespace VividWorld.Campaign
                     var witnessRejections = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
                     foreach (var h in nonParticipantPresent)
                     {
-                        if (!hop0HeroIds.Contains(h.StringId))
+                        if (!allKnownIds.Contains(h.StringId))
                         {
                             string reason = EligibilityLabel.GetRejectionReason(h, traitLookup) ?? "max witnesses cap";
                             witnessRejections.TryGetValue(reason, out int rc);

@@ -20,6 +20,7 @@ namespace VividWorld.Core.Rumors
                 : null;
 
             int drama = picked?.Drama ?? 0;
+            int dramaWeight = picked?.DramaWeight ?? 0;
             double tell = picked?.Tell ?? 0.0;
             double fresh = picked?.Freshness ?? 0.0;
             double weight = picked?.Weight ?? 0.0;
@@ -60,7 +61,7 @@ namespace VividWorld.Core.Rumors
 
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "Teller {0} told {1} (drama {2}, tell {3:0.00}, fresh {4:0.00}, weight {5:0.000}, chance {6:0.0}%) - {7} topic(s): {8}{9}; inactive {10} -> new {11}, re-heard {12} (same teller {13})",
+                "Teller {0} told {1} (weight {14}/10 (band {2}), tell {3:0.00}, fresh {4:0.00}, pick weight {5:0.000}, chance {6:0.0}%) - {7} topic(s): {8}{9}; inactive {10} -> new {11}, re-heard {12} (same teller {13})",
                 tellerId,
                 eventId,
                 drama,
@@ -74,7 +75,8 @@ namespace VividWorld.Core.Rumors
                 inactiveCount,
                 a,
                 b,
-                s);
+                s,
+                dramaWeight);
         }
 
         public static string FormatSkippedNotEligible(string tellerId)
@@ -173,7 +175,7 @@ namespace VividWorld.Core.Rumors
 
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "- Teller ring: {0} tellers, {1} per hour; this session turns {2}, told by drama 1:{3} 2:{4} 3:{5} 4:{6} 5:{7}, skipped not eligible {8}, left ring {9}",
+                "- Teller ring: {0} tellers, {1} per hour; this session turns {2}, told by band 1:{3} 2:{4} 3:{5} 4:{6} 5:{7}, skipped not eligible {8}, left ring {9}",
                 size,
                 tellersPerHour,
                 turns,
@@ -203,15 +205,15 @@ namespace VividWorld.Core.Rumors
                 {
                     double x = (double)stat.hopGte1Total / stat.eventCount;
                     double y = (double)stat.hopGte1Remembered / stat.eventCount;
-                    parts.Add(string.Format(CultureInfo.InvariantCulture, "d{0} {1:0.0} / {2:0.0} ({3} events)", d, x, y, stat.eventCount));
+                    parts.Add(string.Format(CultureInfo.InvariantCulture, "b{0} {1:0.0} / {2:0.0} ({3} events)", d, x, y, stat.eventCount));
                 }
                 else
                 {
-                    parts.Add(string.Format(CultureInfo.InvariantCulture, "d{0} - (0 events)", d));
+                    parts.Add(string.Format(CultureInfo.InvariantCulture, "b{0} - (0 events)", d));
                 }
             }
 
-            return "- Spread by drama (NPC entries at hop >= 1 per event, all / remembered): " + string.Join(", ", parts);
+            return "- Spread by band (NPC entries at hop >= 1 per event, all / remembered): " + string.Join(", ", parts);
         }
 
         public static string FormatTopicsIfSpokeNow(TopicChoice choice, bool inRing, int inactiveCount)
@@ -231,12 +233,13 @@ namespace VividWorld.Core.Rumors
                     double cPct = (sumWeight <= 0.0 ? (1.0 / choice.Candidates.Count) : (c.Weight / sumWeight)) * 100.0;
                     return string.Format(
                         CultureInfo.InvariantCulture,
-                        "{0} {1:0.0}% (drama {2}, tell {3:0.00}, fresh {4:0.00})",
+                        "{0} {1:0.0}% (weight {5}/10 (band {2}), tell {3:0.00}, fresh {4:0.00})",
                         c.EventId,
                         cPct,
                         c.Drama,
                         c.Tell,
-                        c.Freshness);
+                        c.Freshness,
+                        c.DramaWeight);
                 });
                 candidatesStr = string.Join(", ", candList);
             }

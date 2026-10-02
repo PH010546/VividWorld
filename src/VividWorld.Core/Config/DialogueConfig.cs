@@ -16,19 +16,24 @@ namespace VividWorld.Core.Config
 
     public sealed class DialogueConfig
     {
-        public int NpcVolunteerRelationGate { get; set; } = 30;
+        /// <summary>暢玩模式主動講門檻（好感度加個性意願線）。預設 0.0。</summary>
+        public double CasualVolunteerLine { get; set; } = 0.0;
+
+        /// <summary>寫實模式主動講門檻（好感度加個性意願線）。預設 10.0。</summary>
+        public double RealisticVolunteerLine { get; set; } = 10.0;
+
+        /// <summary>秘密分享門檻（好感度加個性意願線）。預設 30.0。</summary>
+        public double SecretLine { get; set; } = 30.0;
+
+        /// <summary>大事份量門檻（1..10）。預設 5。</summary>
+        public int BigNewsLine { get; set; } = 5;
+
         public bool NpcVolunteerAlwaysForCloseKin { get; set; } = true;
         public int SharesPerHeroPerDay { get; set; } = 1;
         public int AskRelationGate { get; set; } = 0;
         public double AskWillingnessThreshold { get; set; } = 5.0;
         public AskTraitWeights AskTraitWeights { get; set; } = new();
         public bool AllowRicherRetell { get; set; } = true;
-        public double ScoreRetellMultiplier { get; set; } = 0.5;          // §9.1.1 (4)
-        public double ScoreDrama { get; set; } = 2.0;
-        public double ScoreFreshness { get; set; } = 3.0;
-        public double ScoreDetail { get; set; } = 1.0;
-        public double ScoreRelevance { get; set; } = 4.0;
-        public int ScoreRelevanceRelationGate { get; set; } = 20;
         public string NpcLineInputToken { get; set; } = "lord_start";          // §9.2【v3.14，帳本 D-46】
         public int NpcLinePriority { get; set; } = 105;                        // §9.2【v3.14，帳本 D-46】原版用這一個
         public string PlayerLineInputToken { get; set; } = "hero_main_options";
@@ -57,18 +62,9 @@ namespace VividWorld.Core.Config
         /// 預設 0＝不擋：領主開口不是玩家攀談，而且那條路徑本來就要求好感 ≥ 30。</summary>
         public int CommonerCompatVolunteerMinClanTier { get; set; } = 0;
 
-        // ── 傳聞模式（feature-LISTEN1/spec.md §12，LISTEN1d）──
+        // ── 傳聞模式 ──
         /// <summary>"auto"（偵測到平民身分模組＝寫實，否則暢玩）、"casual"、"realistic"。</summary>
         public string VolunteerMode { get; set; } = "auto";
-
-        /// <summary>暢玩模式：好感度高於或等於此值時，NPC 主動講「大概」（降手數）。預設 0。</summary>
-        public int CasualChatRelationGate { get; set; } = 0;
-
-        /// <summary>寫實模式：好感度高於或等於此值時，NPC 主動講「大概」（降手數）。預設 10。</summary>
-        public int RealisticChatRelationGate { get; set; } = 10;
-
-        /// <summary>「大概」比完整版多降幾手（上限為事件最大手數）。預設 2。</summary>
-        public int GistExtraHops { get; set; } = 2;
 
         [JsonExtensionData]
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();

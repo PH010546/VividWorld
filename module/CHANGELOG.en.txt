@@ -1,5 +1,22 @@
 Vivid World changelog
 
+v0.9.6
+Fixed: when someone escapes from a town's dungeon, the lord of the town no longer tells it as an escape from their own hands.
+Lords and wanderers now tell news as one whole sentence instead of several pieces joined with commas.
+Having told it, they add a line of their own; a friend, an enemy and a bystander tell the same event differently.
+People telling their own story say how they feel about it, and different temperaments sound different.
+What others bring up with you is their own business and that of the people they care about. Whether they speak depends on how they feel about you and on their character.
+Someone who barely knows you only tells the big news everyone is talking about, and only when you ask; someone close to you, when asked, starts with what touches them.
+"Only the gist" is gone: whoever is willing to tell it tells the whole story.
+When you ask for news and are refused, someone who barely knows you and someone who dislikes you answer differently.
+News is weighed more finely: the deaths and marriages of rulers and clan leaders travel far, and an ordinary person being captured is no longer as big as a death in battle.
+"What you have heard" now keeps each person's own words as a separate entry; captures, releases and escapes name the person in the title.
+Dying of old age and dying in childbirth are told apart; a released prisoner says how the release came about.
+The "Full-story relation gate" setting is removed from the settings menu, and the description of "Rumor mode" is updated.
+Translations into other languages can now vary their wording by a character's gender.
+If you edited the config file yourself for how much relation it takes before someone brings news up, the weights used to pick which news to tell, or how big capture news is, those old settings no longer have any effect from this version on; set the new ones instead. After starting the game, the top of log.txt lists which ones they are and what replaced them.
+Existing campaigns can be continued as they are, and if you never touched the settings above, nothing needs to be changed. News you heard before the update stays in "What you have heard" as it was.
+
 v0.9.5
 When someone is taken by bandits, deserters or other outlaws, it now becomes news too, naming which band it was; their family hears first, and this news travels further than a capture by a lord.
 When someone routs the bandits and frees them, the news says who did it; escaping on their own is told differently. People who heard of the capture stop saying they are still held once they hear of the rescue.

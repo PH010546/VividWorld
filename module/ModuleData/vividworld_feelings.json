@@ -1,0 +1,594 @@
+{
+  "categories": {
+    "killed": {
+      "close": [
+        {
+          "key": "VividWorld_Feeling_Killed_Close_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Killed_Close_2",
+          "trait": "Mercy+"
+        }
+      ],
+      "neutral": [
+        {
+          "key": "VividWorld_Feeling_Killed_Neutral_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Killed_Neutral_2",
+          "trait": "Calculating+"
+        }
+      ],
+      "hostile": [
+        {
+          "key": "VividWorld_Feeling_Killed_Hostile_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Killed_Hostile_2",
+          "trait": "Mercy-"
+        }
+      ],
+      "sore": [
+        {
+          "key": "VividWorld_Feeling_Killed_Sore_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Killed_Sore_2"
+        }
+      ],
+      "owe": [
+        {
+          "key": "VividWorld_Feeling_Killed_Owe_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Killed_Owe_2",
+          "trait": "Honor+"
+        }
+      ]
+    },
+    "died": {
+      "close": [
+        {
+          "key": "VividWorld_Feeling_Died_Close_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Died_Close_2",
+          "trait": "Mercy+"
+        }
+      ],
+      "neutral": [
+        {
+          "key": "VividWorld_Feeling_Died_Neutral_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Died_Neutral_2",
+          "trait": "Calculating+"
+        }
+      ],
+      "hostile": [
+        {
+          "key": "VividWorld_Feeling_Died_Hostile_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Died_Hostile_2",
+          "trait": "Mercy-"
+        }
+      ],
+      "sore": [
+        {
+          "key": "VividWorld_Feeling_Died_Sore_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Died_Sore_2"
+        }
+      ],
+      "owe": [
+        {
+          "key": "VividWorld_Feeling_Died_Owe_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Died_Owe_2",
+          "trait": "Honor+"
+        }
+      ]
+    },
+    "executor": {
+      "close": [
+        {
+          "key": "VividWorld_Feeling_Executor_Close_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Executor_Close_2",
+          "trait": "Honor+"
+        }
+      ],
+      "neutral": [
+        {
+          "key": "VividWorld_Feeling_Executor_Neutral_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Executor_Neutral_2",
+          "trait": "Calculating+"
+        }
+      ],
+      "hostile": [
+        {
+          "key": "VividWorld_Feeling_Executor_Hostile_1",
+          "trait": "Honor+"
+        },
+        {
+          "key": "VividWorld_Feeling_Executor_Hostile_2",
+          "trait": "Mercy+"
+        }
+      ],
+      "sore": [
+        {
+          "key": "VividWorld_Feeling_Executor_Sore_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Executor_Sore_2"
+        }
+      ],
+      "owe": [
+        {
+          "key": "VividWorld_Feeling_Executor_Owe_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Executor_Owe_2"
+        }
+      ]
+    },
+    "victor": {
+      "close": [
+        {
+          "key": "VividWorld_Feeling_Victor_Close_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Victor_Close_2",
+          "trait": "Valor+"
+        }
+      ],
+      "neutral": [
+        {
+          "key": "VividWorld_Feeling_Victor_Neutral_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Victor_Neutral_2",
+          "trait": "Calculating+"
+        }
+      ],
+      "hostile": [
+        {
+          "key": "VividWorld_Feeling_Victor_Hostile_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Victor_Hostile_2"
+        }
+      ],
+      "sore": [
+        {
+          "key": "VividWorld_Feeling_Victor_Sore_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Victor_Sore_2"
+        }
+      ],
+      "owe": [
+        {
+          "key": "VividWorld_Feeling_Victor_Owe_1"
+        }
+      ]
+    },
+    "captured": {
+      "close": [
+        {
+          "key": "VividWorld_Feeling_Captured_Close_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Captured_Close_2",
+          "trait": "Generosity+"
+        }
+      ],
+      "neutral": [
+        {
+          "key": "VividWorld_Feeling_Captured_Neutral_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Captured_Neutral_2",
+          "trait": "Calculating+"
+        }
+      ],
+      "hostile": [
+        {
+          "key": "VividWorld_Feeling_Captured_Hostile_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Captured_Hostile_2"
+        }
+      ],
+      "sore": [
+        {
+          "key": "VividWorld_Feeling_Captured_Sore_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Captured_Sore_2",
+          "trait": "Generosity+"
+        }
+      ],
+      "owe": [
+        {
+          "key": "VividWorld_Feeling_Captured_Owe_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Captured_Owe_2",
+          "trait": "Honor+"
+        }
+      ]
+    },
+    "freed": {
+      "close": [
+        {
+          "key": "VividWorld_Feeling_Freed_Close_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Freed_Close_2",
+          "trait": "Generosity+"
+        }
+      ],
+      "neutral": [
+        {
+          "key": "VividWorld_Feeling_Freed_Neutral_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Freed_Neutral_2",
+          "trait": "Calculating+"
+        }
+      ],
+      "hostile": [
+        {
+          "key": "VividWorld_Feeling_Freed_Hostile_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Freed_Hostile_2"
+        }
+      ],
+      "sore": [
+        {
+          "key": "VividWorld_Feeling_Freed_Sore_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Freed_Sore_2"
+        }
+      ],
+      "owe": [
+        {
+          "key": "VividWorld_Feeling_Freed_Owe_1"
+        }
+      ]
+    },
+    "lost_prisoner": {
+      "close": [
+        {
+          "key": "VividWorld_Feeling_LostPrisoner_Close_1"
+        },
+        {
+          "key": "VividWorld_Feeling_LostPrisoner_Close_2",
+          "trait": "Valor+"
+        }
+      ],
+      "neutral": [
+        {
+          "key": "VividWorld_Feeling_LostPrisoner_Neutral_1"
+        },
+        {
+          "key": "VividWorld_Feeling_LostPrisoner_Neutral_2",
+          "trait": "Calculating+"
+        }
+      ],
+      "hostile": [
+        {
+          "key": "VividWorld_Feeling_LostPrisoner_Hostile_1"
+        },
+        {
+          "key": "VividWorld_Feeling_LostPrisoner_Hostile_2"
+        }
+      ],
+      "sore": [
+        {
+          "key": "VividWorld_Feeling_LostPrisoner_Sore_1"
+        },
+        {
+          "key": "VividWorld_Feeling_LostPrisoner_Sore_2"
+        }
+      ],
+      "owe": [
+        {
+          "key": "VividWorld_Feeling_LostPrisoner_Owe_1"
+        }
+      ]
+    },
+    "released": {
+      "close": [
+        {
+          "key": "VividWorld_Feeling_Released_Close_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Released_Close_2",
+          "trait": "Honor+"
+        }
+      ],
+      "neutral": [
+        {
+          "key": "VividWorld_Feeling_Released_Neutral_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Released_Neutral_2",
+          "trait": "Calculating+"
+        }
+      ],
+      "hostile": [
+        {
+          "key": "VividWorld_Feeling_Released_Hostile_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Released_Hostile_2"
+        }
+      ],
+      "sore": [
+        {
+          "key": "VividWorld_Feeling_Released_Sore_1"
+        }
+      ],
+      "owe": [
+        {
+          "key": "VividWorld_Feeling_Released_Owe_1"
+        }
+      ]
+    },
+    "lost_face": {
+      "close": [
+        {
+          "key": "VividWorld_Feeling_LostFace_Close_1"
+        },
+        {
+          "key": "VividWorld_Feeling_LostFace_Close_2",
+          "trait": "Mercy+"
+        }
+      ],
+      "neutral": [
+        {
+          "key": "VividWorld_Feeling_LostFace_Neutral_1"
+        },
+        {
+          "key": "VividWorld_Feeling_LostFace_Neutral_2",
+          "trait": "Calculating+"
+        }
+      ],
+      "hostile": [
+        {
+          "key": "VividWorld_Feeling_LostFace_Hostile_1"
+        },
+        {
+          "key": "VividWorld_Feeling_LostFace_Hostile_2"
+        }
+      ],
+      "sore": [
+        {
+          "key": "VividWorld_Feeling_LostFace_Sore_1"
+        },
+        {
+          "key": "VividWorld_Feeling_LostFace_Sore_2"
+        }
+      ],
+      "owe": [
+        {
+          "key": "VividWorld_Feeling_LostFace_Owe_1"
+        }
+      ]
+    },
+    "brash": {
+      "close": [
+        {
+          "key": "VividWorld_Feeling_Brash_Close_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Brash_Close_2"
+        }
+      ],
+      "neutral": [
+        {
+          "key": "VividWorld_Feeling_Brash_Neutral_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Brash_Neutral_2",
+          "trait": "Calculating+"
+        }
+      ],
+      "hostile": [
+        {
+          "key": "VividWorld_Feeling_Brash_Hostile_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Brash_Hostile_2"
+        }
+      ],
+      "sore": [
+        {
+          "key": "VividWorld_Feeling_Brash_Sore_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Brash_Sore_2"
+        }
+      ],
+      "owe": [
+        {
+          "key": "VividWorld_Feeling_Brash_Owe_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Brash_Owe_2"
+        }
+      ]
+    },
+    "decent": {
+      "close": [
+        {
+          "key": "VividWorld_Feeling_Decent_Close_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Decent_Close_2",
+          "trait": "Generosity+"
+        }
+      ],
+      "neutral": [
+        {
+          "key": "VividWorld_Feeling_Decent_Neutral_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Decent_Neutral_2",
+          "trait": "Calculating+"
+        }
+      ],
+      "hostile": [
+        {
+          "key": "VividWorld_Feeling_Decent_Hostile_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Decent_Hostile_2"
+        }
+      ],
+      "sore": [
+        {
+          "key": "VividWorld_Feeling_Decent_Sore_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Decent_Sore_2"
+        }
+      ],
+      "owe": [
+        {
+          "key": "VividWorld_Feeling_Decent_Owe_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Decent_Owe_2"
+        }
+      ]
+    },
+    "cared": {
+      "close": [
+        {
+          "key": "VividWorld_Feeling_Cared_Close_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Cared_Close_2",
+          "trait": "Mercy+"
+        }
+      ],
+      "neutral": [
+        {
+          "key": "VividWorld_Feeling_Cared_Neutral_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Cared_Neutral_2",
+          "trait": "Calculating+"
+        }
+      ],
+      "hostile": [
+        {
+          "key": "VividWorld_Feeling_Cared_Hostile_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Cared_Hostile_2"
+        }
+      ],
+      "sore": [
+        {
+          "key": "VividWorld_Feeling_Cared_Sore_1"
+        }
+      ],
+      "owe": [
+        {
+          "key": "VividWorld_Feeling_Cared_Owe_1"
+        }
+      ]
+    },
+    "joy": {
+      "close": [
+        {
+          "key": "VividWorld_Feeling_Joy_Close_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Joy_Close_2",
+          "trait": "Generosity+"
+        }
+      ],
+      "neutral": [
+        {
+          "key": "VividWorld_Feeling_Joy_Neutral_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Joy_Neutral_2",
+          "trait": "Calculating+"
+        }
+      ],
+      "hostile": [
+        {
+          "key": "VividWorld_Feeling_Joy_Hostile_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Joy_Hostile_2"
+        }
+      ],
+      "sore": [
+        {
+          "key": "VividWorld_Feeling_Joy_Sore_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Joy_Sore_2",
+          "trait": "Generosity+"
+        }
+      ],
+      "owe": [
+        {
+          "key": "VividWorld_Feeling_Joy_Owe_1"
+        }
+      ]
+    },
+    "pending": {
+      "close": [
+        {
+          "key": "VividWorld_Feeling_Pending_Close_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Pending_Close_2",
+          "trait": "Honor+"
+        }
+      ],
+      "neutral": [
+        {
+          "key": "VividWorld_Feeling_Pending_Neutral_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Pending_Neutral_2"
+        }
+      ],
+      "hostile": [
+        {
+          "key": "VividWorld_Feeling_Pending_Hostile_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Pending_Hostile_2"
+        }
+      ],
+      "sore": [
+        {
+          "key": "VividWorld_Feeling_Pending_Sore_1"
+        }
+      ],
+      "owe": [
+        {
+          "key": "VividWorld_Feeling_Pending_Owe_1"
+        }
+      ]
+    }
+  }
+}

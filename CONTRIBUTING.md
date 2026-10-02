@@ -92,13 +92,14 @@ survive a downgrade.
 
 ## Adding content without writing code
 
-Most of what happens in a campaign is data, not C#. Three files under `module/ModuleData/`:
+Most of what happens in a campaign is data, not C#. Four files under `module/ModuleData/`:
 
 | File | What it holds |
 |---|---|
 | `vividworld_events.json` | Event templates — the things that happen |
 | `vividworld_situations.json` | Situations — how an event comes about, and how it branches |
 | `vividworld_situation_events.json` | The event templates a situation's branches emit |
+| `vividworld_feelings.json` | The one-line reactions an NPC adds after telling the player a rumor, by category and mood (the sentences themselves live in the string tables). Each event template maps its roles to a category with `feelings` |
 
 **An event template** declares who takes part (`roles`), how big a deal it is (`dramaWeight`,
 1–5, which decides how far word travels), whether it starts public or secret (`origin`), what it
@@ -117,6 +118,34 @@ your idea needs a new one, that part is code.
 the middle of it. Because of that, every folder under `Languages/` must carry exactly the same
 key set as the English table. Three tests enforce this, and they will fail your build rather than
 let a half-filled language through.
+
+**Pronouns and words that change with gender.** Sentences mark pronouns as `{PRISONER.he}`,
+`{CAPTOR.him}`, `{VICTIM.his}`, `{KILLER.himself}` (and bare `{he}`, `{him}`, `{his}`, `{himself}`
+in the reaction lines). Those markers are filled from ordinary string keys, so a translation
+supplies its own words:
+
+- `VividWorld_Pronoun_He_M` / `_F` / `_N`, and the same three for `Him`, `His` and `Himself`.
+  `_M` is a man, `_F` a woman, `_N` is used when the person's gender cannot be determined.
+- `VividWorld_Self_Reflexive` is the speaker referring to themselves ("myself").
+
+For languages where verbs or adjectives agree with gender, or where three pronoun forms are not
+enough, write both forms yourself with `{NAME:masculine|feminine}`. An optional third part,
+`{NAME:masculine|feminine|unknown}`, is used when the gender cannot be determined; without it the
+first part is used. A part may be empty (`{PRISONER:|а}`), and may not contain another marker.
+
+- `NAME` is a role name from the same sentence: `{PRISONER} {PRISONER:сбежал|сбежала}`. It follows
+  that person's own gender even when they are the one speaking.
+- `ME` is whoever is speaking: `Я {ME:рад|рада}`.
+- `YOU` is the person being spoken to: `ты {YOU:пришёл|пришла}`. In what an NPC tells the player,
+  that is always the player.
+- `FOCUS` is the person a reaction line is about; it only works in those lines.
+
+A mistyped marker (one part only, or a name that is not a role in that sentence) is logged as a
+warning naming the string key, and the first part is shown. The shipped English and Traditional
+Chinese tables do not use `{NAME:…|…}`; a test keeps it that way. The ten fixed lines of the
+dialogue menu (the two questions the player asks and the NPC's short replies) can use it too, but
+only `ME` and `YOU` (in the player's lines `ME` is the player and `YOU` is the NPC); role names
+and `FOCUS` have nothing to point at there.
 
 **One content rule worth knowing before you write a scene:** a scene may not claim anything about
 game state the mod cannot actually change. No money changing hands, no marriages, no one thrown in
