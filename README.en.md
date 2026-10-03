@@ -83,6 +83,9 @@ may bring up his own affairs even to a new acquaintance, and even a commoner may
 by nature, or think somewhat well of you, before he brings them up. Auto (the default): Realistic when a mod such as NaN or Lowborn is detected,
 Casual otherwise.
 
+**Personal relations.** Everyone keeps their own opinion of you: helping or crossing someone only affects that person, not their whole clan (in the base game, a clan shares its leader's relation with you). Who is willing to talk to you, and what they think of you when news involves you, also follow that person's own opinion.
+The first time you load an existing campaign, each person gets the value shown on screen at that moment, so the numbers you see do not change. It can be turned off on the Vivid World page of the game's settings to go back to the original rule.
+
 **Reviewing what you have heard.** Press **Ctrl+L** for *What you have heard*, which lists every piece
 of news that has reached you so far, with each person's own words kept as a separate entry and how many tellings removed it is.
 Names of people and places in the text are clickable and lead to the game's encyclopedia.
@@ -91,12 +94,12 @@ Names of people and places in the text are clickable and lead to the game's ency
 
 ## Save safety
 
-The mod's data is **not written into the game's save files**. It is stored separately, under
+The rumor data is **not written into the game's save files**. It is stored separately, under
 `Documents\Mount and Blade II Bannerlord\Configs\VividWorld\`.
 
 Two consequences follow:
 
-- **Existing saves still load after the mod is removed.** They contain nothing belonging to this mod.
+- **Existing saves still load after the mod is removed.** The personal relations recorded by "Personal relations" stay in the save, but the base game does not read them, and the screen goes back to the value a clan shares from its leader.
 - **Moving a save to another machine leaves the rumour data behind.** Copy the folder above as well if
   you want it to accompany the save.
 
@@ -159,7 +162,9 @@ The language used for this is set in the "AI Integration" group in MCM (English 
 this mod no opening. In that case the dialogue menu gains the line *"You looked like you were about to
 say something."* so that the subject may still be raised.
 
-This mod does not modify the game's own AI decision-making, nor does it overwrite any native file.
+**Affairs of Calradia**: with its personal relations mode on, it does the same thing as "Personal relations", and the two do not conflict; this mod detects that it is already being done and does not redistribute relations.
+
+Apart from "Personal relations" changing how the game computes someone's relation with you, this mod does not modify the game's own AI decision-making, nor does it overwrite any native file.
 
 ---
 

@@ -41,6 +41,13 @@ namespace VividWorld.Campaign
         internal PlayerHeardLogStore? PlayerHeardLog { get; private set; }
         private bool _pendingModeNotice;
         internal bool HasPendingModeNotice => _pendingModeNotice;
+        // 空＝這個戰役還沒搬過跟玩家的好感；否則記搬的那一天與結果（Core 的 PersonalRelationSeeding 組與解析）
+        private string _personalRelationsSeeded = string.Empty;
+        internal string PersonalRelationsSeededMarker => _personalRelationsSeeded;
+        /// <summary>這一次載入（新戰役開局或讀檔）剛把數字搬過。給之後的介紹視窗判斷要不要多講一段。</summary>
+        internal bool JustSeededPersonalRelationsThisLoad { get; private set; }
+        /// <summary>這一次載入才鑄了戰役 id（新戰役開局）。給介紹視窗判斷是不是新戰役。</summary>
+        internal bool MintedCampaignIdThisLoad { get; private set; }
         private int _tickCursor;
         private string _tickCursorHeroId = string.Empty;
         private string _pendingIngestJson = string.Empty;
@@ -112,6 +119,8 @@ namespace VividWorld.Campaign
             // 舊存檔沒有這個鍵：SyncData 回傳 false 且不動欄位（帳本 D-61）⇒ 維持空字串，讀檔時退回位置值
             dataStore.SyncData("VividWorld_TickCursorHeroId", ref _tickCursorHeroId);
             dataStore.SyncData("VividWorld_PendingIngest", ref _pendingIngestJson);
+            // 舊存檔沒有這個鍵：SyncData 不動欄位（帳本 D-61）⇒ 維持空字串 ⇒ 第一次讀檔時搬一次
+            dataStore.SyncData("VividWorld_PersonalRelationsSeeded", ref _personalRelationsSeeded);
 
             if (dataStore.IsSaving)
             {
@@ -174,6 +183,7 @@ namespace VividWorld.Campaign
                 {
                     string playerFirstName = mainHero?.FirstName?.ToString() ?? string.Empty;
                     _campaignId = CampaignIdentity.MintCampaignId(playerFirstName);
+                    MintedCampaignIdThisLoad = true;
                     ModLog.Info($"Minted new campaign ID: {_campaignId}");
                 }
 
@@ -297,7 +307,8 @@ namespace VividWorld.Campaign
                         _situationScan,
                         _sessionState,
                         _campaignId,
-                        feelingResolver);
+                        feelingResolver,
+                        () => _personalRelationsSeeded);
                     devDialogs.RegisterDialogues(starter);
 
                     // M6a 自答探針 1：在地化探針 (D-09)
@@ -329,6 +340,9 @@ namespace VividWorld.Campaign
 
                 _pendingModeNotice = true;
 
+                PersonalRelationSeeder.LogBootStatus();
+                RunPersonalSeeding(true);
+
                 if (_eventStore != null && _heroLookup != null && _traitLookup != null)
                 {
                     _producer.Initialize(_eventStore, _heroLookup, _traitLookup);
@@ -359,6 +373,32 @@ namespace VividWorld.Campaign
             finally
             {
                 ModLog.Flush();
+            }
+        }
+
+        /// <summary>
+        /// 檢查要不要搬跟玩家的好感，搬了就把標記記進存檔欄位。
+        /// 兩個呼叫點：戰役就緒時（新戰役與讀檔都會走到）、設定選單把開關從關切到開時。
+        /// </summary>
+        internal void RunPersonalSeeding(bool fromLoad)
+        {
+            try
+            {
+                if (_heroLookup == null) return;   // 還沒就緒：OnSessionLaunched 會再走一次
+
+                var result = PersonalRelationSeeder.Run(_config.Relation.PersonalWithPlayer, _personalRelationsSeeded);
+                if (result.NewMarker != null)
+                {
+                    _personalRelationsSeeded = result.NewMarker;
+                }
+                if (fromLoad)
+                {
+                    JustSeededPersonalRelationsThisLoad = result.JustSeeded;
+                }
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Personal relations with the player: seeding failed.", ex);
             }
         }
 
@@ -513,7 +553,15 @@ namespace VividWorld.Campaign
             string token = _pendingSnapshotToken;
             _pendingSnapshotToken = string.Empty;
 
-            if (_config.Persistence.PurgeForgottenEvents)
+            // 存檔完成的通知可能比戰役結束晚到（離開時由遊戲存檔）：這時 Campaign.Current 已是空的，
+            // 清理要用的遊戲時間讀不到，跳過這一次，下一次存檔會補做。沖寫與快照照常。
+            bool campaignEnded = TaleWorlds.CampaignSystem.Campaign.Current == null;
+            if (campaignEnded && _config.Persistence.PurgeForgottenEvents)
+            {
+                ModLog.Info($"Save '{saveName}' finished after the campaign had already ended; skipping the old-event purge for this save (the next save will do it)");
+            }
+
+            if (_config.Persistence.PurgeForgottenEvents && !campaignEnded)
             {
                 try
                 {
@@ -758,7 +806,11 @@ namespace VividWorld.Campaign
                 var detectedModules = compat?.DetectedModules ?? CommonerCompat.GetEffectiveCommonerModules(_config.Dialogue.CommonerCompatModules);
 
                 var lastRecord = ModeNotice.Load(VividWorldPaths.ModeNoticeFile);
-                var action = ModeNotice.Evaluate(_config.Dialogue.VolunteerMode, actualMode, detectedModules, lastRecord);
+                var baseAction = ModeNotice.Evaluate(_config.Dialogue.VolunteerMode, actualMode, detectedModules, lastRecord);
+                bool switchOn = SubModule.PersonalWithPlayerEnabled;
+                var plan = ModeNoticeSections.Decide(_config.Dialogue.VolunteerMode, actualMode, baseAction,
+                    MintedCampaignIdThisLoad, JustSeededPersonalRelationsThisLoad, switchOn);
+                var action = plan.Action;
 
                 string lastDesc = lastRecord != null
                     ? $"{lastRecord.Mode} (detected: {string.Join(", ", lastRecord.Detected)})"
@@ -785,27 +837,54 @@ namespace VividWorld.Campaign
 
                 if (action == ModeNoticeAction.Popup)
                 {
-                    TextObject textObj;
-                    if (actualMode == RumorMode.Realistic)
+                    TextObject modeText;
+                    if (plan.ModeKind == ModeSectionKind.AutoRealistic)
                     {
-                        textObj = isMcmBound
+                        modeText = isMcmBound
                             ? new TextObject("{=VividWorld_ModeNotice_PopupRealistic_Mcm}We detected {MODS}. Mods like these make it hard for a commoner to approach the nobility, so Vivid World has switched itself to Realistic mode: a lord needs to think well of you (relation 10 or higher) before he brings up the news of the land. If you would rather everyone be willing to chat, open Vivid World's settings in MCM and set \"Rumor mode\" to \"Casual\".")
                             : new TextObject("{=VividWorld_ModeNotice_PopupRealistic_NoMcm}We detected {MODS}. Mods like these make it hard for a commoner to approach the nobility, so Vivid World has switched itself to Realistic mode: a lord needs to think well of you (relation 10 or higher) before he brings up the news of the land. If you would rather everyone be willing to chat, open config.json and set \"volunteerMode\" to \"casual\".");
-                        textObj.SetTextVariable("MODS", modsStr);
+                        modeText.SetTextVariable("MODS", modsStr);
+                    }
+                    else if (plan.ModeKind == ModeSectionKind.ForcedRealistic)
+                    {
+                        modeText = isMcmBound
+                            ? new TextObject("{=VividWorld_ModeNotice_PopupRealisticForced_Mcm}Vivid World is now running: what happens across the land passes by word of mouth among lords and wanderers. You are in Realistic mode: a lord needs to think well of you, or be the talkative sort, before he brings up the news of the land. If you would rather more people be willing to chat, open Vivid World's settings in MCM and set \"Rumor mode\" to \"Casual\".")
+                            : new TextObject("{=VividWorld_ModeNotice_PopupRealisticForced_NoMcm}Vivid World is now running: what happens across the land passes by word of mouth among lords and wanderers. You are in Realistic mode: a lord needs to think well of you, or be the talkative sort, before he brings up the news of the land. If you would rather more people be willing to chat, open config.json and set \"volunteerMode\" to \"casual\".");
                     }
                     else
                     {
-                        textObj = isMcmBound
+                        modeText = isMcmBound
                             ? new TextObject("{=VividWorld_ModeNotice_PopupCasual_Mcm}Vivid World is now running: what happens across the land passes by word of mouth among lords and wanderers. When you talk with them, anyone who doesn't dislike you may bring up something they've heard, and the closer you are, the fuller the story. For a more realistic feel (only those who like you will chat), open Vivid World's settings in MCM and set \"Rumor mode\" to \"Realistic\".")
                             : new TextObject("{=VividWorld_ModeNotice_PopupCasual_NoMcm}Vivid World is now running: what happens across the land passes by word of mouth among lords and wanderers. When you talk with them, anyone who doesn't dislike you may bring up something they've heard, and the closer you are, the fuller the story. For a more realistic feel (only those who like you will chat), open config.json and set \"volunteerMode\" to \"realistic\".");
                     }
+
+                    // 各段之間空一行，放進同一個視窗
+                    var sections = new List<string>();
+                    if (plan.ShowModeSection) sections.Add(modeText.ToString());
+                    if (plan.ShowPersonalRelationsSection)
+                    {
+                        // 一行講一件事：開了什麼、怎麼關、（剛搬過數字時）數字沒變
+                        var personalLines = new List<string>
+                        {
+                            new TextObject("{=VividWorld_ModeNotice_PersonalRelations_Intro}\"Personal relations\" is on: everyone keeps their own opinion of you. Helping or crossing someone only affects that person, not their whole clan.").ToString(),
+                            (isMcmBound
+                                ? new TextObject("{=VividWorld_ModeNotice_PersonalRelations_Off_Mcm}To go back to the original rule (a clan shares its leader's relation with you), turn it off in Vivid World's settings in MCM.")
+                                : new TextObject("{=VividWorld_ModeNotice_PersonalRelations_Off_NoMcm}To go back to the original rule (a clan shares its leader's relation with you), open config.json and set \"personalWithPlayer\" under \"relation\" to false.")).ToString(),
+                        };
+                        if (plan.ShowSeededNote)
+                        {
+                            personalLines.Add(new TextObject("{=VividWorld_ModeNotice_PersonalRelations_Seeded}The relations you built up earlier have been passed on to each person at the values you saw then, so the numbers you see haven't changed.").ToString());
+                        }
+                        sections.Add(string.Join("\n", personalLines));
+                    }
+                    string popupText = string.Join("\n\n", sections);
 
                     var titleObj = new TextObject("{=VividWorld_ModeNotice_Title}Vivid World");
                     var buttonObj = new TextObject("{=VividWorld_ModeNotice_Button}Understood");
 
                     var inquiry = new InquiryData(
                         titleText: titleObj.ToString(),
-                        text: textObj.ToString(),
+                        text: popupText,
                         isAffirmativeOptionShown: true,
                         isNegativeOptionShown: false,
                         affirmativeText: buttonObj.ToString(),
@@ -827,7 +906,8 @@ namespace VividWorld.Campaign
                     };
                     ModeNotice.Save(VividWorldPaths.ModeNoticeFile, newRecord);
 
-                    ModLog.Info($"Mode notice: popup shown - mode {actualMode.ToString().ToLowerInvariant()} (detected: {string.Join(", ", detectedModules ?? Enumerable.Empty<string>())}) [last: {lastDesc}]");
+                    string omittedNote = plan.PersonalSectionOmittedBecauseSwitchOff ? "; personal relations section omitted - switch is off" : string.Empty;
+                    ModLog.Info($"Mode notice: popup shown - {string.Join(" | ", plan.Reasons)}; mode {actualMode.ToString().ToLowerInvariant()} (detected: {string.Join(", ", detectedModules ?? Enumerable.Empty<string>())}) [last: {lastDesc}]; sections: {plan.DescribeSections()}{omittedNote}");
                 }
                 else if (action == ModeNoticeAction.Message)
                 {

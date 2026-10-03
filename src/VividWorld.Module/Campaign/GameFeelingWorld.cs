@@ -35,6 +35,13 @@ namespace VividWorld.Campaign
             var speaker = Find(speakerId);
             var other = Find(heroId);
             if (speaker == null || other == null || speaker == other) return null;
+            // 跟玩家有關的一對、而「各人各算」關著：遊戲畫面顯示的是換成雙方族長之後的家族間好感，
+            // 所以這裡也讀同一個值，說出口的話才跟玩家看到的數字一致。開著時補丁讓個人間的值會被遊戲改動，照舊讀個人間。（帳本 D-114）
+            var player = Hero.MainHero;
+            if (player != null && (speaker == player || other == player) && !SubModule.PersonalWithPlayerEnabled)
+            {
+                return speaker.GetRelation(other);
+            }
             return speaker.GetBaseHeroRelation(other);
         }
 

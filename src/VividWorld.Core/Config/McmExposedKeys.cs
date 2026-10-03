@@ -69,6 +69,8 @@ namespace VividWorld.Core.Config
                 new McmExposedKey("consequences.maxAbsoluteDeltaPerHeroPerDay", McmKeyKind.Double, 0.0, 100.0),
                 new McmExposedKey("consequences.ledgerOnly", McmKeyKind.Bool),
 
+                new McmExposedKey("relation.personalWithPlayer", McmKeyKind.Bool),
+
                 // Group 5: Situations
                 new McmExposedKey("situations.dailyScanEnabled", McmKeyKind.Bool),
                 new McmExposedKey("situations.maxPerDay", McmKeyKind.Double, 0.0, 10.0),
@@ -129,6 +131,8 @@ namespace VividWorld.Core.Config
                     return cfg.Consequences.MaxAbsoluteDeltaPerHeroPerDay;
                 case "consequences.ledgerOnly":
                     return cfg.Consequences.LedgerOnly;
+                case "relation.personalWithPlayer":
+                    return cfg.Relation.PersonalWithPlayer;
                 case "situations.dailyScanEnabled":
                     return cfg.Situations.DailyScanEnabled;
                 case "situations.maxPerDay":
@@ -187,6 +191,9 @@ namespace VividWorld.Core.Config
                             return true;
                         case "consequences.ledgerOnly":
                             cfg.Consequences.LedgerOnly = bVal;
+                            return true;
+                        case "relation.personalWithPlayer":
+                            cfg.Relation.PersonalWithPlayer = bVal;
                             return true;
                         case "situations.dailyScanEnabled":
                             cfg.Situations.DailyScanEnabled = bVal;

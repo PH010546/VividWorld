@@ -1,5 +1,11 @@
 Vivid World changelog
 
+v0.9.7
+Fixed: leaving the game with "Save and Exit" no longer puts a Vivid World error in the log.
+New "Personal relations": everyone keeps their own opinion of you, so helping or crossing someone only affects that person, not their whole clan; the numbers in an existing campaign stay the same after updating, and you can turn it off in MCM.
+A new campaign, or the first load of an existing campaign after updating, opens with a notice explaining the rumor mode and Personal relations.
+Existing campaigns can be continued as they are; no settings need to be changed.
+
 v0.9.6
 Fixed: when someone escapes from a town's dungeon, the lord of the town no longer tells it as an escape from their own hands.
 Lords and wanderers now tell news as one whole sentence instead of several pieces joined with commas.

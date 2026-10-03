@@ -1,4 +1,5 @@
 using System;
+using HarmonyLib;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 using TaleWorlds.InputSystem;
@@ -9,8 +10,10 @@ using VividWorld.Campaign;
 using VividWorld.Core.Config;
 using VividWorld.Core.Diagnostics;
 using VividWorld.Core.Presentation;
+using VividWorld.Core.Relations;
 using VividWorld.Debug;
 using VividWorld.Dialogue;
+using VividWorld.Patches;
 using VividWorld.Presentation;
 using VividWorld.UI;
 
@@ -47,6 +50,49 @@ namespace VividWorld
             catch (Exception ex)
             {
                 ModLog.Error("Failed to load config at submodule load; the settings menu will bind later.", ex);
+            }
+
+            // 不用 PatchAll：每個補丁各自掛、各自失敗，一個掛不上不會連累另一個也不會擋住模組載入。
+            try
+            {
+                var harmony = new Harmony(HarmonyId);
+                PlayerPairEffectiveHeroesPatch.TryApply(harmony);
+                ClanLeaderChangeKeepsPlayerRelationPatch.TryApply(harmony);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Failed to create the Harmony instance; no patches were applied.", ex);
+            }
+        }
+
+        /// <summary>
+        /// 「跟玩家的好感各人各算」現在是不是開著。補丁每次被叫都會問，所以只讀記憶體裡的設定、不碰檔案。
+        /// 設定物件還沒載入、或模組整個被關掉，一律當關著（原版行為）。
+        /// </summary>
+        internal static bool PersonalWithPlayerEnabled
+        {
+            get
+            {
+                var cfg = _menuConfig;
+                return cfg != null && cfg.Enabled && cfg.Relation != null && cfg.Relation.PersonalWithPlayer;
+            }
+        }
+
+        /// <summary>設定選單切換了這個開關。從關切到開時，檢查一次要不要搬數字。</summary>
+        internal static void OnPersonalWithPlayerSwitched(bool on)
+        {
+            try
+            {
+                ModLog.Info(PersonalRelationSeeding.FormatSwitched(on));
+                if (on)
+                {
+                    _activeBehavior?.RunPersonalSeeding(false);
+                }
+                ModLog.Flush();
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Failed to handle the personal-relations switch change.", ex);
             }
         }
 

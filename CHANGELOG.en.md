@@ -10,6 +10,22 @@ Every release states three things:
 
 ## Unreleased
 
+## v0.9.7
+
+- **Fixed: leaving with "Save and Exit" and the like no longer logs a VividWorld error**: when the save-finished notification arrived after the campaign had already ended, the post-save cleanup read the game time and threw a `NullReferenceException` (`RumorCampaignBehavior.OnSaveOver`).
+  That cleanup is now skipped for that one save with a log line, and the next save does it; flushing and snapshots are unchanged. No data was ever affected.
+- **New: everyone keeps their own relation with you ("Personal relations", on by default)**: before reading or writing a relation between two people, the base game swaps both for their clan leaders, so a non-leader's relation with you is really their leader's —
+  raise it with a clan leader's wife and the leader's goes up too. Now any pair that includes the player is no longer swapped: the number on screen, the game's own changes, and VW's checks on who is willing to talk to you and how they feel when news involves you all land on that person.
+  Relations between NPCs follow the base game. This is VW's first patch that changes the game's own behavior (Harmony, on `DefaultDiplomacyModel.GetHeroesForEffectiveRelation` and `ChangeClanLeaderAction.ApplyInternal`).
+  - **The first time it is on in a campaign** (a new campaign, the first load of an existing campaign after updating, or the first time it is switched on later), every non-leader of another clan gets the relation shown on screen at that moment as their own, so nobody's number changes then; the save records a marker, once per campaign.
+    If another mod already keeps player pairs per person (such as AoC's personal relation mode), nothing is copied and only the marker is recorded
+  - **When a clan changes leader**, the new leader keeps their own relation with you (the base game would also add 70% of the old leader's, which would double-count what was copied)
+  - **Switched off**: the game is back to the original rule, and VW reads the clan-level value for you and anyone; changes made while it is off land on the leader pair. Switched back on, non-leaders have the values they had before; nothing is copied again
+  - **The notice window** now opens at the start of every new campaign (also when the rumor mode is fixed in the settings), explaining the rumor mode and this switch; it also opens on an existing campaign right after the copy, with one extra line saying past relations were passed on at the values shown then
+  - At startup the log says whether both patches applied, the actual diplomacy model type, and other mods' patches on that method; the copy logs the detection result, how many people, and those whose own value was not 0; a new dev dialogue line "his relation with you" (clan-level, personal, the switch, whether this campaign was copied)
+- Existing campaigns can be continued as they are: the save gains a key `VividWorld_PersonalRelationsSeeded`; old saves lack it, so the copy happens on first load. Removing VW returns the game to the original rule without breaking the save (personal values written meanwhile stay in the save, invisible to the base game).
+  No config changes needed: `relation.personalWithPlayer` (`true`) is added automatically.
+
 ## v0.9.6
 
 - **NPCs now tell news as one whole sentence, followed by a line of their own**: each rumor used to be a few fixed fragments joined with commas, word for word the same whoever told it.

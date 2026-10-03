@@ -189,6 +189,10 @@ namespace VividWorld.Mcm
                     ModLog.Info($"MCM: {key.Path} {FormatVal(oldVal)} -> {FormatVal(menuVal)}");
                     bool ok = McmExposedKeys.Write(live, key.Path, menuVal);
                     var actualVal = McmExposedKeys.Read(live, key.Path);
+                    if (ok && key.Path == "relation.personalWithPlayer" && actualVal is bool switchedOn)
+                    {
+                        SubModule.OnPersonalWithPlayerSwitched(switchedOn);
+                    }
                     if (!ok)
                     {
                         if (key.Kind == McmKeyKind.Int || key.Kind == McmKeyKind.Double)
@@ -260,6 +264,7 @@ namespace VividWorld.Mcm
                 case "consequences.bystanderMultiplier": return (double)s.BystanderMultiplier;
                 case "consequences.maxAbsoluteDeltaPerHeroPerDay": return (double)s.MaxAbsoluteDeltaPerHeroPerDay;
                 case "consequences.ledgerOnly": return s.ConsequencesLedgerOnly;
+                case "relation.personalWithPlayer": return s.PersonalWithPlayer;
                 case "situations.dailyScanEnabled": return s.DailyScanEnabled;
                 case "situations.maxPerDay": return (double)s.SituationsMaxPerDay;
                 case "situations.grudgesEnabled": return s.GrudgesEnabled;
@@ -332,6 +337,7 @@ namespace VividWorld.Mcm
             PushKey("consequences.bystanderMultiplier", () => s.BystanderMultiplier = (float)live.Consequences.BystanderMultiplier);
             PushKey("consequences.maxAbsoluteDeltaPerHeroPerDay", () => s.MaxAbsoluteDeltaPerHeroPerDay = (float)live.Consequences.MaxAbsoluteDeltaPerHeroPerDay);
             PushKey("consequences.ledgerOnly", () => s.ConsequencesLedgerOnly = live.Consequences.LedgerOnly);
+            PushKey("relation.personalWithPlayer", () => s.PersonalWithPlayer = live.Relation.PersonalWithPlayer);
             PushKey("situations.dailyScanEnabled", () => s.DailyScanEnabled = live.Situations.DailyScanEnabled);
             PushKey("situations.maxPerDay", () => s.SituationsMaxPerDay = (float)live.Situations.MaxPerDay);
             PushKey("situations.grudgesEnabled", () => s.GrudgesEnabled = live.Situations.GrudgesEnabled);
@@ -459,6 +465,7 @@ namespace VividWorld.Mcm
                 s.BystanderMultiplier.ToString("R", CultureInfo.InvariantCulture),
                 s.MaxAbsoluteDeltaPerHeroPerDay.ToString("R", CultureInfo.InvariantCulture),
                 s.ConsequencesLedgerOnly,
+                s.PersonalWithPlayer,
                 s.DailyScanEnabled,
                 s.SituationsMaxPerDay.ToString("R", CultureInfo.InvariantCulture),
                 s.GrudgesEnabled,
@@ -489,6 +496,7 @@ namespace VividWorld.Mcm
                 live.Consequences.BystanderMultiplier.ToString("R", CultureInfo.InvariantCulture),
                 live.Consequences.MaxAbsoluteDeltaPerHeroPerDay.ToString("R", CultureInfo.InvariantCulture),
                 live.Consequences.LedgerOnly,
+                live.Relation.PersonalWithPlayer,
                 live.Situations.DailyScanEnabled,
                 live.Situations.MaxPerDay.ToString("R", CultureInfo.InvariantCulture),
                 live.Situations.GrudgesEnabled,

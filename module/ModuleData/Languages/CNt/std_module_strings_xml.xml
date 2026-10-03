@@ -380,6 +380,8 @@
     <string id="VividWorld_MCM_MaxAbsoluteDeltaPerHeroPerDayHint" text="任何單一英雄單日因傳聞累積的絕對好感度變化總量上限。" />
     <string id="VividWorld_MCM_ConsequencesLedgerOnly" text="僅記錄帳本（不改原生好感度）" />
     <string id="VividWorld_MCM_ConsequencesLedgerOnlyHint" text="只在內部計算好感度後果，不將其施加到遊戲原生的英雄好感度上。" />
+    <string id="VividWorld_MCM_PersonalWithPlayer" text="個人好感度" />
+    <string id="VividWorld_MCM_PersonalWithPlayerHint" text="開著：每個人對你的好感分開計算，你幫了誰、得罪了誰只影響那個人。關掉：回到原版，同一家族共用族長對你的好感。第一次打開時，每個人從當時畫面上的數字開始。改了馬上生效。" />
 
     <!-- Group 5: 情境 -->
     <string id="VividWorld_MCM_DailyScanEnabled" text="啟用每日情境掃描" />
@@ -416,10 +418,16 @@
     <string id="VividWorld_ModeNotice_PopupRealistic_NoMcm" text="偵測到你安裝了 {MODS}。這類模組讓平民很難接近貴族，所以 Vivid World 已自動改用「寫實模式」：領主要對你有一定好感、或個性很健談，才會主動跟你聊起自己和身邊的事。想讓更多人願意跟你閒聊，可以打開 config.json，把 &quot;volunteerMode&quot; 改成 &quot;casual&quot;。" />
     <string id="VividWorld_ModeNotice_PopupCasual_Mcm" text="Vivid World 已經開始運作：各地發生的事，會在領主和流浪者之間口耳相傳。跟他們說話時，願意閒聊的人會主動提起自己和身邊的事；你也可以開口問路上有什麼消息。交情越好，聽得到的越多。想要更寫實（要有交情才會聊），可以到 MCM 的 Vivid World 設定，把「傳聞模式」改成「寫實」。" />
     <string id="VividWorld_ModeNotice_PopupCasual_NoMcm" text="Vivid World 已經開始運作：各地發生的事，會在領主和流浪者之間口耳相傳。跟他們說話時，願意閒聊的人會主動提起自己和身邊的事；你也可以開口問路上有什麼消息。交情越好，聽得到的越多。想要更寫實（要有交情才會聊），可以打開 config.json，把 &quot;volunteerMode&quot; 改成 &quot;realistic&quot;。" />
+    <string id="VividWorld_ModeNotice_PopupRealisticForced_Mcm" text="Vivid World 已經開始運作：各地發生的事，會在領主和流浪者之間口耳相傳。目前是「寫實模式」：領主要對你有一定好感、或個性很健談，才會主動跟你聊起自己和身邊的事。想讓更多人願意跟你閒聊，可以到 MCM 的 Vivid World 設定，把「傳聞模式」改成「暢玩」。" />
+    <string id="VividWorld_ModeNotice_PopupRealisticForced_NoMcm" text="Vivid World 已經開始運作：各地發生的事，會在領主和流浪者之間口耳相傳。目前是「寫實模式」：領主要對你有一定好感、或個性很健談，才會主動跟你聊起自己和身邊的事。想讓更多人願意跟你閒聊，可以打開 config.json，把 &quot;volunteerMode&quot; 改成 &quot;casual&quot;。" />
     <string id="VividWorld_ModeNotice_MessageRealistic_Mcm" text="Vivid World：傳聞模式為寫實（偵測到 {MODS}），可在 MCM 調整。" />
     <string id="VividWorld_ModeNotice_MessageRealistic_NoMcm" text="Vivid World：傳聞模式為寫實（偵測到 {MODS}），可在 config.json 調整。" />
     <string id="VividWorld_ModeNotice_MessageCasual_Mcm" text="Vivid World：傳聞模式為暢玩，可在 MCM 調整。" />
     <string id="VividWorld_ModeNotice_MessageCasual_NoMcm" text="Vivid World：傳聞模式為暢玩，可在 config.json 調整。" />
+    <string id="VividWorld_ModeNotice_PersonalRelations_Intro" text="「個人好感度」已開啟：每個人對你的好感分開計算。你幫了誰、得罪了誰，只影響那個人，不會算到他整個家族。" />
+    <string id="VividWorld_ModeNotice_PersonalRelations_Off_Mcm" text="想改回原版（同一家族共用族長對你的好感），可以到 MCM 的 Vivid World 設定關掉它。" />
+    <string id="VividWorld_ModeNotice_PersonalRelations_Off_NoMcm" text="想改回原版（同一家族共用族長對你的好感），可以打開 config.json，把 &quot;relation&quot; 底下的 &quot;personalWithPlayer&quot; 改成 false。" />
+    <string id="VividWorld_ModeNotice_PersonalRelations_Seeded" text="你之前累積的好感，已照當時畫面上的數字分給每個人，看到的數字不變。" />
 
     <!-- First-person participant pronouns and event variations -->
     <string id="VividWorld_Self_Subject" text="我" />

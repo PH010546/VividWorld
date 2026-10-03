@@ -109,6 +109,11 @@ namespace VividWorld.Mcm
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Consequences}Consequences", GroupOrder = 4)]
         public bool ConsequencesLedgerOnly { get; set; } = false;
 
+        [SettingPropertyBool("{=VividWorld_MCM_PersonalWithPlayer}Personal relations", Order = 4, RequireRestart = false,
+            HintText = "{=VividWorld_MCM_PersonalWithPlayerHint}On: everyone keeps their own opinion of you; helping or crossing someone only affects that person. Off: the original rule, where a clan shares its leader's relation with you. The first time it is turned on, each person starts from the value you saw at that moment. Takes effect immediately.")]
+        [SettingPropertyGroup("{=VividWorld_MCM_Group_Consequences}Consequences", GroupOrder = 4)]
+        public bool PersonalWithPlayer { get; set; } = true;
+
         // ── Group 5: Situations ─────────────────────────────────────────────────────
 
         [SettingPropertyBool("{=VividWorld_MCM_DailyScanEnabled}Enable daily situation scan", Order = 0, RequireRestart = false,

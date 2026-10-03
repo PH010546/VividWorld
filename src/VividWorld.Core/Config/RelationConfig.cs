@@ -22,6 +22,12 @@ namespace VividWorld.Core.Config
         public double RemoteRelationWeight { get; set; } = 2.00;
         public double RemoteFactorMax { get; set; } = 2.00;
 
+        /// <summary>
+        /// true = 跟玩家有關的好感各人各算（不換成族長）；false = 回到原版規則。
+        /// 補丁每次呼叫都現讀這個值，設定選單切換立即生效。
+        /// </summary>
+        public bool PersonalWithPlayer { get; set; } = true;
+
         [JsonExtensionData]
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
     }

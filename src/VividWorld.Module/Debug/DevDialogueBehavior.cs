@@ -24,6 +24,7 @@ using VividWorld.Core.Rumors;
 using VividWorld.Core.Situations;
 using VividWorld.Core.Util;
 using VividWorld.Dialogue;
+using VividWorld.Patches;
 using VividWorld.Presentation;
 
 namespace VividWorld.Debug
@@ -63,6 +64,7 @@ namespace VividWorld.Debug
         private readonly SnapshotSessionState? _sessionState;
         private readonly string? _campaignId;
         private readonly FeelingResolver? _feelings;
+        private readonly Func<string>? _personalSeedMarker;
         private readonly int _rollbackCount;
         private readonly double _rollbackMaxDay;
         private readonly double _launchDay;
@@ -86,7 +88,8 @@ namespace VividWorld.Debug
             SituationScanBehavior? situationScan = null,
             SnapshotSessionState? sessionState = null,
             string? campaignId = null,
-            FeelingResolver? feelings = null)
+            FeelingResolver? feelings = null,
+            Func<string>? personalSeedMarker = null)
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
@@ -103,6 +106,7 @@ namespace VividWorld.Debug
             _sessionState = sessionState;
             _campaignId = campaignId;
             _feelings = feelings;
+            _personalSeedMarker = personalSeedMarker;
         }
 
         public void RegisterDialogues(CampaignGameStarter starter)
@@ -215,7 +219,7 @@ namespace VividWorld.Debug
                 100,
                 null);
 
-            // ── Category 1: About this person (8 tools) ──
+            // ── Category 1: About this person (9 tools) ──
             // 1. (dev) What do you know?
             starter.AddPlayerLine(
                 "vividworld_dev_known_events",
@@ -294,6 +298,16 @@ namespace VividWorld.Debug
                 "{=VividWorld_Dev_Feelings}(dev) What would he add to each rumor he knows?",
                 Condition_AlwaysAvailable,
                 Consequence_Feelings,
+                DevDialoguePriority);
+
+            // 9. (dev) How does he feel about me, per person
+            starter.AddPlayerLine(
+                "vividworld_dev_player_relation",
+                TokenDevPerson,
+                TokenDevResultPerson,
+                "{=VividWorld_Dev_PlayerRelation}(dev) His relation with you",
+                Condition_AlwaysAvailable,
+                Consequence_PlayerRelation,
                 DevDialoguePriority);
 
             // Return from person tools to categories
@@ -531,7 +545,7 @@ namespace VividWorld.Debug
                 100,
                 null);
 
-            ModLog.Info("Registered 24 developer dialogue lines in 3 categories (person: 8, world: 8, act: 8) behind main menu entry.");
+            ModLog.Info("Registered 25 developer dialogue lines in 3 categories (person: 9, world: 8, act: 8) behind main menu entry.");
         }
 
         private static void SetResult(string line)
@@ -917,6 +931,44 @@ namespace VividWorld.Debug
             {
                 ModLog.Error("Dev reload config failed", ex);
                 Finish("(dev) config reload failed - see log.txt");
+            }
+        }
+
+        private void Consequence_PlayerRelation()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var hero = Hero.OneToOneConversationHero;
+                var player = Hero.MainHero;
+                if (hero == null || player == null) return;
+
+                string name = hero.Name?.ToString() ?? hero.StringId;
+                int shown = player.GetRelation(hero);
+                int personal = CharacterRelationManager.GetHeroRelation(player, hero);
+                var leader = hero.Clan?.Leader;
+                string clanLevel = leader == null
+                    ? "no clan leader"
+                    : $"{CharacterRelationManager.GetHeroRelation(player, leader)} (leader {leader.Name})";
+                bool switchOn = SubModule.PersonalWithPlayerEnabled;
+                string marker = _personalSeedMarker?.Invoke() ?? string.Empty;
+                string markerText = string.IsNullOrEmpty(marker) ? "(not set)" : marker;
+
+                string vwReads = switchOn
+                    ? $"personal {personal}"
+                    : $"between clans {shown}";
+
+                string line = $"(dev) {name}: shown to you {shown}, personal {personal}, between clans {clanLevel}, " +
+                              $"switch {(switchOn ? "on" : "off")}, VW reads: {vwReads}, seeded {markerText}, " +
+                              $"pair patch applied={PlayerPairEffectiveHeroesPatch.Applied}, " +
+                              $"leader-change patch applied={ClanLeaderChangeKeepsPlayerRelationPatch.Applied}";
+                ModLog.Info($"[DevDialogue] relation with the player: {line}");
+                Finish(line);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev player relation failed", ex);
+                Finish("(dev) failed - see log.txt");
             }
         }
 

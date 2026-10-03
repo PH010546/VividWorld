@@ -380,6 +380,8 @@
     <string id="VividWorld_MCM_MaxAbsoluteDeltaPerHeroPerDayHint" text="Maximum total absolute relation change any single hero can accumulate from rumors in a single day." />
     <string id="VividWorld_MCM_ConsequencesLedgerOnly" text="Ledger only (no native relation changes)" />
     <string id="VividWorld_MCM_ConsequencesLedgerOnlyHint" text="Calculates relation consequences internally without applying them to native game hero relations." />
+    <string id="VividWorld_MCM_PersonalWithPlayer" text="Personal relations" />
+    <string id="VividWorld_MCM_PersonalWithPlayerHint" text="On: everyone keeps their own opinion of you; helping or crossing someone only affects that person. Off: the original rule, where a clan shares its leader's relation with you. The first time it is turned on, each person starts from the value you saw at that moment. Takes effect immediately." />
 
     <!-- Group 5: Situations -->
     <string id="VividWorld_MCM_DailyScanEnabled" text="Enable daily situation scan" />
@@ -416,10 +418,16 @@
     <string id="VividWorld_ModeNotice_PopupRealistic_NoMcm" text="We detected {MODS}. Mods like these make it hard for a commoner to approach the nobility, so Vivid World has switched itself to Realistic mode: a lord needs to think well of you, or have an outgoing personality, before chatting about what is happening to themselves and those around them. If you would rather more people be willing to chat, open config.json and set &quot;volunteerMode&quot; to &quot;casual&quot;." />
     <string id="VividWorld_ModeNotice_PopupCasual_Mcm" text="Vivid World is now running: what happens across the land passes by word of mouth among lords and wanderers. When you talk with them, those willing to chat will bring up what has happened to themselves and those around them; you can also ask what news there is on the road. The closer you are, the more you will hear. For a more realistic feel (chatting only once you have built a relationship), open Vivid World's settings in MCM and set &quot;Rumor mode&quot; to &quot;Realistic&quot;." />
     <string id="VividWorld_ModeNotice_PopupCasual_NoMcm" text="Vivid World is now running: what happens across the land passes by word of mouth among lords and wanderers. When you talk with them, those willing to chat will bring up what has happened to themselves and those around them; you can also ask what news there is on the road. The closer you are, the more you will hear. For a more realistic feel (chatting only once you have built a relationship), open config.json and set &quot;volunteerMode&quot; to &quot;realistic&quot;." />
+    <string id="VividWorld_ModeNotice_PopupRealisticForced_Mcm" text="Vivid World is now running: what happens across the land passes by word of mouth among lords and wanderers. You are in Realistic mode: a lord needs to think well of you, or be the talkative sort, before he brings up the news of the land. If you would rather more people be willing to chat, open Vivid World's settings in MCM and set &quot;Rumor mode&quot; to &quot;Casual&quot;." />
+    <string id="VividWorld_ModeNotice_PopupRealisticForced_NoMcm" text="Vivid World is now running: what happens across the land passes by word of mouth among lords and wanderers. You are in Realistic mode: a lord needs to think well of you, or be the talkative sort, before he brings up the news of the land. If you would rather more people be willing to chat, open config.json and set &quot;volunteerMode&quot; to &quot;casual&quot;." />
     <string id="VividWorld_ModeNotice_MessageRealistic_Mcm" text="Vivid World: rumor mode is Realistic ({MODS} detected); change it in MCM." />
     <string id="VividWorld_ModeNotice_MessageRealistic_NoMcm" text="Vivid World: rumor mode is Realistic ({MODS} detected); change it in config.json." />
     <string id="VividWorld_ModeNotice_MessageCasual_Mcm" text="Vivid World: rumor mode is Casual; change it in MCM." />
     <string id="VividWorld_ModeNotice_MessageCasual_NoMcm" text="Vivid World: rumor mode is Casual; change it in config.json." />
+    <string id="VividWorld_ModeNotice_PersonalRelations_Intro" text="&quot;Personal relations&quot; is on: everyone keeps their own opinion of you. Helping or crossing someone only affects that person, not their whole clan." />
+    <string id="VividWorld_ModeNotice_PersonalRelations_Off_Mcm" text="To go back to the original rule (a clan shares its leader's relation with you), turn it off in Vivid World's settings in MCM." />
+    <string id="VividWorld_ModeNotice_PersonalRelations_Off_NoMcm" text="To go back to the original rule (a clan shares its leader's relation with you), open config.json and set &quot;personalWithPlayer&quot; under &quot;relation&quot; to false." />
+    <string id="VividWorld_ModeNotice_PersonalRelations_Seeded" text="The relations you built up earlier have been passed on to each person at the values you saw then, so the numbers you see haven't changed." />
 
     <!-- First-person participant pronouns and event variations -->
     <string id="VividWorld_Self_Subject" text="I" />
