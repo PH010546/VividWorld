@@ -1,5 +1,13 @@
 Vivid World changelog
 
+v0.9.8
+New "False rumors": lords will say things behind others' backs that never happened, so what you hear may not be true.
+Lords can also do shabby things to each other, such as speaking ill of the ruler in private or mistreating a prisoner.
+People decide for themselves whether to believe what they hear; the person talked about may deny it, and those who know the truth may set it straight.
+New "Probing": pick something from "What you have heard" and ask a lord about it.
+"What you have heard" now keeps each matter together, marked "Conflicting accounts" when the stories disagree.
+Existing campaigns can be continued as they are; no settings need to be changed.
+
 v0.9.7
 Fixed: leaving the game with "Save and Exit" no longer puts a Vivid World error in the log.
 New "Personal relations": everyone keeps their own opinion of you, so helping or crossing someone only affects that person, not their whole clan; the numbers in an existing campaign stay the same after updating, and you can turn it off in MCM.

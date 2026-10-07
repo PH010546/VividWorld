@@ -23,6 +23,8 @@ namespace VividWorld.Core.Situations
         public bool IsClamped { get; set; }
         public double Weight { get; set; }
         public double Probability { get; set; }
+        public double? GrudgeDepth { get; set; }
+        public double? GrudgeBonus { get; set; }
         public bool IsExcluded { get; set; }
         public string? ExcludedReason { get; set; }
     }
@@ -45,7 +47,13 @@ namespace VividWorld.Core.Situations
             TraitProfile deciderTraits,
             double defaultMinBranchWeight,
             IDeterministicRng rng,
-            long seed)
+            long seed,
+            SituationWorldContext? context = null,
+            string? situationId = null,
+            double day = 0.0,
+            ISituationHistory? history = null,
+            IReadOnlyCollection<string>? nonDerivedHeroIds = null,
+            bool forced = false)
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
             if (deciderTraits == null) throw new ArgumentNullException(nameof(deciderTraits));
@@ -53,6 +61,7 @@ namespace VividWorld.Core.Situations
 
             factsByRole ??= new Dictionary<string, SituationRoleFacts>();
             double minWeight = template.MinBranchWeight ?? defaultMinBranchWeight;
+            situationId ??= template.Id;
 
             var branchDetails = new List<SituationBranchDetail>();
 
@@ -69,7 +78,13 @@ namespace VividWorld.Core.Situations
                     b.Preconditions,
                     factsByRole,
                     boundHeroes,
-                    unboundReasons);
+                    unboundReasons,
+                    situationId,
+                    day,
+                    history,
+                    nonDerivedHeroIds,
+                    context,
+                    forced);
 
                 var failedPreconds = precondResults.Where(r => !r.Ok).ToList();
                 if (failedPreconds.Count > 0)
@@ -98,7 +113,26 @@ namespace VividWorld.Core.Situations
                     }
                 }
 
-                double raw = b.Base + sumTraits;
+                double grudgeBonus = 0.0;
+                if (b.GrudgeWeight != null)
+                {
+                    string fromRole = b.GrudgeWeight.From;
+                    string towardRole = b.GrudgeWeight.Toward;
+                    string? fromHeroId = boundHeroes != null && boundHeroes.TryGetValue(fromRole, out var fh) ? fh : null;
+                    string? towardHeroId = boundHeroes != null && boundHeroes.TryGetValue(towardRole, out var th) ? th : null;
+
+                    if (!string.IsNullOrEmpty(fromHeroId) && !string.IsNullOrEmpty(towardHeroId))
+                    {
+                        double personalGrudge = context?.GrudgeSum != null ? -context.GrudgeSum(fromHeroId!, towardHeroId!) : 0.0;
+                        double gameRelation = context?.Affection != null ? (-(context.Affection(fromHeroId!, towardHeroId!) ?? 0) / 4.0) : 0.0;
+                        double depth = Math.Max(0.0, Math.Max(personalGrudge, gameRelation));
+                        grudgeBonus = Math.Min(b.GrudgeWeight.Max, b.GrudgeWeight.PerPoint * depth);
+                        detail.GrudgeDepth = depth;
+                        detail.GrudgeBonus = grudgeBonus;
+                    }
+                }
+
+                double raw = b.Base + sumTraits + grudgeBonus;
                 detail.Raw = raw;
 
                 double weight = Math.Max(raw, minWeight);
@@ -109,6 +143,23 @@ namespace VividWorld.Core.Situations
             }
 
             var available = branchDetails.Where(b => !b.IsExcluded).ToList();
+            if (forced)
+            {
+                var branchDefsById = template.Branches.ToDictionary(b => b.Id, b => b);
+                bool hasActionBranch = available.Any(a => branchDefsById.TryGetValue(a.BranchId, out var def) && (def.Events.Count > 0 || def.MadeUpTalk != null));
+                if (hasActionBranch)
+                {
+                    foreach (var a in available)
+                    {
+                        if (branchDefsById.TryGetValue(a.BranchId, out var def) && (def.Events.Count > 0 || def.MadeUpTalk != null))
+                            continue;
+                        // 標成排除，日誌的 pick 行才不會把它列成 0% 的候選
+                        a.IsExcluded = true;
+                        a.ExcludedReason = "forced: only branches that produce something";
+                    }
+                    available = available.Where(a => !a.IsExcluded).ToList();
+                }
+            }
             if (available.Count == 0)
             {
                 return new SituationDecision

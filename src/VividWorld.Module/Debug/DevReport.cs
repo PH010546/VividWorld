@@ -11,6 +11,7 @@ using VividWorld.Core.Channels;
 using VividWorld.Core.Config;
 using VividWorld.Core.Diagnostics;
 using VividWorld.Core.Events;
+using VividWorld.Core.Feelings;
 using VividWorld.Core.Grudges;
 using VividWorld.Core.Memory;
 using VividWorld.Core.Persistence;
@@ -266,14 +267,15 @@ namespace VividWorld.Debug
                     var contactHero = Hero.Find(link.HeroId);
                     string contactName = contactHero?.Name?.ToString() ?? link.HeroId;
                     double chWeight = config.Propagation.ChannelWeights.For(link.Kind);
-                    double rf = RelationFactor.For(link.Kind, link.Relation, config.Relation);
+                    double rf = RelationFactor.For(link.Kind, link.OwnRelation, config.Relation);
                     double product = chWeight * rf;
 
+                    string ownStr = link.OwnRelation >= 0 ? $"+{link.OwnRelation}" : $"{link.OwnRelation}";
                     string relStr = link.Relation >= 0 ? $"+{link.Relation}" : $"{link.Relation}";
 
                     sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
-                        "  {0,-15} {1,-10} rel {2,4}   ch {3:0.00}  rf {4:0.00}   ->  {5:0.00}",
-                        link.Kind, contactName, relStr, chWeight, rf, product));
+                        "  {0,-15} {1,-10} own {2,4} rel {3,4}   ch {4:0.00}  rf {5:0.00}   ->  {6:0.00}",
+                        link.Kind, contactName, ownStr, relStr, chWeight, rf, product));
                 }
             }
 
@@ -307,7 +309,7 @@ namespace VividWorld.Debug
                         "  crowded out: {0} {1}", gGroup.Key, gGroup.Count()));
 
                     var sorted = gGroup
-                        .OrderByDescending(link => config.Propagation.ChannelWeights.For(link.Kind) * RelationFactor.For(link.Kind, link.Relation, config.Relation))
+                        .OrderByDescending(link => config.Propagation.ChannelWeights.For(link.Kind) * RelationFactor.For(link.Kind, link.OwnRelation, config.Relation))
                         .ThenBy(link => link.HeroId, StringComparer.Ordinal)
                         .ToList();
 
@@ -320,14 +322,15 @@ namespace VividWorld.Debug
                         string nameAndId = $"{contactName} ({link.HeroId})";
 
                         double chWeight = config.Propagation.ChannelWeights.For(link.Kind);
-                        double rf = RelationFactor.For(link.Kind, link.Relation, config.Relation);
+                        double rf = RelationFactor.For(link.Kind, link.OwnRelation, config.Relation);
                         double product = chWeight * rf;
 
+                        string ownStr = link.OwnRelation >= 0 ? $"+{link.OwnRelation}" : $"{link.OwnRelation}";
                         string relStr = link.Relation >= 0 ? $"+{link.Relation}" : $"{link.Relation}";
 
                         sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
-                            "      {0,-20} rel {1,3}   ch {2:0.00}  rf {3:0.00}  ->  {4:0.00}",
-                            nameAndId, relStr, chWeight, rf, product));
+                            "      {0,-20} own {1,4} rel {2,4}   ch {3:0.00}  rf {4:0.00}  ->  {5:0.00}",
+                            nameAndId, ownStr, relStr, chWeight, rf, product));
                     }
 
                     if (sorted.Count > showCount)
@@ -364,7 +367,8 @@ namespace VividWorld.Debug
             MemoryStamper? stamper = null,
             SnapshotSessionState? sessionState = null,
             string? campaignId = null,
-            PlayerHeardLogStore? playerHeardLog = null)
+            PlayerHeardLogStore? playerHeardLog = null,
+            string? probesTodaySummary = null)
         {
             double daysInYear = CampaignTime.DaysInYear;
             double scale = daysInYear > 0 ? (daysInYear / CalendarScaling.NativeDaysInYear) : 1.0;
@@ -424,6 +428,10 @@ namespace VividWorld.Debug
                 config.Relation.EffectiveScale, config.Relation.ScaleOverride));
             sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
                 "- {0}", sharedTodaySummary ?? "Shared today: (unknown - dialogue behavior not wired)"));
+            if (!string.IsNullOrEmpty(probesTodaySummary))
+            {
+                sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "- {0}", probesTodaySummary));
+            }
             sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
                 "- Last volunteer: {0}", lastVolunteerInfo ?? "(none this session)"));
             sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
@@ -808,6 +816,101 @@ namespace VividWorld.Debug
             return TemplateRenderSampleFormatter.FormatAll(templates, enTable, cntTable, config?.Presentation);
         }
 
+        /// <summary>這個人知道的、模板有 opinion 的每一則：信不信、機率、理由、哪一天判的；沒判過寫 not judged。</summary>
+        public static string FormatBeliefs(
+            string heroId, WorldEventStore store, double day,
+            VividWorldConfig? config = null,
+            IHeroTraitLookup? traits = null,
+            IFeelingWorld? feelingWorld = null)
+        {
+            var sb = new StringBuilder();
+            var eventIds = store?.KnownBy?.EventsKnownBy(heroId, day);
+            var lines = new List<string>();
+            int total = 0;
+            if (eventIds != null)
+            {
+                foreach (var id in eventIds)
+                {
+                    var evt = store!.Load(id);
+                    if (evt == null) continue;
+                    var template = EventCatalogStore.TemplateByType(evt.Type);
+                    if (template?.Opinions == null || template.Opinions.Count == 0) continue;
+                    var entry = evt.EntryFor(heroId);
+                    if (entry == null) continue;
+
+                    total++;
+                    string subjectId = string.Empty;
+                    string about = OpinionSelector.Subject(template.Opinions, evt.Fabricated)?.About ?? string.Empty;
+                    if (about.Length > 0 && evt.Participants != null)
+                    {
+                        evt.Participants.TryGetValue(about, out var bound);
+                        subjectId = bound ?? string.Empty;
+                    }
+                    lines.Add("  " + BeliefLogFormatter.FormatDevLine(
+                        evt.EventId, evt.Type, subjectId,
+                        entry.Believes, entry.BeliefChance, entry.BeliefReason, entry.BeliefDay));
+
+                    if (MadeUpTalk.IsHearsayOnly(evt))
+                    {
+                        string? linkedId = evt.LinkedEventId;
+                        WorldEvent? lEvent = (linkedId != null && linkedId.Length > 0) ? store.Load(linkedId) : null;
+                        var tk = MadeUpTalk.GetTruthKnowers(evt, lEvent, store.PlayerHeroId)
+                            .FirstOrDefault(t => string.Equals(t.HeroId, heroId, StringComparison.Ordinal));
+                        if (tk != null)
+                        {
+                            lines.Add($"    truth knower: {tk.Reason}");
+                        }
+                        if (entry.StepForward != null)
+                        {
+                            lines.Add($"    step forward: {entry.StepForward} (chance {entry.StepForwardChance ?? 0:F1}%, event {entry.StepForwardEventId ?? "none"})");
+                        }
+                    }
+
+                    // 如果現在結算會是多少：跟結算用同一個函式與同一份輸入，數字才會一致。
+                    // 只讀、不改任何東西；當日額度照滿額算（不扣他今天已經用掉的）。
+                    if (config?.Consequences != null)
+                    {
+                        IReadOnlyList<Fact> believed = evt.Facts ?? new List<Fact>();
+                        if (entry.KnownFactIds != null)
+                        {
+                            var factSet = new HashSet<string>(entry.KnownFactIds, StringComparer.Ordinal);
+                            believed = believed.Where(f => factSet.Contains(f.Id)).ToList();
+                        }
+
+                        // 更新前就算過好感的，結算時兩個倍數當 1，預覽照同一個規則
+                        bool settledBefore = BeliefJudge.IsSettledBeforeBelief(
+                            entry, config.FalseRumors?.BeliefEnabled ?? false);
+                        if (settledBefore)
+                        {
+                            lines.Add("    " + GrudgeLogFormatter.FormatSettledBeforeMultipliers(heroId, evt.EventId));
+                        }
+
+                        var preview = ConsequenceResolver.Resolve(
+                            evt, entry, believed, template.Opinions, config.Consequences,
+                            config.Consequences.MaxAbsoluteDeltaPerHeroPerDay,
+                            settledBefore ? null : ConsequenceRunner.BuildReactionInputs(heroId, traits, feelingWorld, config));
+                        foreach (var change in preview.Changes)
+                        {
+                            lines.Add("    " + GrudgeLogFormatter.FormatOpinionPreview(change));
+                        }
+                        foreach (var excl in preview.Exclusions)
+                        {
+                            lines.Add("    " + GrudgeLogFormatter.FormatOpinionPreviewSkipped(excl));
+                        }
+                    }
+                }
+            }
+
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "Beliefs of {0} (day {1:0.0}): {2} known event(s) whose template changes opinions",
+                heroId, day, total));
+            foreach (var line in lines)
+            {
+                sb.AppendLine(line);
+            }
+            return sb.ToString().TrimEnd();
+        }
+
         public static string FormatOpinionShifts(
             string heroId,
             WorldEventStore store,
@@ -868,11 +971,12 @@ namespace VividWorld.Debug
                     var evt = item.Event;
                     var knowerEntry = item.Knower;
 
+                    string retractedTag = impact.Contradicted ? $" [RETRACTED day {impact.ContradictedDay:0.0}]" : "";
                     if (impact.LedgerOnly)
                     {
                         sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
-                            "  vs {0} {1} hop {2}: requested {3:+0.0;-0.0} (ledger only), day {4:0.0}",
-                            impact.AboutHeroId, evt.EventId, knowerEntry.Hop, impact.Requested, impact.AppliedDay));
+                            "  vs {0} {1} hop {2}: requested {3:+0.0;-0.0} (ledger only), day {4:0.0}{5}",
+                            impact.AboutHeroId, evt.EventId, knowerEntry.Hop, impact.Requested, impact.AppliedDay, retractedTag));
                     }
                     else
                     {
@@ -885,8 +989,8 @@ namespace VividWorld.Debug
                             ? heroA.GetBaseHeroRelation(heroB).ToString(CultureInfo.InvariantCulture)
                             : "unknown (hero not found)";
                         sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
-                            "  vs {0} {1} hop {2}: requested {3:+0.0;-0.0}, applied {4:+0;-0} on day {5:0.0}, base relation now {6}",
-                            impact.AboutHeroId, evt.EventId, knowerEntry.Hop, impact.Requested, impact.Delta, impact.AppliedDay, nowText));
+                            "  vs {0} {1} hop {2}: requested {3:+0.0;-0.0}, applied {4:+0;-0} on day {5:0.0}, base relation now {6}{7}",
+                            impact.AboutHeroId, evt.EventId, knowerEntry.Hop, impact.Requested, impact.Delta, impact.AppliedDay, nowText, retractedTag));
                     }
                 }
             }
@@ -1163,6 +1267,117 @@ namespace VividWorld.Debug
             }
 
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// 格式化 NPC 知道的醜事會講給誰聽的除錯報告。
+        /// </summary>
+        public static string FormatShamefulNews(
+            Hero hero,
+            string playerHeroId,
+            WorldEventStore store,
+            IPropagationChannel? channel,
+            IFeelingWorld? feelingWorld,
+            IHeroTraitLookup? traitLookup,
+            VividWorldConfig config,
+            double day,
+            out int totalScandals,
+            out int toldToPlayerCount)
+        {
+            totalScandals = 0;
+            toldToPlayerCount = 0;
+            if (hero == null) return "Invalid hero.";
+            if (store == null) return "Invalid store.";
+
+            var eventIds = store.KnownBy.EventsKnownBy(hero.StringId, day);
+            var sb = new StringBuilder();
+            string heroName = hero.Name?.ToString() ?? hero.StringId;
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "[DevDialogue] shameful news {0} ({1}) on day {2:F1}: {3} known event(s)",
+                heroName, hero.StringId, day, eventIds.Count));
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "  shameful news rule: {0}", config.Propagation.ShamefulNews.Enabled ? "on" : "off (nothing is held back)"));
+
+            // 通道上現在的聯絡人：每一則醜事都對他們逐一判一次欄與講不講
+            var contacts = channel?.ContactsOf(hero.StringId, config.Propagation.MaxContactsPerQuery)
+                           ?? (IReadOnlyList<ChannelLink>)Array.Empty<ChannelLink>();
+
+            if (feelingWorld == null)
+            {
+                sb.AppendLine("  feeling world is not available in this session.");
+                return sb.ToString().TrimEnd();
+            }
+
+            foreach (var id in eventIds)
+            {
+                var evt = store.Load(id);
+                if (evt == null) continue;
+
+                var shamed = ShamefulNewsRule.GetShamedPersons(evt, EventCatalogStore.TemplateByType, hero.StringId);
+                if (shamed.Count == 0) continue;
+
+                totalScandals++;
+                var eval = ShamefulNewsRule.Evaluate(
+                    evt,
+                    hero.StringId,
+                    playerHeroId,
+                    feelingWorld,
+                    EventCatalogStore.TemplateByType,
+                    traitLookup,
+                    config,
+                    day,
+                    playerHeroId);
+
+                if (eval.CanTell)
+                {
+                    toldToPlayerCount++;
+                }
+
+                sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                    "  {0} ({1}): {2} -> tell player: {3}{4}",
+                    evt.EventId,
+                    evt.Type,
+                    eval.IsShameful ? "scandal" : "normal",
+                    eval.CanTell ? "yes" : "held back",
+                    eval.CanTell ? "" : $" ({eval.HeldBackDetail})"));
+
+                foreach (var person in eval.Evaluations)
+                {
+                    sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                        "    shamed [{0}] {1}: speaker row {2} (mood {3}, aff {4:+0;-0;0}, grudge {5:+0.0;-0.0;0.0}) | listener col {6} => can tell: {7}",
+                        person.Role,
+                        person.HeroId,
+                        person.Row,
+                        person.Mood,
+                        person.Affection,
+                        person.GrudgeNet,
+                        person.Col,
+                        person.CanTell ? "yes" : "no"));
+                }
+
+                foreach (var link in contacts)
+                {
+                    if (link == null || string.IsNullOrEmpty(link.HeroId)) continue;
+                    var c = ShamefulNewsRule.Evaluate(evt, hero.StringId, link.HeroId, feelingWorld,
+                        EventCatalogStore.TemplateByType, traitLookup, config, day, playerHeroId);
+                    string cols = string.Join(", ", c.Evaluations.Select(e => e.HeroId + " " + e.Col));
+                    sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                        "    contact {0} ({1}): {2} -> {3}",
+                        link.HeroId, link.Kind, cols.Length > 0 ? cols : "-",
+                        c.CanTell ? "not held back" : "held back (" + c.HeldBackDetail + ")"));
+                }
+                if (contacts.Count == 0)
+                {
+                    sb.AppendLine("    (no contacts on the channel right now)");
+                }
+            }
+
+            if (totalScandals == 0)
+            {
+                sb.AppendLine("  (no scandals among known events)");
+            }
+
+            return sb.ToString().TrimEnd();
         }
     }
 }

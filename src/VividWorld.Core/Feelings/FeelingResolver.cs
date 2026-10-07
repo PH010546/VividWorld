@@ -64,6 +64,23 @@ namespace VividWorld.Core.Feelings
         public bool Applied => LineKey != null;
     }
 
+    /// <summary>一次好感與恩怨心情計算的結果。</summary>
+    public sealed class MoodResolution
+    {
+        public int? AffectionRaw { get; set; }
+        public int Affection { get; set; }
+        public AffectionLevel AffectionLevel { get; set; }
+        public string AffectionText { get; set; } = string.Empty;
+        public double GrudgeNet { get; set; }
+        public int KeptGrudgeCount { get; set; }
+        public int ExcludedGrudgeCount { get; set; }
+        public double ExcludedGrudgePoints { get; set; }
+        public GrudgeLevel GrudgeLevel { get; set; }
+        public string GrudgeText { get; set; } = string.Empty;
+        public FeelingMood Mood { get; set; }
+        public TraitProfile? SpeakerTraits { get; set; }
+    }
+
     public sealed class FeelingResolver
     {
         private readonly VividWorldConfig _config;
@@ -82,6 +99,81 @@ namespace VividWorld.Core.Feelings
             _traits = traits;
             _getTemplate = getTemplate;
             _campaignSeed = campaignSeed;
+        }
+
+        /// <summary>
+        /// 好感與恩怨心情的共用計算：好感讀 <see cref="IFeelingWorld.Affection"/>，
+        /// 恩怨排除指定事件自己造成的幾筆，其餘重播淡化到今天。
+        /// </summary>
+        public static MoodResolution ComputeMood(
+            IFeelingWorld world,
+            string speakerId,
+            string targetHeroId,
+            string? eventId,
+            IHeroTraitLookup? traits,
+            FeelingsConfig fc,
+            SituationsConfig situations,
+            double today)
+        {
+            if (world == null) throw new ArgumentNullException(nameof(world));
+            fc ??= new FeelingsConfig();
+            situations ??= new SituationsConfig();
+
+            int? affectionRaw = world.Affection(speakerId, targetHeroId);
+            int affection = affectionRaw ?? 0;
+            var affectionLevel = FeelingGrid.Classify(affection, fc);
+            string affectionText = string.Format(CultureInfo.InvariantCulture,
+                "affection {0}{1:+0;-0;0} -> {2} (high >= {3}, low <= {4})",
+                affectionRaw.HasValue ? string.Empty : "unreadable, counted as ", affection, affectionLevel, fc.AffectionHigh, fc.AffectionLow);
+
+            var all = world.PersonalGrudges(speakerId, targetHeroId) ?? Array.Empty<GrudgeEntry>();
+            var excluded = all.Where(e => !string.IsNullOrEmpty(eventId) && string.Equals(e.EventId, eventId, StringComparison.Ordinal)).ToList();
+            var kept = all.Where(e => string.IsNullOrEmpty(eventId) || !string.Equals(e.EventId, eventId, StringComparison.Ordinal)).ToList();
+            var speakerTraits = traits?.Of(speakerId);
+            var replay = GrudgeDecay.Replay(kept, GrudgeScope.Personal, situations, speakerTraits, today);
+            var grudgeLevel = FeelingGrid.Classify(replay.Value, fc);
+            string grudgeText = string.Format(CultureInfo.InvariantCulture,
+                "grudge net {0:+0.##;-0.##;0} over {1} entr{2} (excluded {3} from this event, {4:+0.##;-0.##;0} points) -> {5} (threshold {6:0.##})",
+                replay.Value, kept.Count, kept.Count == 1 ? "y" : "ies", excluded.Count, excluded.Sum(e => e.Requested), grudgeLevel, fc.GrudgeThreshold);
+
+            var mood = FeelingGrid.MoodOf(affectionLevel, grudgeLevel);
+
+            return new MoodResolution
+            {
+                AffectionRaw = affectionRaw,
+                Affection = affection,
+                AffectionLevel = affectionLevel,
+                AffectionText = affectionText,
+                GrudgeNet = replay.Value,
+                KeptGrudgeCount = kept.Count,
+                ExcludedGrudgeCount = excluded.Count,
+                ExcludedGrudgePoints = excluded.Sum(e => e.Requested),
+                GrudgeLevel = grudgeLevel,
+                GrudgeText = grudgeText,
+                Mood = mood,
+                SpeakerTraits = speakerTraits
+            };
+        }
+
+        /// <summary>
+        /// 稱呼的共用計算：兩人的地位比較 × 說話者對目標的好感等級 → FeelingGrid.AddressKey。
+        /// 給感想句與打探回答（ProbeClassifier）共用。
+        /// </summary>
+        public static string ResolveAddressKey(IFeelingWorld? world, string speakerId, string targetHeroId, AffectionLevel affectionLevel)
+        {
+            if (world == null) return FeelingGrid.AddressKey(StandingComparison.Equal, affectionLevel);
+            int speakerRank = world.StandingRank(speakerId) ?? 0;
+            int focusRank = world.StandingRank(targetHeroId) ?? 0;
+            var standing = FeelingGrid.Compare(focusRank, speakerRank);
+            return FeelingGrid.AddressKey(standing, affectionLevel);
+        }
+
+        public static string ResolveAddressKey(IFeelingWorld? world, string speakerId, string targetHeroId, FeelingsConfig? fc = null)
+        {
+            fc ??= new FeelingsConfig();
+            int affection = (world != null ? world.Affection(speakerId, targetHeroId) : null) ?? 0;
+            var affectionLevel = FeelingGrid.Classify(affection, fc);
+            return ResolveAddressKey(world, speakerId, targetHeroId, affectionLevel);
         }
 
         /// <summary>模板裡這個角色的感想類別：事件帶著覆寫指定的碎片就用覆寫，否則用 <c>feelings</c> 欄位；都沒有回 null。</summary>
@@ -128,6 +220,27 @@ namespace VividWorld.Core.Feelings
             if (isGist) return None(d, evt, "only told the gist, so the speaker adds no feeling");
             if (evt.RoleOf(speaker!) != null) return None(d, evt, "the speaker is one of the people this happened to");
 
+            var entry = evt.EntryFor(speaker!);
+            if (entry != null && entry.Believes == false)
+            {
+                var disbeliefKeys = new[]
+                {
+                    "VividWorld_FeelingDisbelief_1",
+                    "VividWorld_FeelingDisbelief_2",
+                    "VividWorld_FeelingDisbelief_3"
+                };
+                long h = RumorSeed.Of(_campaignSeed, evt.EventId, speaker, "disbelief");
+                int roll = (int)((ulong)h % (ulong)disbeliefKeys.Length);
+                d.LineKey = disbeliefKeys[roll];
+                d.AddressKey = null;
+                d.Category = "disbelief";
+                d.Mood = null;
+                d.LogLine = string.Format(CultureInfo.InvariantCulture,
+                    "Feeling: {0} on {1} ({2}): speaker does not believe this rumor; category disbelief, mood none; candidates {3}; chose {4} - seeded roll picked {5} of {6}",
+                    Who(speaker), evt.EventId, evt.Type, string.Join(", ", disbeliefKeys), d.LineKey, roll + 1, disbeliefKeys.Length);
+                return d;
+            }
+
             var template = _getTemplate?.Invoke(evt.Type);
             if (template == null) return None(d, evt, $"no template for event type '{evt.Type}'");
 
@@ -164,33 +277,21 @@ namespace VividWorld.Core.Feelings
             }
             d.Category = category;
 
-            // 好感
-            int? affectionRaw = _world.Affection(speaker, interest.BestHeroId);
-            int affection = affectionRaw ?? 0;
-            var affectionLevel = FeelingGrid.Classify(affection, fc);
-            string affectionText = string.Format(CultureInfo.InvariantCulture,
-                "affection {0}{1:+0;-0;0} -> {2} (high >= {3}, low <= {4})",
-                affectionRaw.HasValue ? string.Empty : "unreadable, counted as ", affection, affectionLevel, fc.AffectionHigh, fc.AffectionLow);
-
-            // 恩怨：排除這一則消息自己造成的幾筆，其餘照現有淡化重播到今天
-            var all = _world.PersonalGrudges(speaker, interest.BestHeroId);
-            var excluded = all.Where(e => string.Equals(e.EventId, evt.EventId, StringComparison.Ordinal)).ToList();
-            var kept = all.Where(e => !string.Equals(e.EventId, evt.EventId, StringComparison.Ordinal)).ToList();
-            var speakerTraits = _traits?.Of(speaker);
-            var replay = GrudgeDecay.Replay(kept, GrudgeScope.Personal, _config.Situations, speakerTraits, _world.Today);
-            var grudgeLevel = FeelingGrid.Classify(replay.Value, fc);
-            string grudgeText = string.Format(CultureInfo.InvariantCulture,
-                "grudge net {0:+0.##;-0.##;0} over {1} entr{2} (excluded {3} from this event, {4:+0.##;-0.##;0} points) -> {5} (threshold {6:0.##})",
-                replay.Value, kept.Count, kept.Count == 1 ? "y" : "ies", excluded.Count, excluded.Sum(e => e.Requested), grudgeLevel, fc.GrudgeThreshold);
-
-            var mood = FeelingGrid.MoodOf(affectionLevel, grudgeLevel);
+            // 好感與恩怨心情
+            var moodRes = ComputeMood(_world, speaker, interest.BestHeroId, evt.EventId, _traits, fc, _config.Situations, _world.Today);
+            int affection = moodRes.Affection;
+            var affectionLevel = moodRes.AffectionLevel;
+            string affectionText = moodRes.AffectionText;
+            string grudgeText = moodRes.GrudgeText;
+            var mood = moodRes.Mood;
             d.Mood = mood;
+            var speakerTraits = moodRes.SpeakerTraits;
 
             // 稱呼
+            d.AddressKey = ResolveAddressKey(_world, speaker, interest.BestHeroId, affectionLevel);
             int speakerRank = _world.StandingRank(speaker) ?? 0;
             int focusRank = _world.StandingRank(interest.BestHeroId) ?? 0;
             var standing = FeelingGrid.Compare(focusRank, speakerRank);
-            d.AddressKey = FeelingGrid.AddressKey(standing, affectionLevel);
             string standingText = $"standing: focus rank {focusRank} vs speaker rank {speakerRank} -> {standing}, address {d.AddressKey}";
 
             // 挑句

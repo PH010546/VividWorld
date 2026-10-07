@@ -651,7 +651,7 @@ namespace VividWorld.Core.Tests
         {
             Assert.Contains(McmExposedKeys.All, k => k.Path == "dialogue.volunteerMode");
             Assert.DoesNotContain(McmExposedKeys.All, k => k.Path == "dialogue.commonerCompatMode");
-            Assert.Equal(26, McmExposedKeys.All.Count);
+            Assert.Equal(29, McmExposedKeys.All.Count);
         }
 
         // ── 14. 預演多出來的格式化 ──

@@ -537,7 +537,7 @@ EN:  Nobody at the table bothered to count, and I just smiled.
 CNT: 同桌的人誰也懶得去算他說的數字，我也只是笑笑。
 
 [tavern_sour_words | speaker | who]
-EN:  I said something to LISTENER over the cups, and LISTENER's face changed on the spot.
+EN:  I said something to LISTENER over drinks, and LISTENER's face changed on the spot.
 CNT: 我酒後對LISTENER說了句話，LISTENER當場變了臉。
 
 [tavern_sour_words | speaker | where]
@@ -549,7 +549,7 @@ EN:  And did not take it back once the wine had worn off.
 CNT: 酒醒之後也沒有收回去。
 
 [tavern_sour_words | listener | who]
-EN:  SPEAKER said something ugly to me over the cups.
+EN:  SPEAKER said something ugly to me over drinks.
 CNT: SPEAKER喝了酒，對我說了句很難聽的話。
 
 [tavern_sour_words | listener | where]
@@ -633,7 +633,7 @@ EN:  Though the hall was ready to toast CLAIMANT; I owe them for that.
 CNT: 其實大家本來是要敬他的，這份人情我欠下了。
 
 [victory_credit_judged | claimant | who]
-EN:  RIVAL and I quarrelled over the credit, and HOST settled it.
+EN:  RIVAL and I quarreled over the credit, and HOST settled it.
 CNT: 我跟RIVAL爭那份戰功，是HOST出面裁定的。
 
 [victory_credit_judged | claimant | where]
@@ -645,7 +645,7 @@ EN:  And the credit went to RIVAL; of course I do not accept it.
 CNT: 結果功勞判給了RIVAL，我心裡當然不服。
 
 [victory_credit_judged | rival | who]
-EN:  CLAIMANT and I quarrelled over the credit, and HOST settled it.
+EN:  CLAIMANT and I quarreled over the credit, and HOST settled it.
 CNT: CLAIMANT跟我爭那份戰功，是HOST出面裁定的。
 
 [victory_credit_judged | rival | where]
@@ -657,7 +657,7 @@ EN:  And the credit went to me; justice at last.
 CNT: 結果功勞判給了我，總算還我一個公道。
 
 [victory_credit_judged | host | who]
-EN:  CLAIMANT and RIVAL were quarrelling over the credit, and I settled it.
+EN:  CLAIMANT and RIVAL were quarreling over the credit, and I settled it.
 CNT: CLAIMANT跟RIVAL爭那份戰功，是我出面裁定的。
 
 [victory_credit_judged | host | where]
@@ -665,11 +665,11 @@ EN:  In the hall of SETTLEMENT.
 CNT: 在SETTLEMENT的大廳裡。
 
 [victory_credit_judged | host | outcome]
-EN:  I gave the credit to RIVAL; I judged by what happened, and no one can call it favour.
+EN:  I gave the credit to RIVAL; I judged by what happened, and no one can call it favor.
 CNT: 我把功勞判給了RIVAL，照實情判，誰也別說我偏心。
 
 [brawl_man_handed_over | aggrieved | who]
-EN:  PATRON handed over the man who drew first and apologised to me.
+EN:  PATRON handed over the man who drew first and apologized to me.
 CNT: PATRON把先動手的人交了出來，還跟我賠了不是。
 
 [brawl_man_handed_over | aggrieved | where]
@@ -681,7 +681,7 @@ EN:  With the whole street watching, so as far as I am concerned it is done.
 CNT: 整條街的人都看著，這事就算過去了。
 
 [brawl_man_handed_over | patron | who]
-EN:  It was my man who drew first, so I handed him over and apologised to AGGRIEVED.
+EN:  It was my man who drew first, so I handed him over and apologized to AGGRIEVED.
 CNT: 先動手的是我的人，我把他交了出去，還跟AGGRIEVED賠了不是。
 
 [brawl_man_handed_over | patron | where]
@@ -843,4 +843,536 @@ CNT: 在SETTLEMENT。
 [wager_secret_stake | challenged | what]
 EN:  And what it is... that I can't tell you.
 CNT: 押了什麼……這我可不能說。
+
+[conduct_spoke_against_ruler | speaker | who]
+EN:  I said that RULER wasn't fit to sit on that throne.
+CNT: 我說RULER不配坐那個位子。
+
+[conduct_spoke_against_ruler | speaker | where]
+EN:  At SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[conduct_spoke_against_ruler | speaker | context]
+EN:  And said it to LISTENER in private.
+CNT: 是私下對LISTENER說的。
+
+[conduct_spoke_against_ruler | listener | who]
+EN:  SPEAKER said that RULER wasn't fit to sit on that throne.
+CNT: SPEAKER說RULER不配坐那個位子。
+
+[conduct_spoke_against_ruler | listener | where]
+EN:  At SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[conduct_spoke_against_ruler | listener | context]
+EN:  And said it to me in private.
+CNT: 是私下對我說的。
+
+[conduct_spoke_against_ruler | ruler | who]
+EN:  SPEAKER said that me wasn't fit to sit on that throne.
+CNT: SPEAKER說我不配坐那個位子。
+
+[conduct_spoke_against_ruler | ruler | where]
+EN:  At SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[conduct_spoke_against_ruler | ruler | context]
+EN:  And said it to LISTENER in private.
+CNT: 是私下對LISTENER說的。
+
+[conduct_mistreated_prisoner | captor | who]
+EN:  I chained PRISONER on the same line as the common prisoners.
+CNT: 我把PRISONER跟尋常俘虜鎖在同一條鏈子上。
+
+[conduct_mistreated_prisoner | captor | what]
+EN:  Driven along the whole way.
+CNT: 一路趕著走。
+
+[conduct_mistreated_prisoner | captor | context]
+EN:  Fed on what the others left over.
+CNT: 吃的是別人吃剩的。
+
+[conduct_mistreated_prisoner | prisoner | who]
+EN:  CAPTOR chained me on the same line as the common prisoners.
+CNT: CAPTOR把我跟尋常俘虜鎖在同一條鏈子上。
+
+[conduct_mistreated_prisoner | prisoner | what]
+EN:  Driven along the whole way.
+CNT: 一路趕著走。
+
+[conduct_mistreated_prisoner | prisoner | context]
+EN:  Fed on what the others left over.
+CNT: 吃的是別人吃剩的。
+
+[conduct_refused_aid | asker | who]
+EN:  I asked REFUSER for a loan of grain; REFUSER had grain on hand, yet didn't lend a single sack.
+CNT: 我向REFUSER借糧，REFUSER手上有糧，卻一袋也沒借。
+
+[conduct_refused_aid | asker | where]
+EN:  At SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[conduct_refused_aid | asker | why]
+EN:  REFUSER said they was hard-pressed too.
+CNT: REFUSER說自己也不寬裕。
+
+[conduct_refused_aid | asker | context]
+EN:  REFUSER's grain cart was standing right there in the courtyard, full to the brim.
+CNT: REFUSER的糧車就停在院子裡，裝得滿滿的。
+
+[conduct_refused_aid | refuser | who]
+EN:  ASKER asked me for a loan of grain; me had grain on hand, yet didn't lend a single sack.
+CNT: ASKER向我借糧，我手上有糧，卻一袋也沒借。
+
+[conduct_refused_aid | refuser | where]
+EN:  At SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[conduct_refused_aid | refuser | why]
+EN:  I said I was hard-pressed too.
+CNT: 我說自己也不寬裕。
+
+[conduct_refused_aid | refuser | context]
+EN:  My grain cart was standing right there in the courtyard, full to the brim.
+CNT: 我的糧車就停在院子裡，裝得滿滿的。
+
+[conduct_rash_capture | captor | who]
+EN:  PRISONER left their own troops behind to give chase, and that was how me caught them.
+CNT: PRISONER把自己的隊伍甩在後頭追上去，才被我抓的。
+
+[conduct_rash_capture | captor | where]
+EN:  Near SETTLEMENT.
+CNT: 在SETTLEMENT附近。
+
+[conduct_rash_capture | captor | what]
+EN:  With only a few riders.
+CNT: 帶著幾騎。
+
+[conduct_rash_capture | captor | context]
+EN:  Surrounded when me wheeled around.
+CNT: 被我回頭圍住。
+
+[conduct_rash_capture | prisoner | who]
+EN:  I left my own troops behind to give chase, and that was how CAPTOR caught me.
+CNT: 我把自己的隊伍甩在後頭追上去，才被CAPTOR抓的。
+
+[conduct_rash_capture | prisoner | where]
+EN:  Near SETTLEMENT.
+CNT: 在SETTLEMENT附近。
+
+[conduct_rash_capture | prisoner | what]
+EN:  With only a few riders.
+CNT: 帶著幾騎。
+
+[conduct_rash_capture | prisoner | context]
+EN:  Surrounded when CAPTOR wheeled around.
+CNT: 被CAPTOR回頭圍住。
+
+[conduct_poisoned | poisoner | who]
+EN:  VICTIM didn't die peacefully of old age; me poisoned them.
+CNT: VICTIM不是壽終正寢的，是我下的毒。
+
+[conduct_poisoned | poisoner | what]
+EN:  The poison was in the wine.
+CNT: 毒下在酒裡。
+
+[conduct_poisoned | poisoner | context]
+EN:  I had sent that jug of wine.
+CNT: 那壺酒是我派人送去的。
+
+[conduct_poisoned | victim | who]
+EN:  I didn't die peacefully of old age; POISONER poisoned me.
+CNT: 我不是壽終正寢的，是POISONER下的毒。
+
+[conduct_poisoned | victim | what]
+EN:  The poison was in the wine.
+CNT: 毒下在酒裡。
+
+[conduct_poisoned | victim | context]
+EN:  POISONER had sent that jug of wine.
+CNT: 那壺酒是POISONER派人送去的。
+
+[talk_denied_spoke_against_ruler | denier | who]
+EN:  I came forward to clear up the rumor that I had spoken ill of the ruler behind their back.
+CNT: 我出面澄清了有關在背後議論君主的謠言。
+
+[talk_denied_spoke_against_ruler | denier | where]
+EN:  Publicly at SETTLEMENT.
+CNT: 在SETTLEMENT當眾。
+
+[talk_denied_spoke_against_ruler | denier | what]
+EN:  And said anyone who didn't believe it was welcome to go and ask me face to face.
+CNT: 並說誰要是不信，儘管當面去問他。
+
+[talk_denied_spoke_against_ruler | ruler | who]
+EN:  DENIER came forward to clear up the rumor that they had spoken ill of the ruler behind my back.
+CNT: DENIER出面澄清了有關在背後議論君主的謠言。
+
+[talk_denied_spoke_against_ruler | ruler | where]
+EN:  Publicly at SETTLEMENT.
+CNT: 在SETTLEMENT當眾。
+
+[talk_denied_spoke_against_ruler | ruler | what]
+EN:  And said anyone who didn't believe it was welcome to go and ask them face to face.
+CNT: 並說誰要是不信，儘管當面去問他。
+
+[talk_denied_mistreated_prisoner | denier | who]
+EN:  I came forward to clear up the rumor that I had mistreated a prisoner.
+CNT: 我出面澄清了有關苛待俘虜的謠言。
+
+[talk_denied_mistreated_prisoner | denier | where]
+EN:  Publicly at SETTLEMENT.
+CNT: 在SETTLEMENT當眾。
+
+[talk_denied_mistreated_prisoner | denier | what]
+EN:  And said anyone who didn't believe it was welcome to go and ask me face to face.
+CNT: 並說誰要是不信，儘管當面去問他。
+
+[talk_denied_mistreated_prisoner | prisoner | who]
+EN:  DENIER came forward to clear up the rumor that they had mistreated a prisoner.
+CNT: DENIER出面澄清了有關苛待俘虜的謠言。
+
+[talk_denied_mistreated_prisoner | prisoner | where]
+EN:  Publicly at SETTLEMENT.
+CNT: 在SETTLEMENT當眾。
+
+[talk_denied_mistreated_prisoner | prisoner | what]
+EN:  And said anyone who didn't believe it was welcome to go and ask them face to face.
+CNT: 並說誰要是不信，儘管當面去問他。
+
+[talk_denied_refused_aid | denier | who]
+EN:  I came forward to clear up the rumor that I had refused a comrade's plea for aid.
+CNT: 我出面澄清了有關拒絕同袍求援的謠言。
+
+[talk_denied_refused_aid | denier | where]
+EN:  Publicly at SETTLEMENT.
+CNT: 在SETTLEMENT當眾。
+
+[talk_denied_refused_aid | denier | what]
+EN:  And said anyone who didn't believe it was welcome to go and ask me face to face.
+CNT: 並說誰要是不信，儘管當面去問他。
+
+[talk_denied_refused_aid | asker | who]
+EN:  DENIER came forward to clear up the rumor that they had refused a comrade's plea for aid.
+CNT: DENIER出面澄清了有關拒絕同袍求援的謠言。
+
+[talk_denied_refused_aid | asker | where]
+EN:  Publicly at SETTLEMENT.
+CNT: 在SETTLEMENT當眾。
+
+[talk_denied_refused_aid | asker | what]
+EN:  And said anyone who didn't believe it was welcome to go and ask them face to face.
+CNT: 並說誰要是不信，儘管當面去問他。
+
+[talk_denied_rash_capture | denier | who]
+EN:  I came forward to clear up the rumor that I had been taken prisoner through my own recklessness.
+CNT: 我出面澄清了有關莽撞被俘的謠言。
+
+[talk_denied_rash_capture | denier | where]
+EN:  Publicly at SETTLEMENT.
+CNT: 在SETTLEMENT當眾。
+
+[talk_denied_rash_capture | denier | what]
+EN:  And said anyone who didn't believe it was welcome to go and ask me face to face.
+CNT: 並說誰要是不信，儘管當面去問他。
+
+[talk_denied_rash_capture | captor | who]
+EN:  DENIER came forward to clear up the rumor that they had been taken prisoner through their own recklessness.
+CNT: DENIER出面澄清了有關莽撞被俘的謠言。
+
+[talk_denied_rash_capture | captor | where]
+EN:  Publicly at SETTLEMENT.
+CNT: 在SETTLEMENT當眾。
+
+[talk_denied_rash_capture | captor | what]
+EN:  And said anyone who didn't believe it was welcome to go and ask them face to face.
+CNT: 並說誰要是不信，儘管當面去問他。
+
+[talk_denied_poisoned | denier | who]
+EN:  I came forward to clear up the rumor that I had poisoned VICTIM.
+CNT: 我出面澄清了有關毒害VICTIM的謠言。
+
+[talk_denied_poisoned | denier | where]
+EN:  Publicly at SETTLEMENT.
+CNT: 在SETTLEMENT當眾。
+
+[talk_denied_poisoned | denier | what]
+EN:  And said anyone who didn't believe it was welcome to go and ask me face to face.
+CNT: 並說誰要是不信，儘管當面去問他。
+
+[talk_denied_poisoned | victim | who]
+EN:  DENIER came forward to clear up the rumor that they had poisoned me.
+CNT: DENIER出面澄清了有關毒害我的謠言。
+
+[talk_denied_poisoned | victim | where]
+EN:  Publicly at SETTLEMENT.
+CNT: 在SETTLEMENT當眾。
+
+[talk_denied_poisoned | victim | what]
+EN:  And said anyone who didn't believe it was welcome to go and ask them face to face.
+CNT: 並說誰要是不信，儘管當面去問他。
+
+[talk_corrected_rash_capture_by_captor | captor | who]
+EN:  I came forward and said that PRISONER hadn't left their own troops behind, and was only captured by me after fighting to the end.
+CNT: 我出面說了，PRISONER沒有把自己的隊伍甩在後頭，是打到最後才被他抓的。
+
+[talk_corrected_rash_capture_by_captor | captor | where]
+EN:  In front of everyone at SETTLEMENT.
+CNT: 在SETTLEMENT當著大家的面。
+
+[talk_corrected_rash_capture_by_captor | captor | what]
+EN:  It was I who captured PRISONER.
+CNT: PRISONER是他抓的。
+
+[talk_corrected_rash_capture_by_captor | prisoner | who]
+EN:  CAPTOR came forward and said that me hadn't left my own troops behind, and was only captured by them after fighting to the end.
+CNT: CAPTOR出面說了，我沒有把自己的隊伍甩在後頭，是打到最後才被他抓的。
+
+[talk_corrected_rash_capture_by_captor | prisoner | where]
+EN:  In front of everyone at SETTLEMENT.
+CNT: 在SETTLEMENT當著大家的面。
+
+[talk_corrected_rash_capture_by_captor | prisoner | what]
+EN:  It was they who captured me.
+CNT: 我是他抓的。
+
+[talk_corrected_rash_capture_by_bystander | bystander | who]
+EN:  I came forward and said that I was there when PRISONER was captured, and PRISONER hadn't left their own troops behind.
+CNT: 我出面說了，PRISONER被抓的時候他在場，PRISONER沒有把自己的隊伍甩在後頭。
+
+[talk_corrected_rash_capture_by_bystander | bystander | where]
+EN:  In front of everyone at SETTLEMENT.
+CNT: 在SETTLEMENT當著大家的面。
+
+[talk_corrected_rash_capture_by_bystander | bystander | what]
+EN:  PRISONER still had their own men around them.
+CNT: PRISONER身邊還有自己的人。
+
+[talk_corrected_rash_capture_by_bystander | captor | who]
+EN:  BYSTANDER came forward and said that they was there when PRISONER was captured, and PRISONER hadn't left their own troops behind.
+CNT: BYSTANDER出面說了，PRISONER被抓的時候他在場，PRISONER沒有把自己的隊伍甩在後頭。
+
+[talk_corrected_rash_capture_by_bystander | captor | where]
+EN:  In front of everyone at SETTLEMENT.
+CNT: 在SETTLEMENT當著大家的面。
+
+[talk_corrected_rash_capture_by_bystander | captor | what]
+EN:  PRISONER still had their own men around them.
+CNT: PRISONER身邊還有自己的人。
+
+[talk_corrected_rash_capture_by_bystander | prisoner | who]
+EN:  BYSTANDER came forward and said that they was there when me was captured, and me hadn't left my own troops behind.
+CNT: BYSTANDER出面說了，我被抓的時候他在場，我沒有把自己的隊伍甩在後頭。
+
+[talk_corrected_rash_capture_by_bystander | prisoner | where]
+EN:  In front of everyone at SETTLEMENT.
+CNT: 在SETTLEMENT當著大家的面。
+
+[talk_corrected_rash_capture_by_bystander | prisoner | what]
+EN:  I still had my own men around me.
+CNT: 我身邊還有自己的人。
+
+[talk_corrected_mistreated_by_prisoner | prisoner | who]
+EN:  I came forward and said that while CAPTOR held me prisoner, they didn't chain me together with the common prisoners.
+CNT: 我出面說了，CAPTOR押著他的時候，沒有把他跟尋常俘虜鎖在一起。
+
+[talk_corrected_mistreated_by_prisoner | prisoner | where]
+EN:  In front of everyone at SETTLEMENT.
+CNT: 在SETTLEMENT當著大家的面。
+
+[talk_corrected_mistreated_by_prisoner | prisoner | what]
+EN:  Fed the same as CAPTOR's own men.
+CNT: 吃的跟CAPTOR的人一樣。
+
+[talk_corrected_mistreated_by_prisoner | captor | who]
+EN:  PRISONER came forward and said that while me held them prisoner, I didn't chain them together with the common prisoners.
+CNT: PRISONER出面說了，我押著他的時候，沒有把他跟尋常俘虜鎖在一起。
+
+[talk_corrected_mistreated_by_prisoner | captor | where]
+EN:  In front of everyone at SETTLEMENT.
+CNT: 在SETTLEMENT當著大家的面。
+
+[talk_corrected_mistreated_by_prisoner | captor | what]
+EN:  Fed the same as my own men.
+CNT: 吃的跟我的人一樣。
+
+[talk_corrected_mistreated_by_comrade | comrade | who]
+EN:  I came forward and said that I was in the army too while CAPTOR held PRISONER prisoner, and PRISONER wasn't chained together with the common prisoners.
+CNT: 我出面說了，CAPTOR押著PRISONER的時候他也在軍團裡，PRISONER沒有被跟尋常俘虜鎖在一起。
+
+[talk_corrected_mistreated_by_comrade | comrade | where]
+EN:  In front of everyone at SETTLEMENT.
+CNT: 在SETTLEMENT當著大家的面。
+
+[talk_corrected_mistreated_by_comrade | comrade | what]
+EN:  Fed the same as their own men.
+CNT: 吃的跟他們的人一樣。
+
+[talk_corrected_mistreated_by_comrade | captor | who]
+EN:  COMRADE came forward and said that they was in the army too while me held PRISONER prisoner, and PRISONER wasn't chained together with the common prisoners.
+CNT: COMRADE出面說了，我押著PRISONER的時候他也在軍團裡，PRISONER沒有被跟尋常俘虜鎖在一起。
+
+[talk_corrected_mistreated_by_comrade | captor | where]
+EN:  In front of everyone at SETTLEMENT.
+CNT: 在SETTLEMENT當著大家的面。
+
+[talk_corrected_mistreated_by_comrade | captor | what]
+EN:  Fed the same as their own men.
+CNT: 吃的跟他們的人一樣。
+
+[talk_corrected_mistreated_by_comrade | prisoner | who]
+EN:  COMRADE came forward and said that they was in the army too while CAPTOR held me prisoner, and me wasn't chained together with the common prisoners.
+CNT: COMRADE出面說了，CAPTOR押著我的時候他也在軍團裡，我沒有被跟尋常俘虜鎖在一起。
+
+[talk_corrected_mistreated_by_comrade | prisoner | where]
+EN:  In front of everyone at SETTLEMENT.
+CNT: 在SETTLEMENT當著大家的面。
+
+[talk_corrected_mistreated_by_comrade | prisoner | what]
+EN:  Fed the same as their own men.
+CNT: 吃的跟他們的人一樣。
+
+[talk_corrected_refused_aid_by_asker | asker | who]
+EN:  I came forward and said I never asked REFUSER for a loan of grain.
+CNT: 我出面說了，他沒向REFUSER借過糧。
+
+[talk_corrected_refused_aid_by_asker | asker | where]
+EN:  In front of everyone at SETTLEMENT.
+CNT: 在SETTLEMENT當著大家的面。
+
+[talk_corrected_refused_aid_by_asker | asker | what]
+EN:  The talk that REFUSER had grain and wouldn't lend me any has no truth to it.
+CNT: 外頭傳REFUSER有糧不肯借給他，沒有這回事。
+
+[talk_corrected_refused_aid_by_asker | refuser | who]
+EN:  ASKER came forward and said they never asked me for a loan of grain.
+CNT: ASKER出面說了，他沒向我借過糧。
+
+[talk_corrected_refused_aid_by_asker | refuser | where]
+EN:  In front of everyone at SETTLEMENT.
+CNT: 在SETTLEMENT當著大家的面。
+
+[talk_corrected_refused_aid_by_asker | refuser | what]
+EN:  The talk that me had grain and wouldn't lend them any has no truth to it.
+CNT: 外頭傳我有糧不肯借給他，沒有這回事。
+
+[talk_not_so_victory_credit_deferred | rival | who]
+EN:  I came forward to clear up the rumor that CLAIMANT had given me the credit.
+CNT: 我出面澄清了有關CLAIMANT讓功給他的謠言。
+
+[talk_not_so_victory_credit_deferred | rival | where]
+EN:  Publicly at SETTLEMENT.
+CNT: 在SETTLEMENT當眾。
+
+[talk_not_so_victory_credit_deferred | rival | what]
+EN:  And said I had no idea where the talk had come from.
+CNT: 並說不知道這話是從哪裡傳出來的。
+
+[talk_not_so_victory_credit_deferred | claimant | who]
+EN:  RIVAL came forward to clear up the rumor that me had given them the credit.
+CNT: RIVAL出面澄清了有關我讓功給他的謠言。
+
+[talk_not_so_victory_credit_deferred | claimant | where]
+EN:  Publicly at SETTLEMENT.
+CNT: 在SETTLEMENT當眾。
+
+[talk_not_so_victory_credit_deferred | claimant | what]
+EN:  And said they had no idea where the talk had come from.
+CNT: 並說不知道這話是從哪裡傳出來的。
+
+[talk_not_so_advice_given_freely | student | who]
+EN:  I came forward to clear up the rumor that VETERAN had taught me everything they knew.
+CNT: 我出面澄清了有關VETERAN對他傾囊相授的謠言。
+
+[talk_not_so_advice_given_freely | student | where]
+EN:  Publicly at SETTLEMENT.
+CNT: 在SETTLEMENT當眾。
+
+[talk_not_so_advice_given_freely | student | what]
+EN:  And said I had no idea where the talk had come from.
+CNT: 並說不知道這話是從哪裡傳出來的。
+
+[talk_not_so_advice_given_freely | veteran | who]
+EN:  STUDENT came forward to clear up the rumor that me had taught them everything I knew.
+CNT: STUDENT出面澄清了有關我對他傾囊相授的謠言。
+
+[talk_not_so_advice_given_freely | veteran | where]
+EN:  Publicly at SETTLEMENT.
+CNT: 在SETTLEMENT當眾。
+
+[talk_not_so_advice_given_freely | veteran | what]
+EN:  And said they had no idea where the talk had come from.
+CNT: 並說不知道這話是從哪裡傳出來的。
+
+[talk_not_so_brawl_man_handed_over | aggrieved | who]
+EN:  I came forward to clear up the rumor that PATRON had handed over their man and apologized to me.
+CNT: 我出面澄清了有關PATRON交出手下向他賠不是的謠言。
+
+[talk_not_so_brawl_man_handed_over | aggrieved | where]
+EN:  Publicly at SETTLEMENT.
+CNT: 在SETTLEMENT當眾。
+
+[talk_not_so_brawl_man_handed_over | aggrieved | what]
+EN:  And said I had no idea where the talk had come from.
+CNT: 並說不知道這話是從哪裡傳出來的。
+
+[talk_not_so_brawl_man_handed_over | patron | who]
+EN:  AGGRIEVED came forward to clear up the rumor that me had handed over my man and apologized to them.
+CNT: AGGRIEVED出面澄清了有關我交出手下向他賠不是的謠言。
+
+[talk_not_so_brawl_man_handed_over | patron | where]
+EN:  Publicly at SETTLEMENT.
+CNT: 在SETTLEMENT當眾。
+
+[talk_not_so_brawl_man_handed_over | patron | what]
+EN:  And said they had no idea where the talk had come from.
+CNT: 並說不知道這話是從哪裡傳出來的。
+
+[talk_not_so_seat_dispute_yielded | favored | who]
+EN:  I came forward to clear up the rumor that SLIGHTED had given up their seat to me at a feast.
+CNT: 我出面澄清了有關SLIGHTED在宴席上讓座給他的謠言。
+
+[talk_not_so_seat_dispute_yielded | favored | where]
+EN:  Publicly at SETTLEMENT.
+CNT: 在SETTLEMENT當眾。
+
+[talk_not_so_seat_dispute_yielded | favored | what]
+EN:  And said I had no idea where the talk had come from.
+CNT: 並說不知道這話是從哪裡傳出來的。
+
+[talk_not_so_seat_dispute_yielded | slighted | who]
+EN:  FAVORED came forward to clear up the rumor that me had given up my seat to them at a feast.
+CNT: FAVORED出面澄清了有關我在宴席上讓座給他的謠言。
+
+[talk_not_so_seat_dispute_yielded | slighted | where]
+EN:  Publicly at SETTLEMENT.
+CNT: 在SETTLEMENT當眾。
+
+[talk_not_so_seat_dispute_yielded | slighted | what]
+EN:  And said they had no idea where the talk had come from.
+CNT: 並說不知道這話是從哪裡傳出來的。
+
+[talk_not_so_tavern_good_word | listener | who]
+EN:  I came forward to clear up the rumor that SPEAKER had stood up for me over drinks.
+CNT: 我出面澄清了有關SPEAKER在酒桌上替他說話的謠言。
+
+[talk_not_so_tavern_good_word | listener | where]
+EN:  Publicly at SETTLEMENT.
+CNT: 在SETTLEMENT當眾。
+
+[talk_not_so_tavern_good_word | listener | what]
+EN:  And said I had no idea where the talk had come from.
+CNT: 並說不知道這話是從哪裡傳出來的。
+
+[talk_not_so_tavern_good_word | speaker | who]
+EN:  LISTENER came forward to clear up the rumor that me had stood up for them over drinks.
+CNT: LISTENER出面澄清了有關我在酒桌上替他說話的謠言。
+
+[talk_not_so_tavern_good_word | speaker | where]
+EN:  Publicly at SETTLEMENT.
+CNT: 在SETTLEMENT當眾。
+
+[talk_not_so_tavern_good_word | speaker | what]
+EN:  And said they had no idea where the talk had come from.
+CNT: 並說不知道這話是從哪裡傳出來的。
 

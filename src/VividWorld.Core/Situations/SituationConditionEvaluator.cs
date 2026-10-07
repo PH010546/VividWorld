@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using VividWorld.Core.Rumors;
+using VividWorld.Core.Util;
 
 namespace VividWorld.Core.Situations
 {
@@ -30,7 +32,9 @@ namespace VividWorld.Core.Situations
             string? situationId = null,
             double day = 0.0,
             ISituationHistory? history = null,
-            IReadOnlyCollection<string>? nonDerivedHeroIds = null)
+            IReadOnlyCollection<string>? nonDerivedHeroIds = null,
+            SituationWorldContext? context = null,
+            bool forced = false)
         {
             if (condition == null) throw new ArgumentNullException(nameof(condition));
             factsByRole ??= new Dictionary<string, SituationRoleFacts>();
@@ -56,6 +60,10 @@ namespace VividWorld.Core.Situations
                     result = EvaluateIsClanLeader(condition, factsByRole);
                     break;
 
+                case "islord":
+                    result = EvaluateIsLord(condition, factsByRole);
+                    break;
+
                 case "clantiercompare":
                     result = EvaluateClanTierCompare(condition, factsByRole);
                     break;
@@ -68,6 +76,26 @@ namespace VividWorld.Core.Situations
                     result = EvaluateCooldown(condition, day, situationId, history, nonDerivedHeroIds);
                     break;
 
+                case "traitatleast":
+                    result = EvaluateTraitCompare(condition, factsByRole, context, isAtLeast: true);
+                    break;
+
+                case "traitatmost":
+                    result = EvaluateTraitCompare(condition, factsByRole, context, isAtLeast: false);
+                    break;
+
+                case "hasgrudge":
+                    result = EvaluateHasGrudge(condition, factsByRole, context);
+                    break;
+
+                case "chance":
+                    result = EvaluateChance(condition, factsByRole, context, situationId, day);
+                    break;
+
+                case "knowseventabout":
+                    result = EvaluateKnowsEventAbout(condition, factsByRole, context);
+                    break;
+
                 default:
                     result = new ConditionEvaluationResult
                     {
@@ -75,6 +103,19 @@ namespace VividWorld.Core.Situations
                         Detail = $"unknown condition type '{type}'"
                     };
                     break;
+            }
+
+            if (forced)
+            {
+                string lower = type.ToLowerInvariant();
+                if (lower == "chance" || lower == "traitatleast" || lower == "traitatmost" || lower == "cooldown")
+                {
+                    result.Ok = true;
+                    if (!result.Detail.Contains("(bypassed: forced)"))
+                    {
+                        result.Detail = string.IsNullOrEmpty(result.Detail) ? "(bypassed: forced)" : $"{result.Detail} (bypassed: forced)";
+                    }
+                }
             }
 
             result.Type = condition.Type ?? string.Empty;
@@ -85,12 +126,29 @@ namespace VividWorld.Core.Situations
         /// <summary>聚合鍵：會在同一個情境裡出現不只一次的條件要帶上角色，其餘就用型別本身。</summary>
         private static string BuildLabel(string type, string lowerType, SituationConditionDef condition)
         {
-            if (string.Equals(lowerType, "isclanleader", StringComparison.Ordinal))
+            switch (lowerType)
             {
-                return $"{type}({condition.Role ?? "role"})";
-            }
+                case "isclanleader":
+                case "islord":
+                    return $"{type}({condition.Role ?? "role"})";
 
-            return type;
+                case "traitatleast":
+                case "traitatmost":
+                    return $"{type}({condition.Role ?? "role"}.{condition.Trait ?? "trait"})";
+
+                case "hasgrudge":
+                    return $"{type}({condition.A ?? "a"}->{condition.B ?? "b"})";
+
+                case "chance":
+                    string seedRolesStr = condition.SeedRoles != null ? string.Join(",", condition.SeedRoles) : string.Empty;
+                    return $"{type}({seedRolesStr})";
+
+                case "knowseventabout":
+                    return $"{type}({condition.Role ?? "role"}->{condition.About ?? "about"})";
+
+                default:
+                    return type;
+            }
         }
 
         public static IReadOnlyList<ConditionEvaluationResult> EvaluateAll(
@@ -101,14 +159,16 @@ namespace VividWorld.Core.Situations
             string? situationId = null,
             double day = 0.0,
             ISituationHistory? history = null,
-            IReadOnlyCollection<string>? nonDerivedHeroIds = null)
+            IReadOnlyCollection<string>? nonDerivedHeroIds = null,
+            SituationWorldContext? context = null,
+            bool forced = false)
         {
             var results = new List<ConditionEvaluationResult>();
             if (conditions != null)
             {
                 foreach (var cond in conditions)
                 {
-                    results.Add(Evaluate(cond, factsByRole, boundHeroes, unboundReasons, situationId, day, history, nonDerivedHeroIds));
+                    results.Add(Evaluate(cond, factsByRole, boundHeroes, unboundReasons, situationId, day, history, nonDerivedHeroIds, context, forced));
                 }
             }
             return results;
@@ -352,6 +412,32 @@ namespace VividWorld.Core.Situations
             };
         }
 
+        private static ConditionEvaluationResult EvaluateIsLord(
+            SituationConditionDef cond,
+            IReadOnlyDictionary<string, SituationRoleFacts> factsByRole)
+        {
+            string role = cond.Role ?? "role";
+            bool expected = cond.Value ?? true;
+
+            factsByRole.TryGetValue(role, out var f);
+            bool actual = f?.IsLord ?? false;
+
+            if (actual == expected)
+            {
+                return new ConditionEvaluationResult
+                {
+                    Ok = true,
+                    Detail = $"isLord({role}) ok ({expected.ToString().ToLowerInvariant()})"
+                };
+            }
+
+            return new ConditionEvaluationResult
+            {
+                Ok = false,
+                Detail = $"isLord({role}) failed (not a lord, is {actual.ToString().ToLowerInvariant()}, need {expected.ToString().ToLowerInvariant()})"
+            };
+        }
+
         private static ConditionEvaluationResult EvaluateClanTierCompare(
             SituationConditionDef cond,
             IReadOnlyDictionary<string, SituationRoleFacts> factsByRole)
@@ -439,6 +525,243 @@ namespace VividWorld.Core.Situations
             {
                 Ok = false,
                 Detail = $"roleBound({role}) failed ({reason})"
+            };
+        }
+
+        private static ConditionEvaluationResult EvaluateTraitCompare(
+            SituationConditionDef cond,
+            IReadOnlyDictionary<string, SituationRoleFacts> factsByRole,
+            SituationWorldContext? context,
+            bool isAtLeast)
+        {
+            string role = cond.Role ?? "role";
+            string trait = cond.Trait ?? "trait";
+            int target = (int)(cond.Number ?? 0);
+
+            if (context?.Traits == null)
+            {
+                return new ConditionEvaluationResult
+                {
+                    Ok = false,
+                    Detail = $"missing context: {role} traits unavailable"
+                };
+            }
+
+            if (!factsByRole.TryGetValue(role, out var facts) || string.IsNullOrEmpty(facts.HeroId))
+            {
+                return new ConditionEvaluationResult
+                {
+                    Ok = false,
+                    Detail = $"role '{role}' unbound"
+                };
+            }
+
+            var profile = context.Traits.Of(facts.HeroId);
+            if (profile == null)
+            {
+                return new ConditionEvaluationResult
+                {
+                    Ok = false,
+                    Detail = $"traits for '{facts.HeroId}' unavailable"
+                };
+            }
+
+            int actual = GetTraitValue(profile, trait);
+            bool ok = isAtLeast ? actual >= target : actual <= target;
+            string cmp = isAtLeast ? (ok ? ">=" : "<") : (ok ? "<=" : ">");
+
+            return new ConditionEvaluationResult
+            {
+                Ok = ok,
+                Detail = $"{role} {trait} {actual} {cmp} {target}"
+            };
+        }
+
+        private static ConditionEvaluationResult EvaluateHasGrudge(
+            SituationConditionDef cond,
+            IReadOnlyDictionary<string, SituationRoleFacts> factsByRole,
+            SituationWorldContext? context)
+        {
+            string a = cond.A ?? "a";
+            string b = cond.B ?? "b";
+
+            if (!factsByRole.TryGetValue(a, out var factsA) || string.IsNullOrEmpty(factsA.HeroId))
+            {
+                return new ConditionEvaluationResult
+                {
+                    Ok = false,
+                    Detail = $"role '{a}' unbound"
+                };
+            }
+            if (!factsByRole.TryGetValue(b, out var factsB) || string.IsNullOrEmpty(factsB.HeroId))
+            {
+                return new ConditionEvaluationResult
+                {
+                    Ok = false,
+                    Detail = $"role '{b}' unbound"
+                };
+            }
+
+            if (context == null || (context.GrudgeSum == null && context.Affection == null))
+            {
+                return new ConditionEvaluationResult
+                {
+                    Ok = false,
+                    Detail = "missing context: grudge and affection functions unavailable"
+                };
+            }
+
+            int line = cond.Line ?? context.GrudgeLine;
+            int nativeLine = context.NativeGrudgeLine;
+
+            int grudge = context.GrudgeSum != null ? context.GrudgeSum(factsA.HeroId, factsB.HeroId) : 0;
+            int? affection = context.Affection != null ? context.Affection(factsA.HeroId, factsB.HeroId) : null;
+
+            bool grudgeMet = context.GrudgeSum != null && grudge <= line;
+            bool affectionMet = affection.HasValue && affection.Value <= nativeLine;
+            bool ok = grudgeMet || affectionMet;
+
+            string detail = ok
+                ? $"{a}->{b} grudge {grudge} <= {line} (or affection {affection?.ToString() ?? "null"} <= {nativeLine})"
+                : $"{a}->{b} grudge {grudge} > {line} and affection {affection?.ToString() ?? "null"} > {nativeLine}";
+
+            return new ConditionEvaluationResult
+            {
+                Ok = ok,
+                Detail = detail
+            };
+        }
+
+        private static ConditionEvaluationResult EvaluateChance(
+            SituationConditionDef cond,
+            IReadOnlyDictionary<string, SituationRoleFacts> factsByRole,
+            SituationWorldContext? context,
+            string? situationId,
+            double day)
+        {
+            if (context == null)
+            {
+                return new ConditionEvaluationResult
+                {
+                    Ok = false,
+                    Detail = "missing context: rng unavailable"
+                };
+            }
+
+            double threshold;
+            if (!string.IsNullOrEmpty(cond.ValueRef))
+            {
+                threshold = SituationConfigResolver.ResolveDouble(cond.ValueRef!, context.Config);
+            }
+            else
+            {
+                threshold = cond.Number ?? 0.0;
+            }
+            var parts = new List<object>
+            {
+                "chance",
+                situationId ?? string.Empty,
+                RumorSeed.DayBucket(day)
+            };
+
+            if (cond.SeedRoles != null)
+            {
+                foreach (var r in cond.SeedRoles)
+                {
+                    string? hId = factsByRole.TryGetValue(r, out var f) ? f.HeroId : null;
+                    parts.Add($"{r}={hId ?? string.Empty}");
+                }
+            }
+
+            long seed = RumorSeed.Of(context.Seed, parts.ToArray());
+            var rng = context.Rng ?? new SplitMix64Rng();
+            double roll = rng.NextDouble(seed);
+            bool ok = roll < threshold;
+
+            return new ConditionEvaluationResult
+            {
+                Ok = ok,
+                Detail = $"chance roll {roll.ToString("0.###", CultureInfo.InvariantCulture)} < {threshold.ToString("0.###", CultureInfo.InvariantCulture)}: {(ok ? "passed" : "failed")}"
+            };
+        }
+
+        private static ConditionEvaluationResult EvaluateKnowsEventAbout(
+            SituationConditionDef cond,
+            IReadOnlyDictionary<string, SituationRoleFacts> factsByRole,
+            SituationWorldContext? context)
+        {
+            string role = cond.Role ?? "role";
+            string about = cond.About ?? "about";
+
+            if (!factsByRole.TryGetValue(role, out var factsRole) || string.IsNullOrEmpty(factsRole.HeroId))
+            {
+                return new ConditionEvaluationResult
+                {
+                    Ok = false,
+                    Detail = $"role '{role}' unbound"
+                };
+            }
+            if (!factsByRole.TryGetValue(about, out var factsAbout) || string.IsNullOrEmpty(factsAbout.HeroId))
+            {
+                return new ConditionEvaluationResult
+                {
+                    Ok = false,
+                    Detail = $"role '{about}' unbound"
+                };
+            }
+
+            if (cond.EventTypes == null || cond.EventTypes.Count == 0)
+            {
+                return new ConditionEvaluationResult
+                {
+                    Ok = false,
+                    Detail = "knowsEventAbout missing eventTypes"
+                };
+            }
+
+            if (context == null || (context.FindRememberedEventAbout == null && context.RemembersEventAbout == null))
+            {
+                return new ConditionEvaluationResult
+                {
+                    Ok = false,
+                    Detail = "missing context: memory lookup unavailable"
+                };
+            }
+
+            string? foundEventId = null;
+            bool remembers = false;
+            if (context.FindRememberedEventAbout != null)
+            {
+                foundEventId = context.FindRememberedEventAbout(factsRole.HeroId, cond.EventTypes, factsAbout.HeroId);
+                remembers = !string.IsNullOrEmpty(foundEventId);
+            }
+            else if (context.RemembersEventAbout != null)
+            {
+                remembers = context.RemembersEventAbout(factsRole.HeroId, cond.EventTypes, factsAbout.HeroId);
+            }
+
+            string detail = remembers
+                ? (!string.IsNullOrEmpty(foundEventId) ? $"{role} remembers {foundEventId} about {about}" : $"{role} remembers event about {about}")
+                : $"{role} does not remember any matching event about {about}";
+
+            return new ConditionEvaluationResult
+            {
+                Ok = remembers,
+                Detail = detail
+            };
+        }
+
+        public static int GetTraitValue(TraitProfile profile, string traitName)
+        {
+            if (profile == null || string.IsNullOrEmpty(traitName)) return 0;
+            return traitName.ToLowerInvariant() switch
+            {
+                "honor" => profile.Honor,
+                "mercy" => profile.Mercy,
+                "valor" => profile.Valor,
+                "calculating" => profile.Calculating,
+                "generosity" => profile.Generosity,
+                _ => 0
             };
         }
     }

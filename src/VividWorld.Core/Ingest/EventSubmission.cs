@@ -34,6 +34,28 @@ namespace VividWorld.Core.Ingest
         public List<string> HearsayKnowerHeroIds = new();
         public bool AutoResolveWitnesses = true;                 // 僅 Public 有效
         public bool ColocatedWitnessAsHearsay = false;
+        public List<string>? CaptorArmyLeaderHeroIds;
+
+        public bool Fabricated;
+        public string? OriginatorHeroId;
+        public string? MadeUpBy;
+        public List<RelayKnower> RelayKnowers = new();
+    }
+
+    public sealed class RelayKnower
+    {
+        public string HeroId { get; set; } = string.Empty;
+        public int Hop { get; set; }
+        public string? SourceHeroId { get; set; }
+
+        public RelayKnower() { }
+
+        public RelayKnower(string heroId, int hop, string? sourceHeroId)
+        {
+            HeroId = heroId;
+            Hop = hop;
+            SourceHeroId = sourceHeroId;
+        }
     }
 
     public enum IngestResult

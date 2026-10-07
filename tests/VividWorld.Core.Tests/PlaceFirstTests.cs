@@ -250,7 +250,7 @@ namespace VividWorld.Core.Tests
             allTemplates.AddRange(catEvents.Templates);
             allTemplates.AddRange(catSit.Templates);
 
-            Assert.Equal(36, allTemplates.Count);
+            Assert.Equal(56, allTemplates.Count);
 
             var enTable = EnglishStringTable.LoadFromFile(enPath);
             var cntTable = EnglishStringTable.LoadFromFile(cntPath);

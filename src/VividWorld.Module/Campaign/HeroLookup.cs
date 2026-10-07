@@ -67,8 +67,8 @@ namespace VividWorld.Campaign
 
             eligible.Sort((a, b) =>
             {
-                int relA = teller.GetRelation(a);
-                int relB = teller.GetRelation(b);
+                int relA = teller.GetBaseHeroRelation(a);
+                int relB = teller.GetBaseHeroRelation(b);
                 int cmp = relB.CompareTo(relA); // 降冪：好感度高的排前面
                 if (cmp != 0) return cmp;
                 return string.CompareOrdinal(a.StringId, b.StringId);

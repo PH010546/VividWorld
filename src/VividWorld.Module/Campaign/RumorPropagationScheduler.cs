@@ -7,6 +7,7 @@ using TaleWorlds.Library;
 using VividWorld.Core.Channels;
 using VividWorld.Core.Config;
 using VividWorld.Core.Events;
+using VividWorld.Core.Feelings;
 using VividWorld.Core.Memory;
 using VividWorld.Core.Persistence;
 using VividWorld.Core.Rumors;
@@ -23,6 +24,7 @@ namespace VividWorld.Campaign
         private readonly HeroLookup? _heroLookup;
         private readonly IHeroTraitLookup? _traitLookup;
         private readonly MemoryStamper? _stamper;
+        private readonly IFeelingWorld? _feelingWorld;   // 信不信的判定讀好感用；null = 好感一律查不到
         private readonly DailyRelationBudget _dailyRelationBudget = new();
 
         private readonly List<string> _activeRing = new();
@@ -37,6 +39,20 @@ namespace VividWorld.Campaign
         private int _sessionReheardCounted;
         private int _sessionReheardSameTellerIgnored;
         private int _sessionReheardSameTellerRelearned;
+
+        // 領主之間傳話的量測：每位聽的人的好感與意願落在哪、分在哪一層、有多少筆因此沒講。只在記憶體裡，讀檔後從 0 開始。
+        private readonly TellTierTally _tellTiersToday = new();
+        private readonly TellTierTally _tellTiersSession = new();
+
+        /// <summary>給開發者工具讀：今天到目前為止的統計，與這次讀檔以來（含今天）的統計。回傳的是複本，改它不影響累計。</summary>
+        internal void SnapshotTellTiers(out TellTierTally today, out TellTierTally session)
+        {
+            today = new TellTierTally();
+            today.Merge(_tellTiersToday);
+            session = new TellTierTally();
+            session.Merge(_tellTiersSession);
+            session.Merge(_tellTiersToday);
+        }
 
         internal int TickCursor
         {
@@ -54,6 +70,7 @@ namespace VividWorld.Campaign
         internal int SecretWatchSize => _secretWatch.Count;
         internal IReadOnlyList<string> ActiveRing => _activeRing;
         internal RumorEngine Engine => _engine;
+        internal IFeelingWorld? FeelingWorld => _feelingWorld;
 
         internal int TellerRingCount => _tellers.Count;
         internal int RebuildSkippedForgotten { get; private set; }
@@ -77,7 +94,8 @@ namespace VividWorld.Campaign
                                            KnownByIndex knownBy,
                                            HeroLookup? heroLookup = null,
                                            IHeroTraitLookup? traitLookup = null,
-                                           MemoryStamper? stamper = null)
+                                           MemoryStamper? stamper = null,
+                                           IFeelingWorld? feelingWorld = null)
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _store = store ?? throw new ArgumentNullException(nameof(store));
@@ -86,6 +104,7 @@ namespace VividWorld.Campaign
             _heroLookup = heroLookup;
             _traitLookup = traitLookup;
             _stamper = stamper;
+            _feelingWorld = feelingWorld;
         }
 
         private void AddActive(string eventId)
@@ -122,6 +141,45 @@ namespace VividWorld.Campaign
                     _tellers.Add(id);
                 }
             }
+        }
+
+        internal void DeliverEventToKnowers(
+            WorldEvent evt,
+            IReadOnlyList<KnownByEntry> knowers,
+            double day,
+            bool forceStepForward = false,
+            string? forcedSettlementId = null,
+            bool forceDisbelief = false)
+        {
+            if (evt == null || knowers == null || knowers.Count == 0) return;
+
+            string playerId = _store.PlayerHeroId;
+
+            _stamper?.StampLearned(evt, knowers);
+            _stamper?.StampOutdated(evt, knowers, day);
+
+            foreach (var k in knowers)
+            {
+                if (!string.IsNullOrEmpty(k.HeroId))
+                {
+                    _knownBy.NoteKnower(k.HeroId, evt.EventId, evt.Day);
+                    if (!string.Equals(k.HeroId, playerId, StringComparison.Ordinal))
+                    {
+                        _tellers.Add(k.HeroId);
+                    }
+                }
+            }
+
+            if (_heroLookup != null && _traitLookup != null)
+            {
+                ConsequenceRunner.Settle(
+                    evt, knowers, day,
+                    _engine, _store, _heroLookup, _traitLookup,
+                    _dailyRelationBudget, _config, _feelingWorld,
+                    forceStepForward, forcedSettlementId, forceDisbelief);
+            }
+
+            _store.Upsert(evt);
         }
 
         internal void RebuildFrom(RumorIndex index, double today)
@@ -200,20 +258,33 @@ namespace VividWorld.Campaign
         {
             if (evt?.KnownBy == null || _heroLookup == null || _traitLookup == null) return;
 
-            var witnesses = new List<KnownByEntry>();
+            var knowersToSettle = new List<KnownByEntry>();
+            bool isMadeUp = MadeUpTalk.IsHearsayOnly(evt);
+
             foreach (var k in evt.KnownBy)
             {
-                if (k == null || k.Hop != 0 || string.IsNullOrEmpty(k.HeroId)) continue;
-                if (evt.RoleOf(k.HeroId) != null) continue;
-                witnesses.Add(k);
+                if (k == null || string.IsNullOrEmpty(k.HeroId)) continue;
+                if (isMadeUp)
+                {
+                    if (k.Hop == 2)
+                    {
+                        knowersToSettle.Add(k);
+                    }
+                }
+                else
+                {
+                    if (k.Hop != 0) continue;
+                    if (evt.RoleOf(k.HeroId) != null) continue;
+                    knowersToSettle.Add(k);
+                }
             }
 
-            if (witnesses.Count == 0) return;
+            if (knowersToSettle.Count == 0) return;
 
             ConsequenceRunner.Settle(
-                evt, witnesses, day,
+                evt, knowersToSettle, day,
                 _engine, _store, _heroLookup, _traitLookup,
-                _dailyRelationBudget, _config);
+                _dailyRelationBudget, _config, _feelingWorld);
         }
 
         internal void HourlyTick(double day, int hourOfDay)
@@ -402,7 +473,7 @@ namespace VividWorld.Campaign
                         ConsequenceRunner.Settle(
                             picked, affectedKnowers, day,
                             _engine, _store, _heroLookup, _traitLookup,
-                            _dailyRelationBudget, _config);
+                            _dailyRelationBudget, _config, _feelingWorld);
                     }
 
                     _store.Upsert(picked);
@@ -420,6 +491,16 @@ namespace VividWorld.Campaign
                     if (_config.Debug.LogTellerTurns)
                     {
                         ModLog.Info(TellerLogFormatter.FormatTellerTurn(t, picked.EventId, choice, outcome, inactiveCount));
+
+                        int weightTen = picked.DramaWeightTen;
+                        int bigNewsLine = _config.Dialogue.BigNewsLine;
+                        var contactList = outcome.Contacts;
+                        for (int ci = 0; ci < contactList.Count; ci++)
+                        {
+                            _tellTiersToday.Record(contactList[ci], weightTen, bigNewsLine);
+                        }
+                        ModLog.Info(TellTierLogFormatter.FormatTurnLine(
+                            t, picked.EventId, weightTen, weightTen >= bigNewsLine, contactList));
                     }
                 }
             }
@@ -429,6 +510,14 @@ namespace VividWorld.Campaign
         {
             using (DevMetrics.Measure("daily"))
             {
+                if (_config.Debug.LogTellerTurns)
+                {
+                    // 這一行印的是剛過完的那一天；印完把它併進整段遊玩的合計，今天重新開始累計。
+                    ModLog.Info(TellTierLogFormatter.FormatDailyLine(Math.Max(0, (int)day - 1), _tellTiersToday));
+                    _tellTiersSession.Merge(_tellTiersToday);
+                    _tellTiersToday.Reset();
+                }
+
                 var secretIds = _secretWatch.ToList();
                 int leakedCount = 0;
                 int dormantCount = 0;

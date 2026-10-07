@@ -8,7 +8,8 @@ namespace VividWorld.Core.Ingest
     {
         Secret,
         AnchorNotInSettlement,
-        Settlement
+        Settlement,
+        NotDrawn
     }
 
     public sealed class Hop0WitnessInfo
@@ -19,6 +20,7 @@ namespace VividWorld.Core.Ingest
         public int WitnessCount { get; }
         public int PresentCount { get; }
         public string? SettlementId { get; }
+        public string? WitnessSource { get; }
         public IReadOnlyList<KeyValuePair<string, int>> Rejections { get; }
 
         private Hop0WitnessInfo(
@@ -28,7 +30,8 @@ namespace VividWorld.Core.Ingest
             int witnessCount = 0,
             int presentCount = 0,
             string? settlementId = null,
-            IEnumerable<KeyValuePair<string, int>>? rejections = null)
+            IEnumerable<KeyValuePair<string, int>>? rejections = null,
+            string? witnessSource = null)
         {
             Kind = kind;
             AnchorRole = anchorRole;
@@ -36,6 +39,7 @@ namespace VividWorld.Core.Ingest
             WitnessCount = witnessCount;
             PresentCount = presentCount;
             SettlementId = settlementId;
+            WitnessSource = witnessSource;
             Rejections = rejections != null ? new List<KeyValuePair<string, int>>(rejections) : Array.Empty<KeyValuePair<string, int>>();
         }
 
@@ -44,6 +48,10 @@ namespace VividWorld.Core.Ingest
 
         public static Hop0WitnessInfo AnchorNotInSettlement(string anchorRole, string anchorHeroId)
             => new Hop0WitnessInfo(Hop0WitnessKind.AnchorNotInSettlement, anchorRole: anchorRole, anchorHeroId: anchorHeroId);
+
+        // 模板本身就不找在場的人當旁觀者（witnessSource 是 none）；在場的人沒被加進來不是被上限擋掉。
+        public static Hop0WitnessInfo NotDrawn(string witnessSource)
+            => new Hop0WitnessInfo(Hop0WitnessKind.NotDrawn, witnessSource: witnessSource);
 
         public static Hop0WitnessInfo AtSettlement(
             int witnessCount,
@@ -67,6 +75,8 @@ namespace VividWorld.Core.Ingest
                     return $"0 (anchor {AnchorRole}={AnchorHeroId} is not in a settlement)";
                 case Hop0WitnessKind.Settlement:
                     return $"{WitnessCount} of {PresentCount} present at {SettlementId} ({FormatRejections(Rejections)})";
+                case Hop0WitnessKind.NotDrawn:
+                    return $"0 (this kind of event takes no bystanders: witnessSource {WitnessSource})";
                 default:
                     return "0";
             }

@@ -52,6 +52,23 @@ namespace VividWorld.Core.Tests
         }
 
         [Fact]
+        public void Format_NotDrawn_SaysTheTemplateTakesNoBystanders()
+        {
+            var participants = new[]
+            {
+                new KeyValuePair<string, string>("speaker", "lord_5_3"),
+                new KeyValuePair<string, string>("listener", "lord_5_9")
+            };
+            var witnessInfo = Hop0WitnessInfo.NotDrawn("none");
+
+            string summary = Hop0Summary.Format(2, participants, null, (IReadOnlyDictionary<string, string?>?)null, witnessInfo);
+
+            Assert.Equal(
+                "hop0: 2 knowers - participants: speaker=lord_5_3, listener=lord_5_9; witnesses: 0 (this kind of event takes no bystanders: witnessSource none)",
+                summary);
+        }
+
+        [Fact]
         public void Format_Example3_MatchesDocumentedFormatExactly()
         {
             var participants = new[]

@@ -22,6 +22,7 @@ namespace VividWorld.Core.Config
         public PresentationConfig  Presentation  { get; set; } = new();
         public PersistenceConfig   Persistence   { get; set; } = new();
         public ConsequenceConfig   Consequences  { get; set; } = new();
+        public FalseRumorsConfig   FalseRumors   { get; set; } = new();
         public EmbellishmentConfig Embellishment { get; set; } = new();
         public EventsConfig        Events        { get; set; } = new();
         public SituationsConfig    Situations    { get; set; } = new();
@@ -45,6 +46,9 @@ namespace VividWorld.Core.Config
             Presentation ??= new PresentationConfig();
             Persistence ??= new PersistenceConfig();
             Consequences ??= new ConsequenceConfig();
+            FalseRumors ??= new FalseRumorsConfig();
+            FalseRumors.Belief ??= new BeliefConfig();
+            FalseRumors.Reaction ??= new ReactionConfig();
             Embellishment ??= new EmbellishmentConfig();
             Events ??= new EventsConfig();
             Events.Sources ??= new EventSourcesConfig();
@@ -132,6 +136,12 @@ namespace VividWorld.Core.Config
             Propagation.ChannelWeights.SameClan       = ClampTracked("propagation.channelWeights.sameClan", Propagation.ChannelWeights.SameClan, 0.0, 10.0, notices);
             Propagation.ChannelWeights.KinAbroad      = ClampTracked("propagation.channelWeights.kinAbroad", Propagation.ChannelWeights.KinAbroad, 0.0, 10.0, notices);
             Propagation.ChannelWeights.Kingdom        = ClampTracked("propagation.channelWeights.kingdom", Propagation.ChannelWeights.Kingdom, 0.0, 10.0, notices);
+
+            Propagation.TellTiers ??= new TellTiersConfig();
+            Propagation.TellTiers.HostileAtOrBelow = (int)ClampTracked("propagation.tellTiers.hostileAtOrBelow", Propagation.TellTiers.HostileAtOrBelow, -100.0, 0.0, notices);
+            Propagation.TellTiers.FamiliarWillingness = ClampTracked("propagation.tellTiers.familiarWillingness", Propagation.TellTiers.FamiliarWillingness, -200.0, 200.0, notices);
+
+            Propagation.ShamefulNews ??= new ShamefulNewsConfig();
 
             Propagation.DramaTellMultiplier = PadOrTruncate(
                 Propagation.DramaTellMultiplier,
@@ -259,6 +269,7 @@ namespace VividWorld.Core.Config
 
             // Dialogue
             Dialogue.SharesPerHeroPerDay = Math.Max(0, Math.Min(10, Dialogue.SharesPerHeroPerDay));
+            Dialogue.ProbesPerHeroPerDay = Math.Max(0, Math.Min(10, Dialogue.ProbesPerHeroPerDay));
             Dialogue.CasualVolunteerLine = ClampTracked("dialogue.casualVolunteerLine", Dialogue.CasualVolunteerLine, -100.0, 100.0, notices);
             Dialogue.RealisticVolunteerLine = ClampTracked("dialogue.realisticVolunteerLine", Dialogue.RealisticVolunteerLine, -100.0, 100.0, notices);
             Dialogue.SecretLine = ClampTracked("dialogue.secretLine", Dialogue.SecretLine, -100.0, 100.0, notices);
@@ -290,6 +301,86 @@ namespace VividWorld.Core.Config
             Presentation.Feelings.AffectionLow = (int)ClampTracked("presentation.feelings.affectionLow", Presentation.Feelings.AffectionLow, -100.0, 0.0, notices);
             Presentation.Feelings.GrudgeThreshold = ClampTracked("presentation.feelings.grudgeThreshold", Presentation.Feelings.GrudgeThreshold, 0.0, 100.0, notices);
 
+            // FalseRumors
+            var belief = FalseRumors.Belief;
+            belief.BaseChance = ClampTracked("falseRumors.belief.baseChance", belief.BaseChance, 0.0, 100.0, notices);
+            belief.MinChance = ClampTracked("falseRumors.belief.minChance", belief.MinChance, 0.0, 100.0, notices);
+            belief.MaxChance = ClampTracked("falseRumors.belief.maxChance", belief.MaxChance, 0.0, 100.0, notices);
+            if (belief.MinChance > belief.MaxChance)
+            {
+                (belief.MinChance, belief.MaxChance) = (belief.MaxChance, belief.MinChance);
+            }
+            belief.SubjectRelationFriend = ClampInt("falseRumors.belief.subjectRelationFriend", belief.SubjectRelationFriend, -100, 100, notices);
+            belief.SubjectRelationWarm = ClampInt("falseRumors.belief.subjectRelationWarm", belief.SubjectRelationWarm, -100, 100, notices);
+            belief.SubjectRelationHostile = ClampInt("falseRumors.belief.subjectRelationHostile", belief.SubjectRelationHostile, -100, 100, notices);
+            belief.TellerRelationTrusted = ClampInt("falseRumors.belief.tellerRelationTrusted", belief.TellerRelationTrusted, -100, 100, notices);
+            belief.TellerRelationDistrusted = ClampInt("falseRumors.belief.tellerRelationDistrusted", belief.TellerRelationDistrusted, -100, 100, notices);
+            belief.SubjectFriendDelta = ClampTracked("falseRumors.belief.subjectFriendDelta", belief.SubjectFriendDelta, -100.0, 100.0, notices);
+            belief.SubjectWarmDelta = ClampTracked("falseRumors.belief.subjectWarmDelta", belief.SubjectWarmDelta, -100.0, 100.0, notices);
+            belief.SubjectHostileDelta = ClampTracked("falseRumors.belief.subjectHostileDelta", belief.SubjectHostileDelta, -100.0, 100.0, notices);
+            belief.TellerTrustedDelta = ClampTracked("falseRumors.belief.tellerTrustedDelta", belief.TellerTrustedDelta, -100.0, 100.0, notices);
+            belief.TellerDistrustedDelta = ClampTracked("falseRumors.belief.tellerDistrustedDelta", belief.TellerDistrustedDelta, -100.0, 100.0, notices);
+            belief.FitsTraitDelta = ClampTracked("falseRumors.belief.fitsTraitDelta", belief.FitsTraitDelta, -100.0, 100.0, notices);
+            belief.ContradictsTraitDelta = ClampTracked("falseRumors.belief.contradictsTraitDelta", belief.ContradictsTraitDelta, -100.0, 100.0, notices);
+            belief.ListenerCalculatingStep = ClampTracked("falseRumors.belief.listenerCalculatingStep", belief.ListenerCalculatingStep, -100.0, 100.0, notices);
+            belief.DisbelieverTellMultiplier = ClampTracked("falseRumors.belief.disbelieverTellMultiplier", belief.DisbelieverTellMultiplier, 0.0, 1.0, notices);
+            belief.DeniedDelta = ClampTracked("falseRumors.belief.deniedDelta", belief.DeniedDelta, -100.0, 0.0, notices);
+            belief.ClarifiedDelta = ClampTracked("falseRumors.belief.clarifiedDelta", belief.ClarifiedDelta, -100.0, 0.0, notices);
+            if (belief.HopDeltas == null || belief.HopDeltas.Length == 0)
+            {
+                belief.HopDeltas = new double[] { 0, 0, 0, -5, -10, -15 };
+            }
+            for (int i = 0; i < belief.HopDeltas.Length; i++)
+            {
+                belief.HopDeltas[i] = ClampTracked("falseRumors.belief.hopDeltas[" + i + "]", belief.HopDeltas[i], -100.0, 100.0, notices);
+            }
+
+            FalseRumors.Denial.BaseChance = ClampTracked("falseRumors.denial.baseChance", FalseRumors.Denial.BaseChance, 0.0, 100.0, notices);
+            FalseRumors.Denial.ValorBonus = ClampTracked("falseRumors.denial.valorBonus", FalseRumors.Denial.ValorBonus, -100.0, 100.0, notices);
+            FalseRumors.Denial.HonorBonus = ClampTracked("falseRumors.denial.honorBonus", FalseRumors.Denial.HonorBonus, -100.0, 100.0, notices);
+            FalseRumors.Denial.CautiousPenalty = ClampTracked("falseRumors.denial.cautiousPenalty", FalseRumors.Denial.CautiousPenalty, -100.0, 100.0, notices);
+            FalseRumors.Denial.AccusedGrudgeMultiplier = ClampTracked("falseRumors.denial.accusedGrudgeMultiplier", FalseRumors.Denial.AccusedGrudgeMultiplier, 0.0, 10.0, notices);
+
+            FalseRumors.Clarify.BaseChance = ClampTracked("falseRumors.clarify.baseChance", FalseRumors.Clarify.BaseChance, 0.0, 100.0, notices);
+            FalseRumors.Clarify.HonorBonus = ClampTracked("falseRumors.clarify.honorBonus", FalseRumors.Clarify.HonorBonus, -100.0, 100.0, notices);
+            FalseRumors.Clarify.FriendRelation = ClampInt("falseRumors.clarify.friendRelation", FalseRumors.Clarify.FriendRelation, -100, 100, notices);
+            FalseRumors.Clarify.FriendBonus = ClampTracked("falseRumors.clarify.friendBonus", FalseRumors.Clarify.FriendBonus, -100.0, 100.0, notices);
+            FalseRumors.Clarify.HostileRelation = ClampInt("falseRumors.clarify.hostileRelation", FalseRumors.Clarify.HostileRelation, -100, 100, notices);
+            FalseRumors.Clarify.HostilePenalty = ClampTracked("falseRumors.clarify.hostilePenalty", FalseRumors.Clarify.HostilePenalty, -100.0, 100.0, notices);
+
+            FalseRumors.Slip ??= new SlipConfig();
+            FalseRumors.Slip.BaseChance = ClampTracked("falseRumors.slip.baseChance", FalseRumors.Slip.BaseChance, 0.0, 100.0, notices);
+            FalseRumors.Slip.RashBonus = ClampTracked("falseRumors.slip.rashBonus", FalseRumors.Slip.RashBonus, -100.0, 100.0, notices);
+            FalseRumors.Slip.CalculatingBonus = ClampTracked("falseRumors.slip.calculatingBonus", FalseRumors.Slip.CalculatingBonus, -100.0, 100.0, notices);
+
+            FalseRumors.StepForwardMinChance = ClampTracked("falseRumors.stepForwardMinChance", FalseRumors.StepForwardMinChance, 0.0, 100.0, notices);
+            FalseRumors.StepForwardMaxChance = ClampTracked("falseRumors.stepForwardMaxChance", FalseRumors.StepForwardMaxChance, 0.0, 100.0, notices);
+            if (FalseRumors.StepForwardMinChance > FalseRumors.StepForwardMaxChance)
+            {
+                (FalseRumors.StepForwardMinChance, FalseRumors.StepForwardMaxChance) = (FalseRumors.StepForwardMaxChance, FalseRumors.StepForwardMinChance);
+            }
+            FalseRumors.StepForwardWaitDays = ClampInt("falseRumors.stepForwardWaitDays", FalseRumors.StepForwardWaitDays, 1, 365, notices);
+
+            var reaction = FalseRumors.Reaction;
+            reaction.TraitMultipliers = PadOrTruncate(reaction.TraitMultipliers, new[] { 0.25, 0.5, 1.0, 1.5, 2.0 }, 5, 0.0, 10.0);
+            reaction.ReceiverSameClan = ClampTracked("falseRumors.reaction.receiverSameClan", reaction.ReceiverSameClan, 0.0, 10.0, notices);
+            reaction.ReceiverFriend = ClampTracked("falseRumors.reaction.receiverFriend", reaction.ReceiverFriend, 0.0, 10.0, notices);
+            reaction.ReceiverHostile = ClampTracked("falseRumors.reaction.receiverHostile", reaction.ReceiverHostile, 0.0, 10.0, notices);
+            reaction.ReceiverFriendRelation = ClampInt("falseRumors.reaction.receiverFriendRelation", reaction.ReceiverFriendRelation, -100, 100, notices);
+            reaction.ReceiverHostileRelation = ClampInt("falseRumors.reaction.receiverHostileRelation", reaction.ReceiverHostileRelation, -100, 100, notices);
+
+            FalseRumors.MisconductPerDay = ClampTracked("falseRumors.misconductPerDay", FalseRumors.MisconductPerDay, 0.0, 10.0, notices);
+            FalseRumors.CaptureMisconductChance = ClampTracked("falseRumors.captureMisconductChance", FalseRumors.CaptureMisconductChance, 0.0, 1.0, notices);
+            FalseRumors.PoisonChance = ClampTracked("falseRumors.poisonChance", FalseRumors.PoisonChance, 0.0, 1.0, notices);
+            FalseRumors.GrudgeLine = ClampInt("falseRumors.grudgeLine", FalseRumors.GrudgeLine, -100, 100, notices);
+            FalseRumors.NativeGrudgeLine = ClampInt("falseRumors.nativeGrudgeLine", FalseRumors.NativeGrudgeLine, -100, 100, notices);
+            FalseRumors.PoisonGrudgeLine = ClampInt("falseRumors.poisonGrudgeLine", FalseRumors.PoisonGrudgeLine, -100, 100, notices);
+            FalseRumors.PoisonNativeGrudgeLine = ClampInt("falseRumors.poisonNativeGrudgeLine", FalseRumors.PoisonNativeGrudgeLine, -100, 100, notices);
+            FalseRumors.MaxPerDay = ClampTracked("falseRumors.maxPerDay", FalseRumors.MaxPerDay, 0.0, 10.0, notices);
+            FalseRumors.SlanderMaxPerDay = ClampTracked("falseRumors.slanderMaxPerDay", FalseRumors.SlanderMaxPerDay, 0.0, 10.0, notices);
+            FalseRumors.RivalryPerDay = ClampTracked("falseRumors.rivalryPerDay", FalseRumors.RivalryPerDay, 0.0, 10.0, notices);
+            FalseRumors.PraisePerDay = ClampTracked("falseRumors.praisePerDay", FalseRumors.PraisePerDay, 0.0, 10.0, notices);
+
             // Consequences
             Consequences.BystanderMultiplier = ClampTracked("consequences.bystanderMultiplier", Consequences.BystanderMultiplier, 0.0, 1.0, notices);
             Consequences.MaxAbsoluteDeltaPerHeroPerDay = ClampTracked("consequences.maxAbsoluteDeltaPerHeroPerDay", Consequences.MaxAbsoluteDeltaPerHeroPerDay, 0.0, 100.0, notices);
@@ -312,20 +403,6 @@ namespace VividWorld.Core.Config
                 new[] { 1.0, 1.0, 0.75, 0.5, 0.3, 0.2 },
                 6,
                 0.0, 1.0);
-
-            // Misconception
-            if (Consequences.Misconception != null)
-            {
-                Consequences.Misconception.BaseClearUpChancePerMeeting =
-                    Math.Max(0.0, Math.Min(1.0, Consequences.Misconception.BaseClearUpChancePerMeeting));
-
-                NormalizeMinMax(
-                    v => Consequences.Misconception.MultiplierMin = v,
-                    () => Consequences.Misconception.MultiplierMin,
-                    v => Consequences.Misconception.MultiplierMax = v,
-                    () => Consequences.Misconception.MultiplierMax,
-                    0.0, 100.0);
-            }
 
             // Embellishment
             Embellishment.ChancePerNegativeHonor = Math.Max(0.0, Math.Min(10.0, Embellishment.ChancePerNegativeHonor));

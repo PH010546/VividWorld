@@ -10,7 +10,8 @@ namespace VividWorld.Core.Feelings
         public static readonly IReadOnlyList<string> Ids = new[]
         {
             "killed", "died", "executor", "victor", "captured", "freed", "lost_prisoner",
-            "released", "lost_face", "brash", "decent", "cared", "joy", "pending"
+            "released", "lost_face", "brash", "decent", "cared", "joy", "pending",
+            "shabby", "wronged"
         };
 
         public static bool IsKnown(string? id)

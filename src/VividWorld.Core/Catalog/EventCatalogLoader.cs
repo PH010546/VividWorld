@@ -565,12 +565,15 @@ namespace VividWorld.Core.Catalog
                                 continue;
                             }
 
-                            // Check unknown fields: only "about" and "amount" are known
+                            // Check unknown fields: only "about", "amount", "trait", "receiver", and "when" are known
                             var extraDict = new Dictionary<string, JToken>();
                             foreach (var prop in itemObj.Properties())
                             {
                                 if (!string.Equals(prop.Name, "about", StringComparison.OrdinalIgnoreCase) &&
-                                    !string.Equals(prop.Name, "amount", StringComparison.OrdinalIgnoreCase))
+                                    !string.Equals(prop.Name, "amount", StringComparison.OrdinalIgnoreCase) &&
+                                    !string.Equals(prop.Name, "trait", StringComparison.OrdinalIgnoreCase) &&
+                                    !string.Equals(prop.Name, "receiver", StringComparison.OrdinalIgnoreCase) &&
+                                    !string.Equals(prop.Name, "when", StringComparison.OrdinalIgnoreCase))
                                 {
                                     extraDict[prop.Name] = prop.Value;
                                     templateIssues.Add(new CatalogIssue
@@ -581,6 +584,29 @@ namespace VividWorld.Core.Catalog
                                         Code = CatalogIssueCode.OpinionInvalid,
                                         IsError = false, // 警告，照常載入
                                         Detail = $"Unknown property '{prop.Name}' in opinion entry."
+                                    });
+                                }
+                            }
+
+                            string? whenVal = null;
+                            var whenProp = itemObj.Property("when", StringComparison.OrdinalIgnoreCase);
+                            if (whenProp != null && whenProp.Value.Type != JTokenType.Null)
+                            {
+                                string? rawWhen = whenProp.Value.Type == JTokenType.String ? whenProp.Value.Value<string>() : null;
+                                if (rawWhen != null && (string.Equals(rawWhen, "believed", StringComparison.OrdinalIgnoreCase) || string.Equals(rawWhen, "disbelieved", StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    whenVal = rawWhen.ToLowerInvariant();
+                                }
+                                else
+                                {
+                                    templateIssues.Add(new CatalogIssue
+                                    {
+                                        TemplateIndex = i,
+                                        TemplateType = templateType,
+                                        Field = $"opinion[{oIdx}].when",
+                                        Code = CatalogIssueCode.OpinionInvalid,
+                                        IsError = true,
+                                        Detail = $"Opinion 'when' value '{whenProp.Value}' must be 'believed' or 'disbelieved'."
                                     });
                                 }
                             }
@@ -599,7 +625,7 @@ namespace VividWorld.Core.Catalog
                                     Detail = $"Opinion 'about' value '{about}' is not a declared role."
                                 });
                             }
-                            else if (!seenAbout.Add(about!))
+                            else if (!seenAbout.Add($"{about}:{whenVal ?? ""}"))
                             {
                                 templateIssues.Add(new CatalogIssue
                                 {
@@ -652,10 +678,60 @@ namespace VividWorld.Core.Catalog
                                 });
                             }
 
+                            string? trait = null;
+                            var traitProp = itemObj.Property("trait", StringComparison.OrdinalIgnoreCase);
+                            if (traitProp != null && traitProp.Value.Type != JTokenType.Null)
+                            {
+                                string? rawTrait = traitProp.Value.Type == JTokenType.String ? traitProp.Value.Value<string>() : null;
+                                string? normalizedTrait = OpinionTraits.Normalize(rawTrait);
+                                if (normalizedTrait == null)
+                                {
+                                    templateIssues.Add(new CatalogIssue
+                                    {
+                                        TemplateIndex = i,
+                                        TemplateType = templateType,
+                                        Field = $"opinion[{oIdx}].trait",
+                                        Code = CatalogIssueCode.OpinionInvalid,
+                                        IsError = true,
+                                        Detail = $"Opinion 'trait' value '{traitProp.Value}' is not one of honor, mercy, valor, generosity, calculating."
+                                    });
+                                }
+                                else
+                                {
+                                    trait = normalizedTrait;
+                                }
+                            }
+
+                            string? receiver = null;
+                            var receiverProp = itemObj.Property("receiver", StringComparison.OrdinalIgnoreCase);
+                            if (receiverProp != null && receiverProp.Value.Type != JTokenType.Null)
+                            {
+                                string? rawReceiver = receiverProp.Value.Type == JTokenType.String ? receiverProp.Value.Value<string>() : null;
+                                if (string.IsNullOrWhiteSpace(rawReceiver) || !roles.ContainsKey(rawReceiver!))
+                                {
+                                    templateIssues.Add(new CatalogIssue
+                                    {
+                                        TemplateIndex = i,
+                                        TemplateType = templateType,
+                                        Field = $"opinion[{oIdx}].receiver",
+                                        Code = CatalogIssueCode.OpinionInvalid,
+                                        IsError = true,
+                                        Detail = $"Opinion 'receiver' value '{receiverProp.Value}' is not a declared role."
+                                    });
+                                }
+                                else
+                                {
+                                    receiver = rawReceiver;
+                                }
+                            }
+
                             opinions.Add(new OpinionDef
                             {
                                 About = about ?? string.Empty,
                                 Amount = amount,
+                                Trait = trait,
+                                Receiver = receiver,
+                                When = whenVal,
                                 Extra = extraDict
                             });
                         }
@@ -815,6 +891,55 @@ namespace VividWorld.Core.Catalog
 
                 // 10. colocatedWitnessAsHearsay：同在一地的人在當地聽到消息（第 1 手、沒有指名來源），不算親眼看到
                 bool colocatedWitnessAsHearsay = templateObj.Property("colocatedWitnessAsHearsay", StringComparison.OrdinalIgnoreCase)?.Value?.Value<bool>() ?? false;
+
+                // 10b. witnessSource (colocated | triggerCaptorArmy | none)
+                string? witnessSource = templateObj.Property("witnessSource", StringComparison.OrdinalIgnoreCase)?.Value?.Value<string>()?.Trim();
+
+                // 10c. madeUpBy
+                string? madeUpBy = templateObj.Property("madeUpBy", StringComparison.OrdinalIgnoreCase)?.Value?.Value<string>()?.Trim();
+                if (!string.IsNullOrEmpty(madeUpBy) && !roles.ContainsKey(madeUpBy!))
+                {
+                    templateIssues.Add(new CatalogIssue
+                    {
+                        TemplateIndex = i,
+                        TemplateType = templateType,
+                        Field = "madeUpBy",
+                        Code = CatalogIssueCode.MadeUpByInvalid,
+                        IsError = true,
+                        Detail = $"Role '{madeUpBy}' in madeUpBy is not a declared role."
+                    });
+                }
+
+                // 10d. response ("denial" | "clarification")
+                string? response = templateObj.Property("response", StringComparison.OrdinalIgnoreCase)?.Value?.Value<string>()?.Trim();
+                if (!string.IsNullOrEmpty(response))
+                {
+                    if (!string.Equals(response, "denial", StringComparison.OrdinalIgnoreCase) &&
+                        !string.Equals(response, "clarification", StringComparison.OrdinalIgnoreCase))
+                    {
+                        templateIssues.Add(new CatalogIssue
+                        {
+                            TemplateIndex = i,
+                            TemplateType = templateType,
+                            Field = "response",
+                            Code = CatalogIssueCode.ResponseInvalid,
+                            IsError = true,
+                            Detail = $"response must be 'denial' or 'clarification', got '{response}'."
+                        });
+                    }
+                    else if (string.IsNullOrEmpty(linkedTemplateType))
+                    {
+                        templateIssues.Add(new CatalogIssue
+                        {
+                            TemplateIndex = i,
+                            TemplateType = templateType,
+                            Field = "response",
+                            Code = CatalogIssueCode.ResponseInvalid,
+                            IsError = true,
+                            Detail = "Template with response must have a linkedTemplateType."
+                        });
+                    }
+                }
 
                 // 11. feelings／feelingOverrides：角色 → 感想類別。沒有這個欄位的模板講給玩家聽時不附感想
                 Dictionary<string, string>? feelings = null;
@@ -1018,6 +1143,9 @@ namespace VividWorld.Core.Catalog
                         SelfTell = selfTell,
                         Retired = retired,
                         ColocatedWitnessAsHearsay = colocatedWitnessAsHearsay,
+                        WitnessSource = witnessSource ?? "colocated",
+                        MadeUpBy = madeUpBy,
+                        Response = response,
                         Feelings = feelings,
                         FeelingOverrides = feelingOverrides,
                         SelfFeelingVariants = selfFeelingVariants

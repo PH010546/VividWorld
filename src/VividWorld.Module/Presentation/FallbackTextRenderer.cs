@@ -264,6 +264,42 @@ namespace VividWorld.Presentation
             }
         }
 
+        internal static RumorRenderResult RenderProbeResponse(
+            string templateKey,
+            IReadOnlyDictionary<string, string>? vars,
+            string? addressKey,
+            string? addressHeroId,
+            string? speakerHeroId,
+            string? listenerHeroId,
+            bool enableLinks,
+            Func<string, bool?>? isFemale = null,
+            string? englishFallback = null)
+        {
+            isFemale ??= (id => TraitLookup?.Of(id)?.IsFemale ?? Hero.Find(id)?.IsFemale);
+
+            // 英文預設取英文字串表那一句；字串表裡沒有這個鍵時才是空的（日誌會警告）
+            englishFallback ??= EnglishStringTableStore.Instance.Get(templateKey) ?? string.Empty;
+            // 查字串用的後備也一樣：鍵沒有譯文、也沒有呼叫端給的英文時，改取英文字串表
+            string? Localizer(string? id, string fb)
+                => LocalizedTemplate(id, string.IsNullOrEmpty(fb) && !string.IsNullOrEmpty(id)
+                    ? (EnglishStringTableStore.Instance.Get(id!) ?? string.Empty)
+                    : fb);
+
+            return RumorTextAssembler.AssembleProbeResponse(
+                templateKey,
+                vars,
+                addressKey,
+                addressHeroId,
+                speakerHeroId,
+                listenerHeroId,
+                enableLinks,
+                ResolveVar,
+                (id, fb) => Localizer(id, fb) ?? string.Empty,
+                isFemale,
+                ModLog.Warn,
+                englishFallback);
+        }
+
         internal static string RenderRecallMemory(ComposedRumor rumor, string? language, PresentationConfig? cfg, EnglishStringTable? stringTable = null, Func<string, bool?>? isFemale = null)
         {
             if (rumor == null) return string.Empty;

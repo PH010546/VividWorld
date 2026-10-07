@@ -25,6 +25,41 @@ namespace VividWorld.Core.Grudges
             list.Add(entry);
         }
 
+        public bool Remove(string eventId, string fromHeroId, string aboutHeroId, GrudgeSource source)
+        {
+            if (string.IsNullOrEmpty(eventId) || string.IsNullOrEmpty(fromHeroId) || string.IsNullOrEmpty(aboutHeroId))
+            {
+                return false;
+            }
+
+            bool removedAny = false;
+            for (int i = _entries.Count - 1; i >= 0; i--)
+            {
+                var e = _entries[i];
+                if (e.EventId == eventId && e.FromHeroId == fromHeroId && e.AboutHeroId == aboutHeroId && e.Source == source)
+                {
+                    _entries.RemoveAt(i);
+                    removedAny = true;
+                }
+            }
+
+            foreach (var kvp in _byPair)
+            {
+                var list = kvp.Value;
+                for (int i = list.Count - 1; i >= 0; i--)
+                {
+                    var e = list[i];
+                    if (e.EventId == eventId && e.FromHeroId == fromHeroId && e.AboutHeroId == aboutHeroId && e.Source == source)
+                    {
+                        list.RemoveAt(i);
+                        removedAny = true;
+                    }
+                }
+            }
+
+            return removedAny;
+        }
+
         public IReadOnlyList<GrudgeEntry> Between(string from, string about, GrudgeScope scope)
         {
             if (from == null || about == null) return Array.Empty<GrudgeEntry>();
@@ -119,7 +154,7 @@ namespace VividWorld.Core.Grudges
 
                     foreach (var ri in kn.RelationImpacts)
                     {
-                        if (ri == null) continue;
+                        if (ri == null || ri.Contradicted) continue;
 
                         string fromHeroId = ri.Scope == GrudgeScope.Clan
                             ? ((ri.NativePair != null && ri.NativePair.Count > 0) ? ri.NativePair[0] : kn.HeroId)

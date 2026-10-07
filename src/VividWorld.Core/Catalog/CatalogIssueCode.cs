@@ -35,6 +35,12 @@ namespace VividWorld.Core.Catalog
         FeelingInvalid,
 
         /// <summary>模板 selfFeelingVariants 欄位宣告無效（角色未在 roles 宣告、傾向名空白或重複、特質名不對、門檻不是只有一邊的整數等）。</summary>
-        SelfFeelingVariantInvalid
+        SelfFeelingVariantInvalid,
+
+        /// <summary>模板 madeUpBy 欄位宣告無效（角色未在 roles 宣告等）。</summary>
+        MadeUpByInvalid,
+
+        /// <summary>模板 response 欄位宣告無效（非 'denial'/'clarification' 或缺 linkedTemplateType）。</summary>
+        ResponseInvalid
     }
 }

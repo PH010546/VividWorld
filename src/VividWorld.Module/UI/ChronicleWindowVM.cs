@@ -107,18 +107,28 @@ namespace VividWorld.UI
     {
         private string _headlineText;
         private string _dayText;
+        private bool _hasConflict;
+        private string _conflictText;
+        private MBBindingList<ChronicleMatterVM> _matters;
         private MBBindingList<ChronicleSourceVM> _sources;
 
         internal ChronicleEntryVM(ChronicleEntry entry, PresentationConfig? cfg, HeroLookup? heroLookup)
         {
             _sources = new MBBindingList<ChronicleSourceVM>();
+            _matters = new MBBindingList<ChronicleMatterVM>();
 
             if (entry == null)
             {
                 _headlineText = string.Empty;
                 _dayText = string.Empty;
+                _conflictText = string.Empty;
                 return;
             }
+
+            _hasConflict = entry.HasConflict;
+            _conflictText = _hasConflict
+                ? new TextObject("{=VividWorld_Chronicle_Conflicting}Conflicting accounts").ToString()
+                : string.Empty;
 
             // 開紀事時已經算好就直接用（那時一併印了日誌）；沒算過才在這裡算
             _headlineText = entry.HeadlineText ?? ResolveHeadline(entry, heroLookup).Text;
@@ -132,9 +142,26 @@ namespace VividWorld.UI
                 _dayText = "Day " + entry.Day.ToString("0.0", CultureInfo.InvariantCulture);
             }
 
-            foreach (var source in entry.Sources)
+            if (entry.Matters != null && entry.Matters.Count > 0)
             {
-                _sources.Add(new ChronicleSourceVM(entry, source, cfg));
+                for (int i = 0; i < entry.Matters.Count; i++)
+                {
+                    var matter = entry.Matters[i];
+                    var matterVM = new ChronicleMatterVM(entry, matter, i == 0, cfg, heroLookup);
+                    _matters.Add(matterVM);
+
+                    foreach (var sVM in matterVM.Sources)
+                    {
+                        _sources.Add(sVM);
+                    }
+                }
+            }
+            else if (entry.Sources != null)
+            {
+                foreach (var source in entry.Sources)
+                {
+                    _sources.Add(new ChronicleSourceVM(entry, source, cfg));
+                }
             }
 
             entry.DayLabel = _dayText;
@@ -142,8 +169,8 @@ namespace VividWorld.UI
         }
 
         /// <summary>
-        /// 算出這一筆的標題：俘虜類的消息帶上被抓的人的名字，名字查不到（人已不在遊戲裡、紀錄裡沒記是誰）
-        /// 或目前語言沒有帶名字的那一句，就退回原本不帶名字的標題。標題是純文字，不放百科連結。
+        /// 算出這一筆的標題：帶上當事人的名字，名字查不到或目前語言沒有帶名字的那一句，
+        /// 就退回原本不帶名字的標題。標題是純文字，不放百科連結。
         /// </summary>
         internal static ChronicleHeadlineResult ResolveHeadline(ChronicleEntry entry, HeroLookup? heroLookup)
         {
@@ -186,7 +213,164 @@ namespace VividWorld.UI
             }
         }
 
+        [DataSourceProperty]
+        public bool HasConflict
+        {
+            get => _hasConflict;
+            set
+            {
+                if (value != _hasConflict)
+                {
+                    _hasConflict = value;
+                    OnPropertyChangedWithValue(value, nameof(HasConflict));
+                }
+            }
+        }
+
+        [DataSourceProperty]
+        public string ConflictText
+        {
+            get => _conflictText;
+            set
+            {
+                if (value != _conflictText)
+                {
+                    _conflictText = value;
+                    OnPropertyChangedWithValue(value, nameof(ConflictText));
+                }
+            }
+        }
+
+        [DataSourceProperty]
+        public MBBindingList<ChronicleMatterVM> Matters
+        {
+            get => _matters;
+            set
+            {
+                if (value != _matters)
+                {
+                    _matters = value;
+                    OnPropertyChangedWithValue(value, nameof(Matters));
+                }
+            }
+        }
+
         /// <summary>每個告訴過玩家這件事的人一塊。</summary>
+        [DataSourceProperty]
+        public MBBindingList<ChronicleSourceVM> Sources
+        {
+            get => _sources;
+            set
+            {
+                if (value != _sources)
+                {
+                    _sources = value;
+                    OnPropertyChangedWithValue(value, nameof(Sources));
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 紀事區塊裡的一件事：第一件事無小標，第二件事起有小標與日子。底下是該事攤平的所有來源。
+    /// </summary>
+    public class ChronicleMatterVM : ViewModel
+    {
+        private string _headingText;
+        private string _dayText;
+        private bool _hasHeading;
+        private MBBindingList<ChronicleSourceVM> _sources;
+
+        internal ChronicleMatterVM(ChronicleEntry blockEntry, ChronicleMatter matter, bool isFirstMatter, PresentationConfig? cfg, HeroLookup? heroLookup)
+        {
+            _sources = new MBBindingList<ChronicleSourceVM>();
+            // 要不要小標由 Core 決定：源頭那件事玩家沒聽過時，第一段也是後來的事，仍要小標
+            _hasHeading = matter.HasHeading;
+
+            if (TaleWorlds.CampaignSystem.Campaign.Current != null)
+            {
+                _dayText = CampaignTime.Days((float)matter.Day).ToString();
+            }
+            else
+            {
+                _dayText = "Day " + matter.Day.ToString("0.0", CultureInfo.InvariantCulture);
+            }
+            matter.DayLabel = _dayText;
+
+            if (_hasHeading)
+            {
+                _headingText = matter.HeadingText ?? ResolveMatterHeading(matter, heroLookup).Text;
+                matter.HeadingText = _headingText;
+            }
+            else
+            {
+                _headingText = string.Empty;
+            }
+
+            if (matter.Sources != null)
+            {
+                foreach (var source in matter.Sources)
+                {
+                    _sources.Add(new ChronicleSourceVM(blockEntry, source, cfg));
+                }
+            }
+        }
+
+        internal static ChronicleHeadlineResult ResolveMatterHeading(ChronicleMatter matter, HeroLookup? heroLookup)
+        {
+            return ChronicleHeadline.Resolve(
+                matter,
+                FallbackTextRenderer.LocalizedTemplate,
+                nameVar =>
+                {
+                    int colon = nameVar.IndexOf(':');
+                    string heroId = colon >= 0 ? nameVar.Substring(colon + 1) : nameVar;
+                    return ChronicleSourceVM.NameOf(heroId, heroLookup);
+                });
+        }
+
+        [DataSourceProperty]
+        public string HeadingText
+        {
+            get => _headingText;
+            set
+            {
+                if (value != _headingText)
+                {
+                    _headingText = value;
+                    OnPropertyChangedWithValue(value, nameof(HeadingText));
+                }
+            }
+        }
+
+        [DataSourceProperty]
+        public string DayText
+        {
+            get => _dayText;
+            set
+            {
+                if (value != _dayText)
+                {
+                    _dayText = value;
+                    OnPropertyChangedWithValue(value, nameof(DayText));
+                }
+            }
+        }
+
+        [DataSourceProperty]
+        public bool HasHeading
+        {
+            get => _hasHeading;
+            set
+            {
+                if (value != _hasHeading)
+                {
+                    _hasHeading = value;
+                    OnPropertyChangedWithValue(value, nameof(HasHeading));
+                }
+            }
+        }
+
         [DataSourceProperty]
         public MBBindingList<ChronicleSourceVM> Sources
         {
@@ -216,8 +400,25 @@ namespace VividWorld.UI
         {
             bool linksEnabled = cfg?.EncyclopediaLinksEnabled ?? true;
 
-            var renderResult = FallbackTextRenderer.RenderBoth(source.Body, cfg);
-            string line = linksEnabled ? renderResult.DisplayText : renderResult.PlainText;
+            string line;
+            if (source.HasProbeAnswer && !string.IsNullOrEmpty(source.ProbeAnswerKey))
+            {
+                var probeRender = FallbackTextRenderer.RenderProbeResponse(
+                    source.ProbeAnswerKey!,
+                    source.ProbeAnswerVars,
+                    source.ProbeAddressKey,
+                    source.ProbeAddressHeroId,
+                    source.HeroId,
+                    Hero.MainHero?.StringId,
+                    linksEnabled);
+                line = linksEnabled ? probeRender.DisplayText : probeRender.PlainText;
+            }
+            else
+            {
+                var renderResult = FallbackTextRenderer.RenderBoth(source.Body, cfg);
+                line = linksEnabled ? renderResult.DisplayText : renderResult.PlainText;
+            }
+
             if (!linksEnabled && line.IndexOf("<a ", StringComparison.Ordinal) >= 0)
             {
                 ModLog.Warn($"Chronicle: body of {entry.EventId} still carries link markup while encyclopedia links are disabled.");
@@ -228,7 +429,16 @@ namespace VividWorld.UI
                 ? FallbackTextRenderer.ResolveVar("hero:" + source.HeroId, linksEnabled)
                 : string.Empty;
 
-            if (source.HasSpokenLine)
+            if (source.HasProbeAnswer)
+            {
+                _lineText = hasTeller
+                    ? new TextObject("{=VividWorld_Chronicle_Quote}{NAME}: \u201C{LINE}\u201D")
+                        .SetTextVariable("NAME", tellerName)
+                        .SetTextVariable("LINE", line)
+                        .ToString()
+                    : line;
+            }
+            else if (source.HasSpokenLine)
             {
                 _lineText = hasTeller
                     ? new TextObject("{=VividWorld_Chronicle_Quote}{NAME}: \u201C{LINE}\u201D")
@@ -252,13 +462,17 @@ namespace VividWorld.UI
                 }
             }
 
-            if (source.Hop <= 0)
+            if (source.HasProbeAnswer)
+            {
+                _provenanceText = string.Empty;
+            }
+            else if (source.Hop <= 0)
             {
                 _provenanceText = new TextObject("{=VividWorld_Chronicle_HopZero}you were there").ToString();
             }
             else
             {
-                string hopText = new TextObject("{=VividWorld_Chronicle_Hop}at a remove of {HOPS}")
+                string hopText = new TextObject("{=VividWorld_Chronicle_Hop}passed through {HOPS} hands")
                     .SetTextVariable("HOPS", source.Hop)
                     .ToString();
 

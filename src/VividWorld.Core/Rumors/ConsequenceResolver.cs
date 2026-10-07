@@ -21,6 +21,14 @@ namespace VividWorld.Core.Rumors
         public double WitnessMultiplier;
         public bool ObserverIsParticipant;
         public double TemplateAmount;   // 模板原始宣告量
+
+        // 聽的人反應多大：已經乘進 FullAmount，這裡帶出去給日誌
+        public double TraitMultiplier = 1.0;
+        public string? TraitName;       // 沒寫 trait 為 null
+        public int? TraitLevel;         // 聽者在那一項的等級；沒寫 trait 或查不到聽者為 null
+        public double RelationMultiplier = 1.0;
+        public string RelationReason = ReactionMultipliers.ReasonNone;
+        public string ReceiverHeroId = string.Empty;
     }
 
     public enum OpinionSkipReason
@@ -85,7 +93,8 @@ namespace VividWorld.Core.Rumors
             IReadOnlyList<Fact> believed,
             IReadOnlyList<OpinionDef> opinions,
             ConsequenceConfig cfg,
-            double remainingDailyBudget)
+            double remainingDailyBudget,
+            ReactionInputs? reaction = null)
         {
             var changes = new List<RelationChange>();
             var exclusions = new List<OpinionExclusion>();
@@ -154,7 +163,9 @@ namespace VividWorld.Core.Rumors
                 double hopConf = hopCount > 0 ? cfg.HopConfidence![hop] : 1.0;
                 bool observerIsPart = evt.RoleOf(observer.HeroId) != null;
                 double witnessMult = observerIsPart ? 1.0 : cfg.BystanderMultiplier;
-                double full = def.Amount * hopConf * witnessMult;
+                var reactionMult = ReactionCalculator.Compute(def, evt, observer, reaction);
+                double full = def.Amount * hopConf * witnessMult
+                    * reactionMult.TraitMultiplier * reactionMult.RelationMultiplier;
 
                 // 5. Calculate already applied
                 double already = 0.0;
@@ -162,7 +173,7 @@ namespace VividWorld.Core.Rumors
                 {
                     foreach (var impact in observer.RelationImpacts)
                     {
-                        if (impact != null && impact.Source == GrudgeSource.Rumor &&
+                        if (impact != null && !impact.Contradicted && impact.Source == GrudgeSource.Rumor &&
                             string.Equals(impact.AboutHeroId, aboutHeroId, StringComparison.Ordinal))
                         {
                             already += impact.Requested;
@@ -236,7 +247,13 @@ namespace VividWorld.Core.Rumors
                     HopConfidence = hopConf,
                     WitnessMultiplier = witnessMult,
                     ObserverIsParticipant = observerIsPart,
-                    TemplateAmount = def.Amount
+                    TemplateAmount = def.Amount,
+                    TraitMultiplier = reactionMult.TraitMultiplier,
+                    TraitName = reactionMult.TraitName,
+                    TraitLevel = reactionMult.TraitLevel,
+                    RelationMultiplier = reactionMult.RelationMultiplier,
+                    RelationReason = reactionMult.RelationReason,
+                    ReceiverHeroId = reactionMult.ReceiverHeroId
                 });
             }
 

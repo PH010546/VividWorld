@@ -62,6 +62,12 @@ namespace VividWorld
                     ModLog.Info(note);
                 }
 
+                var unusedConsequenceNote = LegacyConfigKeys.DescribeUnusedConsequenceKeys(config.Consequences);
+                if (unusedConsequenceNote != null)
+                {
+                    ModLog.Info(unusedConsequenceNote);
+                }
+
                 if (Enum.TryParse<LogLevel>(config.LogLevel, true, out var parsedLevel))
                 {
                     ModLog.Level = parsedLevel;
@@ -235,11 +241,13 @@ namespace VividWorld
             target.Presentation = source.Presentation;
             target.Persistence = source.Persistence;
             target.Consequences = source.Consequences;
+            target.FalseRumors = source.FalseRumors;
             target.Embellishment = source.Embellishment;
             target.Relation = source.Relation;
             target.Events = source.Events;
             target.Situations = source.Situations;
             target.Memory = source.Memory;
+            target.Ai = source.Ai;
             target.Debug = source.Debug;
             target.Extra = source.Extra;
         }

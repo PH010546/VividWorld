@@ -61,15 +61,18 @@ namespace VividWorld.Campaign
         public int EntriesMarkedOutdatedCount => _eventStore?.Stamper?.EntriesMarkedOutdatedCount ?? 0;
         public int EventsDormantByOutdatingCount => _eventStore?.Stamper?.EventsDormantByOutdatingCount ?? 0;
 
+        private HeroLookup? _heroLookup;
+
         public RealEventSourceBehavior(VividWorldConfig config)
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
         }
 
-        public void Initialize(WorldEventStore eventStore, IHeroTraitLookup? traitLookup = null)
+        public void Initialize(WorldEventStore eventStore, IHeroTraitLookup? traitLookup = null, HeroLookup? heroLookup = null)
         {
             _eventStore = eventStore;
             _traitLookup = traitLookup;
+            _heroLookup = heroLookup;
         }
 
         public override void RegisterEvents()
@@ -241,6 +244,42 @@ namespace VividWorld.Campaign
                     prominenceException = ex;
                 }
 
+                List<string>? captorArmyLeaderHeroIds = null;
+                var army = capturer?.MobileParty?.Army;
+                if (army != null)
+                {
+                    string playerHeroId = Hero.MainHero?.StringId ?? "player";
+                    string captorId = captorHero?.StringId ?? string.Empty;
+                    string prisonerId = prisoner.StringId;
+
+                    var otherLeaders = new List<string>();
+                    if (army.Parties != null)
+                    {
+                        foreach (var party in army.Parties)
+                        {
+                            var leader = party?.LeaderHero;
+                            if (leader == null) continue;
+                            if (!leader.IsAlive) continue;
+                            string lid = leader.StringId;
+                            if (string.IsNullOrEmpty(lid)) continue;
+                            if (string.Equals(lid, captorId, StringComparison.Ordinal)) continue;
+                            if (string.Equals(lid, prisonerId, StringComparison.Ordinal)) continue;
+                            if (string.Equals(lid, playerHeroId, StringComparison.Ordinal)) continue;
+                            if (!otherLeaders.Contains(lid))
+                            {
+                                otherLeaders.Add(lid);
+                            }
+                        }
+                    }
+                    otherLeaders.Sort(StringComparer.Ordinal);
+                    captorArmyLeaderHeroIds = otherLeaders;
+                    ModLog.Info($"  captor army: {otherLeaders.Count} other leader(s) [{string.Join(", ", otherLeaders)}]");
+                }
+                else
+                {
+                    ModLog.Info("  captor army: none (captor not in an army)");
+                }
+
                 TrySubmit(
                     "hero_taken_prisoner",
                     bindings,
@@ -248,7 +287,8 @@ namespace VividWorld.Campaign
                     fallbackResult,
                     prominenceResult,
                     prominenceException,
-                    prisoner.StringId);
+                    prisoner.StringId,
+                    captorArmyLeaderHeroIds: captorArmyLeaderHeroIds);
             }
             catch (Exception ex)
             {
@@ -858,7 +898,8 @@ namespace VividWorld.Campaign
             string? linkedEventId = null,
             EventTemplate? templateOverride = null,
             IReadOnlyList<string>? hearsayKnowerHeroIds = null,
-            IReadOnlyList<FamilyParty>? familyParties = null)
+            IReadOnlyList<FamilyParty>? familyParties = null,
+            IReadOnlyList<string>? captorArmyLeaderHeroIds = null)
         {
             var catalog = EventCatalogStore.Catalog;
             var template = templateOverride ?? catalog.ByType(templateType);
@@ -875,6 +916,11 @@ namespace VividWorld.Campaign
                 string issueDetails = string.Join("; ", bindIssues.Select(iss => $"{iss.Field}: {iss.Detail}"));
                 ModLog.Warn($"RealEventSource: Failed to bind template '{templateType}' ({sourceTag}): {issueDetails}");
                 return;
+            }
+
+            if (captorArmyLeaderHeroIds != null && captorArmyLeaderHeroIds.Count > 0)
+            {
+                submission.CaptorArmyLeaderHeroIds = new List<string>(captorArmyLeaderHeroIds);
             }
 
             // 份量＝模板寫的基礎分＋當事人的身分（或門第）加成，夾在 1..10；
@@ -1033,6 +1079,26 @@ namespace VividWorld.Campaign
             catch (Exception ex)
             {
                 ModLog.Error($"RealEventSource: Failed to format hop0 summary for {eventId}", ex);
+            }
+
+            if (!string.IsNullOrEmpty(eventId))
+            {
+                try
+                {
+                    SituationRunner.HandleAfterEvent(
+                        templateType,
+                        bindings,
+                        eventId!,
+                        day,
+                        _eventStore,
+                        _traitLookup,
+                        _config,
+                        _heroLookup);
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Error($"RealEventSource: Failed to handle afterEvent for {eventId}", ex);
+                }
             }
         }
 

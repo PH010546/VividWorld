@@ -17,9 +17,9 @@ namespace VividWorld.Core.Tests
         [Fact]
         public void McmExposedKeys_CountAndUniqueness()
         {
-            Assert.Equal(26, McmExposedKeys.All.Count);
+            Assert.Equal(29, McmExposedKeys.All.Count);
             var paths = McmExposedKeys.All.Select(k => k.Path).ToList();
-            Assert.Equal(26, paths.Distinct().Count());
+            Assert.Equal(29, paths.Distinct().Count());
         }
 
         [Fact]

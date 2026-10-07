@@ -16,6 +16,10 @@ namespace VividWorld.Core.Persistence
         public double Day { get; set; }                         // 事件日期
         public string? LinkedEventId { get; set; }
         public Dictionary<string, string> Participants { get; set; } = new();   // role -> heroId，M10 要用
+        public string? RootEventId { get; set; }
+        public string? RootType { get; set; }
+        public double RootDay { get; set; }
+        public Dictionary<string, string> RootParticipants { get; set; } = new();
         public int DramaWeight { get; set; } = 3;
 
         /// <summary><see cref="DramaWeight"/> 的尺度（5＝舊的 1..5、10＝1..10 的份量），跟事件上的欄位同一個意思；缺欄位的舊資料是 5。</summary>

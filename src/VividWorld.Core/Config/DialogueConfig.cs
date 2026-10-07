@@ -30,6 +30,7 @@ namespace VividWorld.Core.Config
 
         public bool NpcVolunteerAlwaysForCloseKin { get; set; } = true;
         public int SharesPerHeroPerDay { get; set; } = 1;
+        public int ProbesPerHeroPerDay { get; set; } = 1;
         public int AskRelationGate { get; set; } = 0;
         public double AskWillingnessThreshold { get; set; } = 5.0;
         public AskTraitWeights AskTraitWeights { get; set; } = new();

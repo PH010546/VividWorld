@@ -47,6 +47,10 @@ namespace VividWorld.Core.Situations
                                 string.Format(culture, " + {0} {1} x {2:0.00}", t.TraitName, t.TraitValue, t.Coefficient));
                             termsStr = string.Concat(parts);
                         }
+                        if (b.GrudgeDepth.HasValue && b.GrudgeBonus.HasValue)
+                        {
+                            termsStr += string.Format(culture, " + grudge(depth={0:0.00}, add={1:0.00})", b.GrudgeDepth.Value, b.GrudgeBonus.Value);
+                        }
 
                         if (b.IsClamped)
                         {

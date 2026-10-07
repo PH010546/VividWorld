@@ -12,14 +12,15 @@ namespace VividWorld.Core.Tests.Fakes
         private readonly Dictionary<string, List<ChannelLink>> _links = new();
         private readonly Dictionary<string, List<string>> _witnesses = new();
 
-        public void AddLink(string from, string to, ChannelKind kind, double weight = 1.0, int relation = 0)
+        public void AddLink(string from, string to, ChannelKind kind, double weight = 1.0, int relation = 0,
+            int ownRelation = 0, bool isFamily = false)
         {
             if (!_links.TryGetValue(from, out var list))
             {
                 list = new List<ChannelLink>();
                 _links[from] = list;
             }
-            list.Add(new ChannelLink(to, kind, weight, relation));
+            list.Add(new ChannelLink(to, kind, weight, relation, ownRelation, isFamily));
         }
 
         public void AddWitness(string heroId, string witnessHeroId)

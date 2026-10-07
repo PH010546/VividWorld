@@ -24,6 +24,11 @@ namespace VividWorld.Core.Persistence
         public string? LinkedEventId { get; set; }
         public string? SituationId { get; set; }
         public bool HasGrudges { get; set; }
+        public bool Fabricated { get; set; }
+        public bool HasWaitingStepForward { get; set; }
+
+        public bool ShouldSerializeFabricated() => Fabricated;
+        public bool ShouldSerializeHasWaitingStepForward() => HasWaitingStepForward;
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, double>? ForgetDays { get; set; }
@@ -71,6 +76,8 @@ namespace VividWorld.Core.Persistence
                 LinkedEventId = evt.LinkedEventId,
                 SituationId = evt.SituationId,
                 HasGrudges = evt.KnownBy?.Any(k => k.RelationImpacts != null && k.RelationImpacts.Count > 0) ?? false,
+                Fabricated = evt.Fabricated,
+                HasWaitingStepForward = evt.KnownBy?.Any(k => k.StepForward == "waiting") ?? false,
                 ForgetDays = forgetDays
             };
         }

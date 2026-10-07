@@ -566,7 +566,14 @@ namespace VividWorld.Core.Tests
                 {
                     string id = elem.Attribute("id")?.Value ?? "";
                     string text = elem.Attribute("text")?.Value ?? "";
+                    // 打探的回答句子是第一批用選字記號的出貨字串：只放行這一批、而且只放行 SOURCE 這個名字
+                    // （組字函式 AssembleProbeResponse 認得它；其餘字串仍然不准用）。
                     var match = tokenRegex.Match(text);
+                    if (match.Success && id.StartsWith("VividWorld_Probe_", StringComparison.Ordinal))
+                    {
+                        string name = match.Value.Substring(1, match.Value.IndexOf(':') - 1).Trim();
+                        if (string.Equals(name, "SOURCE", StringComparison.Ordinal)) continue;
+                    }
                     Assert.False(match.Success,
                         $"Shipping string '{id}' in {Path.GetFileName(path)} must not use gender select tokens yet: found '{match.Value}'");
                 }

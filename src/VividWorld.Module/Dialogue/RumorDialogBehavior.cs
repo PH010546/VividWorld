@@ -10,11 +10,14 @@ using VividWorld.Core.Channels;
 using VividWorld.Core.Config;
 using VividWorld.Core.Dialogue;
 using VividWorld.Core.Events;
+using VividWorld.Core.Feelings;
 using VividWorld.Core.Memory;
 using VividWorld.Core.Persistence;
 using VividWorld.Core.Presentation;
 using VividWorld.Core.Rumors;
+using VividWorld.Core.Util;
 using VividWorld.Presentation;
+using VividWorld.UI;
 
 namespace VividWorld.Dialogue
 {
@@ -69,7 +72,18 @@ namespace VividWorld.Dialogue
 
         private HeroShareStore? _sharesStore;
         private HeroShareLedger? _sharesLedger;
+        private HeroShareStore? _probesStore;
+        private HeroShareLedger? _probesLedger;
+        private RumorPropagationScheduler? _scheduler;
         private string? _lastVolunteerSessionInfo;
+
+        // 打探對話追蹤（一場對話內有效；答完、取消、對話結束都清掉）
+        private string? _probeChosenEventId;
+        private string? _probeSpeakerId;
+        private ProbeClassification? _probeClassification;
+        private string? _renderedProbeText;
+        private string? _renderedProbeTextPlain;
+        private bool _probesGateReported;
 
         // 記憶化快取（規格 §9.2）
         private string? _cachedHeroId;
@@ -180,6 +194,14 @@ namespace VividWorld.Dialogue
                 id => _heroLookup?.Get(id)?.Name?.ToString())
             ?? "(no share ledger)";
 
+        public string ProbesTodaySummary =>
+            _probesLedger?.TodaySummaryWithLabel(
+                "Probes today",
+                CampaignTime.Now.ToDays,
+                _config.Dialogue.ProbesPerHeroPerDay,
+                id => _heroLookup?.Get(id)?.Name?.ToString())
+            ?? "(no probe ledger)";
+
         public string LastVolunteerSessionInfo => _lastVolunteerSessionInfo ?? "(none this session)";
 
         /// <summary>dev「世界現況」用：這場對話有沒有補救選項待用（規格 §9.2.3，M6c）。</summary>
@@ -216,7 +238,8 @@ namespace VividWorld.Dialogue
             HeroLookup heroLookup,
             string? campaignId = null,
             MemoryStamper? stamper = null,
-            PlayerHeardLogStore? playerHeardLog = null)
+            PlayerHeardLogStore? playerHeardLog = null,
+            RumorPropagationScheduler? scheduler = null)
         {
             _offerSelector = offerSelector ?? throw new ArgumentNullException(nameof(offerSelector));
             _store = store ?? throw new ArgumentNullException(nameof(store));
@@ -227,6 +250,7 @@ namespace VividWorld.Dialogue
             _campaignId = campaignId;
             _stamper = stamper;
             _playerHeardLog = playerHeardLog;
+            _scheduler = scheduler;
             if (!string.IsNullOrEmpty(_campaignId))
             {
                 _sharesStore = new HeroShareStore(VividWorldPaths.SharesFile(_campaignId!));
@@ -244,10 +268,27 @@ namespace VividWorld.Dialogue
                     int n = _sharesLedger.ToDictionary().Count;
                     ModLog.Info($"Shares: loaded {n} people from shares.json");
                 }
+
+                _probesStore = new HeroShareStore(VividWorldPaths.ProbesFile(_campaignId!));
+                _probesLedger = _probesStore.Load();
+                if (_probesStore.LastLoadError != null)
+                {
+                    ModLog.Warn($"Probes: could not read probes.json ({_probesStore.LastLoadError}) - starting fresh; next save will overwrite.");
+                }
+                else if (!_probesStore.FileExisted)
+                {
+                    ModLog.Info("Probes: no probes.json yet (will create on first probe)");
+                }
+                else
+                {
+                    int n = _probesLedger.ToDictionary().Count;
+                    ModLog.Info($"Probes: loaded {n} people from probes.json");
+                }
             }
             else
             {
                 _sharesLedger = new HeroShareLedger();
+                _probesLedger = new HeroShareLedger();
             }
             if (!string.IsNullOrEmpty(_campaignId))
             {
@@ -413,6 +454,9 @@ namespace VividWorld.Dialogue
 
             _recoveryShown = false;
             _recoveryUsed = false;
+
+            ClearProbeState();
+            _probesGateReported = false;
 
             // 路線先留一份給 dev 工具，再清空給下一場用。
             if (_chosenThisConversation.Count > 0)
@@ -655,6 +699,47 @@ namespace VividWorld.Dialogue
                 PlayerCanAskCondition,
                 null,
                 d.PlayerLinePriority,
+                null);
+
+            // ── 打探對話（挑一件事問對方）──
+            starter.AddPlayerLine(
+                "vividworld_probe_option",
+                d.PlayerLineInputToken,
+                "vividworld_probe_prompt",
+                "{=!}{VIVIDWORLD_PROBE_OPTION}",
+                PlayerCanProbeCondition,
+                OnProbeOptionChosen,
+                d.PlayerLinePriority,
+                null);
+
+            starter.AddDialogLine(
+                "vividworld_probe_prompt_line",
+                "vividworld_probe_prompt",
+                "vividworld_probe_answer",
+                "{=!}{VIVIDWORLD_PROBE_PROMPT}",
+                ProbePromptCondition,
+                null,
+                100,
+                null);
+
+            starter.AddDialogLine(
+                "vividworld_probe_answer_line",
+                "vividworld_probe_answer",
+                "hero_main_options",
+                "{=!}{VIVIDWORLD_PROBE_ANSWER}",
+                ProbeAnswerCondition,
+                OnProbeAnswered,
+                110,
+                null);
+
+            starter.AddDialogLine(
+                "vividworld_probe_cancel_line",
+                "vividworld_probe_answer",
+                "hero_main_options",
+                "{=!}{VIVIDWORLD_PROBE_CANCEL}",
+                null,
+                OnProbeCancelled,
+                100,
                 null);
 
             starter.AddDialogLine(
@@ -1408,6 +1493,568 @@ namespace VividWorld.Dialogue
             }
         }
 
+        // ── 打探：挑一件事問對方 ──
+
+        /// <summary>一次分類的結果：回答計畫，加上這個區塊在玩家紀錄（E）與整條鏈（C）各有幾則。</summary>
+        internal sealed class ProbeClassification
+        {
+            public ProbePlan Plan = new ProbePlan();
+            public int ECount;
+            public int CCount;
+            public string BlockEventId = string.Empty;
+        }
+
+        /// <summary>今天這個人被打探了幾次（開發者工具與日誌用）。</summary>
+        internal int ProbesTodayFor(string heroId)
+            => _probesLedger?.SharedOn(heroId, CampaignTime.Now.ToDays) ?? 0;
+
+        /// <summary>
+        /// 對這個人、這個區塊跑一次分類。不改任何資料（只讀事件、組出「要講的內容」）：
+        /// 對話與開發者工具都走這一條。拿不到必要資料時回 null 並說明原因。
+        /// </summary>
+        internal ProbeClassification? ClassifyProbe(Hero hero, string blockEventId, double day, out string failure)
+        {
+            failure = string.Empty;
+            string? playerHeroId = Hero.MainHero?.StringId;
+            if (string.IsNullOrEmpty(playerHeroId)) { failure = "main hero not available"; return null; }
+            if (_playerHeardLog == null || _store == null || _offerSelector == null) { failure = "dialogue behavior not ready"; return null; }
+            if (string.IsNullOrEmpty(blockEventId)) { failure = "no block chosen"; return null; }
+
+            var blockEntriesE = ProbeClassifier.CollectBlockEntries(blockEventId, _playerHeardLog.Entries);
+            var chainIds = ProbeClassifier.CollectChain(blockEventId, _index?.Entries);
+            var chainEventsC = new List<WorldEvent>(chainIds.Count);
+            var byId = new Dictionary<string, WorldEvent>(StringComparer.Ordinal);
+            foreach (var id in chainIds)
+            {
+                var evt = _store.Load(id, _index);
+                if (evt == null) continue;
+                chainEventsC.Add(evt);
+                byId[id] = evt;
+            }
+
+            var profile = BuildSocialProfile(hero);
+            string heroId = hero.StringId;
+
+            RumorCandidate? MakeCandidate(string eventId)
+            {
+                if (!byId.TryGetValue(eventId, out var evt))
+                {
+                    evt = _store.Load(eventId, _index);
+                    if (evt == null) return null;
+                }
+
+                var tellerEntry = evt.EntryFor(heroId);
+                string? linkedId = evt.LinkedEventId;
+                bool isCorrection = !string.IsNullOrEmpty(linkedId) && _playerHeardLog.Contains(linkedId!);
+
+                // 他是從玩家那裡聽來的（問到被說的人本人之後）：講的時候開頭語不帶來源，免得變成「〈玩家〉告訴我」
+                string? source = SourceForPrefix(tellerEntry?.SourceHeroId, playerHeroId!, hero, eventId, log: true);
+
+                return new RumorCandidate
+                {
+                    Event = evt,
+                    TellerHop = tellerEntry?.Hop ?? 1,
+                    PlayerExistingHop = evt.EntryFor(playerHeroId!)?.Hop,
+                    SourceHeroId = source,
+                    IsCorrection = isCorrection
+                };
+            }
+
+            var plan = ProbeClassifier.Classify(
+                heroId,
+                playerHeroId!,
+                new ChronicleEntry { EventId = blockEventId },
+                blockEntriesE,
+                chainEventsC,
+                day,
+                RumorSeed.Of(0, _campaignId ?? string.Empty),
+                _config,
+                EventCatalogStore.TemplateByType,
+                eventId =>
+                {
+                    var cand = MakeCandidate(eventId);
+                    return cand == null
+                        ? CandidateRejection.EventMissing
+                        : _offerSelector.EvaluateForProbe(profile, cand, day, out _);
+                },
+                eventId =>
+                {
+                    var cand = MakeCandidate(eventId) ?? throw new InvalidOperationException("event vanished: " + eventId);
+                    var offer = _offerSelector.BuildOffer(cand, profile, day, VolunteerTier.Full, withFeeling: true, forProbe: true);
+                    // 當事人重述（玩家已聽過、他自己在場、第 0 手）的開頭語在打探時被換掉了
+                    if (cand.PlayerExistingHop.HasValue && cand.TellerHop <= 0 && cand.Event.RoleOf(heroId) != null && offer.Prefix?.Kind != RumorPrefixKind.RetellSelf)
+                    {
+                        ModLog.Info($"Probe: retell-by-participant opening dropped for {offer.EventId}");
+                    }
+                    return offer;
+                },
+                _scheduler?.FeelingWorld,
+                _traitLookup);
+
+            return new ProbeClassification
+            {
+                Plan = plan,
+                ECount = blockEntriesE.Count,
+                CCount = chainEventsC.Count,
+                BlockEventId = blockEventId
+            };
+        }
+
+        /// <summary>每場對話每道閘只印一行：選項沒出現的原因與數值。</summary>
+        private void ReportProbeGate(Hero hero, string text)
+        {
+            if (_probesGateReported) return;
+            _probesGateReported = true;
+            ModLog.Info($"Probe option hidden for {hero.Name} ({hero.StringId}): {text}");
+            ModLog.Flush();
+        }
+
+        private bool PlayerCanProbeCondition()
+        {
+            try
+            {
+                SyncRumorModeWithConfig();
+
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null || !hero.IsAlive) return false;
+                if (!_ready || _offerSelector == null) return false;
+                RecordPartnerInfo(hero);
+
+                int playerTier = PlayerClanTier();
+                if (CommonerCompat.BlocksAsk(_compat, playerTier))
+                {
+                    ReportProbeGate(hero, $"commoner compatibility (player clan tier {playerTier} < required {_compat.AskMinClanTier})");
+                    return false;
+                }
+
+                var standing = _offerSelector.StandingWithPlayer(BuildSocialProfile(hero));
+                if (standing.Relation < _config.Dialogue.AskRelationGate)
+                {
+                    ReportProbeGate(hero, $"relation gate (relation {standing.Relation} < gate {_config.Dialogue.AskRelationGate})");
+                    return false;
+                }
+
+                if (!standing.CanAnswer)
+                {
+                    ReportProbeGate(hero, $"willingness gate (willingness {standing.Willingness:F1} < threshold {standing.AskThreshold:F1})");
+                    return false;
+                }
+
+                if (_playerHeardLog == null || _playerHeardLog.Count <= 0)
+                {
+                    ReportProbeGate(hero, "the player heard log has no entries");
+                    return false;
+                }
+
+                int todayProbes = ProbesTodayFor(hero.StringId);
+                int cap = _config.Dialogue.ProbesPerHeroPerDay;
+                if (_probesLedger?.IsAtCap(hero.StringId, CampaignTime.Now.ToDays, cap) == true)
+                {
+                    ReportProbeGate(hero, $"daily limit reached ({todayProbes}/{cap})");
+                    return false;
+                }
+
+                SetProbeFixedLineVariables(hero);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Error in PlayerCanProbeCondition", ex);
+                return false;
+            }
+        }
+
+        private static void SetProbeFixedLineVariables(Hero partner)
+        {
+            try
+            {
+                string? playerId = Hero.MainHero?.StringId;
+                string? partnerId = partner.StringId;
+                FallbackTextRenderer.SetFixedLineVariable(
+                    "VIVIDWORLD_PROBE_OPTION", "VividWorld_Probe_Option", "There's something I want to ask you.", playerId, partnerId);
+                FallbackTextRenderer.SetFixedLineVariable(
+                    "VIVIDWORLD_PROBE_PROMPT", "VividWorld_Probe_Prompt", "Go ahead. What is it?", partnerId, playerId);
+                FallbackTextRenderer.SetFixedLineVariable(
+                    "VIVIDWORLD_PROBE_CANCEL", "VividWorld_Probe_CancelReply", "All right. Ask me once you've made up your mind.", partnerId, playerId);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn($"Could not set probe dialogue line variables ({ex.GetType().Name}: {ex.Message}).");
+            }
+        }
+
+        private void ClearProbeState()
+        {
+            _probeChosenEventId = null;
+            _probeSpeakerId = null;
+            _probeClassification = null;
+            _renderedProbeText = null;
+            _renderedProbeTextPlain = null;
+        }
+
+        private void OnProbeOptionChosen()
+        {
+            ClearProbeState();
+
+            var speaker = Hero.OneToOneConversationHero;
+            string partnerId = speaker?.StringId ?? "unknown";
+            string partnerName = speaker?.Name?.ToString() ?? partnerId;
+            _probeSpeakerId = speaker?.StringId;
+
+            try
+            {
+                double day = CampaignTime.Now.ToDays;
+                int maxEntries = _config?.Presentation?.ChronicleMaxEntries ?? 50;
+                IReadOnlyList<ChronicleEntry> blocks = Array.Empty<ChronicleEntry>();
+                if (_playerHeardLog != null)
+                {
+                    var provider = new ChronicleProvider(
+                        _playerHeardLog,
+                        EventCatalogStore.TemplateByType,
+                        _config?.Presentation ?? new PresentationConfig());
+                    blocks = provider.ForPlayer(maxEntries, day, out _);
+                }
+
+                if (blocks.Count == 0)
+                {
+                    ModLog.Info($"Probe window not opened for {partnerName} ({partnerId}): the chronicle has 0 blocks. Treated as cancelled.");
+                    ModLog.Flush();
+                    return;
+                }
+
+                // 有矛盾的排前面；OrderBy 是穩定排序，其餘照原順序
+                var sortedBlocks = blocks.OrderByDescending(b => b.HasConflict).ToList();
+                int conflictCount = blocks.Count(b => b.HasConflict);
+
+                var inquiryElements = new List<TaleWorlds.Core.InquiryElement>(sortedBlocks.Count);
+                foreach (var block in sortedBlocks)
+                {
+                    string hint = string.Empty;
+                    var firstSource = block.Sources?.FirstOrDefault(s => s != null && !s.HasProbeAnswer);
+                    if (firstSource?.Body != null)
+                    {
+                        var render = FallbackTextRenderer.RenderBoth(firstSource.Body, _config?.Presentation);
+                        hint = render.PlainText ?? render.DisplayText ?? string.Empty;
+                    }
+
+                    string headline = ChronicleEntryVM.ResolveHeadline(block, _heroLookup)?.Text ?? block.EventId;
+                    inquiryElements.Add(new TaleWorlds.Core.InquiryElement(
+                        identifier: block.EventId,
+                        title: headline,
+                        imageIdentifier: new TaleWorlds.Core.ImageIdentifiers.EmptyImageIdentifier(),
+                        isEnabled: true,
+                        hint: hint));
+                }
+
+                ModLog.Info($"Probe window opening: partner={partnerName} ({partnerId}), blocks={sortedBlocks.Count}, with conflicting accounts={conflictCount}");
+                ModLog.Flush();
+
+                string titleText = new TextObject("{=VividWorld_Probe_WindowTitle}What do you want to ask about?").ToString();
+                string affirmativeText = new TextObject("{=VividWorld_Probe_Confirm}Ask about this").ToString();
+                string negativeText = new TextObject("{=VividWorld_Probe_Cancel}Never mind").ToString();
+
+                var data = new TaleWorlds.Core.MultiSelectionInquiryData(
+                    titleText: titleText,
+                    descriptionText: string.Empty,
+                    inquiryElements: inquiryElements,
+                    isExitShown: true,
+                    minSelectableOptionCount: 1,
+                    maxSelectableOptionCount: 1,
+                    affirmativeText: affirmativeText,
+                    negativeText: negativeText,
+                    affirmativeAction: OnProbeConfirmed,
+                    negativeAction: OnProbeCancelledInquiry,
+                    soundEventPath: "",
+                    isSeachAvailable: true);
+
+                TaleWorlds.Core.MBInformationManager.ShowMultiSelectionInquiry(data, pauseGameActiveState: true, prioritize: false);
+            }
+            catch (Exception ex)
+            {
+                _probeChosenEventId = null;
+                ModLog.Error($"Probe window failed to open: {ex.Message}", ex);
+                ModLog.Flush();
+            }
+        }
+
+        /// <summary>視窗回呼回來時，對話還在、對象沒換人才算數。</summary>
+        private bool ProbeCallbackStillValid(out string why)
+        {
+            bool convEnded = TaleWorlds.CampaignSystem.Campaign.Current?.ConversationManager == null;
+            if (convEnded)
+            {
+                why = "the conversation has already ended";
+                return false;
+            }
+            string? now = Hero.OneToOneConversationHero?.StringId;
+            if (!string.Equals(now, _probeSpeakerId, StringComparison.Ordinal))
+            {
+                why = $"the conversation partner changed ({_probeSpeakerId ?? "none"} -> {now ?? "none"})";
+                return false;
+            }
+            why = string.Empty;
+            return true;
+        }
+
+        private void OnProbeConfirmed(List<TaleWorlds.Core.InquiryElement> picked)
+        {
+            string? chosen = picked != null && picked.Count > 0 ? picked[0].Identifier?.ToString() : null;
+            if (!ProbeCallbackStillValid(out var why))
+            {
+                _probeChosenEventId = null;
+                ModLog.Info($"Probe window result ignored: {why} (picked {chosen ?? "none"})");
+                ModLog.Flush();
+                return;
+            }
+
+            _probeChosenEventId = chosen;
+            _probeClassification = null;
+            ModLog.Info($"Probe window confirmed: block {chosen ?? "none"}, partner {_probeSpeakerId}");
+            ModLog.Flush();
+        }
+
+        private void OnProbeCancelledInquiry(List<TaleWorlds.Core.InquiryElement> _)
+        {
+            _probeChosenEventId = null;
+            _probeClassification = null;
+            ModLog.Info($"Probe window cancelled by the player: partner {_probeSpeakerId ?? "unknown"}");
+            ModLog.Flush();
+        }
+
+        private bool ProbePromptCondition()
+        {
+            var hero = Hero.OneToOneConversationHero;
+            if (hero != null)
+            {
+                SetProbeFixedLineVariables(hero);
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 回答那一行的條件：只在窗裡「確定」過一個區塊時為真。同一場對話、同一個區塊只算一次（快取），
+        /// 條件一幀可能跑好幾次，分類與組句不重複做。
+        /// </summary>
+        private bool ProbeAnswerCondition()
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(_probeChosenEventId)) return false;
+
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null || !hero.IsAlive) return false;
+                string? playerHeroId = Hero.MainHero?.StringId;
+                if (string.IsNullOrEmpty(playerHeroId)) return false;
+
+                if (_probeClassification == null || !string.Equals(_probeClassification.BlockEventId, _probeChosenEventId, StringComparison.Ordinal))
+                {
+                    var made = ClassifyProbe(hero, _probeChosenEventId!, CampaignTime.Now.ToDays, out var failure);
+                    if (made == null)
+                    {
+                        ModLog.Warn($"Probe could not be classified for block {_probeChosenEventId}: {failure}. Treated as cancelled.");
+                        _probeChosenEventId = null;
+                        return false;
+                    }
+
+                    _probeClassification = made;
+                    RenderProbeAnswer(hero, playerHeroId!, made.Plan);
+                }
+
+                MBTextManager.SetTextVariable("VIVIDWORLD_PROBE_ANSWER", _renderedProbeText ?? string.Empty, false);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Error in ProbeAnswerCondition", ex);
+                _probeChosenEventId = null;
+                return false;
+            }
+        }
+
+        private void RenderProbeAnswer(Hero hero, string playerHeroId, ProbePlan plan)
+        {
+            bool links = _config.Presentation?.EncyclopediaLinksEnabled ?? true;
+            string display = string.Empty;
+            string plain = string.Empty;
+
+            if (plan.Offer != null)
+            {
+                var render = FallbackTextRenderer.RenderBoth(plan.Offer.Composed, _config.Presentation);
+                display = render.DisplayText;
+                plain = render.PlainText;
+                if (string.IsNullOrWhiteSpace(display))
+                {
+                    ModLog.Warn($"Probe: offer {plan.Offer.EventId} rendered to an empty string - answered as not heard instead.");
+                    plan.Offer = null;
+                    plan.ResultKindLabel = "not-heard";
+                    plan.ResultKind = ProbeResultKind.NotHeard;
+                    plan.SentenceKey = "VividWorld_Probe_NotHeard_1";
+                    plan.LogReason += "; offer rendered empty";
+                }
+            }
+
+            if (plan.Offer == null)
+            {
+                var render = FallbackTextRenderer.RenderProbeResponse(
+                    plan.SentenceKey ?? "VividWorld_Probe_NotHeard_1",
+                    plan.Vars,
+                    plan.AddressKey,
+                    plan.AddressHeroId,
+                    hero.StringId,
+                    playerHeroId,
+                    links);
+                display = render.DisplayText;
+                plain = render.PlainText;
+            }
+
+            _renderedProbeText = display;
+            _renderedProbeTextPlain = plain;
+        }
+
+        private void OnProbeAnswered()
+        {
+            try
+            {
+                var hero = Hero.OneToOneConversationHero;
+                var made = _probeClassification;
+                if (hero == null || made == null) return;
+                var plan = made.Plan;
+                string? playerHeroId = Hero.MainHero?.StringId;
+                if (string.IsNullOrEmpty(playerHeroId)) return;
+
+                double day = CampaignTime.Now.ToDays;
+                string tellerName = hero.Name?.ToString() ?? hero.StringId;
+
+                // 1. 問到被說的人本人：先讓他知道，走正式流程那一套（索引、記憶、記恨、擲出面），不帶任何強制參數
+                string delivery = "no delivery to the accused";
+                if (plan.ShouldDeliverToAccused && !string.IsNullOrEmpty(plan.DeliverEventId))
+                {
+                    var target = _store?.Load(plan.DeliverEventId!, _index);
+                    if (target != null && _scheduler != null && target.EntryFor(hero.StringId) == null)
+                    {
+                        var entry = ProbeClassifier.BuildAccusedKnowledge(plan, hero.StringId, playerHeroId!, day);
+                        target.KnownBy.Add(entry);
+                        _scheduler.DeliverEventToKnowers(target, new[] { entry }, day);
+                        delivery = $"delivered {plan.DeliverEventId} to the accused: hop {plan.DeliverHop}, {entry.KnownFactIds?.Count ?? 0} facts, knows originator {(plan.DeliverKnowsOriginator ? "yes" : "no")}";
+                    }
+                    else
+                    {
+                        delivery = $"could not deliver {plan.DeliverEventId} (event {(target == null ? "missing" : "loaded")}, scheduler {(_scheduler == null ? "missing" : "ready")}, already known {(target?.EntryFor(hero.StringId) != null)})";
+                        ModLog.Warn("Probe: " + delivery);
+                    }
+                }
+
+                // 2. 記進紀事（打探不佔每天分享的那一則）
+                string recorded = "nothing recorded";
+                if (plan.Offer != null)
+                {
+                    var evt = _store?.Load(plan.Offer.EventId, _index);
+                    if (evt != null)
+                    {
+                        // 防呆：玩家紀錄裡這則已經有他的一般講述，就不再記一次，免得改寫他原本那份。
+                        // 判定表會先跳過他講過的事件，正常情況走不到這裡。
+                        if (_playerHeardLog != null
+                            && ProbeClassifier.ToldByHim(hero.StringId, plan.Offer.EventId, _playerHeardLog.Entries) != null)
+                        {
+                            recorded = $"kept the earlier telling by {tellerName} on {plan.Offer.EventId}, nothing recorded";
+                            ModLog.Info($"Probe: kept the earlier telling by {tellerName} on {plan.Offer.EventId}, nothing recorded");
+                        }
+                        else
+                        {
+                            ApplyOfferAndRecord(plan.Offer, evt, hero.StringId, day, tellerName);
+                            recorded = $"told {plan.Offer.EventId} (hop {plan.Offer.ResultingPlayerHop})";
+                        }
+                    }
+                    else
+                    {
+                        recorded = $"event {plan.Offer.EventId} missing, nothing recorded";
+                    }
+                }
+                else if (plan.ResultKind != ProbeResultKind.NotHeard && plan.ResultKind != ProbeResultKind.AlreadyTold && _playerHeardLog != null && !string.IsNullOrEmpty(plan.SentenceKey))
+                {
+                    string target = plan.EventId ?? string.Empty;
+                    string how = "that event";
+                    if (string.IsNullOrEmpty(target) || !_playerHeardLog.Contains(target))
+                    {
+                        // 回答講的那一則玩家沒聽過：記在這個區塊裡玩家最近聽到的那一筆
+                        var latest = ProbeClassifier.CollectBlockEntries(made.BlockEventId, _playerHeardLog.Entries)
+                            .OrderByDescending(e => e.UpdatedDay)
+                            .ThenBy(e => e.EventId, StringComparer.Ordinal)
+                            .FirstOrDefault();
+                        target = latest?.EventId ?? string.Empty;
+                        how = "latest heard entry of the block";
+                    }
+
+                    if (!string.IsNullOrEmpty(target))
+                    {
+                        bool added = _playerHeardLog.RecordProbeAnswer(
+                            target, hero.StringId, day, plan.SentenceKey!, plan.Vars, plan.AddressKey, plan.AddressHeroId);
+                        _playerHeardLog.Flush();
+                        recorded = $"{(added ? "added" : "refreshed")} answer on {target} ({how})";
+                    }
+                    else
+                    {
+                        recorded = "no heard entry to attach the answer to";
+                    }
+                }
+
+                // 3. 今天的次數 +1（不管答了什麼；取消不算）。不呼叫每天分享的記帳。
+                int newCount = 0;
+                bool counted = plan.ResultKind != ProbeResultKind.AlreadyTold;
+                if (!counted)
+                {
+                    // 他已經跟玩家講過：反問一句就好，不佔當天的打探次數
+                    newCount = _probesLedger?.SharedOn(hero.StringId, day) ?? 0;
+                }
+                else if (_probesLedger != null)
+                {
+                    newCount = _probesLedger.Record(hero.StringId, day);
+                    if (_probesStore != null && !_probesStore.Save(_probesLedger))
+                    {
+                        ModLog.Warn($"Probes: failed to save {VividWorldPaths.ProbesFile(_campaignId ?? string.Empty)}.");
+                    }
+                }
+                int cap = _config.Dialogue.ProbesPerHeroPerDay;
+
+                // 4. 日誌
+                ModLog.Info($"Probe {tellerName} ({hero.StringId}) asked about block {made.BlockEventId} (E {made.ECount}/C {made.CCount}): {plan.ResultKindLabel} - {plan.LogReason} | {delivery} | {recorded} | today {newCount}/{(cap <= 0 ? "no limit" : cap.ToString())}{(counted ? string.Empty : " (not counted: already told)")}");
+                ModLog.Info($"  text shown: \"{_renderedProbeTextPlain ?? _renderedProbeText}\"");
+                if (plan.Offer != null)
+                {
+                    LogDeliveredPrefix(plan.Offer);
+                    LogDeliveredFeeling(plan.Offer);
+                }
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Error in OnProbeAnswered", ex);
+            }
+            finally
+            {
+                ClearProbeState();
+                ModLog.Flush();
+            }
+        }
+
+        private void OnProbeCancelled()
+        {
+            try
+            {
+                var hero = Hero.OneToOneConversationHero;
+                string name = hero?.Name?.ToString() ?? hero?.StringId ?? "unknown";
+                ModLog.Info($"Probe cancelled for {name} ({hero?.StringId ?? "unknown"}); the count for today is unchanged.");
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Error in OnProbeCancelled", ex);
+            }
+            finally
+            {
+                ClearProbeState();
+                ModLog.Flush();
+            }
+        }
+
         /// <summary>玩家氏族的 Tier；還沒有氏族就回 -1。與 NaN 讀的是同一個值（X-17）。</summary>
         private static int PlayerClanTier()
         {
@@ -2086,12 +2733,30 @@ namespace VividWorld.Dialogue
                     TellerHop = tellerEntry.Hop,
                     PlayerExistingHop = playerEntry?.Hop,
                     InvolvesHeroPlayerCaresAbout = involvesCared,
-                    SourceHeroId = tellerEntry.SourceHeroId,
+                    SourceHeroId = SourceForPrefix(tellerEntry.SourceHeroId, playerHeroId, teller, evt.EventId, stampIfNeeded),
                     IsCorrection = isCorrection
                 });
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// 開頭語用的「從誰聽來的」。他是從玩家那裡聽來的（打探問到被說的人本人之後）時，
+        /// 開頭語改用不帶來源的那一種，免得變成「〈玩家〉告訴我」；照理講給玩家聽的時候走不到這裡
+        /// （玩家已經知道、他手上的段落不比玩家多），真的遇到就在日誌寫明。
+        /// </summary>
+        private static string? SourceForPrefix(string? sourceHeroId, string playerHeroId, Hero teller, string eventId, bool log)
+        {
+            if (string.IsNullOrEmpty(sourceHeroId) || !string.Equals(sourceHeroId, playerHeroId, StringComparison.Ordinal))
+            {
+                return sourceHeroId;
+            }
+            if (log)
+            {
+                ModLog.Info($"Prefix: {teller.Name} ({teller.StringId}) heard {eventId} from the player - the prefix is built without a source");
+            }
+            return null;
         }
 
         /// <summary>講給玩家聽的完整分享印一行感想判定（焦點人物、好感、恩怨、地位、挑中哪一句）；沒有感想時印原因。</summary>

@@ -413,8 +413,29 @@ namespace VividWorld.Core.Tests
                 ["advice_brushed_off"] = 2, ["wager_refused"] = 2,
                 ["tavern_boast_told"] = 1,
                 // 停用的兩種：照原本的段（3 與 3）換算 × 2；原本寫的是 2 與 3
+                ["conduct_poisoned"] = 8,
+                ["conduct_spoke_against_ruler"] = 6,
+                ["conduct_mistreated_prisoner"] = 5,
+                ["conduct_refused_aid"] = 4,
+                ["conduct_rash_capture"] = 3,
                 ["tavern_confidence"] = 4,
-                ["victory_credit_belittled"] = 6
+                ["victory_credit_belittled"] = 6,
+                // 回應情境：直接繼承它回應的內容現有的權重
+                ["talk_denied_spoke_against_ruler"] = 6,
+                ["talk_denied_mistreated_prisoner"] = 5,
+                ["talk_denied_refused_aid"] = 4,
+                ["talk_denied_rash_capture"] = 3,
+                ["talk_denied_poisoned"] = 8,
+                ["talk_corrected_rash_capture_by_captor"] = 3,
+                ["talk_corrected_rash_capture_by_bystander"] = 3,
+                ["talk_corrected_mistreated_by_prisoner"] = 5,
+                ["talk_corrected_mistreated_by_comrade"] = 5,
+                ["talk_corrected_refused_aid_by_asker"] = 4,
+                ["talk_not_so_victory_credit_deferred"] = 3,
+                ["talk_not_so_advice_given_freely"] = 3,
+                ["talk_not_so_brawl_man_handed_over"] = 4,
+                ["talk_not_so_seat_dispute_yielded"] = 3,
+                ["talk_not_so_tavern_good_word"] = 3
             };
             Assert.Equal(expected.Count, catalog.Templates.Count);
             foreach (var kv in expected)

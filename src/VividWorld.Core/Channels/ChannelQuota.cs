@@ -69,7 +69,7 @@ namespace VividWorld.Core.Channels
                 if (!string.IsNullOrEmpty(playerHeroId) && link.HeroId == playerHeroId) continue;
 
                 double cw = channelWeights.For(link.Kind);
-                double rf = RelationFactor.For(link.Kind, link.Relation, relationConfig);
+                double rf = RelationFactor.For(link.Kind, link.OwnRelation, relationConfig);
                 double score = cw * rf;
 
                 if (!bestByHero.TryGetValue(link.HeroId, out var existing) || score > existing.Score)

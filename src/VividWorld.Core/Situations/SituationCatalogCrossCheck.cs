@@ -64,6 +64,22 @@ namespace VividWorld.Core.Situations
                             continue;
                         }
 
+                        if (!string.IsNullOrEmpty(bEvent.LinkTo))
+                        {
+                            if (string.IsNullOrEmpty(eventTemplate.LinkedTemplateType))
+                            {
+                                issues.Add(new SituationIssue
+                                {
+                                    SituationIndex = sIdx,
+                                    SituationId = situation.Id,
+                                    Field = $"branches[{bIdx}].events[{eIdx}].linkTo",
+                                    Code = SituationIssueCode.LinkToRequiresLinkedTemplateType,
+                                    IsError = true,
+                                    Detail = $"Branch event specifies linkTo '{bEvent.LinkTo}', but event template '{eventTemplate.Type}' has no linkedTemplateType defined."
+                                });
+                            }
+                        }
+
                         // Check bind values
                         foreach (var kvp in bEvent.Bind)
                         {

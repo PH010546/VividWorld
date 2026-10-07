@@ -210,7 +210,7 @@ namespace VividWorld.Core.Catalog
                 DramaWeight = template.DramaWeight,
                 DramaScale = template.DramaScale,
                 LinkedEventId = !string.IsNullOrEmpty(template.LinkedTemplateType) ? linkedEventId : null,
-                AutoResolveWitnesses = (template.Origin == EventOrigin.Public),
+                AutoResolveWitnesses = AutoResolveWitnesses(template),
                 ColocatedWitnessAsHearsay = template.ColocatedWitnessAsHearsay,
                 Participants = participants,
                 KnowingRoles = new HashSet<string>(template.KnowingRoles, StringComparer.Ordinal),
@@ -218,6 +218,13 @@ namespace VividWorld.Core.Catalog
             };
 
             return submission;
+        }
+
+        public static bool AutoResolveWitnesses(EventTemplate template)
+        {
+            if (template == null) return false;
+            return template.Origin == EventOrigin.Public
+                && (string.IsNullOrEmpty(template.WitnessSource) || string.Equals(template.WitnessSource, "colocated", StringComparison.OrdinalIgnoreCase));
         }
     }
 }

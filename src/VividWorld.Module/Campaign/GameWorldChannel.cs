@@ -64,8 +64,20 @@ namespace VividWorld.Campaign
                     DevMetrics.RecordGetRelationCall();
                 }
                 int relation = currentHero.GetRelation(contact);
+                // 傳話分層看的是兩個人自己的好感，不是通道讀到的那個數字（帳本 D-57）
+                int ownRelation = currentHero.GetBaseHeroRelation(contact);
                 // M5.1 禁令：link.Weight 一律填 1.0，不再平方
-                candidates.Add(new ChannelLink(contact.StringId, kind, 1.0, relation));
+                candidates.Add(new ChannelLink(contact.StringId, kind, 1.0, relation, ownRelation, IsFamilyOf(currentHero, contact)));
+            }
+
+            // 自家人：同家族，或配偶、父親、母親、子女、兄弟姊妹。前配偶不算。（帳本 D-56、D-59、S-07）
+            static bool IsFamilyOf(Hero teller, Hero contact)
+            {
+                if (teller.Clan != null && teller.Clan == contact.Clan) return true;
+                if (teller.Spouse == contact || teller.Father == contact || teller.Mother == contact) return true;
+                if (teller.Children != null && teller.Children.Contains(contact)) return true;
+                if (teller.Siblings != null && teller.Siblings.Contains(contact)) return true;
+                return false;
             }
 
             // 1. SameParty: currentHero.PartyBelongedTo -> LeaderHero + MemberRoster (D-17, D-13, D-14)

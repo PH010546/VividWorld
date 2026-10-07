@@ -285,32 +285,89 @@ namespace VividWorld.Core.Grudges
         }
 
         // 4. Opinion log formatters (M6.5 §4.5)
+        /// <summary>
+        /// 結算行上「聽的人反應多大」的兩段：<c>trait x1.50 (honor +1), receiver x1.50 (friend lord_x)</c>。
+        /// 兩個倍數是 1 的時候也照印，看得出有算過而不是漏掉。
+        /// </summary>
+        public static string FormatReactionSuffix(
+            double traitMultiplier, string? traitName, int? traitLevel,
+            double relationMultiplier, string relationReason, string? receiverHeroId)
+        {
+            string traitPart;
+            if (string.IsNullOrEmpty(traitName))
+            {
+                traitPart = "none";
+            }
+            else if (traitLevel.HasValue)
+            {
+                traitPart = string.Format(CultureInfo.InvariantCulture, "{0} {1:+0;-0;0}", traitName, traitLevel.Value);
+            }
+            else
+            {
+                traitPart = traitName + " n/a";
+            }
+
+            string receiverPart = string.IsNullOrEmpty(receiverHeroId)
+                ? relationReason
+                : relationReason + " " + receiverHeroId;
+
+            return string.Format(CultureInfo.InvariantCulture,
+                "trait x{0:0.00} ({1}), receiver x{2:0.00} ({3})",
+                traitMultiplier, traitPart, relationMultiplier, receiverPart);
+        }
+
         public static string FormatOpinionAppliedNative(
             string observer, string aboutHeroId, string aboutRole, string eventId,
             double amount, int hop, double hopConfidence, bool isWitness, double multiplier,
             double fullAmount, double alreadyApplied, double requested,
-            int nativeBefore, int nativeAfter, int nativeDelta)
+            int nativeBefore, int nativeAfter, int nativeDelta,
+            string reactionSuffix = "")
         {
             string roleStr = isWitness ? "participant" : "onlooker";
             return string.Format(CultureInfo.InvariantCulture,
-                "opinion applied {0} -> {1} ({2}) on {3}: template {4:0.00}, hop {5} x{6:0.00}, {7} x{8:0.00} => full {9:0.00}, already {10:0.00}, requested {11:0.00}, native {12} -> {13} ({14})",
+                "opinion applied {0} -> {1} ({2}) on {3}: template {4:0.00}, hop {5} x{6:0.00}, {7} x{8:0.00} => full {9:0.00}, already {10:0.00}, requested {11:0.00}, native {12} -> {13} ({14}){15}",
                 observer, aboutHeroId, aboutRole, eventId,
                 amount, hop, hopConfidence, roleStr, multiplier,
                 fullAmount, alreadyApplied, requested,
-                nativeBefore, nativeAfter, nativeDelta);
+                nativeBefore, nativeAfter, nativeDelta,
+                reactionSuffix.Length > 0 ? ", " + reactionSuffix : string.Empty);
         }
 
         public static string FormatOpinionAppliedLedgerOnly(
             string observer, string aboutHeroId, string aboutRole, string eventId,
             double amount, int hop, double hopConfidence, bool isWitness, double multiplier,
-            double fullAmount, double alreadyApplied, double requested)
+            double fullAmount, double alreadyApplied, double requested,
+            string reactionSuffix = "")
         {
             string roleStr = isWitness ? "participant" : "onlooker";
             return string.Format(CultureInfo.InvariantCulture,
-                "opinion ledger-only {0} -> {1} ({2}) on {3}: template {4:0.00}, hop {5} x{6:0.00}, {7} x{8:0.00} => full {9:0.00}, already {10:0.00}, requested {11:0.00}",
+                "opinion ledger-only {0} -> {1} ({2}) on {3}: template {4:0.00}, hop {5} x{6:0.00}, {7} x{8:0.00} => full {9:0.00}, already {10:0.00}, requested {11:0.00}{12}",
                 observer, aboutHeroId, aboutRole, eventId,
                 amount, hop, hopConfidence, roleStr, multiplier,
-                fullAmount, alreadyApplied, requested);
+                fullAmount, alreadyApplied, requested,
+                reactionSuffix.Length > 0 ? ", " + reactionSuffix : string.Empty);
+        }
+
+        /// <summary>開發者工具：如果現在結算，這一條 opinion 會是多少（模板的量、各個乘數、結果）。</summary>
+        public static string FormatOpinionPreview(RelationChange change)
+        {
+            bool onlooker = !change.ObserverIsParticipant;
+            return string.Format(CultureInfo.InvariantCulture,
+                "if settled now: {0} {1}: template {2:0.00}, hop {3} x{4:0.00}, {5} x{6:0.00}, {7} => full {8:0.00}, already {9:0.00}, would request {10:0.00}",
+                change.AboutRole, change.AboutHeroId,
+                change.TemplateAmount, change.ObserverHop, change.HopConfidence,
+                onlooker ? "onlooker" : "participant", change.WitnessMultiplier,
+                FormatReactionSuffix(change.TraitMultiplier, change.TraitName, change.TraitLevel,
+                    change.RelationMultiplier, change.RelationReason, change.ReceiverHeroId),
+                change.FullAmount, change.AlreadyApplied, change.Requested);
+        }
+
+        public static string FormatOpinionPreviewSkipped(OpinionExclusion exclusion)
+        {
+            return string.Format(CultureInfo.InvariantCulture,
+                "if settled now: {0} {1}: skipped, {2}",
+                exclusion.AboutRole, exclusion.AboutHeroId,
+                FormatOpinionSkipReason(exclusion.Reason, exclusion.AboutHeroId, exclusion.AboutRole, exclusion.Amount));
         }
 
         public static string FormatOpinionSkipped(string observer, string aboutRole, string eventId, string reason)
@@ -342,11 +399,39 @@ namespace VividWorld.Core.Grudges
                 observer, dayBucket, used, cap, clampedCount);
         }
 
+        /// <summary>更新前就算過好感的人重聽時，兩個倍數當 1、維持原本的量。</summary>
+        public static string FormatSettledBeforeMultipliers(string hearerId, string eventId)
+        {
+            return string.Format(CultureInfo.InvariantCulture,
+                "opinion {0} on {1}: settled before reaction multipliers existed, keeping the original scale (trait x1.00, receiver x1.00)",
+                hearerId, eventId);
+        }
+
         public static string FormatOpinionsDisabled(int hearerCount)
         {
             return string.Format(CultureInfo.InvariantCulture,
                 "opinions disabled: {0} hearer(s) skipped this tick",
                 hearerCount);
+        }
+
+        /// <summary>
+        /// 格式化撤回好感影響時額度退回的日誌後綴。
+        /// </summary>
+        public static string FormatRetractionSuffix(double refundedToday, double usedBefore, double usedAfter, IReadOnlyList<string>? nonRefundReasons = null)
+        {
+            if (refundedToday > 0.0)
+            {
+                return string.Format(CultureInfo.InvariantCulture,
+                    ", refunded today {0:0.##} (daily used before {1:0.##} -> after {2:0.##})",
+                    refundedToday, usedBefore, usedAfter);
+            }
+            if (nonRefundReasons != null && nonRefundReasons.Count > 0)
+            {
+                return string.Format(CultureInfo.InvariantCulture,
+                    ", refunded today 0 ({0})",
+                    string.Join(", ", nonRefundReasons));
+            }
+            return ", refunded today 0";
         }
     }
 }

@@ -18,7 +18,7 @@
       "killer"
     ],
     "opinion": [
-      { "about": "killer", "amount": -10 }
+      { "about": "killer", "amount": -10, "trait": "honor", "receiver": "victim" }
     ],
     "facts": [
       {
@@ -81,7 +81,7 @@
     },
     "knowingRoles": [],
     "opinion": [
-      { "about": "killer", "amount": -7 }
+      { "about": "killer", "amount": -7, "trait": "mercy", "receiver": "victim" }
     ],
     "facts": [
       {
@@ -126,7 +126,7 @@
   },
   {
     "type": "hero_died_in_battle",
-    "headline": "Fallen in Battle",
+    "headline": "Fallen in battle",
     "origin": "public",
     "dramaWeight": 6,
     "dramaScale": 10,
@@ -186,7 +186,7 @@
   },
   {
     "type": "hero_died_naturally",
-    "headline": "Passed Away",
+    "headline": "Passed away",
     "origin": "public",
     "dramaWeight": 4,
     "dramaScale": 10,
@@ -245,7 +245,7 @@
   },
   {
     "type": "hero_died_of_old_age",
-    "headline": "Died of Old Age",
+    "headline": "Died of old age",
     "origin": "public",
     "dramaWeight": 4,
     "dramaScale": 10,
@@ -296,7 +296,7 @@
   },
   {
     "type": "hero_died_in_labor",
-    "headline": "Died in Childbirth",
+    "headline": "Died in childbirth",
     "origin": "public",
     "dramaWeight": 4,
     "dramaScale": 10,

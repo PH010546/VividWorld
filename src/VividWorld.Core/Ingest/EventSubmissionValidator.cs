@@ -147,6 +147,30 @@ namespace VividWorld.Core.Ingest
                 }
             }
 
+            // 14. 造謠（made-up talk）驗證
+            if (s.Fabricated && string.IsNullOrEmpty(s.MadeUpBy))
+            {
+                if (string.IsNullOrWhiteSpace(s.OriginatorHeroId))
+                {
+                    return ValidationOutcome.Reject("Fabricated event submission must have a non-empty OriginatorHeroId.");
+                }
+
+                if (s.HearsayKnowerHeroIds == null || !s.HearsayKnowerHeroIds.Contains(s.OriginatorHeroId!))
+                {
+                    return ValidationOutcome.Reject("OriginatorHeroId must be in HearsayKnowerHeroIds.");
+                }
+
+                if (s.Participants != null && s.Participants.Values.Contains(s.OriginatorHeroId))
+                {
+                    return ValidationOutcome.Reject("OriginatorHeroId cannot be a participant in a fabricated event.");
+                }
+
+                if (s.InitialKnowerHeroIds != null && s.InitialKnowerHeroIds.Count > 0)
+                {
+                    return ValidationOutcome.Reject("InitialKnowerHeroIds must be empty for fabricated made-up events.");
+                }
+            }
+
             // Warnings
             var warnings = new List<string>();
 

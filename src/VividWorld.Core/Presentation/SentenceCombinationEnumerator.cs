@@ -53,10 +53,21 @@ namespace VividWorld.Core.Presentation
         private static readonly HashSet<string> FamilyHearsayTypes = new(StringComparer.Ordinal) { "hero_captured_by_bandits" };
 
         /// <summary>消息裡已經不在人世、不會再聽到這則消息的角色（模板的 selfTell 秘密類不能宣告，所以另列）。</summary>
-        private static readonly Dictionary<string, string[]> DeadRoles = new(StringComparer.Ordinal)
+        public static readonly Dictionary<string, string[]> DeadRoles = new(StringComparer.Ordinal)
         {
-            ["hero_murdered"] = new[] { "victim" }
+            ["hero_murdered"] = new[] { "victim" },
+            ["conduct_poisoned"] = new[] { "victim" },
+            ["talk_denied_poisoned"] = new[] { "victim" }
         };
+
+        public static bool IsDeadRole(string templateType, string role)
+        {
+            if (DeadRoles.TryGetValue(templateType ?? string.Empty, out var roles))
+            {
+                return roles.Contains(role, StringComparer.OrdinalIgnoreCase);
+            }
+            return false;
+        }
 
         private static readonly HashSet<string> GenericSegments = new(StringComparer.Ordinal)
         {
@@ -333,17 +344,30 @@ namespace VividWorld.Core.Presentation
 
             foreach (var (hasPlace, combos) in EnumerateVersions(tmpl, retention))
             {
-                bool witnessPossible = !secret && !tmpl.ColocatedWitnessAsHearsay && hasPlace;
-                bool hearsaySeed = (!secret && tmpl.ColocatedWitnessAsHearsay && hasPlace) || familyHearsay;
+                bool witnessPossible;
+                if (string.Equals(tmpl.WitnessSource, "none", StringComparison.OrdinalIgnoreCase))
+                {
+                    witnessPossible = false;
+                }
+                else if (string.Equals(tmpl.WitnessSource, "triggerCaptorArmy", StringComparison.OrdinalIgnoreCase))
+                {
+                    witnessPossible = !secret;
+                }
+                else
+                {
+                    witnessPossible = !secret && !tmpl.ColocatedWitnessAsHearsay && hasPlace;
+                }
+                bool hearsaySeed = (!secret && tmpl.ColocatedWitnessAsHearsay && hasPlace) || familyHearsay || tmpl.MadeUpHearsay;
                 if (tellers.Count == 0 && !witnessPossible && !hearsaySeed)
                 {
                     continue;
                 }
 
+                bool isResponse = !string.IsNullOrEmpty(tmpl.Response);
                 foreach (var comb in combos)
                 {
-                    // 秘密的當事人交情不夠時不講自己的秘密，所以秘密沒有只講大概的當事人句
-                    if (comb.OccursAtHop0 || (!secret && comb.Hops.Any(gistLandingHops.Contains)))
+                    // 秘密的當事人交情不夠時不講自己的秘密，所以秘密沒有只講大概的當事人句；回應類別也沒有當事人大概句
+                    if (comb.OccursAtHop0 || (!secret && !isResponse && comb.Hops.Any(gistLandingHops.Contains)))
                     {
                         foreach (var role in tellers) Add(comb, SentenceAngleKind.Self, role, false);
                     }

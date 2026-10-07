@@ -54,6 +54,15 @@ namespace VividWorld.Core.Persistence
         public int SourceCount { get; set; }
     }
 
+    /// <summary>舊紀錄補源頭的統計結果。</summary>
+    public sealed class RootBackfillStats
+    {
+        public int TotalBackfilled { get; set; }
+        public int FromEventStore { get; set; }
+        public int FromHeardLog { get; set; }
+        public int AsSelf { get; set; }
+    }
+
     /// <summary>
     /// 玩家聽過的消息儲存庫（卡 MF3a §1.3）。
     /// </summary>
@@ -65,6 +74,9 @@ namespace VividWorld.Core.Persistence
         private readonly Dictionary<string, PlayerHeardEntry> _lookup = new(StringComparer.Ordinal);
         private readonly HashSet<string> _endingsByLinkedId = new(StringComparer.Ordinal);
 
+        public Func<string, WorldEvent?>? EventLookup { get; set; }
+        public Action<string>? Log { get; set; }
+
         public PlayerHeardLogStore(string filePath, IFileWriter writer)
         {
             _filePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
@@ -72,6 +84,7 @@ namespace VividWorld.Core.Persistence
         }
 
         public int Count => _log.Entries.Count;
+        public IReadOnlyList<PlayerHeardEntry> Entries => _log.Entries;
         public bool IsDirty { get; private set; }
 
         public bool Contains(string eventId)
@@ -103,6 +116,8 @@ namespace VividWorld.Core.Persistence
             {
                 foreach (var s in entry.Sources)
                 {
+                    // 打探時的回答（否認、不肯談……）不算他告訴過玩家這件事
+                    if (s.HasProbeAnswer) continue;
                     if (string.Equals(s.HeroId, tellerHeroId, StringComparison.Ordinal)) return true;
                 }
             }
@@ -243,9 +258,72 @@ namespace VividWorld.Core.Persistence
         }
 
         /// <summary>
+        /// 沿著 LinkedEventId 往回追溯源頭事件（最多 5 層，防止迴圈或壞資料；查不到則停在最後查得到的事件）。
+        /// </summary>
+        public static (string rootEventId, string rootType, double rootDay, Dictionary<string, string> rootParticipants, int hops, string stopReason)
+            ResolveRoot(WorldEvent evt, Func<string, WorldEvent?>? lookup, Action<string>? log = null)
+        {
+            if (evt == null) throw new ArgumentNullException(nameof(evt));
+
+            if (string.IsNullOrEmpty(evt.LinkedEventId))
+            {
+                var selfParts = evt.Participants != null
+                    ? new Dictionary<string, string>(evt.Participants, StringComparer.Ordinal)
+                    : new Dictionary<string, string>(StringComparer.Ordinal);
+                string stop = "no linked event (is root)";
+                log?.Invoke($"Root finder for event '{evt.EventId}': root '{evt.EventId}' ({evt.Type}) after 0 hop(s) (stop reason: {stop})");
+                return (evt.EventId, evt.Type ?? string.Empty, evt.Day, selfParts, 0, stop);
+            }
+
+            int hops = 0;
+            var visited = new HashSet<string>(StringComparer.Ordinal) { evt.EventId };
+            WorldEvent current = evt;
+            string stopReason = string.Empty;
+
+            while (!string.IsNullOrEmpty(current.LinkedEventId))
+            {
+                if (hops >= 5)
+                {
+                    stopReason = "max depth reached (5 hops)";
+                    break;
+                }
+
+                string nextId = current.LinkedEventId!;
+                if (visited.Contains(nextId))
+                {
+                    stopReason = $"cycle detected at {nextId}";
+                    break;
+                }
+                visited.Add(nextId);
+
+                var parent = lookup?.Invoke(nextId);
+                if (parent == null)
+                {
+                    stopReason = $"event {nextId} not found in event store";
+                    break;
+                }
+
+                current = parent;
+                hops++;
+            }
+
+            if (string.IsNullOrEmpty(stopReason))
+            {
+                stopReason = "reached root event";
+            }
+
+            var parts = current.Participants != null
+                ? new Dictionary<string, string>(current.Participants, StringComparer.Ordinal)
+                : new Dictionary<string, string>(StringComparer.Ordinal);
+
+            log?.Invoke($"Root finder for event '{evt.EventId}': root '{current.EventId}' ({current.Type}) after {hops} hop(s) (stop reason: {stopReason})");
+            return (current.EventId, current.Type ?? string.Empty, current.Day, parts, hops, stopReason);
+        }
+
+        /// <summary>
         /// 補齊與舊呼叫端用：沒有講述細節，來源當成玩家那筆紀錄上的來源、碎片當成傳進來的全部、沒有感想。
         /// </summary>
-        public bool Record(WorldEvent evt, KnownByEntry playerEntry, IReadOnlyList<Fact> knownFacts, double day)
+        public bool Record(WorldEvent evt, KnownByEntry playerEntry, IReadOnlyList<Fact> knownFacts, double day, Func<string, WorldEvent?>? eventLookup = null)
         {
             if (playerEntry == null) return false;
             var telling = new PlayerHeardSource
@@ -255,7 +333,76 @@ namespace VividWorld.Core.Persistence
                 Hop = playerEntry.Hop,
                 FactIds = (knownFacts ?? Array.Empty<Fact>()).Select(f => f.Id).ToList()
             };
-            return RecordTelling(evt, playerEntry, knownFacts ?? Array.Empty<Fact>(), day, telling).Changed;
+            return RecordTelling(evt, playerEntry, knownFacts ?? Array.Empty<Fact>(), day, telling, eventLookup).Changed;
+        }
+
+        public PlayerHeardRecordResult RecordTelling(WorldEvent evt, KnownByEntry playerEntry, IReadOnlyList<Fact> knownFacts, double day, PlayerHeardSource telling)
+            => RecordTelling(evt, playerEntry, knownFacts, day, telling, null);
+
+        /// <summary>
+        /// 記錄打探的回答：在玩家紀錄裡那則事件的來源清單多一份「打探的回答」。
+        /// 不改那筆紀錄的手數、碎片、第一次聽到的日子與最近寫入日；打探沒有讓玩家聽到新東西。
+        /// 同一個人對同一則給了同一句、同一個稱呼，就只把那一份的日子更新，不重複加。
+        /// 回傳：這一份是新加的 ⇒ true；找不到那則事件或只是更新日子 ⇒ false。
+        /// </summary>
+        public bool RecordProbeAnswer(string eventId, string heroId, double day, string probeAnswerKey, IReadOnlyDictionary<string, string>? probeAnswerVars, string? probeAddressKey, string? probeAddressHeroId)
+        {
+            if (string.IsNullOrEmpty(eventId) || string.IsNullOrEmpty(heroId) || string.IsNullOrEmpty(probeAnswerKey)) return false;
+            if (!_lookup.TryGetValue(eventId, out var entry)) return false;
+
+            // 舊紀錄沒有來源清單：先合成原本那一份，否則清單裡就只剩打探的回答
+            EnsureSources(entry);
+
+            Dictionary<string, string>? vars = null;
+            if (probeAnswerVars != null && probeAnswerVars.Count > 0)
+            {
+                vars = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var kv in probeAnswerVars) vars[kv.Key] = kv.Value;
+            }
+
+            foreach (var existing in entry.Sources)
+            {
+                if (!existing.HasProbeAnswer) continue;
+                if (!string.Equals(existing.HeroId, heroId, StringComparison.Ordinal)) continue;
+                if (!string.Equals(existing.ProbeAnswerKey, probeAnswerKey, StringComparison.Ordinal)) continue;
+                if (!string.Equals(existing.ProbeAddressKey, probeAddressKey, StringComparison.Ordinal)) continue;
+                if (!string.Equals(existing.ProbeAddressHeroId, probeAddressHeroId, StringComparison.Ordinal)) continue;
+                if (!SameVars(existing.ProbeAnswerVars, vars)) continue;
+
+                if (day > existing.Day)
+                {
+                    existing.Day = day;
+                    IsDirty = true;
+                }
+                return false;
+            }
+
+            entry.Sources.Add(new PlayerHeardSource
+            {
+                HeroId = heroId,
+                Day = day,
+                Hop = 0,
+                FactIds = new List<string>(),
+                ProbeAnswerKey = probeAnswerKey,
+                ProbeAnswerVars = vars,
+                ProbeAddressKey = probeAddressKey,
+                ProbeAddressHeroId = probeAddressHeroId
+            });
+            IsDirty = true;
+            return true;
+        }
+
+        private static bool SameVars(Dictionary<string, string>? a, Dictionary<string, string>? b)
+        {
+            int ac = a?.Count ?? 0;
+            int bc = b?.Count ?? 0;
+            if (ac != bc) return false;
+            if (ac == 0) return true;
+            foreach (var kv in a!)
+            {
+                if (!b!.TryGetValue(kv.Key, out var v) || !string.Equals(v, kv.Value, StringComparison.Ordinal)) return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -265,7 +412,7 @@ namespace VividWorld.Core.Persistence
         /// </summary>
         /// <param name="knownFacts">玩家目前知道的全部碎片（所有來源的聯集）。</param>
         /// <param name="telling">這一次講述：誰、第幾手、講了哪些碎片、感想；寫進去時會複製一份。</param>
-        public PlayerHeardRecordResult RecordTelling(WorldEvent evt, KnownByEntry playerEntry, IReadOnlyList<Fact> knownFacts, double day, PlayerHeardSource telling)
+        public PlayerHeardRecordResult RecordTelling(WorldEvent evt, KnownByEntry playerEntry, IReadOnlyList<Fact> knownFacts, double day, PlayerHeardSource telling, Func<string, WorldEvent?>? eventLookup)
         {
             var result = new PlayerHeardRecordResult();
             if (evt == null || !evt.IsVisibleToRumorSystem) return result;
@@ -273,7 +420,8 @@ namespace VividWorld.Core.Persistence
 
             if (!_lookup.TryGetValue(evt.EventId, out var existing))
             {
-                // 新增
+                // 新增：沿著 LinkedEventId 往回追溯源頭
+                var root = ResolveRoot(evt, eventLookup ?? EventLookup, Log);
                 var entry = new PlayerHeardEntry
                 {
                     EventId = evt.EventId,
@@ -283,6 +431,10 @@ namespace VividWorld.Core.Persistence
                     Participants = evt.Participants != null
                         ? new Dictionary<string, string>(evt.Participants, StringComparer.Ordinal)
                         : new Dictionary<string, string>(StringComparer.Ordinal),
+                    RootEventId = root.rootEventId,
+                    RootType = root.rootType,
+                    RootDay = root.rootDay,
+                    RootParticipants = root.rootParticipants,
                     DramaWeight = evt.DramaWeight,
                     DramaScale = evt.DramaScale,
                     PlayerHop = playerEntry.Hop,
@@ -496,7 +648,7 @@ namespace VividWorld.Core.Persistence
                 }
 
                 var facts = factsFor(evt, playerEntry);
-                bool recorded = Record(evt, playerEntry, facts, day);
+                bool recorded = Record(evt, playerEntry, facts, day, load);
                 if (recorded)
                 {
                     result.Added++;
@@ -504,6 +656,116 @@ namespace VividWorld.Core.Persistence
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// 舊紀錄補源頭：先試事件庫，查不到就沿著紀錄裡其他筆的 LinkedEventId 走，再不行就以自己為源頭。
+        /// 查得到的寫回紀錄（只加欄位），印出一行統計。
+        /// </summary>
+        public RootBackfillStats EnsureRoots(Func<string, WorldEvent?>? eventLookup = null)
+        {
+            var lookup = eventLookup ?? EventLookup;
+            var stats = new RootBackfillStats();
+            bool anyChanged = false;
+
+            foreach (var entry in _log.Entries)
+            {
+                if (entry == null || !string.IsNullOrEmpty(entry.RootEventId)) continue;
+
+                bool resolved = false;
+
+                // 方式一：查事件庫
+                if (lookup != null)
+                {
+                    var evt = lookup(entry.EventId);
+                    if (evt != null)
+                    {
+                        var root = ResolveRoot(evt, lookup, Log);
+                        entry.RootEventId = root.rootEventId;
+                        entry.RootType = root.rootType;
+                        entry.RootDay = root.rootDay;
+                        entry.RootParticipants = root.rootParticipants;
+                        stats.FromEventStore++;
+                        resolved = true;
+                    }
+                    else if (!string.IsNullOrEmpty(entry.LinkedEventId))
+                    {
+                        var linkedEvt = lookup(entry.LinkedEventId!);
+                        if (linkedEvt != null)
+                        {
+                            var root = ResolveRoot(linkedEvt, lookup, Log);
+                            entry.RootEventId = root.rootEventId;
+                            entry.RootType = root.rootType;
+                            entry.RootDay = root.rootDay;
+                            entry.RootParticipants = root.rootParticipants;
+                            stats.FromEventStore++;
+                            resolved = true;
+                        }
+                    }
+                }
+
+                // 方式二：沿紀錄裡其他筆的 LinkedEventId 走
+                if (!resolved && !string.IsNullOrEmpty(entry.LinkedEventId))
+                {
+                    int hops = 0;
+                    var visited = new HashSet<string>(StringComparer.Ordinal) { entry.EventId };
+                    PlayerHeardEntry curr = entry;
+
+                    while (!string.IsNullOrEmpty(curr.LinkedEventId) && hops < 5)
+                    {
+                        string nextId = curr.LinkedEventId!;
+                        if (visited.Contains(nextId)) break;
+                        visited.Add(nextId);
+
+                        if (_lookup.TryGetValue(nextId, out var parentEntry))
+                        {
+                            curr = parentEntry;
+                            hops++;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    if (curr != entry)
+                    {
+                        entry.RootEventId = !string.IsNullOrEmpty(curr.RootEventId) ? curr.RootEventId : curr.EventId;
+                        entry.RootType = !string.IsNullOrEmpty(curr.RootType) ? curr.RootType : curr.Type;
+                        entry.RootDay = curr.RootDay > 0 ? curr.RootDay : curr.Day;
+                        entry.RootParticipants = curr.RootParticipants != null && curr.RootParticipants.Count > 0
+                            ? new Dictionary<string, string>(curr.RootParticipants, StringComparer.Ordinal)
+                            : new Dictionary<string, string>(curr.Participants ?? new(), StringComparer.Ordinal);
+                        stats.FromHeardLog++;
+                        resolved = true;
+                    }
+                }
+
+                // 方式三：以自己為源頭
+                if (!resolved)
+                {
+                    entry.RootEventId = entry.EventId;
+                    entry.RootType = entry.Type ?? string.Empty;
+                    entry.RootDay = entry.Day;
+                    entry.RootParticipants = entry.Participants != null
+                        ? new Dictionary<string, string>(entry.Participants, StringComparer.Ordinal)
+                        : new Dictionary<string, string>(StringComparer.Ordinal);
+                    stats.AsSelf++;
+                    resolved = true;
+                }
+
+                stats.TotalBackfilled++;
+                anyChanged = true;
+            }
+
+            if (anyChanged)
+            {
+                IsDirty = true;
+                Flush();
+            }
+
+            Log?.Invoke(Presentation.ChronicleLogFormatter.FormatRootBackfill(stats.TotalBackfilled, stats.FromEventStore, stats.FromHeardLog, stats.AsSelf));
+            return stats;
         }
 
         public bool Flush()

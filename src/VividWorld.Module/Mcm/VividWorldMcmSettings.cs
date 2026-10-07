@@ -47,8 +47,8 @@ namespace VividWorld.Mcm
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Interface}Interface", GroupOrder = 1)]
         public string SnapshotManagerHotkey { get; set; } = "F9";
 
-        [SettingPropertyInteger("{=VividWorld_MCM_ChronicleMaxEntries}Max entries shown", 1, 200, "0", Order = 2, RequireRestart = false,
-            HintText = "{=VividWorld_MCM_ChronicleMaxEntriesHint}Maximum number of recent rumor entries shown in the 'What you have heard' window.")]
+        [SettingPropertyInteger("{=VividWorld_MCM_ChronicleMaxEntries}Max stories shown", 1, 200, "0", Order = 2, RequireRestart = false,
+            HintText = "{=VividWorld_MCM_ChronicleMaxEntriesHint}Maximum number of stories shown in the 'What you have heard' window. Follow-ups and different accounts of the same story are grouped together and count as one.")]
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Interface}Interface", GroupOrder = 1)]
         public int ChronicleMaxEntries { get; set; } = 50;
 
@@ -66,13 +66,13 @@ namespace VividWorld.Mcm
 
         // ── Group 3: Dialogue ───────────────────────────────────────────────────────
 
-        [SettingPropertyInteger("{=VividWorld_MCM_AskRelationGate}Ask rumor relation gate", -100, 100, "0", Order = 2, RequireRestart = false,
+        [SettingPropertyInteger("{=VividWorld_MCM_AskRelationGate}Relation needed to ask for news", -100, 100, "0", Order = 2, RequireRestart = false,
             HintText = "{=VividWorld_MCM_AskRelationGateHint}Minimum relation required before an NPC is willing to answer your inquiries about news.")]
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Dialogue}Dialogue", GroupOrder = 3)]
         public int AskRelationGate { get; set; } = 0;
 
-        [SettingPropertyFloatingInteger("{=VividWorld_MCM_AskWillingnessThreshold}Ask willingness threshold", -20f, 40f, "0.0", Order = 3, RequireRestart = false,
-            HintText = "{=VividWorld_MCM_AskWillingnessThresholdHint}The threshold a lord must clear before he will answer you. The score weighs his opinion of you together with his character (generosity and honour add, a calculating nature subtracts).")]
+        [SettingPropertyFloatingInteger("{=VividWorld_MCM_AskWillingnessThreshold}Willingness needed to answer", -20f, 40f, "0.0", Order = 3, RequireRestart = false,
+            HintText = "{=VividWorld_MCM_AskWillingnessThresholdHint}The threshold a lord must clear before he will answer you. The score weighs his opinion of you together with his character (generosity and honor add, a calculating nature subtracts).")]
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Dialogue}Dialogue", GroupOrder = 3)]
         public float AskWillingnessThreshold { get; set; } = 5.0f;
 
@@ -86,6 +86,11 @@ namespace VividWorld.Mcm
             HintText = "{=VividWorld_MCM_SharesPerHeroPerDayHint}How many pieces of news the same person will share with you in one day, counting both what they bring up on their own and what you ask them about. Set to 0 for no limit.")]
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Dialogue}Dialogue", GroupOrder = 3)]
         public int SharesPerHeroPerDay { get; set; } = 1;
+
+        [SettingPropertyInteger("{=VividWorld_MCM_ProbesPerHeroPerDay}Questions per person per day", 1, 10, "0", Order = 5, RequireRestart = false,
+            HintText = "{=VividWorld_MCM_ProbesPerHeroPerDayHint}How many times a day the same person will let you ask them about something. This is counted separately from the news they share with you each day.")]
+        [SettingPropertyGroup("{=VividWorld_MCM_Group_Dialogue}Dialogue", GroupOrder = 3)]
+        public int ProbesPerHeroPerDay { get; set; } = 1;
 
         // ── Group 4: Consequences ───────────────────────────────────────────────────
 
@@ -166,5 +171,17 @@ namespace VividWorld.Mcm
             HintText = "{=VividWorld_MCM_PushLanguageHint}The language Vivid World uses when handing the rumors an NPC remembers to AI dialogue mods. English: this mod's own English wording (recommended). Game language: your current interface language. Names of people and places always follow the game interface.")]
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Ai}AI Integration", GroupOrder = 8)]
         public Dropdown<string> PushLanguage { get; set; } = new Dropdown<string>(McmChoiceLists.PushLanguages, 0);
+
+        // ── Group 9: False Rumors ───────────────────────────────────────────────────
+
+        [SettingPropertyBool("{=VividWorld_MCM_FalseRumorsEnabled}False rumors", Order = 0, RequireRestart = false,
+            HintText = "{=VividWorld_MCM_FalseRumorsEnabledHint}When enabled, lords will say things behind others' backs that never happened, so the news you hear may not be true. Once disabled, no one starts new ones, but those already going around keep spreading.")]
+        [SettingPropertyGroup("{=VividWorld_MCM_Group_FalseRumors}Rumors of Uncertain Truth", GroupOrder = 9)]
+        public bool FalseRumorsEnabled { get; set; } = true;
+
+        [SettingPropertyFloatingInteger("{=VividWorld_MCM_FalseRumorsMaxPerDay}Max false rumors per day", 0f, 5f, "0.0", Order = 1, RequireRestart = false,
+            HintText = "{=VividWorld_MCM_FalseRumorsMaxPerDayHint}The most new false rumors that can appear worldwide each day. Set to 0 for no new ones.")]
+        [SettingPropertyGroup("{=VividWorld_MCM_Group_FalseRumors}Rumors of Uncertain Truth", GroupOrder = 9)]
+        public float FalseRumorsMaxPerDay { get; set; } = 0.8f;
     }
 }

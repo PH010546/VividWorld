@@ -34,7 +34,8 @@ namespace VividWorld.Core.Dialogue
         LeakedSecretCautiousStranger, // 走漏的秘密：謹慎的人只跟熟人講
         SecretHolderNotWilling, // 秘密當事人意願未過秘密線
         NotCloselyRelated,   // 主動講/熟人問：不屬於三類切身相關之一
-        NotBigNews           // 被問：份量未達大事門檻
+        NotBigNews,          // 被問：份量未達大事門檻
+        HeldBackShameful     // 醜事關係表判定不講給玩家
     }
 
     public sealed class AskDecision

@@ -732,6 +732,178 @@ namespace VividWorld.Core.Tests
             Assert.Equal(OpinionSkipReason.DailyBudgetExhausted, result.Exclusions[0].Reason);
         }
 
+        [Fact]
+        public void Budget_Refund_DecreasesUsed_AndReturnsActualRefunded()
+        {
+            var budget = new DailyRelationBudget();
+            budget.Consume("hero1", 4.0);
+            Assert.Equal(4.0, budget.Used("hero1"), 4);
+
+            double refunded = budget.Refund("hero1", 1.5);
+            Assert.Equal(1.5, refunded, 4);
+            Assert.Equal(2.5, budget.Used("hero1"), 4);
+            Assert.Equal(3.5, budget.Remaining("hero1", 6.0), 4);
+
+            // 負數自動取絕對值
+            double refundedNeg = budget.Refund("hero1", -1.0);
+            Assert.Equal(1.0, refundedNeg, 4);
+            Assert.Equal(1.5, budget.Used("hero1"), 4);
+            Assert.Equal(4.5, budget.Remaining("hero1", 6.0), 4);
+        }
+
+        [Fact]
+        public void Budget_Refund_ClampsAtZero_NeverNegative()
+        {
+            var budget = new DailyRelationBudget();
+            budget.Consume("hero1", 2.0);
+
+            // 超額退回：夾至 0，回傳實際退回量 2.0
+            double refunded = budget.Refund("hero1", 5.0);
+            Assert.Equal(2.0, refunded, 4);
+            Assert.Equal(0.0, budget.Used("hero1"), 4);
+            Assert.Equal(6.0, budget.Remaining("hero1", 6.0), 4);
+
+            // 已為 0 時再退：回傳 0.0，維持 0.0
+            double refundedAgain = budget.Refund("hero1", 3.0);
+            Assert.Equal(0.0, refundedAgain, 4);
+            Assert.Equal(0.0, budget.Used("hero1"), 4);
+        }
+
+        [Fact]
+        public void Budget_Refund_AcrossDayBoundary_DoesNotAffectNewDay()
+        {
+            var budget = new DailyRelationBudget();
+            budget.Advance(1.2);
+            budget.Consume("hero1", 4.0);
+
+            // 跨日後額度歸零
+            budget.Advance(2.1);
+            Assert.Equal(0.0, budget.Used("hero1"), 4);
+
+            // 跨日後退回昨日額度不影響今日
+            double refunded = budget.Refund("hero1", 4.0);
+            Assert.Equal(0.0, refunded, 4);
+            Assert.Equal(0.0, budget.Used("hero1"), 4);
+            Assert.Equal(6.0, budget.Remaining("hero1", 6.0), 4);
+        }
+
+        [Fact]
+        public void Budget_CanRefundImpact_PersonalSameDay_ReturnsTrue()
+        {
+            var impact = new RelationImpact
+            {
+                Scope = GrudgeScope.Personal,
+                AppliedDay = 10.2,
+                Requested = -1.58
+            };
+
+            Assert.True(DailyRelationBudget.CanRefundImpact(impact, 10.8, out var reason));
+            Assert.Null(reason);
+        }
+
+        [Fact]
+        public void Budget_CanRefundImpact_ClanScope_ReturnsFalseWithClanLevelReason()
+        {
+            var impact = new RelationImpact
+            {
+                Scope = GrudgeScope.Clan,
+                AppliedDay = 10.2,
+                Requested = -1.58
+            };
+
+            Assert.False(DailyRelationBudget.CanRefundImpact(impact, 10.8, out var reason));
+            Assert.Equal("clan-level", reason);
+        }
+
+        [Fact]
+        public void Budget_CanRefundImpact_EarlierDay_ReturnsFalseWithEarlierDayReason()
+        {
+            var impact = new RelationImpact
+            {
+                Scope = GrudgeScope.Personal,
+                AppliedDay = 9.8,
+                Requested = -1.58
+            };
+
+            Assert.False(DailyRelationBudget.CanRefundImpact(impact, 10.2, out var reason));
+            Assert.Equal("applied on an earlier day", reason);
+        }
+
+        [Fact]
+        public void Budget_BoerExample_RefundRestoresBudgetAllowingFullGrudges()
+        {
+            var budget = new DailyRelationBudget();
+            const double cap = 6.0;
+            const double day = 91120.0;
+            string boer = "hero_boer";
+            budget.Advance(day);
+
+            // 1. 波爾對查莉婭 -1.58（額度用掉 1.58）
+            budget.Consume(boer, 1.58);
+            Assert.Equal(1.58, budget.Used(boer), 4);
+            Assert.Equal(4.42, budget.Remaining(boer, cap), 4);
+
+            var impact = new RelationImpact
+            {
+                AboutHeroId = "hero_chaliya",
+                Requested = -1.58,
+                Delta = -2,
+                Scope = GrudgeScope.Personal,
+                Source = GrudgeSource.Rumor,
+                AppliedDay = day
+            };
+
+            // 2. 改成不信、撤回 -> 退回 1.58
+            Assert.True(DailyRelationBudget.CanRefundImpact(impact, day, out var reason));
+            Assert.Null(reason);
+            double refunded = budget.Refund(boer, Math.Abs(impact.Requested));
+            Assert.Equal(1.58, refunded, 4);
+            Assert.Equal(0.0, budget.Used(boer), 4);
+            Assert.Equal(6.0, budget.Remaining(boer, cap), 4);
+
+            // 3. 記恨埃爾貢 -3（用到 3）
+            double grudge1 = -3.0;
+            double rem1 = budget.Remaining(boer, cap);
+            double req1 = Math.Max(-rem1, Math.Min(rem1, grudge1));
+            Assert.Equal(-3.0, req1, 4);
+            budget.Consume(boer, Math.Abs(req1));
+            Assert.Equal(3.0, budget.Used(boer), 4);
+            Assert.Equal(3.0, budget.Remaining(boer, cap), 4);
+
+            // 4. 下一句該記恨 -2.5，剩 3，記滿 -2.5（未退回時只剩 1.42 會被夾成 -1.42）
+            double grudge2 = -2.5;
+            double rem2 = budget.Remaining(boer, cap);
+            double req2 = Math.Max(-rem2, Math.Min(rem2, grudge2));
+            Assert.Equal(-2.5, req2, 4);
+            budget.Consume(boer, Math.Abs(req2));
+            Assert.Equal(5.5, budget.Used(boer), 4);
+            Assert.Equal(0.5, budget.Remaining(boer, cap), 4);
+        }
+
+        [Fact]
+        public void GrudgeLogFormatter_FormatRetractionSuffix_MatchesExactPattern()
+        {
+            // 1. 退回正數
+            string s1 = GrudgeLogFormatter.FormatRetractionSuffix(1.58, 1.58, 0.0);
+            Assert.Equal(", refunded today 1.58 (daily used before 1.58 -> after 0)", s1);
+
+            // 2. 前一日未退
+            string s2 = GrudgeLogFormatter.FormatRetractionSuffix(0.0, 0.0, 0.0, new[] { "applied on an earlier day" });
+            Assert.Equal(", refunded today 0 (applied on an earlier day)", s2);
+
+            // 3. 家族層級未退
+            string s3 = GrudgeLogFormatter.FormatRetractionSuffix(0.0, 0.0, 0.0, new[] { "clan-level" });
+            Assert.Equal(", refunded today 0 (clan-level)", s3);
+
+            // 4. 多筆原因
+            string s4 = GrudgeLogFormatter.FormatRetractionSuffix(0.0, 0.0, 0.0, new[] { "applied on an earlier day", "clan-level" });
+            Assert.Equal(", refunded today 0 (applied on an earlier day, clan-level)", s4);
+
+            // 5. 無原因或未撤回
+            string s5 = GrudgeLogFormatter.FormatRetractionSuffix(0.0, 0.0, 0.0);
+            Assert.Equal(", refunded today 0", s5);
+        }
+
         // -------------------------------------------------------------
         // Group 5: Catalog Template Validation (6+ tests)
         // -------------------------------------------------------------
@@ -1023,7 +1195,7 @@ namespace VividWorld.Core.Tests
                 ["advice_given_freely"] = new[] { ("veteran", 5.0) },
                 ["advice_brushed_off"] = new[] { ("veteran", -2.0) },
                 ["advice_mocked"] = new[] { ("veteran", -6.0) },
-                ["tavern_boast_told"] = new[] { ("speaker", -3.0) },
+                ["tavern_boast_told"] = new[] { ("speaker", 2.0), ("speaker", -3.0) },
                 ["tavern_confidence"] = new[] { ("speaker", -4.0) },
                 ["tavern_sour_words"] = new[] { ("speaker", -5.0) },
                 ["victory_credit_claimed"] = new[] { ("claimant", -6.0) },

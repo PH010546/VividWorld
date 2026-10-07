@@ -20,6 +20,68 @@ namespace VividWorld.Core.Presentation
                 heroId, day, stats.Returned, stats.TotalKnown, maxEntries, stats.HiddenFuture);
         }
 
+        /// <summary>
+        /// 紀事視窗開啟時的一行統計：
+        /// 幾筆紀錄、幾個區塊、被上限擋掉幾個、標了有矛盾的幾個、標題退回不帶名字的幾個。
+        /// </summary>
+        public static string FormatOpenBlocks(string heroId, double day, ChronicleStats stats, int maxEntries)
+        {
+            if (stats == null || stats.TotalKnown == 0)
+            {
+                return string.Format(CultureInfo.InvariantCulture,
+                    "Chronicle opened for {0} on day {1:0.0}: nothing known yet (0 known)",
+                    heroId, day);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture,
+                "Chronicle opened for {0} on day {1:0.0}: {2} record(s), {3} block(s) shown of {4} (max {5}, capped out {6}), {7} conflict(s), {8} fallback title(s), hidden future {9}",
+                heroId, day, stats.TotalKnown, stats.Returned, stats.TotalBlocks, maxEntries, stats.CappedOutBlocks, stats.ConflictBlocks, stats.FallbackTitleBlocks, stats.HiddenFuture);
+        }
+
+        /// <summary>
+        /// 每個區塊印一行：
+        /// 源頭、標題用哪一句（或為什麼退回）、幾件事、各幾則、有矛盾與否與原因（哪兩則）。
+        /// </summary>
+        public static string FormatBlock(
+            string rootEventId,
+            string rootType,
+            string headlineText,
+            string headlineNote,
+            int mattersCount,
+            string mattersDetail,
+            bool hasConflict,
+            string? conflictReason)
+        {
+            string conflictStr = hasConflict ? ("yes (" + (conflictReason ?? "unspecified") + ")") : "no";
+            return string.Format(CultureInfo.InvariantCulture,
+                "Chronicle block {0} ({1}): title '{2}' ({3}), {4} matter(s) [{5}], conflict: {6}",
+                rootEventId, rootType, headlineText, headlineNote, mattersCount, mattersDetail, conflictStr);
+        }
+
+        public static string FormatBlock(
+            string rootEventId,
+            string rootType,
+            string headlineText,
+            string headlineNote,
+            IReadOnlyList<int> matterTellingsCounts,
+            bool hasConflict,
+            string? conflictReason)
+        {
+            int mCount = matterTellingsCounts?.Count ?? 0;
+            string detail = matterTellingsCounts != null
+                ? string.Join(", ", matterTellingsCounts)
+                : string.Empty;
+            return FormatBlock(rootEventId, rootType, headlineText, headlineNote, mCount, detail, hasConflict, conflictReason);
+        }
+
+        /// <summary>舊紀錄補源頭的統計。</summary>
+        public static string FormatRootBackfill(int total, int fromStore, int fromHeardLog, int asSelf)
+        {
+            return string.Format(CultureInfo.InvariantCulture,
+                "Chronicle root backfill: {0} entries backfilled ({1} from event store, {2} from heard log, {3} as self)",
+                total, fromStore, fromHeardLog, asSelf);
+        }
+
         /// <summary>每一筆顯示出來的紀事印一行：有幾份來源，每份是誰、手數、碎片數、有沒有感想、是照原句重組還是照舊組事實。</summary>
         /// <param name="headlineNote">標題用的是帶名字的版本還是退回的版本（與原因）；有給就接在行尾。</param>
         public static string FormatEntrySources(string eventId, IReadOnlyList<ChronicleSource>? sources, string? headlineNote)

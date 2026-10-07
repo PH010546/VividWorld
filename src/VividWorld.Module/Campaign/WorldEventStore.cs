@@ -141,7 +141,10 @@ namespace VividWorld.Campaign
                 Participants = new Dictionary<string, string>(submission.Participants),
                 Facts = new List<Fact>(submission.Facts),
                 KnownBy = new List<KnownByEntry>(),
-                State = new RumorState()
+                State = new RumorState(),
+                CaptorArmyLeaderHeroIds = submission.CaptorArmyLeaderHeroIds != null ? new List<string>(submission.CaptorArmyLeaderHeroIds) : null,
+                Fabricated = submission.Fabricated,
+                OriginatorHeroId = submission.OriginatorHeroId
             };
 
             ModLog.Info($"WorldEventStore: {mintedId} ({submission.Type}) {DramaScales.Describe(evt.DramaWeight, evt.DramaScale)}, from {dramaSource}");
@@ -174,7 +177,12 @@ namespace VividWorld.Campaign
         internal static void TriggerPublicEventOccurred(WorldEvent evt)
         {
             if (evt == null) return;
-            string detailJson = VividJson.Write(evt);
+            if (MadeUpTalk.IsHearsayOnly(evt))
+            {
+                ModLog.Info($"EventOccurred skipped for hearsay-only made-up talk: {evt.EventId} ({evt.Type})");
+                return;
+            }
+            string detailJson = PublicEventSanitizer.SanitizeJson(evt);
             string summary = evt.Type;
             foreach (var kvp in evt.Participants)
             {

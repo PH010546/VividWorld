@@ -589,6 +589,83 @@
           "key": "VividWorld_Feeling_Pending_Owe_1"
         }
       ]
+    },
+    "shabby": {
+      "close": [
+        {
+          "key": "VividWorld_Feeling_Shabby_Close_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Shabby_Close_2"
+        }
+      ],
+      "neutral": [
+        {
+          "key": "VividWorld_Feeling_Shabby_Neutral_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Shabby_Neutral_2",
+          "trait": "Calculating+"
+        }
+      ],
+      "hostile": [
+        {
+          "key": "VividWorld_Feeling_Shabby_Hostile_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Shabby_Hostile_2"
+        }
+      ],
+      "sore": [
+        {
+          "key": "VividWorld_Feeling_Shabby_Sore_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Shabby_Sore_2"
+        }
+      ],
+      "owe": [
+        {
+          "key": "VividWorld_Feeling_Shabby_Owe_1"
+        }
+      ]
+    },
+    "wronged": {
+      "close": [
+        {
+          "key": "VividWorld_Feeling_Wronged_Close_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Wronged_Close_2"
+        }
+      ],
+      "neutral": [
+        {
+          "key": "VividWorld_Feeling_Wronged_Neutral_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Wronged_Neutral_2",
+          "trait": "Calculating+"
+        }
+      ],
+      "hostile": [
+        {
+          "key": "VividWorld_Feeling_Wronged_Hostile_1"
+        },
+        {
+          "key": "VividWorld_Feeling_Wronged_Hostile_2"
+        }
+      ],
+      "sore": [
+        {
+          "key": "VividWorld_Feeling_Wronged_Sore_1"
+        }
+      ],
+      "owe": [
+        {
+          "key": "VividWorld_Feeling_Wronged_Owe_1"
+        }
+      ]
     }
   }
 }

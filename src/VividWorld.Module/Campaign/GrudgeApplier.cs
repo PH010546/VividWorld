@@ -31,6 +31,14 @@ namespace VividWorld.Campaign
         public bool ObserverIsParticipant { get; set; }
         public double FullAmount { get; set; }
         public double AlreadyApplied { get; set; }
+
+        // 聽的人反應多大（已經乘進 FullAmount），日誌用
+        public double TraitMultiplier { get; set; } = 1.0;
+        public string? TraitName { get; set; }
+        public int? TraitLevel { get; set; }
+        public double RelationMultiplier { get; set; } = 1.0;
+        public string RelationReason { get; set; } = ReactionMultipliers.ReasonNone;
+        public string ReceiverHeroId { get; set; } = string.Empty;
     }
 
     internal static class GrudgeApplier
@@ -218,7 +226,10 @@ namespace VividWorld.Campaign
                         ModLog.Info(GrudgeLogFormatter.FormatOpinionAppliedLedgerOnly(
                             req.FromHeroId, req.AboutHeroId, req.ToRole, evt.EventId,
                             req.TemplateAmount, req.ObserverHop, req.HopConfidence, req.ObserverIsParticipant, req.WitnessMultiplier,
-                            req.FullAmount, req.AlreadyApplied, req.Requested));
+                            req.FullAmount, req.AlreadyApplied, req.Requested,
+                            GrudgeLogFormatter.FormatReactionSuffix(
+                                req.TraitMultiplier, req.TraitName, req.TraitLevel,
+                                req.RelationMultiplier, req.RelationReason, req.ReceiverHeroId)));
                     }
                     else
                     {
@@ -263,7 +274,10 @@ namespace VividWorld.Campaign
                             req.FromHeroId, req.AboutHeroId, req.ToRole, evt.EventId,
                             req.TemplateAmount, req.ObserverHop, req.HopConfidence, req.ObserverIsParticipant, req.WitnessMultiplier,
                             req.FullAmount, req.AlreadyApplied, req.Requested,
-                            before, after, delta));
+                            before, after, delta,
+                            GrudgeLogFormatter.FormatReactionSuffix(
+                                req.TraitMultiplier, req.TraitName, req.TraitLevel,
+                                req.RelationMultiplier, req.RelationReason, req.ReceiverHeroId)));
                     }
                     else
                     {

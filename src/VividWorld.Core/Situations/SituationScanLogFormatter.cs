@@ -110,6 +110,31 @@ namespace VividWorld.Core.Situations
                 string.Join(", ", devOnlySituationIds));
         }
 
+        public static string? FormatSkippedAfterEvent(IReadOnlyList<string> afterEventSituationIds)
+        {
+            if (afterEventSituationIds == null || afterEventSituationIds.Count == 0) return null;
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "  scan skipped {0} afterEvent situation(s): {1}",
+                afterEventSituationIds.Count,
+                string.Join(", ", afterEventSituationIds));
+        }
+
+        public static string? FormatPerSituationQuotas(IReadOnlyList<(string SituationId, QuotaRoll Roll, int Candidates, int Triggered)> perSituationStats)
+        {
+            if (perSituationStats == null || perSituationStats.Count == 0) return null;
+            var parts = perSituationStats.Select(s =>
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0}: quota {1} ({2}), {3} candidate(s), triggered {4}",
+                    s.SituationId,
+                    s.Roll.Quota,
+                    FormatQuotaDetail(s.Roll),
+                    s.Candidates,
+                    s.Triggered));
+            return "  per-situation quotas: " + string.Join("; ", parts);
+        }
+
         public static string FormatNearMiss(
             string situationId,
             string settlementId,

@@ -16,7 +16,7 @@
     },
     "knowingRoles": [],
     "opinion": [
-      { "about": "slighted", "amount": -2 }
+      { "about": "slighted", "amount": -2, "trait": "calculating", "receiver": "favored" }
     ],
     "facts": [
       {
@@ -44,7 +44,7 @@
         "id": "why",
         "category": "WHY",
         "textId": "VividWorld_Fact_SeatDisputeDemanded_Why",
-        "text": "as the head of {SLIGHTED.his} house, {SLIGHTED.he} should not sit below a member of another",
+        "text": "saying that, as the head of {SLIGHTED.his} house, {SLIGHTED.he} should not sit below a member of another",
         "vars": {},
         "fragility": 3
       },
@@ -77,7 +77,7 @@
       "slighted"
     ],
     "opinion": [
-      { "about": "slighted", "amount": 2 }
+      { "about": "slighted", "amount": 2, "trait": "calculating" }
     ],
     "facts": [
       {
@@ -128,7 +128,7 @@
     },
     "knowingRoles": [],
     "opinion": [
-      { "about": "slighted", "amount": 4 }
+      { "about": "slighted", "amount": 4, "trait": "generosity", "receiver": "favored" }
     ],
     "facts": [
       {
@@ -156,8 +156,10 @@
         "id": "outcome",
         "category": "OUTCOME",
         "textId": "VividWorld_Fact_SeatDisputeYielded_Outcome",
-        "text": "and raised a cup in their honor",
-        "vars": {},
+        "text": "and raised a cup to {FAVORED.him}",
+        "vars": {
+          "FAVORED": "hero:{FAVORED}"
+        },
         "fragility": 3
       }
     ]
@@ -181,7 +183,7 @@
     },
     "knowingRoles": [],
     "opinion": [
-      { "about": "slighted", "amount": -5 }
+      { "about": "slighted", "amount": -5, "trait": "calculating", "receiver": "host" }
     ],
     "facts": [
       {
@@ -234,7 +236,7 @@
     },
     "knowingRoles": [],
     "opinion": [
-      { "about": "veteran", "amount": 5 }
+      { "about": "veteran", "amount": 5, "trait": "generosity", "receiver": "student" }
     ],
     "facts": [
       {
@@ -285,7 +287,7 @@
     },
     "knowingRoles": [],
     "opinion": [
-      { "about": "veteran", "amount": -2 }
+      { "about": "veteran", "amount": -2, "trait": "generosity", "receiver": "student" }
     ],
     "facts": [
       {
@@ -348,7 +350,7 @@
     },
     "knowingRoles": [],
     "opinion": [
-      { "about": "veteran", "amount": -6 }
+      { "about": "veteran", "amount": -6, "trait": "mercy", "receiver": "student" }
     ],
     "facts": [
       {
@@ -394,7 +396,7 @@
   },
   {
     "type": "tavern_boast_told",
-    "headline": "A boast was told over the cups",
+    "headline": "A boast was told over drinks",
     "origin": "public",
     "dramaWeight": 1,
     "dramaScale": 10,
@@ -410,9 +412,11 @@
     "selfTell": {
       "speaker": "never"
     },
+    "madeUpBy": "speaker",
     "knowingRoles": [],
     "opinion": [
-      { "about": "speaker", "amount": -3 }
+      { "about": "speaker", "amount": 2, "trait": "valor", "when": "believed" },
+      { "about": "speaker", "amount": -3, "trait": "honor", "when": "disbelieved" }
     ],
     "facts": [
       {
@@ -449,7 +453,7 @@
   {
     "type": "tavern_confidence",
     "retired": true,
-    "headline": "A confidence was let slip over the cups",
+    "headline": "A private worry was let slip over drinks",
     "origin": "secret",
     "dramaWeight": 4,
     "dramaScale": 10,
@@ -481,7 +485,7 @@
         "id": "where",
         "category": "WHERE",
         "textId": "VividWorld_Fact_TavernConfidence_Where",
-        "text": "over cups in {SETTLEMENT}",
+        "text": "over drinks in {SETTLEMENT}",
         "vars": {
           "SETTLEMENT": "settlement:{SETTLEMENT}"
         },
@@ -500,7 +504,7 @@
   },
   {
     "type": "tavern_sour_words",
-    "headline": "Sour words were spoken over the cups",
+    "headline": "Sour words were spoken over drinks",
     "origin": "public",
     "dramaWeight": 4,
     "dramaScale": 10,
@@ -518,14 +522,14 @@
     },
     "knowingRoles": [],
     "opinion": [
-      { "about": "speaker", "amount": -5 }
+      { "about": "speaker", "amount": -5, "trait": "mercy", "receiver": "listener" }
     ],
     "facts": [
       {
         "id": "who",
         "category": "WHO",
         "textId": "VividWorld_Fact_TavernSourWords_Who",
-        "text": "{SPEAKER} said something to {LISTENER} over the cups, and {LISTENER}'s face changed on the spot",
+        "text": "{SPEAKER} said something to {LISTENER} over drinks, and {LISTENER}'s face changed on the spot",
         "vars": {
           "SPEAKER": "hero:{SPEAKER}",
           "LISTENER": "hero:{LISTENER}"
@@ -554,7 +558,7 @@
   },
   {
     "type": "tavern_good_word",
-    "headline": "A good word was spoken over the cups",
+    "headline": "A good word was spoken over drinks",
     "origin": "public",
     "dramaWeight": 3,
     "dramaScale": 10,
@@ -569,14 +573,14 @@
     },
     "knowingRoles": [],
     "opinion": [
-      { "about": "speaker", "amount": 4 }
+      { "about": "speaker", "amount": 4, "trait": "generosity", "receiver": "listener" }
     ],
     "facts": [
       {
         "id": "who",
         "category": "WHO",
         "textId": "VividWorld_Fact_TavernGoodWord_Who",
-        "text": "{SPEAKER} stood up for {LISTENER} against the mockery of the whole table",
+        "text": "{SPEAKER} stood up for {LISTENER} against the mockery at the table",
         "vars": {
           "SPEAKER": "hero:{SPEAKER}",
           "LISTENER": "hero:{LISTENER}"
@@ -623,7 +627,7 @@
     },
     "knowingRoles": [],
     "opinion": [
-      { "about": "claimant", "amount": -6 }
+      { "about": "claimant", "amount": -6, "trait": "honor", "receiver": "rival" }
     ],
     "facts": [
       {
@@ -675,7 +679,7 @@
     },
     "knowingRoles": [],
     "opinion": [
-      { "about": "claimant", "amount": 6 }
+      { "about": "claimant", "amount": 6, "trait": "generosity", "receiver": "rival" }
     ],
     "facts": [
       {
@@ -783,7 +787,7 @@
     },
     "knowingRoles": [],
     "opinion": [
-      { "about": "host", "amount": 3 }
+      { "about": "host", "amount": 3, "trait": "honor", "receiver": "rival" }
     ],
     "facts": [
       {
@@ -837,7 +841,7 @@
     },
     "knowingRoles": [],
     "opinion": [
-      { "about": "patron", "amount": 5 }
+      { "about": "patron", "amount": 5, "trait": "honor", "receiver": "aggrieved" }
     ],
     "facts": [
       {
@@ -888,7 +892,7 @@
     },
     "knowingRoles": [],
     "opinion": [
-      { "about": "patron", "amount": -4 }
+      { "about": "patron", "amount": -4, "trait": "honor", "receiver": "aggrieved" }
     ],
     "facts": [
       {
@@ -916,7 +920,7 @@
         "id": "why",
         "category": "WHY",
         "textId": "VividWorld_Fact_BrawlShieldedOwn_Why",
-        "text": "saying {PATRON.his} household answers to {PATRON.his} house and no other",
+        "text": "saying {PATRON.his} house deals with its own and it's no one else's business",
         "vars": {},
         "fragility": 3
       }
@@ -939,7 +943,7 @@
     },
     "knowingRoles": [],
     "opinion": [
-      { "about": "patron", "amount": -6 }
+      { "about": "patron", "amount": -6, "trait": "honor", "receiver": "aggrieved" }
     ],
     "facts": [
       {
@@ -1001,8 +1005,8 @@
       "patron"
     ],
     "opinion": [
-      { "about": "aggrieved", "amount": -2 },
-      { "about": "patron", "amount": -2 }
+      { "about": "aggrieved", "amount": -2, "trait": "honor" },
+      { "about": "patron", "amount": -2, "trait": "honor" }
     ],
     "facts": [
       {
@@ -1107,7 +1111,7 @@
     },
     "knowingRoles": [],
     "opinion": [
-      { "about": "challenged", "amount": -3 }
+      { "about": "challenged", "amount": -3, "trait": "valor", "receiver": "challenger" }
     ],
     "facts": [
       {
@@ -1188,6 +1192,1167 @@
         "textId": "VividWorld_Fact_WagerSecretStake_What",
         "text": "and neither of them would say what it was",
         "vars": {},
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "conduct_spoke_against_ruler",
+    "headline": "A lord spoke ill of the ruler in private",
+    "origin": "public",
+    "witnessSource": "none",
+    "dramaWeight": 6,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "speaker": "{SPEAKER}",
+      "listener": "{LISTENER}",
+      "ruler": "{RULER}"
+    },
+    "feelings": {
+      "speaker": "shabby",
+      "ruler": "wronged"
+    },
+    "selfTell": {
+      "speaker": "never",
+      "ruler": "never"
+    },
+    "knowingRoles": [
+      "speaker",
+      "listener"
+    ],
+    "opinion": [
+      { "about": "speaker", "amount": -6, "trait": "honor", "receiver": "ruler" }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_ConductSpokeAgainstRuler_Who",
+        "text": "{SPEAKER} said that {RULER} wasn't fit to sit on that throne",
+        "vars": {
+          "SPEAKER": "hero:{SPEAKER}",
+          "RULER": "hero:{RULER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_ConductSpokeAgainstRuler_Where",
+        "text": "at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2
+      },
+      {
+        "id": "context",
+        "category": "CONTEXT",
+        "textId": "VividWorld_Fact_ConductSpokeAgainstRuler_Context",
+        "text": "and said it to {LISTENER} in private",
+        "vars": {
+          "LISTENER": "hero:{LISTENER}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "conduct_mistreated_prisoner",
+    "headline": "A prisoner was mistreated",
+    "origin": "public",
+    "witnessSource": "triggerCaptorArmy",
+    "dramaWeight": 5,
+    "dramaScale": 10,
+    "linkedTemplateType": "hero_taken_prisoner",
+    "roles": {
+      "captor": "{CAPTOR}",
+      "prisoner": "{PRISONER}"
+    },
+    "feelings": {
+      "captor": "shabby",
+      "prisoner": "wronged"
+    },
+    "selfTell": {
+      "captor": "never"
+    },
+    "knowingRoles": [],
+    "opinion": [
+      { "about": "captor", "amount": -6, "trait": "mercy", "receiver": "prisoner" }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_ConductMistreatedPrisoner_Who",
+        "text": "{CAPTOR} chained {PRISONER} on the same line as the common prisoners",
+        "vars": {
+          "CAPTOR": "hero:{CAPTOR}",
+          "PRISONER": "hero:{PRISONER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_ConductMistreatedPrisoner_What",
+        "text": "driven along the whole way",
+        "vars": {},
+        "fragility": 2
+      },
+      {
+        "id": "context",
+        "category": "CONTEXT",
+        "textId": "VividWorld_Fact_ConductMistreatedPrisoner_Context",
+        "text": "fed on what the others left over",
+        "vars": {},
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "conduct_refused_aid",
+    "headline": "A comrade's plea for aid was refused",
+    "origin": "public",
+    "witnessSource": "none",
+    "dramaWeight": 4,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "asker": "{ASKER}",
+      "refuser": "{REFUSER}"
+    },
+    "feelings": {
+      "refuser": "shabby",
+      "asker": "wronged"
+    },
+    "selfTell": {
+      "refuser": "never"
+    },
+    "knowingRoles": [],
+    "opinion": [
+      { "about": "refuser", "amount": -4, "trait": "generosity", "receiver": "asker" }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_ConductRefusedAid_Who",
+        "text": "{ASKER} asked {REFUSER} for a loan of grain; {REFUSER} had grain on hand, yet didn't lend a single sack",
+        "vars": {
+          "ASKER": "hero:{ASKER}",
+          "REFUSER": "hero:{REFUSER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_ConductRefusedAid_Where",
+        "text": "at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2
+      },
+      {
+        "id": "why",
+        "category": "WHY",
+        "textId": "VividWorld_Fact_ConductRefusedAid_Why",
+        "text": "{REFUSER} said {REFUSER.he} was hard-pressed too",
+        "vars": {
+          "REFUSER": "hero:{REFUSER}"
+        },
+        "fragility": 3
+      },
+      {
+        "id": "context",
+        "category": "CONTEXT",
+        "textId": "VividWorld_Fact_ConductRefusedAid_Context",
+        "text": "{REFUSER}'s grain cart was standing right there in the courtyard, full to the brim",
+        "vars": {
+          "REFUSER": "hero:{REFUSER}"
+        },
+        "fragility": 2
+      }
+    ]
+  },
+  {
+    "type": "conduct_rash_capture",
+    "headline": "A rash pursuit ended in capture",
+    "origin": "public",
+    "witnessSource": "none",
+    "dramaWeight": 3,
+    "dramaScale": 10,
+    "linkedTemplateType": "hero_taken_prisoner",
+    "roles": {
+      "captor": "{CAPTOR}",
+      "prisoner": "{PRISONER}"
+    },
+    "feelings": {
+      "prisoner": "captured",
+      "captor": "victor"
+    },
+    "selfTell": {
+      "prisoner": "never"
+    },
+    "knowingRoles": [],
+    "opinion": [
+      { "about": "prisoner", "amount": -3, "trait": "calculating" }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_ConductRashCapture_Who",
+        "text": "{PRISONER} left {PRISONER.his} own troops behind to give chase, and that was how {CAPTOR} caught {PRISONER.him}",
+        "vars": {
+          "PRISONER": "hero:{PRISONER}",
+          "CAPTOR": "hero:{CAPTOR}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_ConductRashCapture_Where",
+        "text": "near {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": true
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_ConductRashCapture_What",
+        "text": "with only a few riders",
+        "vars": {},
+        "fragility": 3
+      },
+      {
+        "id": "context",
+        "category": "CONTEXT",
+        "textId": "VividWorld_Fact_ConductRashCapture_Context",
+        "text": "surrounded when {CAPTOR} wheeled around",
+        "vars": {
+          "CAPTOR": "hero:{CAPTOR}"
+        },
+        "fragility": 2
+      }
+    ]
+  },
+  {
+    "type": "conduct_poisoned",
+    "headline": "Foul play",
+    "origin": "secret",
+    "witnessSource": "none",
+    "dramaWeight": 8,
+    "dramaScale": 10,
+    "linkedTemplateType": "hero_died_of_old_age",
+    "roles": {
+      "poisoner": "{POISONER}",
+      "victim": "{VICTIM}"
+    },
+    "feelings": {
+      "poisoner": "executor",
+      "victim": "killed"
+    },
+    "knowingRoles": [
+      "poisoner"
+    ],
+    "opinion": [
+      { "about": "poisoner", "amount": -10, "trait": "honor", "receiver": "victim" }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_ConductPoisoned_Who",
+        "text": "{VICTIM} didn't die peacefully of old age; {POISONER} poisoned {VICTIM.him}",
+        "vars": {
+          "VICTIM": "hero:{VICTIM}",
+          "POISONER": "hero:{POISONER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_ConductPoisoned_What",
+        "text": "the poison was in the wine",
+        "vars": {},
+        "fragility": 2
+      },
+      {
+        "id": "context",
+        "category": "CONTEXT",
+        "textId": "VividWorld_Fact_ConductPoisoned_Context",
+        "text": "{POISONER} had sent that jug of wine",
+        "vars": {
+          "POISONER": "hero:{POISONER}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "talk_denied_spoke_against_ruler",
+    "headline": "A lord spoke ill of the ruler in private",
+    "origin": "public",
+    "dramaWeight": 6,
+    "dramaScale": 10,
+    "linkedTemplateType": "conduct_spoke_against_ruler",
+    "response": "denial",
+    "roles": {
+      "denier": "{DENIER}",
+      "ruler": "{RULER}"
+    },
+    "selfTell": {
+      "ruler": "never"
+    },
+    "feelings": {
+      "denier": "pending",
+      "ruler": "pending"
+    },
+    "knowingRoles": [
+      "denier"
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TalkDeniedSpokeAgainstRuler_Who",
+        "text": "{DENIER} came forward to clear up the rumor that {DENIER.he} had spoken ill of the ruler behind {RULER.his} back",
+        "vars": {
+          "DENIER": "hero:{DENIER}",
+          "RULER": "hero:{RULER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_TalkDeniedSpokeAgainstRuler_Where",
+        "text": "publicly at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": false
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_TalkDeniedSpokeAgainstRuler_What",
+        "text": "and said anyone who didn't believe it was welcome to go and ask {DENIER.him} face to face",
+        "vars": {
+          "DENIER": "hero:{DENIER}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "talk_denied_mistreated_prisoner",
+    "headline": "A prisoner was mistreated",
+    "origin": "public",
+    "dramaWeight": 5,
+    "dramaScale": 10,
+    "linkedTemplateType": "conduct_mistreated_prisoner",
+    "response": "denial",
+    "roles": {
+      "denier": "{DENIER}",
+      "prisoner": "{PRISONER}"
+    },
+    "selfTell": {
+      "prisoner": "never"
+    },
+    "feelings": {
+      "denier": "pending",
+      "prisoner": "pending"
+    },
+    "knowingRoles": [
+      "denier"
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TalkDeniedMistreatedPrisoner_Who",
+        "text": "{DENIER} came forward to clear up the rumor that {DENIER.he} had mistreated a prisoner",
+        "vars": {
+          "DENIER": "hero:{DENIER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_TalkDeniedMistreatedPrisoner_Where",
+        "text": "publicly at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": false
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_TalkDeniedMistreatedPrisoner_What",
+        "text": "and said anyone who didn't believe it was welcome to go and ask {DENIER.him} face to face",
+        "vars": {
+          "DENIER": "hero:{DENIER}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "talk_denied_refused_aid",
+    "headline": "A comrade's plea for aid was refused",
+    "origin": "public",
+    "dramaWeight": 4,
+    "dramaScale": 10,
+    "linkedTemplateType": "conduct_refused_aid",
+    "response": "denial",
+    "roles": {
+      "denier": "{DENIER}",
+      "asker": "{ASKER}"
+    },
+    "selfTell": {
+      "asker": "never"
+    },
+    "feelings": {
+      "denier": "pending",
+      "asker": "pending"
+    },
+    "knowingRoles": [
+      "denier"
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TalkDeniedRefusedAid_Who",
+        "text": "{DENIER} came forward to clear up the rumor that {DENIER.he} had refused a comrade's plea for aid",
+        "vars": {
+          "DENIER": "hero:{DENIER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_TalkDeniedRefusedAid_Where",
+        "text": "publicly at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": false
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_TalkDeniedRefusedAid_What",
+        "text": "and said anyone who didn't believe it was welcome to go and ask {DENIER.him} face to face",
+        "vars": {
+          "DENIER": "hero:{DENIER}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "talk_denied_rash_capture",
+    "headline": "A rash pursuit ended in capture",
+    "origin": "public",
+    "dramaWeight": 3,
+    "dramaScale": 10,
+    "linkedTemplateType": "conduct_rash_capture",
+    "response": "denial",
+    "roles": {
+      "denier": "{DENIER}",
+      "captor": "{CAPTOR}"
+    },
+    "selfTell": {
+      "captor": "never"
+    },
+    "feelings": {
+      "denier": "pending",
+      "captor": "pending"
+    },
+    "knowingRoles": [
+      "denier"
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TalkDeniedRashCapture_Who",
+        "text": "{DENIER} came forward to clear up the rumor that {DENIER.he} had been taken prisoner through {DENIER.his} own recklessness",
+        "vars": {
+          "DENIER": "hero:{DENIER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_TalkDeniedRashCapture_Where",
+        "text": "publicly at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": false
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_TalkDeniedRashCapture_What",
+        "text": "and said anyone who didn't believe it was welcome to go and ask {DENIER.him} face to face",
+        "vars": {
+          "DENIER": "hero:{DENIER}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "talk_denied_poisoned",
+    "headline": "Foul play",
+    "origin": "public",
+    "dramaWeight": 8,
+    "dramaScale": 10,
+    "linkedTemplateType": "conduct_poisoned",
+    "response": "denial",
+    "roles": {
+      "denier": "{DENIER}",
+      "victim": "{VICTIM}"
+    },
+    "selfTell": {
+      "victim": "never"
+    },
+    "feelings": {
+      "denier": "pending",
+      "victim": "pending"
+    },
+    "knowingRoles": [
+      "denier"
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TalkDeniedPoisoned_Who",
+        "text": "{DENIER} came forward to clear up the rumor that {DENIER.he} had poisoned {VICTIM}",
+        "vars": {
+          "DENIER": "hero:{DENIER}",
+          "VICTIM": "hero:{VICTIM}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_TalkDeniedPoisoned_Where",
+        "text": "publicly at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": false
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_TalkDeniedPoisoned_What",
+        "text": "and said anyone who didn't believe it was welcome to go and ask {DENIER.him} face to face",
+        "vars": {
+          "DENIER": "hero:{DENIER}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "talk_corrected_rash_capture_by_captor",
+    "headline": "A rash pursuit ended in capture",
+    "origin": "public",
+    "dramaWeight": 3,
+    "dramaScale": 10,
+    "linkedTemplateType": "conduct_rash_capture",
+    "response": "clarification",
+    "roles": {
+      "captor": "{CAPTOR}",
+      "prisoner": "{PRISONER}"
+    },
+    "selfTell": {
+      "prisoner": "never"
+    },
+    "feelings": {
+      "captor": "pending",
+      "prisoner": "pending"
+    },
+    "knowingRoles": [
+      "captor"
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TalkCorrectedRashCaptureByCaptor_Who",
+        "text": "{CAPTOR} came forward and said that {PRISONER} hadn't left {PRISONER.his} own troops behind, and was only captured by {CAPTOR.him} after fighting to the end",
+        "vars": {
+          "CAPTOR": "hero:{CAPTOR}",
+          "PRISONER": "hero:{PRISONER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_TalkCorrectedRashCaptureByCaptor_Where",
+        "text": "in front of everyone at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": false
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_TalkCorrectedRashCaptureByCaptor_What",
+        "text": "it was {CAPTOR.he} who captured {PRISONER}",
+        "vars": {
+          "CAPTOR": "hero:{CAPTOR}",
+          "PRISONER": "hero:{PRISONER}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "talk_corrected_rash_capture_by_bystander",
+    "headline": "A rash pursuit ended in capture",
+    "origin": "public",
+    "dramaWeight": 3,
+    "dramaScale": 10,
+    "linkedTemplateType": "conduct_rash_capture",
+    "response": "clarification",
+    "roles": {
+      "bystander": "{BYSTANDER}",
+      "captor": "{CAPTOR}",
+      "prisoner": "{PRISONER}"
+    },
+    "selfTell": {
+      "captor": "never",
+      "prisoner": "never"
+    },
+    "feelings": {
+      "bystander": "pending",
+      "captor": "pending",
+      "prisoner": "pending"
+    },
+    "knowingRoles": [
+      "bystander"
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TalkCorrectedRashCaptureByBystander_Who",
+        "text": "{BYSTANDER} came forward and said that {BYSTANDER.he} was there when {PRISONER} was captured, and {PRISONER} hadn't left {PRISONER.his} own troops behind",
+        "vars": {
+          "BYSTANDER": "hero:{BYSTANDER}",
+          "PRISONER": "hero:{PRISONER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_TalkCorrectedRashCaptureByBystander_Where",
+        "text": "in front of everyone at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": false
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_TalkCorrectedRashCaptureByBystander_What",
+        "text": "{PRISONER} still had {PRISONER.his} own men around {PRISONER.him}",
+        "vars": {
+          "PRISONER": "hero:{PRISONER}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "talk_corrected_mistreated_by_prisoner",
+    "headline": "A prisoner was mistreated",
+    "origin": "public",
+    "dramaWeight": 5,
+    "dramaScale": 10,
+    "linkedTemplateType": "conduct_mistreated_prisoner",
+    "response": "clarification",
+    "roles": {
+      "prisoner": "{PRISONER}",
+      "captor": "{CAPTOR}"
+    },
+    "selfTell": {
+      "captor": "never"
+    },
+    "feelings": {
+      "prisoner": "pending",
+      "captor": "pending"
+    },
+    "knowingRoles": [
+      "prisoner"
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TalkCorrectedMistreatedByPrisoner_Who",
+        "text": "{PRISONER} came forward and said that while {CAPTOR} held {PRISONER.him} prisoner, {CAPTOR.he} didn't chain {PRISONER.him} together with the common prisoners",
+        "vars": {
+          "PRISONER": "hero:{PRISONER}",
+          "CAPTOR": "hero:{CAPTOR}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_TalkCorrectedMistreatedByPrisoner_Where",
+        "text": "in front of everyone at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": false
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_TalkCorrectedMistreatedByPrisoner_What",
+        "text": "fed the same as {CAPTOR}'s own men",
+        "vars": {
+          "CAPTOR": "hero:{CAPTOR}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "talk_corrected_mistreated_by_comrade",
+    "headline": "A prisoner was mistreated",
+    "origin": "public",
+    "dramaWeight": 5,
+    "dramaScale": 10,
+    "linkedTemplateType": "conduct_mistreated_prisoner",
+    "response": "clarification",
+    "roles": {
+      "comrade": "{COMRADE}",
+      "captor": "{CAPTOR}",
+      "prisoner": "{PRISONER}"
+    },
+    "selfTell": {
+      "captor": "never",
+      "prisoner": "never"
+    },
+    "feelings": {
+      "comrade": "pending",
+      "captor": "pending",
+      "prisoner": "pending"
+    },
+    "knowingRoles": [
+      "comrade"
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TalkCorrectedMistreatedByComrade_Who",
+        "text": "{COMRADE} came forward and said that {COMRADE.he} was in the army too while {CAPTOR} held {PRISONER} prisoner, and {PRISONER} wasn't chained together with the common prisoners",
+        "vars": {
+          "COMRADE": "hero:{COMRADE}",
+          "CAPTOR": "hero:{CAPTOR}",
+          "PRISONER": "hero:{PRISONER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_TalkCorrectedMistreatedByComrade_Where",
+        "text": "in front of everyone at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": false
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_TalkCorrectedMistreatedByComrade_What",
+        "text": "fed the same as their own men",
+        "vars": {},
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "talk_corrected_refused_aid_by_asker",
+    "headline": "A comrade's plea for aid was refused",
+    "origin": "public",
+    "dramaWeight": 4,
+    "dramaScale": 10,
+    "linkedTemplateType": "conduct_refused_aid",
+    "response": "clarification",
+    "roles": {
+      "asker": "{ASKER}",
+      "refuser": "{REFUSER}"
+    },
+    "selfTell": {
+      "refuser": "never"
+    },
+    "feelings": {
+      "asker": "pending",
+      "refuser": "pending"
+    },
+    "knowingRoles": [
+      "asker"
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TalkCorrectedRefusedAidByAsker_Who",
+        "text": "{ASKER} came forward and said {ASKER.he} never asked {REFUSER} for a loan of grain",
+        "vars": {
+          "ASKER": "hero:{ASKER}",
+          "REFUSER": "hero:{REFUSER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_TalkCorrectedRefusedAidByAsker_Where",
+        "text": "in front of everyone at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": false
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_TalkCorrectedRefusedAidByAsker_What",
+        "text": "the talk that {REFUSER} had grain and wouldn't lend {ASKER.him} any has no truth to it",
+        "vars": {
+          "REFUSER": "hero:{REFUSER}",
+          "ASKER": "hero:{ASKER}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "talk_not_so_victory_credit_deferred",
+    "headline": "The credit for a victory was given away",
+    "origin": "public",
+    "dramaWeight": 3,
+    "dramaScale": 10,
+    "linkedTemplateType": "victory_credit_deferred",
+    "response": "clarification",
+    "roles": {
+      "rival": "{RIVAL}",
+      "claimant": "{CLAIMANT}"
+    },
+    "selfTell": {
+      "claimant": "never"
+    },
+    "feelings": {
+      "rival": "pending",
+      "claimant": "pending"
+    },
+    "knowingRoles": [
+      "rival"
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TalkNotSoVictoryCreditDeferred_Who",
+        "text": "{RIVAL} came forward to clear up the rumor that {CLAIMANT} had given {RIVAL.him} the credit",
+        "vars": {
+          "RIVAL": "hero:{RIVAL}",
+          "CLAIMANT": "hero:{CLAIMANT}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_TalkNotSoVictoryCreditDeferred_Where",
+        "text": "publicly at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": false
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_TalkNotSoVictoryCreditDeferred_What",
+        "text": "and said {RIVAL.he} had no idea where the talk had come from",
+        "vars": {
+          "RIVAL": "hero:{RIVAL}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "talk_not_so_advice_given_freely",
+    "headline": "A veteran taught what he knew",
+    "origin": "public",
+    "dramaWeight": 3,
+    "dramaScale": 10,
+    "linkedTemplateType": "advice_given_freely",
+    "response": "clarification",
+    "roles": {
+      "student": "{STUDENT}",
+      "veteran": "{VETERAN}"
+    },
+    "selfTell": {
+      "veteran": "never"
+    },
+    "feelings": {
+      "student": "pending",
+      "veteran": "pending"
+    },
+    "knowingRoles": [
+      "student"
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TalkNotSoAdviceGivenFreely_Who",
+        "text": "{STUDENT} came forward to clear up the rumor that {VETERAN} had taught {STUDENT.him} everything {VETERAN.he} knew",
+        "vars": {
+          "STUDENT": "hero:{STUDENT}",
+          "VETERAN": "hero:{VETERAN}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_TalkNotSoAdviceGivenFreely_Where",
+        "text": "publicly at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": false
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_TalkNotSoAdviceGivenFreely_What",
+        "text": "and said {STUDENT.he} had no idea where the talk had come from",
+        "vars": {
+          "STUDENT": "hero:{STUDENT}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "talk_not_so_brawl_man_handed_over",
+    "headline": "A retainer was handed over after a brawl",
+    "origin": "public",
+    "dramaWeight": 4,
+    "dramaScale": 10,
+    "linkedTemplateType": "brawl_man_handed_over",
+    "response": "clarification",
+    "roles": {
+      "aggrieved": "{AGGRIEVED}",
+      "patron": "{PATRON}"
+    },
+    "selfTell": {
+      "patron": "never"
+    },
+    "feelings": {
+      "aggrieved": "pending",
+      "patron": "pending"
+    },
+    "knowingRoles": [
+      "aggrieved"
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TalkNotSoBrawlManHandedOver_Who",
+        "text": "{AGGRIEVED} came forward to clear up the rumor that {PATRON} had handed over {PATRON.his} man and apologized to {AGGRIEVED.him}",
+        "vars": {
+          "AGGRIEVED": "hero:{AGGRIEVED}",
+          "PATRON": "hero:{PATRON}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_TalkNotSoBrawlManHandedOver_Where",
+        "text": "publicly at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": false
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_TalkNotSoBrawlManHandedOver_What",
+        "text": "and said {AGGRIEVED.he} had no idea where the talk had come from",
+        "vars": {
+          "AGGRIEVED": "hero:{AGGRIEVED}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "talk_not_so_seat_dispute_yielded",
+    "headline": "A seat was given up",
+    "origin": "public",
+    "dramaWeight": 3,
+    "dramaScale": 10,
+    "linkedTemplateType": "seat_dispute_yielded",
+    "response": "clarification",
+    "roles": {
+      "favored": "{FAVORED}",
+      "slighted": "{SLIGHTED}"
+    },
+    "selfTell": {
+      "slighted": "never"
+    },
+    "feelings": {
+      "favored": "pending",
+      "slighted": "pending"
+    },
+    "knowingRoles": [
+      "favored"
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TalkNotSoSeatDisputeYielded_Who",
+        "text": "{FAVORED} came forward to clear up the rumor that {SLIGHTED} had given up {SLIGHTED.his} seat to {FAVORED.him} at a feast",
+        "vars": {
+          "FAVORED": "hero:{FAVORED}",
+          "SLIGHTED": "hero:{SLIGHTED}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_TalkNotSoSeatDisputeYielded_Where",
+        "text": "publicly at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": false
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_TalkNotSoSeatDisputeYielded_What",
+        "text": "and said {FAVORED.he} had no idea where the talk had come from",
+        "vars": {
+          "FAVORED": "hero:{FAVORED}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "talk_not_so_tavern_good_word",
+    "headline": "A good word was spoken over drinks",
+    "origin": "public",
+    "dramaWeight": 3,
+    "dramaScale": 10,
+    "linkedTemplateType": "tavern_good_word",
+    "response": "clarification",
+    "roles": {
+      "listener": "{LISTENER}",
+      "speaker": "{SPEAKER}"
+    },
+    "selfTell": {
+      "speaker": "never"
+    },
+    "feelings": {
+      "listener": "pending",
+      "speaker": "pending"
+    },
+    "knowingRoles": [
+      "listener"
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TalkNotSoTavernGoodWord_Who",
+        "text": "{LISTENER} came forward to clear up the rumor that {SPEAKER} had stood up for {LISTENER.him} over drinks",
+        "vars": {
+          "LISTENER": "hero:{LISTENER}",
+          "SPEAKER": "hero:{SPEAKER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_TalkNotSoTavernGoodWord_Where",
+        "text": "publicly at {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2,
+        "optional": false
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_TalkNotSoTavernGoodWord_What",
+        "text": "and said {LISTENER.he} had no idea where the talk had come from",
+        "vars": {
+          "LISTENER": "hero:{LISTENER}"
+        },
         "fragility": 3
       }
     ]

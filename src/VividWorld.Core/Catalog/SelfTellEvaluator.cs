@@ -73,6 +73,16 @@ namespace VividWorld.Core.Catalog
                 return SelfTellResult.Allowed;
             }
 
+            // 編的話的參與者沒做過那件事，不會用「我」把它講出去；他們聽到之後怎麼回應另外處理
+            if (MadeUpTalk.IsHearsayOnly(evt))
+            {
+                string? participantRole = evt.RoleOf(speakerHeroId!);
+                if (participantRole != null)
+                {
+                    return SelfTellResult.Never(participantRole);
+                }
+            }
+
             // 秘密類事件不套「不講」：秘密外流就是靠知情的當事人說溜嘴
             if (evt.Origin == EventOrigin.Secret)
             {

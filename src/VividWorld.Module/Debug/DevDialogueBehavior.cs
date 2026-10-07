@@ -2,12 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.MountAndBlade;
 using System.IO;
 using VividWorld.Ai;
 using VividWorld.Campaign;
@@ -20,12 +25,14 @@ using VividWorld.Core.Grudges;
 using VividWorld.Core.Ingest;
 using VividWorld.Core.Memory;
 using VividWorld.Core.Persistence;
+using VividWorld.Core.Presentation;
 using VividWorld.Core.Rumors;
 using VividWorld.Core.Situations;
 using VividWorld.Core.Util;
 using VividWorld.Dialogue;
 using VividWorld.Patches;
 using VividWorld.Presentation;
+using VividWorld.UI;
 
 namespace VividWorld.Debug
 {
@@ -52,6 +59,14 @@ namespace VividWorld.Debug
         private const string TokenDevResultAct = "vividworld_dev_result_act";
         private const string TokenDevCaptureResult = "vividworld_dev_capture_result";
 
+        private const string TokenDevBeliefPrompt = "vividworld_dev_belief_prompt";
+        private const string TokenDevBelief = "vividworld_dev_belief";
+        private const string TokenDevResultBelief = "vividworld_dev_result_belief";
+
+        private const string TokenDevMadeUpPrompt = "vividworld_dev_madeup_prompt";
+        private const string TokenDevMadeUp = "vividworld_dev_madeup";
+        private const string TokenDevResultMadeUp = "vividworld_dev_result_madeup";
+
         private readonly VividWorldConfig _config;
         private readonly WorldEventStore _eventStore;
         private readonly GameWorldChannel _channel;
@@ -64,7 +79,9 @@ namespace VividWorld.Debug
         private readonly SnapshotSessionState? _sessionState;
         private readonly string? _campaignId;
         private readonly FeelingResolver? _feelings;
+        private readonly IFeelingWorld? _feelingWorld;
         private readonly Func<string>? _personalSeedMarker;
+        private readonly PlayerHeardLogStore? _heardLog;
         private readonly int _rollbackCount;
         private readonly double _rollbackMaxDay;
         private readonly double _launchDay;
@@ -72,6 +89,8 @@ namespace VividWorld.Debug
         private double _lastSimulatedDay = -1;
         private int _lastSimulatedHour = -1;
         private Hero? _pendingBanditCapture;
+
+
 
         public DevDialogueBehavior(
             VividWorldConfig config,
@@ -89,14 +108,18 @@ namespace VividWorld.Debug
             SnapshotSessionState? sessionState = null,
             string? campaignId = null,
             FeelingResolver? feelings = null,
-            Func<string>? personalSeedMarker = null)
+            IFeelingWorld? feelingWorld = null,
+            Func<string>? personalSeedMarker = null,
+            PlayerHeardLogStore? heardLog = null)
         {
+            _feelingWorld = feelingWorld;
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
             _channel = channel ?? throw new ArgumentNullException(nameof(channel));
             _scheduler = scheduler ?? throw new ArgumentNullException(nameof(scheduler));
             _heroLookup = heroLookup;
             _dialogs = dialogs;
+            _heardLog = heardLog ?? dialogs?.PlayerHeardLog;
             _rollbackCount = rollbackCount;
             _rollbackMaxDay = rollbackMaxDay;
             _launchDay = launchDay;
@@ -189,6 +212,44 @@ namespace VividWorld.Debug
                 "vividworld_dev_act_prompt_line",
                 TokenDevActPrompt,
                 TokenDevAct,
+                "{=!}...",
+                null,
+                null,
+                100,
+                null);
+
+            starter.AddPlayerLine(
+                "vividworld_dev_menu_belief",
+                TokenDevCategories,
+                TokenDevBeliefPrompt,
+                "{=VividWorld_Dev_Menu_Belief}(dev) Belief and made-up talk",
+                Condition_AlwaysAvailable,
+                null,
+                DevDialoguePriority);
+
+            starter.AddDialogLine(
+                "vividworld_dev_belief_prompt_line",
+                TokenDevBeliefPrompt,
+                TokenDevBelief,
+                "{=!}...",
+                null,
+                null,
+                100,
+                null);
+
+            starter.AddPlayerLine(
+                "vividworld_dev_menu_madeup",
+                TokenDevCategories,
+                TokenDevMadeUpPrompt,
+                "{=VividWorld_Dev_Menu_MadeUp}(dev) Made-up talk",
+                Condition_AlwaysAvailable,
+                null,
+                DevDialoguePriority);
+
+            starter.AddDialogLine(
+                "vividworld_dev_madeup_prompt_line",
+                TokenDevMadeUpPrompt,
+                TokenDevMadeUp,
                 "{=!}...",
                 null,
                 null,
@@ -300,6 +361,16 @@ namespace VividWorld.Debug
                 Consequence_Feelings,
                 DevDialoguePriority);
 
+            // 8b. (dev) Who would he tell the scandals he knows?
+            starter.AddPlayerLine(
+                "vividworld_dev_shameful_news",
+                TokenDevPerson,
+                TokenDevResultPerson,
+                "{=VividWorld_Dev_ShamefulNews}(dev) Who would he tell the scandals he knows?",
+                Condition_AlwaysAvailable,
+                Consequence_ShamefulNews,
+                DevDialoguePriority);
+
             // 9. (dev) How does he feel about me, per person
             starter.AddPlayerLine(
                 "vividworld_dev_player_relation",
@@ -409,6 +480,16 @@ namespace VividWorld.Debug
                 "{=VividWorld_Dev_ResetMetrics}(dev) Reset performance counters",
                 Condition_AlwaysAvailable,
                 Consequence_ResetMetrics,
+                DevDialoguePriority);
+
+            // 9. (dev) How is the chronicle grouped?
+            starter.AddPlayerLine(
+                "vividworld_dev_chronicle_blocks",
+                TokenDevWorld,
+                TokenDevResultWorld,
+                "{=VividWorld_Dev_ChronicleBlocks}(dev) How is the chronicle grouped?",
+                Condition_AlwaysAvailable,
+                Consequence_ChronicleBlocks,
                 DevDialoguePriority);
 
             // Return from world tools to categories
@@ -525,6 +606,8 @@ namespace VividWorld.Debug
                 Consequence_TellWithFeeling,
                 DevDialoguePriority);
 
+
+
             // Return from action tools to categories
             starter.AddPlayerLine(
                 "vividworld_dev_back_act",
@@ -545,7 +628,201 @@ namespace VividWorld.Debug
                 100,
                 null);
 
-            ModLog.Info("Registered 25 developer dialogue lines in 3 categories (person: 9, world: 8, act: 8) behind main menu entry.");
+            // ── Category 4: Belief and made-up talk (3 tools) ──
+            // 1. (dev) Which rumors does this person believe?
+            starter.AddPlayerLine(
+                "vividworld_dev_beliefs",
+                TokenDevBelief,
+                TokenDevResultBelief,
+                "{=VividWorld_Dev_Beliefs}(dev) Which rumors does this person believe?",
+                Condition_AlwaysAvailable,
+                Consequence_Beliefs,
+                DevDialoguePriority);
+
+            // 2. (dev) How do lords pass news to each other?
+            starter.AddPlayerLine(
+                "vividworld_dev_tell_tiers",
+                TokenDevBelief,
+                TokenDevResultBelief,
+                "{=VividWorld_Dev_TellTiers}(dev) How do lords pass news to each other?",
+                Condition_AlwaysAvailable,
+                Consequence_TellTiers,
+                DevDialoguePriority);
+
+            // 3. (dev) Who could start made-up talk right now?
+            starter.AddPlayerLine(
+                "vividworld_dev_who_could_start_made_up_talk",
+                TokenDevBelief,
+                TokenDevResultBelief,
+                "{=VividWorld_Dev_WhoCouldStartMadeUpTalk}(dev) Who could start made-up talk right now?",
+                Condition_AlwaysAvailable,
+                Consequence_WhoCouldStartMadeUpTalk,
+                DevDialoguePriority);
+
+            // 4. (dev) Make him speak ill of the ruler here
+            starter.AddPlayerLine(
+                "vividworld_dev_force_spoke_against_ruler",
+                TokenDevBelief,
+                TokenDevResultBelief,
+                "{=VividWorld_Dev_ForceSpokeAgainstRuler}(dev) Make him speak ill of the ruler here",
+                Condition_AlwaysAvailable,
+                Consequence_ForceSpokeAgainstRuler,
+                DevDialoguePriority);
+
+            // 5. (dev) Make him refuse a comrade's plea for aid here
+            starter.AddPlayerLine(
+                "vividworld_dev_force_refused_aid",
+                TokenDevBelief,
+                TokenDevResultBelief,
+                "{=VividWorld_Dev_ForceRefusedAid}(dev) Make him refuse a comrade's plea for aid here",
+                Condition_AlwaysAvailable,
+                Consequence_ForceRefusedAid,
+                DevDialoguePriority);
+
+            // 6. (dev) Trigger a rash capture from his latest capture (either side)
+            starter.AddPlayerLine(
+                "vividworld_dev_force_rash_capture",
+                TokenDevBelief,
+                TokenDevResultBelief,
+                "{=VividWorld_Dev_ForceRashCapture}(dev) Trigger a rash capture from his latest capture (either side)",
+                Condition_AlwaysAvailable,
+                Consequence_ForceRashCapture,
+                DevDialoguePriority);
+
+            // 7. (dev) Trigger prisoner mistreatment from his latest capture (either side)
+            starter.AddPlayerLine(
+                "vividworld_dev_force_mistreated_prisoner",
+                TokenDevBelief,
+                TokenDevResultBelief,
+                "{=VividWorld_Dev_ForceMistreatedPrisoner}(dev) Trigger prisoner mistreatment from his latest capture (either side)",
+                Condition_AlwaysAvailable,
+                Consequence_ForceMistreatedPrisoner,
+                DevDialoguePriority);
+
+            // 8. (dev) Make him the poisoner of the latest old-age death
+            starter.AddPlayerLine(
+                "vividworld_dev_force_poisoned",
+                TokenDevBelief,
+                TokenDevResultBelief,
+                "{=VividWorld_Dev_ForcePoisoned}(dev) Make him the poisoner of the latest old-age death",
+                Condition_AlwaysAvailable,
+                Consequence_ForcePoisoned,
+                DevDialoguePriority);
+
+            // Return from belief tools to categories
+            starter.AddPlayerLine(
+                "vividworld_dev_back_belief",
+                TokenDevBelief,
+                TokenDevCategoriesPrompt,
+                "{=VividWorld_Dev_Menu_Back}(dev) Back",
+                null,
+                null,
+                DevDialoguePriority);
+
+            starter.AddDialogLine(
+                "vividworld_dev_result_belief_line",
+                TokenDevResultBelief,
+                TokenDevBelief,
+                "{=!}{VIVIDWORLD_DEV_RESULT}",
+                null,
+                null,
+                100,
+                null);
+
+            // ── Category 5: Made-up talk (7 tools) ──
+            starter.AddPlayerLine(
+                "vividworld_dev_force_slander",
+                TokenDevMadeUp,
+                TokenDevResultMadeUp,
+                "{=VividWorld_Dev_ForceSlander}(dev) Make him slander someone he holds a grudge against here",
+                Condition_AlwaysAvailable,
+                Consequence_ForceSlander,
+                DevDialoguePriority);
+
+            starter.AddPlayerLine(
+                "vividworld_dev_force_rivalry_slander",
+                TokenDevMadeUp,
+                TokenDevResultMadeUp,
+                "{=VividWorld_Dev_ForceRivalrySlander}(dev) Make him slander a rival clan leader here",
+                Condition_AlwaysAvailable,
+                Consequence_ForceRivalrySlander,
+                DevDialoguePriority);
+
+            starter.AddPlayerLine(
+                "vividworld_dev_force_praise_kin",
+                TokenDevMadeUp,
+                TokenDevResultMadeUp,
+                "{=VividWorld_Dev_ForcePraiseKin}(dev) Make him invent praise for his own kin here",
+                Condition_AlwaysAvailable,
+                Consequence_ForcePraiseKin,
+                DevDialoguePriority);
+
+            starter.AddPlayerLine(
+                "vividworld_dev_madeup_world",
+                TokenDevMadeUp,
+                TokenDevResultMadeUp,
+                "{=VividWorld_Dev_MadeUpWorld}(dev) Made-up talk vs. real events by type, and eligible pairs per cause",
+                Condition_AlwaysAvailable,
+                Consequence_MadeUpWorld,
+                DevDialoguePriority);
+
+            starter.AddPlayerLine(
+                "vividworld_dev_talk_reaches_accused",
+                TokenDevMadeUp,
+                TokenDevResultMadeUp,
+                "{=VividWorld_Dev_TalkReachesAccused}(dev) Pass the latest made-up talk he knows to the people involved, and make them step forward",
+                Condition_AlwaysAvailable,
+                Consequence_TalkReachesAccused,
+                DevDialoguePriority);
+
+            starter.AddPlayerLine(
+                "vividworld_dev_response_reaches_listeners",
+                TokenDevMadeUp,
+                TokenDevResultMadeUp,
+                "{=VividWorld_Dev_ResponseReachesListeners}(dev) The answered made-up talk he knows: make everyone who still believes it hear the latest response and stop believing it",
+                Condition_AlwaysAvailable,
+                Consequence_ResponseReachesListeners,
+                DevDialoguePriority);
+
+            // 7. Tell me the latest made-up talk he knows that I haven't heard, along with every response to it
+            starter.AddPlayerLine(
+                "vividworld_dev_tell_madeup_talk",
+                TokenDevMadeUp,
+                TokenDevResultMadeUp,
+                "{=VividWorld_Dev_TellMeMadeUpTalk}(dev) Tell me the latest made-up talk he knows that I haven't heard, along with every response to it",
+                Condition_AlwaysAvailable,
+                Consequence_TellMadeUpTalkAndResponses,
+                DevDialoguePriority);
+
+            starter.AddPlayerLine(
+                "vividworld_dev_probe_preview",
+                TokenDevMadeUp,
+                TokenDevResultMadeUp,
+                "{=VividWorld_Dev_ProbePreview}(dev) Ask preview: how many times he has been asked today, and how he would answer each entry in your chronicle",
+                Condition_AlwaysAvailable,
+                Consequence_ProbePreview,
+                DevDialoguePriority);
+
+            starter.AddPlayerLine(
+                "vividworld_dev_back_madeup",
+                TokenDevMadeUp,
+                TokenDevCategoriesPrompt,
+                "{=VividWorld_Dev_Menu_Back}(dev) Back",
+                null,
+                null,
+                DevDialoguePriority);
+
+            starter.AddDialogLine(
+                "vividworld_dev_result_madeup_line",
+                TokenDevResultMadeUp,
+                TokenDevMadeUp,
+                "{=!}{VIVIDWORLD_DEV_RESULT}",
+                null,
+                null,
+                100,
+                null);
+
+            ModLog.Info("Registered 40 developer dialogue lines in 5 categories (person: 9, world: 8, act: 9, belief: 8, made-up talk: 4) behind main menu entry.");
         }
 
         private static void SetResult(string line)
@@ -864,9 +1141,10 @@ namespace VividWorld.Debug
                 string lastVol = _dialogs?.LastVolunteerSessionInfo ?? "(none this session)";
 
                 string? compatInfo = _dialogs?.CompatStatusLine;
-                string? recoveryInfo = _dialogs?.VolunteerRecoveryStatusLine;
                 var route = _dialogs?.LastConversationRoute;
-                string report = DevReport.FormatWorldStatus(_scheduler, _eventStore, _config, _rollbackCount, _rollbackMaxDay, _launchDay, sharedSummary, lastVol, compatInfo, route, recoveryInfo, _realEvents, _eventStore.Stamper, _sessionState, _campaignId, _dialogs?.PlayerHeardLog);
+                string? recoveryInfo = _dialogs?.VolunteerRecoveryStatusLine;
+                string? probesSummary = _dialogs?.ProbesTodaySummary;
+                string report = DevReport.FormatWorldStatus(_scheduler, _eventStore, _config, _rollbackCount, _rollbackMaxDay, _launchDay, sharedSummary, lastVol, compatInfo, route, recoveryInfo, _realEvents, _eventStore.Stamper, _sessionState, _campaignId, _dialogs?.PlayerHeardLog, probesSummary);
                 InformationManager.DisplayMessage(new InformationMessage(report));
                 ModLog.Info($"[DevDialogue]\n{report}");
                 // 每種消息渲染一次有好幾百行，只寫進日誌；放進上面那則畫面訊息會把訊息欄洗掉。
@@ -902,6 +1180,84 @@ namespace VividWorld.Debug
             {
                 ModLog.Error("Dev reset metrics failed", ex);
                 Finish("(dev) reset metrics failed - see log.txt");
+            }
+        }
+
+        private void Consequence_ChronicleBlocks()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var heardLog = _heardLog ?? _dialogs?.PlayerHeardLog;
+                if (heardLog == null)
+                {
+                    Finish("(dev) No player heard log available.");
+                    return;
+                }
+
+                double currentDay = TaleWorlds.CampaignSystem.Campaign.Current != null ? CampaignTime.Now.ToDays : 0.0;
+                int maxEntries = _config?.Presentation?.ChronicleMaxEntries ?? 50;
+
+                var provider = new ChronicleProvider(
+                    heardLog,
+                    EventCatalogStore.TemplateByType,
+                    _config?.Presentation ?? new PresentationConfig());
+
+                var blocks = provider.ForPlayer(maxEntries, currentDay, out var stats);
+
+                var sbFull = new StringBuilder();
+                var sbDialog = new StringBuilder();
+
+                sbFull.AppendLine($"[DevDialogue] Chronicle blocks ({blocks.Count} shown of {stats.TotalBlocks} blocks):");
+
+                int dialogLimit = Math.Min(10, blocks.Count);
+                sbDialog.AppendLine($"(dev) Chronicle blocks: {blocks.Count} shown ({stats.ConflictBlocks} conflict, {stats.FallbackTitleBlocks} fallback):");
+
+                for (int bIdx = 0; bIdx < blocks.Count; bIdx++)
+                {
+                    var block = blocks[bIdx];
+                    var headline = ChronicleEntryVM.ResolveHeadline(block, _heroLookup);
+                    string conflictInfo = block.HasConflict
+                        ? $"conflict: yes ({block.ConflictReason})"
+                        : "conflict: no";
+
+                    string blockHeader = $"Block #{bIdx + 1}: root={block.EventId} ({block.EventType}), headline={headline.Note}, {conflictInfo}, matters={block.Matters.Count}";
+                    sbFull.AppendLine(blockHeader);
+
+                    if (bIdx < dialogLimit)
+                    {
+                        sbDialog.AppendLine($"#{bIdx + 1} {block.EventId} ({block.EventType}) [{headline.Text}] - {conflictInfo}");
+                    }
+
+                    for (int mIdx = 0; mIdx < block.Matters.Count; mIdx++)
+                    {
+                        var matter = block.Matters[mIdx];
+                        string matterHeader = $"  Matter #{mIdx + 1}: event={matter.EventId} ({matter.EventType}), day={matter.Day:F1}, heading={matter.HeadingText ?? "-"}, sources={matter.Sources.Count}";
+                        sbFull.AppendLine(matterHeader);
+
+                        for (int sIdx = 0; sIdx < matter.Sources.Count; sIdx++)
+                        {
+                            var s = matter.Sources[sIdx];
+                            string teller = string.IsNullOrEmpty(s.HeroId) ? "unknown" : s.HeroId!;
+                            sbFull.AppendLine($"    - telling #{sIdx + 1}: source={teller}, day={s.Day:F1}, hop={s.Hop}");
+                        }
+                    }
+                }
+
+                if (blocks.Count > dialogLimit)
+                {
+                    sbDialog.AppendLine($"... and {blocks.Count - dialogLimit} more blocks (see log.txt)");
+                }
+
+                string fullReport = sbFull.ToString().TrimEnd();
+                ModLog.Info(fullReport);
+
+                Finish(sbDialog.ToString().TrimEnd());
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev chronicle blocks failed", ex);
+                Finish("(dev) failed - see log.txt");
             }
         }
 
@@ -1153,6 +1509,12 @@ namespace VividWorld.Debug
 
                 foreach (var situation in situations)
                 {
+                    if (string.Equals(situation.Trigger, "afterEvent", StringComparison.OrdinalIgnoreCase))
+                    {
+                        rejectedLines.Add($"{situation.Id}: skipped (trigger 'afterEvent' requires a triggering event, cannot be triggered from conversation)");
+                        continue;
+                    }
+
                     var nonDerivedRoles = situation.Roles
                         .Where(r => !r.Value.IsDerived)
                         .Select(r => r.Key)
@@ -1436,6 +1798,1265 @@ namespace VividWorld.Debug
             }
         }
 
+        private void Consequence_Beliefs()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null)
+                {
+                    Finish("(dev) no active conversation hero.");
+                    return;
+                }
+
+                double now = CampaignTime.Now.ToDays;
+                string report = DevReport.FormatBeliefs(hero.StringId, _eventStore, now, _config, _traitLookup, _feelingWorld);
+                InformationManager.DisplayMessage(new InformationMessage(report));
+                ModLog.Info($"[DevDialogue]\n{report}");
+                Finish(report);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev beliefs dump failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_TellTiers()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                if (!_config.Debug.LogTellerTurns)
+                {
+                    Finish("(dev) tell tiers are only recorded while debug.logTellerTurns is on");
+                    return;
+                }
+
+                _scheduler.SnapshotTellTiers(out var today, out var session);
+                int day = Math.Max(0, (int)CampaignTime.Now.ToDays);
+                string report = TellTierLogFormatter.FormatDevReport(
+                    today, session, day, _config.Propagation.TellTiers, _config.Dialogue.BigNewsLine);
+                InformationManager.DisplayMessage(new InformationMessage(report));
+                ModLog.Info($"[DevDialogue]\n{report}");
+                // 完整報告有二十幾行，放進對話框會塞滿；對話裡只回一行，全文在訊息與日誌。
+                Finish(string.Format(CultureInfo.InvariantCulture,
+                    "Tell tiers: {0} link(s) today, {1} since this save was loaded - full report in the message log and log.txt",
+                    today.Total, session.Total));
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev tell tiers failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_WhoCouldStartMadeUpTalk()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var speaker = Hero.OneToOneConversationHero;
+                if (speaker == null)
+                {
+                    Finish("(dev) No conversation partner found.");
+                    return;
+                }
+
+                string speakerName = speaker.Name?.ToString() ?? speaker.StringId;
+                double day = CampaignTime.Now.ToDays;
+                long campaignSeed = _eventStore?.CampaignSeed ?? 0;
+                string? playerHeroId = Hero.MainHero?.StringId;
+
+                var pool = _heroLookup?.AllAlive ?? (IEnumerable<Hero>?)Hero.AllAliveHeroes ?? Array.Empty<Hero>();
+                var candidateHeroes = pool
+                    .Where(h => h != null
+                                && !string.IsNullOrEmpty(h.StringId)
+                                && h != Hero.MainHero
+                                && (string.IsNullOrEmpty(playerHeroId) || h.StringId != playerHeroId)
+                                && h != speaker
+                                && h.IsLord
+                                && h.IsAlive)
+                    .ToList();
+
+                var candidateFacts = candidateHeroes.Select(SituationFactsReader.Read).ToList();
+                var speakerFacts = SituationFactsReader.Read(speaker);
+
+                var context = new SituationWorldContext
+                {
+                    Traits = _traitLookup ?? (_heroLookup != null ? new GameTraitLookup(_heroLookup) : null),
+                    GrudgeSum = (a, b) => _eventStore?.Grudges?.Between(a, b, GrudgeScope.Personal)?.Sum(e => e.Delta) ?? 0,
+                    Affection = (a, b) =>
+                    {
+                        var ha = _heroLookup?.Get(a) ?? Hero.Find(a);
+                        var hb = _heroLookup?.Get(b) ?? Hero.Find(b);
+                        if (ha == null || hb == null || ha == hb) return null;
+                        var player = Hero.MainHero;
+                        if (player != null && (ha == player || hb == player) && !SubModule.PersonalWithPlayerEnabled)
+                        {
+                            return ha.GetRelation(hb);
+                        }
+                        return ha.GetBaseHeroRelation(hb);
+                    },
+                    Rng = new SplitMix64Rng(),
+                    Seed = campaignSeed,
+                    GrudgeLine = _config.FalseRumors?.GrudgeLine ?? -5,
+                    NativeGrudgeLine = _config.FalseRumors?.NativeGrudgeLine ?? -20,
+                    PlayerHeroId = playerHeroId
+                };
+
+                var derivedPrefixes = new[]
+                {
+                    "grudgeTargetOf",
+                    "rivalClanLeaderOf",
+                    "selfOrKinOf",
+                    "rulerOf",
+                    "kinOf"
+                };
+
+                var sbLog = new System.Text.StringBuilder();
+                sbLog.AppendLine(string.Format(CultureInfo.InvariantCulture, "(dev) Who could start made-up talk for {0} ({1}):", speakerName, speaker.StringId));
+
+                var summaryParts = new List<string>();
+
+                foreach (var prefix in derivedPrefixes)
+                {
+                    string strategy = $"{prefix}:teller";
+                    var alreadyBound = new Dictionary<string, string?> { ["teller"] = speaker.StringId };
+
+                    var result = AbsentRoleSelector.Select(
+                        derivedRoleName: prefix,
+                        derivedStrategy: strategy,
+                        targetRoleFacts: speakerFacts,
+                        currentSettlementId: speaker.CurrentSettlement?.StringId,
+                        candidatePool: candidateFacts,
+                        alreadyBoundHeroes: alreadyBound,
+                        context: context,
+                        situationId: "dev_check",
+                        day: day);
+
+                    string roleLine;
+                    if (result.EligibleCandidateCount > 0)
+                    {
+                        var sampleNames = result.EligibleCandidates
+                            .Take(3)
+                            .Select(c =>
+                            {
+                                var h = _heroLookup?.Get(c.HeroId) ?? Hero.Find(c.HeroId);
+                                return h?.Name?.ToString() ?? c.HeroId;
+                            });
+                        string namesStr = string.Join(", ", sampleNames);
+                        if (result.EligibleCandidateCount > 3)
+                        {
+                            namesStr += $", ... (+{result.EligibleCandidateCount - 3})";
+                        }
+                        roleLine = $"  {prefix}: {result.EligibleCandidateCount} eligible [{namesStr}], picked {result.PickedHeroId}";
+                        summaryParts.Add($"{prefix}={result.EligibleCandidateCount}");
+                    }
+                    else
+                    {
+                        var topExclusions = result.Exclusions
+                            .GroupBy(e => e.Reason)
+                            .OrderByDescending(g => g.Count())
+                            .Select(g => $"{g.Key} ({g.Count()})")
+                            .Take(2);
+                        string exclSummary = string.Join(", ", topExclusions);
+                        string unboundDesc = !string.IsNullOrEmpty(exclSummary) ? $"{result.UnboundReason ?? "none"} - {exclSummary}" : (result.UnboundReason ?? "unbound");
+                        roleLine = $"  {prefix}: 0 eligible ({unboundDesc})";
+                        summaryParts.Add($"{prefix}=0");
+                    }
+
+                    sbLog.AppendLine(roleLine);
+                }
+
+                ModLog.Info(sbLog.ToString().TrimEnd());
+                string summary = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "(dev) {0}: {1}. See log.txt",
+                    speakerName,
+                    string.Join(", ", summaryParts));
+                Finish(summary);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev who could start made-up talk failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_ForceSlander() => ForceMadeUp("madeup_slander", "slander");
+
+        private void Consequence_ForceRivalrySlander() => ForceMadeUp("madeup_rivalry", "rivalry slander");
+
+        private void Consequence_ForcePraiseKin() => ForceMadeUp("madeup_praise", "praise of kin");
+
+        /// <summary>對話對象當說的人，在他所在的聚落裡依 StringId 順序找第一位讓條件成立的聽的人，
+        /// 用強制模式（跳過個性、機率）產生一則編的話。找不到被說的人、或一種內容都不可用就照實說。</summary>
+        private void ForceMadeUp(string situationId, string label)
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var teller = Hero.OneToOneConversationHero;
+                if (teller == null)
+                {
+                    Finish("(dev) No conversation partner found.");
+                    return;
+                }
+
+                if (_config.FalseRumors?.Enabled == false)
+                {
+                    ModLog.Info($"Dev force {situationId}: skipped (disabled by falseRumors.enabled)");
+                    Finish($"(dev) {label}: skipped (disabled by falseRumors.enabled)");
+                    return;
+                }
+
+                var situation = SituationCatalogStore.Catalog?.Situations.FirstOrDefault(s => s.Id == situationId);
+                if (situation == null || !situation.IsEnabled(_config))
+                {
+                    Finish($"(dev) {label}: situation is disabled or not found.");
+                    return;
+                }
+
+                var settlement = teller.CurrentSettlement;
+                if (settlement == null)
+                {
+                    Finish($"(dev) {teller.Name} is not in a settlement.");
+                    return;
+                }
+
+                double day = CampaignTime.Now.ToDays;
+                string? playerHeroId = Hero.MainHero?.StringId;
+                var listeners = EligibilityLabel.GetPresentHeroesAtSettlement(settlement)
+                    .Where(h => h != null
+                                && !string.IsNullOrEmpty(h.StringId)
+                                && h != Hero.MainHero
+                                && (string.IsNullOrEmpty(playerHeroId) || h.StringId != playerHeroId)
+                                && h != teller)
+                    .OrderBy(h => h.StringId, StringComparer.Ordinal)
+                    .ToList();
+
+                var traits = _traitLookup ?? (_heroLookup != null ? new GameTraitLookup(_heroLookup) : null);
+                string lastFailure = "no other lord is here";
+                int tried = 0;
+
+                foreach (var cand in listeners)
+                {
+                    tried++;
+                    var roleAssignments = new Dictionary<string, Hero>
+                    {
+                        ["teller"] = teller,
+                        ["listener"] = cand
+                    };
+
+                    var run = SituationRunner.Run(
+                        situation,
+                        roleAssignments,
+                        day,
+                        "forced by dev",
+                        _eventStore,
+                        traits,
+                        _config,
+                        _heroLookup,
+                        forced: true);
+
+                    if (!run.Started)
+                    {
+                        var failed = run.ConditionResults?.FirstOrDefault(c => !c.Ok);
+                        lastFailure = failed != null
+                            ? $"{(string.IsNullOrEmpty(failed.Label) ? failed.Type : failed.Label)}: {failed.Detail}"
+                            : (run.AbortReason ?? "not started");
+                        continue;
+                    }
+
+                    if (run.EventIds.Count == 0)
+                    {
+                        lastFailure = run.AbortReason ?? "no event was produced";
+                        Finish($"(dev) {label}: {teller.Name} with {cand.Name}: nothing was made up ({lastFailure}). See log.txt");
+                        ModLog.Info($"(dev) {situationId}: teller={teller.StringId}, listener={cand.StringId}: nothing made up - {lastFailure}");
+                        return;
+                    }
+
+                    string eventId = run.EventIds[0];
+                    var evt = _eventStore.Load(eventId);
+                    string content = evt?.Type ?? "unknown";
+                    string aboutName = "unknown";
+                    if (evt?.Participants != null && evt.Participants.Count > 0)
+                    {
+                        var names = new List<string>();
+                        foreach (var kvp in evt.Participants)
+                        {
+                            var h = _heroLookup?.Get(kvp.Value) ?? Hero.Find(kvp.Value);
+                            names.Add($"{kvp.Key}={(h?.Name?.ToString() ?? kvp.Value)}");
+                        }
+                        aboutName = string.Join(", ", names);
+                    }
+                    string hang = string.IsNullOrEmpty(evt?.LinkedEventId) ? "hangs on nothing" : $"hangs on {evt!.LinkedEventId}";
+                    ModLog.Info($"(dev) {situationId}: eventId={eventId}, content={content}, teller={teller.StringId}, listener={cand.StringId}, participants=[{aboutName}], {hang}");
+                    Finish($"(dev) {label}: {teller.Name} -> {cand.Name}: event {eventId}, {content}, {aboutName}, {hang}. See log.txt");
+                    return;
+                }
+
+                ModLog.Info($"(dev) {situationId}: no listener in {settlement.StringId} made it work ({tried} tried); last reason: {lastFailure}");
+                Finish($"(dev) {label}: nothing could be made up in {settlement.Name} ({tried} listener(s) tried; last reason: {lastFailure}). See log.txt");
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error($"Dev force {situationId} failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        /// <summary>看世界：照型別列出編的話與發生過的事各幾則（讀索引的 Fabricated），
+        /// 並跑一次試算看三種起因現在各有幾對人符合條件。</summary>
+        private void Consequence_MadeUpWorld()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var entries = _eventStore.Index?.Entries ?? new List<RumorIndexEntry>();
+                var byType = entries
+                    .Where(e => e != null && !string.IsNullOrEmpty(e.Type))
+                    .GroupBy(e => e.Type, StringComparer.Ordinal)
+                    .Select(g => (Type: g.Key, Fabricated: g.Count(e => e.Fabricated), Real: g.Count(e => !e.Fabricated)))
+                    .Where(x => x.Fabricated > 0)
+                    .OrderBy(x => x.Type, StringComparer.Ordinal)
+                    .ToList();
+                int totalMadeUp = entries.Count(e => e != null && e.Fabricated);
+                int totalReal = entries.Count(e => e != null && !e.Fabricated);
+
+                int denialCount = entries.Count(e => e != null && string.Equals(EventCatalogStore.TemplateByType(e.Type)?.Response, "denial", StringComparison.OrdinalIgnoreCase));
+                int clarifyCount = entries.Count(e => e != null && e.Type.StartsWith("talk_corrected_", StringComparison.OrdinalIgnoreCase));
+                int notSoCount = entries.Count(e => e != null && e.Type.StartsWith("talk_not_so_", StringComparison.OrdinalIgnoreCase));
+                int waitingSteppers = entries.Count(e => e != null && e.HasWaitingStepForward);
+
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "(dev) Made-up talk vs. real events: {0} made up, {1} real in the index.", totalMadeUp, totalReal));
+                foreach (var row in byType)
+                {
+                    sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "  {0}: {1} made up, {2} real", row.Type, row.Fabricated, row.Real));
+                }
+                if (byType.Count == 0)
+                {
+                    sb.AppendLine("  (no made-up talk in the index yet)");
+                }
+
+                sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "  responses: {0} denials, {1} clarifications, {2} not-so; {3} event(s) with waiting steppers",
+                    denialCount, clarifyCount, notSoCount, waitingSteppers));
+
+                string pairsPart;
+                if (_situationScan == null)
+                {
+                    pairsPart = "eligible pairs: scan behavior is not initialized";
+                }
+                else
+                {
+                    var scanResult = _situationScan.ExecuteScan(isDryRun: true);
+                    if (scanResult.Disabled)
+                    {
+                        pairsPart = "eligible pairs: scan is disabled (situations.dailyScanEnabled = false)";
+                    }
+                    else
+                    {
+                        var parts = new[] { "madeup_slander", "madeup_rivalry", "madeup_praise" }
+                            .Select(id => id + "=" + (scanResult.MadeUpTalkCandidateCounts.TryGetValue(id, out int n) ? n.ToString(CultureInfo.InvariantCulture) : "not counted"));
+                        pairsPart = "eligible pairs: " + string.Join(", ", parts);
+                    }
+                }
+
+                sb.AppendLine("  " + pairsPart);
+                ModLog.Info(sb.ToString().TrimEnd());
+                Finish(string.Format(CultureInfo.InvariantCulture, "(dev) made up {0} / real {1} ({2} denials, {3} clarifies, {4} not-so, {5} waiting); {6}. See log.txt",
+                    totalMadeUp, totalReal, denialCount, clarifyCount, notSoCount, waitingSteppers, pairsPart));
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev made-up world failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_TalkReachesAccused()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var partner = Hero.OneToOneConversationHero;
+                if (partner == null)
+                {
+                    Finish("(dev) no conversation partner. See log.txt");
+                    return;
+                }
+
+                double day = CampaignTime.Now.ToDays;
+                var partnerEvents = _eventStore.KnownBy?.EventsKnownBy(partner.StringId, day);
+                if (partnerEvents == null || partnerEvents.Count == 0)
+                {
+                    Finish($"(dev) {partner.Name} knows no events.");
+                    return;
+                }
+
+                WorldEvent? latestX = null;
+                KnownByEntry? latestPartnerEntry = null;
+                foreach (var id in partnerEvents)
+                {
+                    var evt = _eventStore.Load(id);
+                    if (evt != null && MadeUpTalk.IsHearsayOnly(evt))
+                    {
+                        // 已經有人為這句話擲過要不要出面的不再挑：同一天編的幾句話日子相同，否則會一直挑回處理過的那一句
+                        if (evt.KnownBy != null && evt.KnownBy.Any(k => k != null && k.StepForward != null)) continue;
+                        if (latestX == null || evt.Day > latestX.Day)
+                        {
+                            latestX = evt;
+                            latestPartnerEntry = evt.EntryFor(partner.StringId);
+                        }
+                    }
+                }
+
+                if (latestX == null)
+                {
+                    Finish($"(dev) {partner.Name} knows no hearsay-only made-up talk that nobody has stepped forward on yet.");
+                    return;
+                }
+
+                int hearerHop = (latestPartnerEntry?.Hop ?? 1) + 1;
+                string? linkedId = latestX.LinkedEventId;
+                WorldEvent? lEvent = (linkedId != null && linkedId.Length > 0) ? _eventStore.Load(linkedId) : null;
+                var truthKnowers = MadeUpTalk.GetTruthKnowers(latestX, lEvent, _eventStore.PlayerHeroId);
+                var targetKnowers = truthKnowers.Where(tk => tk.IsAccused || tk.ResponseType != null).ToList();
+
+                if (targetKnowers.Count == 0)
+                {
+                    Finish($"(dev) {latestX.EventId} has no accused or eligible steppers-forward.");
+                    return;
+                }
+
+                var sbLog = new StringBuilder();
+                sbLog.AppendLine($"(dev) [forced] Talk reaches accused/truth knowers for {latestX.EventId} from {partner.StringId}:");
+
+                var summaryParts = new List<string>();
+
+                foreach (var tk in targetKnowers)
+                {
+                    var stepperEntry = latestX.EntryFor(tk.HeroId);
+                    if (stepperEntry != null && stepperEntry.StepForward != null)
+                    {
+                        sbLog.AppendLine($"  {tk.HeroId}: already knows/rolled step forward ({stepperEntry.StepForward})");
+                        summaryParts.Add($"{tk.HeroId}: already {stepperEntry.StepForward}");
+                        continue;
+                    }
+
+                    if (stepperEntry == null)
+                    {
+                        stepperEntry = new KnownByEntry
+                        {
+                            HeroId = tk.HeroId,
+                            Hop = hearerHop,
+                            SourceHeroId = partner.StringId,
+                            LearnedDay = day
+                        };
+                        latestX.KnownBy ??= new List<KnownByEntry>();
+                        latestX.KnownBy.Add(stepperEntry);
+                    }
+                    else
+                    {
+                        stepperEntry.Hop = hearerHop;
+                        stepperEntry.SourceHeroId = partner.StringId;
+                        stepperEntry.LearnedDay = day;
+                    }
+
+                    var hero = _heroLookup?.Get(tk.HeroId) ?? Hero.Find(tk.HeroId);
+                    bool inTownOrCastle = hero?.CurrentSettlement != null && (hero.CurrentSettlement.IsTown || hero.CurrentSettlement.IsCastle);
+                    string? forcedSettlement = null;
+                    if (!inTownOrCastle)
+                    {
+                        if (partner.CurrentSettlement != null)
+                        {
+                            forcedSettlement = partner.CurrentSettlement.StringId;
+                            sbLog.AppendLine($"  [forced] {tk.HeroId} not in town/castle; response staged at partner settlement {forcedSettlement}");
+                        }
+                        else
+                        {
+                            sbLog.AppendLine($"  [forced] {tk.HeroId} not in town/castle and partner {partner.Name} not in any settlement; response cannot be sent");
+                        }
+                    }
+
+                    _scheduler.DeliverEventToKnowers(latestX, new[] { stepperEntry }, day, forceStepForward: true, forcedSettlementId: forcedSettlement);
+
+                    double grudgeAmount = stepperEntry.RelationImpacts?
+                        .FirstOrDefault(ri => string.Equals(ri.AboutHeroId, latestX.OriginatorHeroId, StringComparison.Ordinal) && !ri.Contradicted)?.Delta ?? 0.0;
+                    string respDesc = stepperEntry.StepForwardEventId ?? stepperEntry.StepForward ?? "none";
+
+                    sbLog.AppendLine($"  [forced] {tk.HeroId} heard talk, grudge {grudgeAmount:+0.##;-0.##;0}, response {respDesc}");
+                    summaryParts.Add($"{tk.HeroId}: grudge {grudgeAmount:+0.##;-0.##;0}, response {respDesc}");
+                }
+
+                ModLog.Info(sbLog.ToString().TrimEnd());
+                Finish($"(dev) {latestX.EventId}: {string.Join("; ", summaryParts)}. See log.txt");
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev talk reaches accused failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_ResponseReachesListeners()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var partner = Hero.OneToOneConversationHero;
+                if (partner == null)
+                {
+                    Finish("(dev) no conversation partner. See log.txt");
+                    return;
+                }
+
+                double day = CampaignTime.Now.ToDays;
+                var partnerEvents = _eventStore.KnownBy?.EventsKnownBy(partner.StringId, day);
+                if (partnerEvents == null || partnerEvents.Count == 0)
+                {
+                    Finish($"(dev) {partner.Name} knows no events.");
+                    return;
+                }
+
+                WorldEvent? latestX = null;
+                RumorIndexEntry? latestResponseEntry = null;
+
+                foreach (var id in partnerEvents)
+                {
+                    var evt = _eventStore.Load(id);
+                    if (evt != null && MadeUpTalk.IsHearsayOnly(evt))
+                    {
+                        var respEntry = _eventStore.Index?.Entries
+                            .Where(e => e != null && string.Equals(e.LinkedEventId, evt.EventId, StringComparison.Ordinal) && !string.IsNullOrEmpty(EventCatalogStore.TemplateByType(e.Type)?.Response))
+                            .OrderByDescending(e => e.Day)
+                            .FirstOrDefault();
+
+                        if (respEntry != null)
+                        {
+                            if (latestX == null || evt.Day > latestX.Day)
+                            {
+                                latestX = evt;
+                                latestResponseEntry = respEntry;
+                            }
+                        }
+                    }
+                }
+
+                if (latestX == null || latestResponseEntry == null)
+                {
+                    Finish($"(dev) {partner.Name} knows no answered made-up talk.");
+                    return;
+                }
+
+                var respEvent = _eventStore.Load(latestResponseEntry.EventId);
+                if (respEvent == null)
+                {
+                    Finish($"(dev) Response event {latestResponseEntry.EventId} could not be loaded.");
+                    return;
+                }
+
+                string stepperHeroId = respEvent.OriginatorHeroId ?? respEvent.KnownBy?.FirstOrDefault(k => k.Hop == 0)?.HeroId ?? partner.StringId;
+
+                int rejudgedCount = 0;
+                int retractedCount = 0;
+                double retractedTotal = 0.0;
+
+                var sbLog = new StringBuilder();
+                sbLog.AppendLine($"(dev) [forced] Response {latestResponseEntry.EventId} reaches listeners of {latestX.EventId}:");
+
+                if (latestX.KnownBy != null)
+                {
+                    foreach (var xKnower in latestX.KnownBy.ToList())
+                    {
+                        if (xKnower == null) continue;
+                        if (string.Equals(xKnower.HeroId, _eventStore.PlayerHeroId, StringComparison.Ordinal)) continue;
+                        if (string.Equals(xKnower.HeroId, latestX.OriginatorHeroId, StringComparison.Ordinal)) continue;
+                        if (xKnower.Believes == false) continue;
+                        if (string.Equals(xKnower.BeliefReason, BeliefJudge.LegacyReason, StringComparison.Ordinal)) continue;
+                        if (string.Equals(xKnower.BeliefReason, BeliefReason.KnowsTruth.ToString(), StringComparison.Ordinal)) continue;
+
+                        var rKnower = respEvent.EntryFor(xKnower.HeroId);
+                        if (rKnower == null)
+                        {
+                            rKnower = new KnownByEntry
+                            {
+                                HeroId = xKnower.HeroId,
+                                Hop = 1,
+                                SourceHeroId = stepperHeroId,
+                                LearnedDay = day
+                            };
+                            respEvent.KnownBy ??= new List<KnownByEntry>();
+                            respEvent.KnownBy.Add(rKnower);
+                        }
+                        else
+                        {
+                            rKnower.Hop = 1;
+                            rKnower.SourceHeroId = stepperHeroId;
+                            rKnower.LearnedDay = day;
+                        }
+
+                        _scheduler.DeliverEventToKnowers(respEvent, new[] { rKnower }, day, forceDisbelief: true);
+
+                        var reloadedX = _eventStore.Load(latestX.EventId);
+                        var updatedKnower = reloadedX?.EntryFor(xKnower.HeroId);
+                        if (updatedKnower != null && updatedKnower.Believes == false)
+                        {
+                            rejudgedCount++;
+                            int retractedHere = updatedKnower.RelationImpacts?.Count(ri => ri.Contradicted && ri.ContradictedDay == day) ?? 0;
+                            double deltaHere = updatedKnower.RelationImpacts?.Where(ri => ri.Contradicted && ri.ContradictedDay == day).Sum(ri => Math.Abs((double)ri.Delta)) ?? 0.0;
+                            retractedCount += retractedHere;
+                            retractedTotal += deltaHere;
+                            sbLog.AppendLine($"  [forced] {xKnower.HeroId} rejudged to disbelieve, retracted {retractedHere} impacts ({deltaHere:0.##} delta)");
+                        }
+                    }
+                }
+
+                ModLog.Info(sbLog.ToString().TrimEnd());
+                Finish($"(dev) {rejudgedCount} rejudged to disbelieve, retracted {retractedCount} impact(s) ({retractedTotal:0.##} total). See log.txt");
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev response reaches listeners failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_TellMadeUpTalkAndResponses()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null)
+                {
+                    Finish("(dev) no conversation partner. See log.txt");
+                    return;
+                }
+
+                string heroName = hero.Name?.ToString() ?? hero.StringId;
+                string? playerHeroId = Hero.MainHero?.StringId;
+                if (string.IsNullOrEmpty(playerHeroId))
+                {
+                    Finish("(dev) main hero is not available. See log.txt");
+                    return;
+                }
+
+                if (_dialogs == null || _dialogs.OfferSelector == null)
+                {
+                    ModLog.Info("[DevDialogue] tell made-up talk: rumor dialog behavior is not available in this session.");
+                    Finish("(dev) rumor dialog behavior is not available in this session. See log.txt");
+                    return;
+                }
+
+                if (_eventStore.KnownBy == null)
+                {
+                    Finish($"(dev) {heroName} knows no events.");
+                    return;
+                }
+
+                double day = CampaignTime.Now.ToDays;
+                var eventIds = _eventStore.KnownBy.EventsKnownBy(hero.StringId, day);
+
+                var pickResult = MadeUpTalkPicker.PickMadeUpTalk(
+                    eventIds,
+                    id => _eventStore.Load(id),
+                    hero.StringId,
+                    playerHeroId!,
+                    day,
+                    _config.Memory,
+                    id => (_dialogs.PlayerHeardLog != null && _dialogs.PlayerHeardLog.Contains(id)) ||
+                          (_eventStore.KnownBy != null && _eventStore.KnownBy.EventsKnownBy(playerHeroId!, day).Contains(id)));
+
+                ModLog.Info($"[DevDialogue] forced tell made-up talk for {heroName} ({hero.StringId}) on day {day:F1}: {eventIds.Count} known event(s), {pickResult.TotalMadeUpKnown} made-up talk(s)");
+
+                foreach (var eval in pickResult.Evaluations.Where(e => e.Status != MadeUpTalkCandidateStatus.NotMadeUpTalk && e.Status != MadeUpTalkCandidateStatus.NotLoadable))
+                {
+                    string detail = !string.IsNullOrEmpty(eval.Reason) ? $" ({eval.Reason})" : string.Empty;
+                    ModLog.Info($"  [{eval.Status}] {eval.EventId}{detail}");
+                }
+
+                if (pickResult.ChosenEvent == null)
+                {
+                    string noRumorMsg = pickResult.TotalMadeUpKnown > 0
+                        ? string.Format(
+                            CultureInfo.InvariantCulture,
+                            "(dev) {0}: knows {1} made-up talk(s), none can be told (already heard {2}, forgotten {3}). See log.txt",
+                            heroName,
+                            pickResult.TotalMadeUpKnown,
+                            pickResult.AlreadyHeardCount,
+                            pickResult.ForgottenCount)
+                        : string.Format(
+                            CultureInfo.InvariantCulture,
+                            "(dev) {0}: knows 0 made-up talk. See log.txt",
+                            heroName);
+
+                    Finish(noRumorMsg);
+                    return;
+                }
+
+                var chosenEvent = pickResult.ChosenEvent;
+                var tellerEntry = chosenEvent.EntryFor(hero.StringId);
+                int tellerHop = tellerEntry?.Hop ?? 0;
+                string? sourceHeroId = tellerEntry?.SourceHeroId;
+
+                string? linkedId = chosenEvent.LinkedEventId;
+                bool isCorrection = !string.IsNullOrEmpty(linkedId) &&
+                    ((_dialogs.PlayerHeardLog != null && _dialogs.PlayerHeardLog.Contains(linkedId!)) ||
+                     (_eventStore.KnownBy != null && _eventStore.KnownBy.EventsKnownBy(playerHeroId!, day).Contains(linkedId!)));
+
+                var candidate = new RumorCandidate
+                {
+                    Event = chosenEvent,
+                    TellerHop = tellerHop,
+                    PlayerExistingHop = null,
+                    InvolvesHeroPlayerCaresAbout = false,
+                    SourceHeroId = sourceHeroId,
+                    IsCorrection = isCorrection
+                };
+
+                var tellerProfile = _dialogs.BuildSocialProfile(hero);
+                var offer = _dialogs.OfferSelector.BuildOffer(candidate, tellerProfile, day, VolunteerTier.Full);
+                var renderResult = FallbackTextRenderer.RenderBoth(offer.Composed, _config.Presentation);
+
+                _dialogs.ApplyOfferAndRecord(offer, chosenEvent, hero.StringId, day, heroName);
+
+                string deliveredMsg = $"Rumor delivered to player: event {offer.EventId} (full, hop {offer.ResultingPlayerHop}, isRetell={offer.IsRetell}, heldBack={offer.HeldBack}, closing={offer.Composed.ClosingKey ?? "none"}) from {hero.Name} (triggered via dev command; does not count against daily share limit)";
+                ModLog.Info(deliveredMsg);
+                ModLog.Info($"  text shown: \"{renderResult.PlainText ?? renderResult.DisplayText}\"");
+                RumorDialogBehavior.LogDeliveredPrefix(offer);
+                RumorDialogBehavior.LogDeliveredFeeling(offer);
+
+                var responseEntries = _eventStore.Index?.Entries
+                    .Where(e => e != null &&
+                                string.Equals(e.LinkedEventId, chosenEvent.EventId, StringComparison.Ordinal) &&
+                                !string.IsNullOrEmpty(EventCatalogStore.TemplateByType(e.Type)?.Response))
+                    .ToList();
+
+                var responseEvents = new List<WorldEvent>();
+                if (responseEntries != null)
+                {
+                    foreach (var entry in responseEntries)
+                    {
+                        var respEvt = _eventStore.Load(entry.EventId);
+                        if (respEvt != null)
+                        {
+                            responseEvents.Add(respEvt);
+                        }
+                    }
+                }
+
+                var sortedResponses = MadeUpTalkPicker.SortResponseEvents(responseEvents);
+                var toldResponses = new List<(string EventId, string SpeakerId, string SpeakerName)>();
+
+                foreach (var respEvt in sortedResponses)
+                {
+                    bool playerAlreadyKnows = respEvt.IsKnownBy(playerHeroId!) ||
+                        (_dialogs.PlayerHeardLog != null && _dialogs.PlayerHeardLog.Contains(respEvt.EventId)) ||
+                        (_eventStore.KnownBy != null && _eventStore.KnownBy.EventsKnownBy(playerHeroId!, day).Contains(respEvt.EventId));
+
+                    if (playerAlreadyKnows)
+                    {
+                        ModLog.Info($"  [skip] response {respEvt.EventId} ({respEvt.Type}): player already knows it");
+                        continue;
+                    }
+
+                    var speakerEntry = MadeUpTalkPicker.PickResponseSpeaker(respEvt, playerHeroId!, day, _config.Memory);
+                    if (speakerEntry == null)
+                    {
+                        ModLog.Info($"  [skip] response {respEvt.EventId} ({respEvt.Type}): no eligible knower who still remembers it (excluding player)");
+                        continue;
+                    }
+
+                    var speakerHero = _heroLookup?.Get(speakerEntry.HeroId) ?? Hero.Find(speakerEntry.HeroId);
+                    if (speakerHero == null)
+                    {
+                        ModLog.Info($"  [skip] response {respEvt.EventId} ({respEvt.Type}): speaker {speakerEntry.HeroId} could not be found in game");
+                        continue;
+                    }
+
+                    string respSpeakerName = speakerHero.Name?.ToString() ?? speakerHero.StringId;
+                    int respTellerHop = speakerEntry.Hop;
+                    string? respSourceHeroId = speakerEntry.SourceHeroId;
+                    string? respLinkedId = respEvt.LinkedEventId;
+                    bool respIsCorrection = !string.IsNullOrEmpty(respLinkedId) &&
+                        ((_dialogs.PlayerHeardLog != null && _dialogs.PlayerHeardLog.Contains(respLinkedId!)) ||
+                         (_eventStore.KnownBy != null && _eventStore.KnownBy.EventsKnownBy(playerHeroId!, day).Contains(respLinkedId!)));
+
+                    var respCandidate = new RumorCandidate
+                    {
+                        Event = respEvt,
+                        TellerHop = respTellerHop,
+                        PlayerExistingHop = null,
+                        InvolvesHeroPlayerCaresAbout = false,
+                        SourceHeroId = respSourceHeroId,
+                        IsCorrection = respIsCorrection
+                    };
+
+                    var respTellerProfile = _dialogs.BuildSocialProfile(speakerHero);
+                    var respOffer = _dialogs.OfferSelector.BuildOffer(respCandidate, respTellerProfile, day, VolunteerTier.Full);
+                    var respRenderResult = FallbackTextRenderer.RenderBoth(respOffer.Composed, _config.Presentation);
+
+                    _dialogs.ApplyOfferAndRecord(respOffer, respEvt, speakerHero.StringId, day, respSpeakerName);
+
+                    ModLog.Info($"  [told] response {respEvt.EventId} ({respEvt.Type}) told by {speakerHero.StringId} (hop {speakerEntry.Hop})");
+                    string respDeliveredMsg = $"Rumor delivered to player: event {respOffer.EventId} (full, hop {respOffer.ResultingPlayerHop}, isRetell={respOffer.IsRetell}, heldBack={respOffer.HeldBack}, closing={respOffer.Composed.ClosingKey ?? "none"}) from {speakerHero.Name} (triggered via dev command; does not count against daily share limit)";
+                    ModLog.Info(respDeliveredMsg);
+                    ModLog.Info($"  text shown: \"{respRenderResult.PlainText ?? respRenderResult.DisplayText}\"");
+                    RumorDialogBehavior.LogDeliveredPrefix(respOffer);
+                    RumorDialogBehavior.LogDeliveredFeeling(respOffer);
+
+                    toldResponses.Add((respEvt.EventId, speakerHero.StringId, respSpeakerName));
+                }
+
+                string summary;
+                if (toldResponses.Count == 0)
+                {
+                    summary = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "(dev) Told {0} ({1}); 0 responses told. See log.txt",
+                        chosenEvent.EventId,
+                        chosenEvent.Type);
+                }
+                else
+                {
+                    summary = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "(dev) Told {0} ({1}); {2} response(s) told ({3}). See log.txt",
+                        chosenEvent.EventId,
+                        chosenEvent.Type,
+                        toldResponses.Count,
+                        string.Join(", ", toldResponses.Select(r => $"{r.SpeakerId} ({r.EventId})")));
+                }
+
+                Finish(summary);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev tell made-up talk and responses failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_ForceSpokeAgainstRuler()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var speaker = Hero.OneToOneConversationHero;
+                if (speaker == null)
+                {
+                    Finish("(dev) No conversation partner found.");
+                    return;
+                }
+
+                if (_config.FalseRumors?.Enabled == false)
+                {
+                    ModLog.Info("Dev force spoke_against_ruler: skipped (disabled by falseRumors.enabled)");
+                    Finish("(dev) spoke_against_ruler: skipped (disabled by falseRumors.enabled)");
+                    return;
+                }
+
+                var situation = SituationCatalogStore.Catalog?.Situations.FirstOrDefault(s => s.Id == "spoke_against_ruler");
+                if (situation == null || !situation.IsEnabled(_config))
+                {
+                    Finish("(dev) spoke_against_ruler is disabled or template not found.");
+                    return;
+                }
+
+                var settlement = speaker.CurrentSettlement;
+                if (settlement == null)
+                {
+                    Finish($"(dev) {speaker.Name} is not in a settlement.");
+                    return;
+                }
+
+                double day = CampaignTime.Now.ToDays;
+                string? playerHeroId = Hero.MainHero?.StringId;
+                var present = EligibilityLabel.GetPresentHeroesAtSettlement(settlement);
+                var candidates = present
+                    .Where(h => h != null
+                                && !string.IsNullOrEmpty(h.StringId)
+                                && h != Hero.MainHero
+                                && (string.IsNullOrEmpty(playerHeroId) || h.StringId != playerHeroId)
+                                && h != speaker)
+                    .OrderBy(h => h.StringId, StringComparer.Ordinal)
+                    .ToList();
+
+                var traits = _traitLookup ?? (_heroLookup != null ? new GameTraitLookup(_heroLookup) : null);
+                SituationRunResult? successfulRun = null;
+                Hero? matchedListener = null;
+
+                foreach (var cand in candidates)
+                {
+                    var roleAssignments = new Dictionary<string, Hero>
+                    {
+                        ["speaker"] = speaker,
+                        ["listener"] = cand
+                    };
+
+                    var runResult = SituationRunner.Run(
+                        situation,
+                        roleAssignments,
+                        day,
+                        "forced by dev",
+                        _eventStore,
+                        traits,
+                        _config,
+                        _heroLookup,
+                        forced: true);
+
+                    if (runResult.Started)
+                    {
+                        successfulRun = runResult;
+                        matchedListener = cand;
+                        break;
+                    }
+                }
+
+                if (successfulRun != null && matchedListener != null)
+                {
+                    string eventId = successfulRun.EventIds.Count > 0 ? successfulRun.EventIds[0] : "none";
+                    var bypassed = successfulRun.ConditionResults.Where(c => c.Detail != null && c.Detail.Contains("forced")).Select(c => !string.IsNullOrEmpty(c.Label) ? c.Label : c.Type).ToList();
+                    string bypassedStr = bypassed.Count > 0 ? string.Join(", ", bypassed) : "none";
+
+                    ModLog.Info($"(dev) spoke_against_ruler: eventId={eventId}, roles=[speaker={speaker.StringId}, listener={matchedListener.StringId}], bypassed=[{bypassedStr}]");
+                    Finish($"(dev) spoke_against_ruler: speaker={speaker.Name}, listener={matchedListener.Name} -> event {eventId}. See log.txt");
+                }
+                else
+                {
+                    Finish($"(dev) spoke_against_ruler: no candidate listener in {settlement.Name} satisfied conditions. See log.txt");
+                }
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev force spoke_against_ruler failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_ForceRefusedAid()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var refuser = Hero.OneToOneConversationHero;
+                if (refuser == null)
+                {
+                    Finish("(dev) No conversation partner found.");
+                    return;
+                }
+
+                if (_config.FalseRumors?.Enabled == false)
+                {
+                    ModLog.Info("Dev force refused_aid: skipped (disabled by falseRumors.enabled)");
+                    Finish("(dev) refused_aid: skipped (disabled by falseRumors.enabled)");
+                    return;
+                }
+
+                var situation = SituationCatalogStore.Catalog?.Situations.FirstOrDefault(s => s.Id == "refused_aid");
+                if (situation == null || !situation.IsEnabled(_config))
+                {
+                    Finish("(dev) refused_aid is disabled or template not found.");
+                    return;
+                }
+
+                var settlement = refuser.CurrentSettlement;
+                if (settlement == null)
+                {
+                    Finish($"(dev) {refuser.Name} is not in a settlement.");
+                    return;
+                }
+
+                double day = CampaignTime.Now.ToDays;
+                string? playerHeroId = Hero.MainHero?.StringId;
+                var present = EligibilityLabel.GetPresentHeroesAtSettlement(settlement);
+                var candidates = present
+                    .Where(h => h != null
+                                && !string.IsNullOrEmpty(h.StringId)
+                                && h != Hero.MainHero
+                                && (string.IsNullOrEmpty(playerHeroId) || h.StringId != playerHeroId)
+                                && h != refuser)
+                    .OrderBy(h => h.StringId, StringComparer.Ordinal)
+                    .ToList();
+
+                var traits = _traitLookup ?? (_heroLookup != null ? new GameTraitLookup(_heroLookup) : null);
+                SituationRunResult? successfulRun = null;
+                Hero? matchedAsker = null;
+
+                foreach (var cand in candidates)
+                {
+                    var roleAssignments = new Dictionary<string, Hero>
+                    {
+                        ["refuser"] = refuser,
+                        ["asker"] = cand
+                    };
+
+                    var runResult = SituationRunner.Run(
+                        situation,
+                        roleAssignments,
+                        day,
+                        "forced by dev",
+                        _eventStore,
+                        traits,
+                        _config,
+                        _heroLookup,
+                        forced: true);
+
+                    if (runResult.Started)
+                    {
+                        successfulRun = runResult;
+                        matchedAsker = cand;
+                        break;
+                    }
+                }
+
+                if (successfulRun != null && matchedAsker != null)
+                {
+                    string eventId = successfulRun.EventIds.Count > 0 ? successfulRun.EventIds[0] : "none";
+                    var bypassed = successfulRun.ConditionResults.Where(c => c.Detail != null && c.Detail.Contains("forced")).Select(c => !string.IsNullOrEmpty(c.Label) ? c.Label : c.Type).ToList();
+                    string bypassedStr = bypassed.Count > 0 ? string.Join(", ", bypassed) : "none";
+
+                    ModLog.Info($"(dev) refused_aid: eventId={eventId}, branch={successfulRun.SelectedBranchId ?? "none"}, roles=[refuser={refuser.StringId}, asker={matchedAsker.StringId}], bypassed=[{bypassedStr}]");
+                    Finish($"(dev) refused_aid: refuser={refuser.Name}, asker={matchedAsker.Name} -> branch {successfulRun.SelectedBranchId ?? "none"} -> event {eventId}. See log.txt");
+                }
+                else
+                {
+                    Finish($"(dev) refused_aid: no candidate asker in {settlement.Name} satisfied conditions. See log.txt");
+                }
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev force refused_aid failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_ForceRashCapture()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null)
+                {
+                    Finish("(dev) No conversation partner found.");
+                    return;
+                }
+
+                if (_config.FalseRumors?.Enabled == false)
+                {
+                    ModLog.Info("Dev force rash_capture: skipped (disabled by falseRumors.enabled)");
+                    Finish("(dev) rash_capture: skipped (disabled by falseRumors.enabled)");
+                    return;
+                }
+
+                var latestEntry = _eventStore?.Index?.Entries?
+                    .Where(e => e != null && e.Type == "hero_taken_prisoner" && e.ParticipantHeroIds != null && e.ParticipantHeroIds.Contains(hero.StringId))
+                    .OrderByDescending(e => e.Day)
+                    .FirstOrDefault();
+
+                if (latestEntry == null)
+                {
+                    Finish($"(dev) No hero_taken_prisoner event found involving {hero.Name}.");
+                    return;
+                }
+
+                var triggerEvent = _eventStore?.Load(latestEntry.EventId);
+                if (triggerEvent == null)
+                {
+                    Finish($"(dev) Failed to load event {latestEntry.EventId}.");
+                    return;
+                }
+
+                double day = CampaignTime.Now.ToDays;
+                var traits = _traitLookup ?? (_heroLookup != null ? new GameTraitLookup(_heroLookup) : null);
+
+                var runResult = SituationRunner.RunAfterEventForced(
+                    "rash_capture",
+                    triggerEvent,
+                    day,
+                    _eventStore,
+                    traits,
+                    _config,
+                    _heroLookup);
+
+                if (runResult.Started)
+                {
+                    string eventId = runResult.EventIds.Count > 0 ? runResult.EventIds[0] : "none";
+                    var bypassed = runResult.ConditionResults.Where(c => c.Detail != null && c.Detail.Contains("forced")).Select(c => !string.IsNullOrEmpty(c.Label) ? c.Label : c.Type).ToList();
+                    string bypassedStr = bypassed.Count > 0 ? string.Join(", ", bypassed) : "none";
+
+                    ModLog.Info($"(dev) rash_capture: eventId={eventId}, triggerEvent={triggerEvent.EventId}, bypassed=[{bypassedStr}]");
+                    Finish($"(dev) rash_capture: trigger {triggerEvent.EventId} -> event {eventId}. See log.txt");
+                }
+                else
+                {
+                    Finish($"(dev) rash_capture: failed ({runResult.AbortReason ?? "unknown"}). See log.txt");
+                }
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev force rash_capture failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_ForceMistreatedPrisoner()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null)
+                {
+                    Finish("(dev) No conversation partner found.");
+                    return;
+                }
+
+                if (_config.FalseRumors?.Enabled == false)
+                {
+                    ModLog.Info("Dev force mistreated_prisoner: skipped (disabled by falseRumors.enabled)");
+                    Finish("(dev) mistreated_prisoner: skipped (disabled by falseRumors.enabled)");
+                    return;
+                }
+
+                var latestEntry = _eventStore?.Index?.Entries?
+                    .Where(e => e != null && e.Type == "hero_taken_prisoner" && e.ParticipantHeroIds != null && e.ParticipantHeroIds.Contains(hero.StringId))
+                    .OrderByDescending(e => e.Day)
+                    .FirstOrDefault();
+
+                if (latestEntry == null)
+                {
+                    Finish($"(dev) No hero_taken_prisoner event found involving {hero.Name}.");
+                    return;
+                }
+
+                var triggerEvent = _eventStore?.Load(latestEntry.EventId);
+                if (triggerEvent == null)
+                {
+                    Finish($"(dev) Failed to load event {latestEntry.EventId}.");
+                    return;
+                }
+
+                double day = CampaignTime.Now.ToDays;
+                var traits = _traitLookup ?? (_heroLookup != null ? new GameTraitLookup(_heroLookup) : null);
+
+                var runResult = SituationRunner.RunAfterEventForced(
+                    "mistreated_prisoner",
+                    triggerEvent,
+                    day,
+                    _eventStore,
+                    traits,
+                    _config,
+                    _heroLookup);
+
+                if (runResult.Started)
+                {
+                    string eventId = runResult.EventIds.Count > 0 ? runResult.EventIds[0] : "none";
+                    var bypassed = runResult.ConditionResults.Where(c => c.Detail != null && c.Detail.Contains("forced")).Select(c => !string.IsNullOrEmpty(c.Label) ? c.Label : c.Type).ToList();
+                    string bypassedStr = bypassed.Count > 0 ? string.Join(", ", bypassed) : "none";
+
+                    string hop0Str = triggerEvent.CaptorArmyLeaderHeroIds != null && triggerEvent.CaptorArmyLeaderHeroIds.Count > 0
+                        ? string.Join(", ", triggerEvent.CaptorArmyLeaderHeroIds)
+                        : "none";
+
+                    ModLog.Info($"(dev) mistreated_prisoner: eventId={eventId}, triggerEvent={triggerEvent.EventId}, captorArmy=[{hop0Str}] (who was actually added: see the 'army witnesses' line above), bypassed=[{bypassedStr}]");
+                    Finish($"(dev) mistreated_prisoner: trigger {triggerEvent.EventId} -> event {eventId} (captor's army: {hop0Str}). See log.txt");
+                }
+                else
+                {
+                    Finish($"(dev) mistreated_prisoner: failed ({runResult.AbortReason ?? "unknown"}). See log.txt");
+                }
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev force mistreated_prisoner failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_ForcePoisoned()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var poisoner = Hero.OneToOneConversationHero;
+                if (poisoner == null)
+                {
+                    Finish("(dev) No conversation partner found.");
+                    return;
+                }
+
+                if (_config.FalseRumors?.Enabled == false)
+                {
+                    ModLog.Info("Dev force poisoned: skipped (disabled by falseRumors.enabled)");
+                    Finish("(dev) poisoned: skipped (disabled by falseRumors.enabled)");
+                    return;
+                }
+
+                var latestEntry = _eventStore?.Index?.Entries?
+                    .Where(e => e != null && e.Type == "hero_died_of_old_age")
+                    .OrderByDescending(e => e.Day)
+                    .FirstOrDefault();
+
+                if (latestEntry == null)
+                {
+                    Finish("(dev) No hero_died_of_old_age event found.");
+                    return;
+                }
+
+                var triggerEvent = _eventStore?.Load(latestEntry.EventId);
+                if (triggerEvent == null)
+                {
+                    Finish($"(dev) Failed to load event {latestEntry.EventId}.");
+                    return;
+                }
+
+                double day = CampaignTime.Now.ToDays;
+                var traits = _traitLookup ?? (_heroLookup != null ? new GameTraitLookup(_heroLookup) : null);
+
+                ModLog.Info($"Dev force poisoned: {poisoner.Name} ({poisoner.StringId}) directly bound as poisoner (grudge and trait checks bypassed by forced dev tool)");
+
+                var preBound = new Dictionary<string, string?>
+                {
+                    ["poisoner"] = poisoner.StringId
+                };
+
+                var runResult = SituationRunner.RunAfterEventForced(
+                    "poisoned_secretly",
+                    triggerEvent,
+                    day,
+                    _eventStore,
+                    traits,
+                    _config,
+                    _heroLookup,
+                    preBoundDerivedHeroes: preBound);
+
+                if (runResult.Started)
+                {
+                    string eventId = runResult.EventIds.Count > 0 ? runResult.EventIds[0] : "none";
+                    var bypassed = runResult.ConditionResults.Where(c => c.Detail != null && c.Detail.Contains("forced")).Select(c => !string.IsNullOrEmpty(c.Label) ? c.Label : c.Type).ToList();
+                    string bypassedStr = bypassed.Count > 0 ? string.Join(", ", bypassed) : "none";
+
+                    ModLog.Info($"(dev) poisoned_secretly: eventId={eventId}, triggerEvent={triggerEvent.EventId}, roles=[poisoner={poisoner.StringId}], bypassed=[{bypassedStr}]");
+                    Finish($"(dev) poisoned_secretly: trigger {triggerEvent.EventId} -> event {eventId}. See log.txt");
+                }
+                else
+                {
+                    Finish($"(dev) poisoned_secretly: failed ({runResult.AbortReason ?? "unknown"}). See log.txt");
+                }
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev force poisoned failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
         private void Consequence_WhyHearFew()
         {
             SetResult("(dev) no result - see log.txt");
@@ -1609,6 +3230,46 @@ namespace VividWorld.Debug
             }
         }
 
+        private void Consequence_ShamefulNews()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null)
+                {
+                    Finish("(dev) no conversation partner. See log.txt");
+                    return;
+                }
+
+                string heroName = hero.Name?.ToString() ?? hero.StringId;
+                string playerHeroId = Hero.MainHero?.StringId ?? "player";
+                double day = CampaignTime.Now.ToDays;
+
+                string report = DevReport.FormatShamefulNews(
+                    hero,
+                    playerHeroId,
+                    _eventStore,
+                    _channel,
+                    _feelingWorld,
+                    _traitLookup,
+                    _config,
+                    day,
+                    out int totalScandals,
+                    out int toldToPlayerCount);
+
+                ModLog.Info(report);
+                Finish(string.Format(CultureInfo.InvariantCulture,
+                    "(dev) {0}: {1} of {2} scandals would be told to you. See log.txt",
+                    heroName, toldToPlayerCount, totalScandals));
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev shameful news dump failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
         private void Consequence_TellWithFeeling()
         {
             SetResult("(dev) no result - see log.txt");
@@ -1718,6 +3379,78 @@ namespace VividWorld.Debug
             catch (Exception ex)
             {
                 ModLog.Error("Dev forced feeling tell failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        /// <summary>
+        /// 打探預覽：只跑分類器，不讓任何人知道任何事、不記紀事、不算次數。
+        /// 對話框一行（今天被問過幾次／上限、紀事幾個區塊、各種類幾個），日誌每個區塊一行。
+        /// </summary>
+        private void Consequence_ProbePreview()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var speaker = Hero.OneToOneConversationHero;
+                if (speaker == null || _dialogs == null)
+                {
+                    Finish("(dev) No conversation partner found.");
+                    return;
+                }
+
+                var heardLog = _dialogs.PlayerHeardLog;
+                if (heardLog == null)
+                {
+                    Finish("(dev) The player heard log is not available.");
+                    return;
+                }
+
+                string partnerId = speaker.StringId;
+                string partnerName = speaker.Name?.ToString() ?? partnerId;
+                double day = CampaignTime.Now.ToDays;
+                int maxEntries = _config?.Presentation?.ChronicleMaxEntries ?? 50;
+
+                var provider = new ChronicleProvider(
+                    heardLog,
+                    EventCatalogStore.TemplateByType,
+                    _config?.Presentation ?? new PresentationConfig());
+                var blocks = provider.ForPlayer(maxEntries, day, out _);
+
+                int cap = _config?.Dialogue.ProbesPerHeroPerDay ?? 0;
+                string capStr = cap <= 0 ? "no limit" : cap.ToString();
+                int todayCount = _dialogs.ProbesTodayFor(partnerId);
+
+                var counts = new Dictionary<string, int>(StringComparer.Ordinal);
+                var sb = new StringBuilder();
+                sb.AppendLine($"[DevDialogue] Probe preview for {partnerName} ({partnerId}) on day {day:F1}: asked today {todayCount}/{capStr}, {blocks.Count} block(s) in the chronicle (nothing is changed)");
+
+                foreach (var block in blocks)
+                {
+                    string headline = ChronicleEntryVM.ResolveHeadline(block, _heroLookup)?.Text ?? block.EventId;
+                    var made = _dialogs.ClassifyProbe(speaker, block.EventId, day, out var failure);
+                    if (made == null)
+                    {
+                        sb.AppendLine($"  block '{headline}' [{block.EventId}]: could not classify - {failure}");
+                        continue;
+                    }
+
+                    var plan = made.Plan;
+                    counts[plan.ResultKindLabel] = counts.TryGetValue(plan.ResultKindLabel, out var n) ? n + 1 : 1;
+                    string spoken = plan.SentenceKey ?? (plan.Offer != null ? "told:" + plan.Offer.EventId : "none");
+                    sb.AppendLine($"  block '{headline}' [{block.EventId}] (E {made.ECount}/C {made.CCount}): {plan.ResultKindLabel} - {plan.LogReason} | sentence: {spoken}");
+                }
+
+                ModLog.Info(sb.ToString().TrimEnd());
+
+                string breakdown = counts.Count > 0
+                    ? string.Join(", ", counts.OrderBy(kv => kv.Key, StringComparer.Ordinal).Select(kv => $"{kv.Key} {kv.Value}"))
+                    : "none";
+                Finish($"(dev) {partnerName}: asked today {todayCount}/{capStr}; {blocks.Count} blocks in your chronicle; {breakdown}. See log.txt");
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev probe preview failed", ex);
                 Finish("(dev) failed - see log.txt");
             }
         }

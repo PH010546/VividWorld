@@ -221,6 +221,78 @@ namespace VividWorld.Core.Catalog
             return Derive(baseTemplate, roles, facts, null);
         }
 
+        public static EventTemplate MadeUpSpokeAgainstRuler(EventTemplate baseTemplate)
+        {
+            if (baseTemplate == null) throw new ArgumentNullException(nameof(baseTemplate));
+
+            var roles = baseTemplate.Roles
+                .Where(r => !string.Equals(r.Key, "listener", StringComparison.OrdinalIgnoreCase))
+                .ToDictionary(r => r.Key, r => r.Value, StringComparer.Ordinal);
+
+            var facts = baseTemplate.Facts
+                .Where(f => !string.Equals(f.Id, "context", StringComparison.OrdinalIgnoreCase))
+                .Select(CopyFact)
+                .ToList();
+
+            return DeriveMadeUp(baseTemplate, roles, facts);
+        }
+
+        public static EventTemplate MadeUpPoisonedOldAge(EventTemplate baseTemplate)
+        {
+            if (baseTemplate == null) throw new ArgumentNullException(nameof(baseTemplate));
+
+            var roles = new Dictionary<string, string>(baseTemplate.Roles, StringComparer.Ordinal);
+            var facts = baseTemplate.Facts.Select(CopyFact).ToList();
+
+            return DeriveMadeUp(baseTemplate, roles, facts, linkedTemplateType: "hero_died_of_old_age");
+        }
+
+        public static EventTemplate MadeUpPoisonedAnyDeath(EventTemplate baseTemplate)
+        {
+            if (baseTemplate == null) throw new ArgumentNullException(nameof(baseTemplate));
+
+            var roles = new Dictionary<string, string>(baseTemplate.Roles, StringComparer.Ordinal);
+            var facts = baseTemplate.Facts.Select(f =>
+            {
+                if (string.Equals(f.Id, "who", StringComparison.OrdinalIgnoreCase))
+                {
+                    return MakeFact(f, "VividWorld_Fact_ConductPoisoned_WhoAnyDeath", "{VICTIM} was poisoned by {POISONER}",
+                        f.Vars != null ? new Dictionary<string, string>(f.Vars) : new Dictionary<string, string>());
+                }
+                return CopyFact(f);
+            }).ToList();
+
+            return DeriveMadeUp(baseTemplate, roles, facts, linkedTemplateType: "hero_died_naturally");
+        }
+
+        public static EventTemplate MadeUpCommon(EventTemplate baseTemplate)
+        {
+            if (baseTemplate == null) throw new ArgumentNullException(nameof(baseTemplate));
+
+            var roles = new Dictionary<string, string>(baseTemplate.Roles, StringComparer.Ordinal);
+            var facts = baseTemplate.Facts.Select(CopyFact).ToList();
+
+            return DeriveMadeUp(baseTemplate, roles, facts);
+        }
+
+        public static EventTemplate GetMadeUpVariant(EventTemplate baseTemplate, string? linkedType = null)
+        {
+            if (baseTemplate == null) throw new ArgumentNullException(nameof(baseTemplate));
+            if (string.Equals(baseTemplate.Type, "conduct_spoke_against_ruler", StringComparison.OrdinalIgnoreCase))
+            {
+                return MadeUpSpokeAgainstRuler(baseTemplate);
+            }
+            if (string.Equals(baseTemplate.Type, "conduct_poisoned", StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.Equals(linkedType, "hero_died_naturally", StringComparison.OrdinalIgnoreCase))
+                {
+                    return MadeUpPoisonedAnyDeath(baseTemplate);
+                }
+                return MadeUpPoisonedOldAge(baseTemplate);
+            }
+            return MadeUpCommon(baseTemplate);
+        }
+
         /// <summary>開發者工具要列出的所有碎片形狀（模板本身加上它的變體）。</summary>
         public static IReadOnlyList<(string Label, EventTemplate Template)> AllShapes(EventTemplate template)
         {
@@ -250,6 +322,46 @@ namespace VividWorld.Core.Catalog
                     list.Add(("hero_released (no captor, any reason)", Released(template, ReleaseReasons.Ransom, captorKnown: false)));
                     list.Add(("hero_released (old event, no reason)", ReleasedLegacy(template, captorKnown: true)));
                     list.Add(("hero_released (old event, no reason, no captor)", ReleasedLegacy(template, captorKnown: false)));
+                    break;
+                case "conduct_spoke_against_ruler":
+                    list.Add((template.Type, template));
+                    list.Add(("conduct_spoke_against_ruler (made up)", MadeUpSpokeAgainstRuler(template)));
+                    break;
+                case "conduct_poisoned":
+                    list.Add((template.Type, template));
+                    list.Add(("conduct_poisoned (made up)", MadeUpPoisonedOldAge(template)));
+                    list.Add(("conduct_poisoned (made up, any death)", MadeUpPoisonedAnyDeath(template)));
+                    break;
+                case "conduct_refused_aid":
+                case "conduct_rash_capture":
+                case "conduct_mistreated_prisoner":
+                case "victory_credit_deferred":
+                case "advice_given_freely":
+                case "brawl_man_handed_over":
+                case "seat_dispute_yielded":
+                case "tavern_good_word":
+                    list.Add((template.Type, template));
+                    list.Add(($"{template.Type} (made up)", MadeUpCommon(template)));
+                    break;
+                case "talk_denied_spoke_against_ruler":
+                    list.Add((template.Type, template));
+                    list.Add(("talk_denied_spoke_against_ruler (named)", DeniedNamed(template, "TalkDeniedSpokeAgainstRuler")));
+                    break;
+                case "talk_denied_mistreated_prisoner":
+                    list.Add((template.Type, template));
+                    list.Add(("talk_denied_mistreated_prisoner (named)", DeniedNamed(template, "TalkDeniedMistreatedPrisoner")));
+                    break;
+                case "talk_denied_refused_aid":
+                    list.Add((template.Type, template));
+                    list.Add(("talk_denied_refused_aid (named)", DeniedNamed(template, "TalkDeniedRefusedAid")));
+                    break;
+                case "talk_denied_rash_capture":
+                    list.Add((template.Type, template));
+                    list.Add(("talk_denied_rash_capture (named)", DeniedNamed(template, "TalkDeniedRashCapture")));
+                    break;
+                case "talk_denied_poisoned":
+                    list.Add((template.Type, template));
+                    list.Add(("talk_denied_poisoned (named)", DeniedNamed(template, "TalkDeniedPoisoned")));
                     break;
                 default:
                     list.Add((template.Type, template));
@@ -385,6 +497,36 @@ namespace VividWorld.Core.Catalog
             return copy.Count > 0 ? copy : null;
         }
 
+        public static EventTemplate DeniedNamed(EventTemplate baseTemplate, string stem)
+        {
+            if (baseTemplate == null) throw new ArgumentNullException(nameof(baseTemplate));
+
+            var roles = new Dictionary<string, string>(baseTemplate.Roles, StringComparer.Ordinal);
+            roles["originator"] = "{ORIGINATOR}";
+
+            var selfTell = baseTemplate.SelfTell != null
+                ? new Dictionary<string, SelfTellRule>(baseTemplate.SelfTell, StringComparer.Ordinal)
+                : new Dictionary<string, SelfTellRule>(StringComparer.Ordinal);
+            selfTell["originator"] = SelfTellRule.Never;
+
+            var facts = baseTemplate.Facts.Select(f =>
+            {
+                if (string.Equals(f.Id, "who", StringComparison.OrdinalIgnoreCase))
+                {
+                    var copy = CopyFact(f);
+                    copy.TextId = FactPrefix + stem + "_WhoNamed";
+                    // 整句句型只拿碎片帶的變數，點名的那個人要掛在這一塊，句子裡的名字才填得上
+                    copy.Vars["ORIGINATOR"] = "hero:{ORIGINATOR}";
+                    return copy;
+                }
+                return CopyFact(f);
+            }).ToList();
+
+            var derived = Derive(baseTemplate, roles, facts, selfTell);
+            derived.Response = baseTemplate.Response;
+            return derived;
+        }
+
         private static EventTemplate Derive(
             EventTemplate baseTemplate,
             Dictionary<string, string> roles,
@@ -404,6 +546,42 @@ namespace VividWorld.Core.Catalog
                 Headline = baseTemplate.Headline,
                 SelfTell = selfTell,
                 ColocatedWitnessAsHearsay = baseTemplate.ColocatedWitnessAsHearsay,
+                Response = baseTemplate.Response,
+                Feelings = baseTemplate.Feelings != null ? new Dictionary<string, string>(baseTemplate.Feelings, StringComparer.OrdinalIgnoreCase) : null,
+                FeelingOverrides = baseTemplate.FeelingOverrides != null ? new List<FeelingOverride>(baseTemplate.FeelingOverrides) : null,
+                SelfFeelingVariants = baseTemplate.SelfFeelingVariants
+            };
+        }
+
+        private static EventTemplate DeriveMadeUp(
+            EventTemplate baseTemplate,
+            Dictionary<string, string> roles,
+            List<TemplateFact> facts,
+            string? linkedTemplateType = null)
+        {
+            var selfTell = new Dictionary<string, SelfTellRule>(StringComparer.Ordinal);
+            foreach (var r in roles.Keys)
+            {
+                selfTell[r] = SelfTellRule.Never;
+            }
+
+            return new EventTemplate
+            {
+                Type = baseTemplate.Type,
+                Origin = EventOrigin.Public,
+                DramaWeight = baseTemplate.DramaWeight,
+                DramaScale = baseTemplate.DramaScale,
+                LinkedTemplateType = linkedTemplateType ?? baseTemplate.LinkedTemplateType,
+                Roles = roles,
+                KnowingRoles = new HashSet<string>(StringComparer.Ordinal),
+                Facts = facts,
+                Opinions = baseTemplate.Opinions != null ? new List<OpinionDef>(baseTemplate.Opinions) : null,
+                Headline = baseTemplate.Headline,
+                SelfTell = selfTell,
+                Retired = baseTemplate.Retired,
+                ColocatedWitnessAsHearsay = baseTemplate.ColocatedWitnessAsHearsay,
+                WitnessSource = "none",
+                MadeUpHearsay = true,
                 Feelings = baseTemplate.Feelings != null ? new Dictionary<string, string>(baseTemplate.Feelings, StringComparer.OrdinalIgnoreCase) : null,
                 FeelingOverrides = baseTemplate.FeelingOverrides != null ? new List<FeelingOverride>(baseTemplate.FeelingOverrides) : null,
                 SelfFeelingVariants = baseTemplate.SelfFeelingVariants

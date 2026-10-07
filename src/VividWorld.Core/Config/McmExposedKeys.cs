@@ -62,6 +62,7 @@ namespace VividWorld.Core.Config
                 new McmExposedKey("dialogue.askWillingnessThreshold", McmKeyKind.Double, -20.0, 40.0),
                 new McmExposedKey("dialogue.volunteerMode", McmKeyKind.Dropdown, choices: new[] { "auto", "casual", "realistic" }),
                 new McmExposedKey("dialogue.sharesPerHeroPerDay", McmKeyKind.Int, 0, 10),
+                new McmExposedKey("dialogue.probesPerHeroPerDay", McmKeyKind.Int, 0, 10),
 
                 // Group 4: Consequences
                 new McmExposedKey("consequences.enabled", McmKeyKind.Bool),
@@ -86,7 +87,11 @@ namespace VividWorld.Core.Config
                 new McmExposedKey("persistence.maxSnapshots", McmKeyKind.Int, 0, 64),
 
                 // Group 8: AI Integration
-                new McmExposedKey("ai.pushLanguage", McmKeyKind.Dropdown, choices: new[] { "english", "game" })
+                new McmExposedKey("ai.pushLanguage", McmKeyKind.Dropdown, choices: new[] { "english", "game" }),
+
+                // Group 9: False Rumors
+                new McmExposedKey("falseRumors.enabled", McmKeyKind.Bool),
+                new McmExposedKey("falseRumors.maxPerDay", McmKeyKind.Double, 0.0, 5.0)
             };
 
             All = keys.AsReadOnly();
@@ -123,6 +128,8 @@ namespace VividWorld.Core.Config
                     return cfg.Dialogue.VolunteerMode;
                 case "dialogue.sharesPerHeroPerDay":
                     return cfg.Dialogue.SharesPerHeroPerDay;
+                case "dialogue.probesPerHeroPerDay":
+                    return cfg.Dialogue.ProbesPerHeroPerDay;
                 case "consequences.enabled":
                     return cfg.Consequences.Enabled;
                 case "consequences.bystanderMultiplier":
@@ -151,6 +158,10 @@ namespace VividWorld.Core.Config
                     return cfg.Persistence.MaxSnapshots;
                 case "ai.pushLanguage":
                     return cfg.Ai?.PushLanguage;
+                case "falseRumors.enabled":
+                    return cfg.FalseRumors.Enabled;
+                case "falseRumors.maxPerDay":
+                    return cfg.FalseRumors.MaxPerDay;
                 default:
                     return null;
             }
@@ -209,6 +220,9 @@ namespace VividWorld.Core.Config
                             return true;
                         case "events.sources.heroPrisonerReleased":
                             cfg.Events.Sources.HeroPrisonerReleased = bVal;
+                            return true;
+                        case "falseRumors.enabled":
+                            cfg.FalseRumors.Enabled = bVal;
                             return true;
                         default:
                             return false;
@@ -298,6 +312,9 @@ namespace VividWorld.Core.Config
                         case "dialogue.sharesPerHeroPerDay":
                             cfg.Dialogue.SharesPerHeroPerDay = iVal;
                             break;
+                        case "dialogue.probesPerHeroPerDay":
+                            cfg.Dialogue.ProbesPerHeroPerDay = iVal;
+                            break;
                         case "situations.clanEscalationThreshold":
                             cfg.Situations.ClanEscalationThreshold = iVal;
                             break;
@@ -348,6 +365,9 @@ namespace VividWorld.Core.Config
                             break;
                         case "situations.maxPerDay":
                             cfg.Situations.MaxPerDay = raw;
+                            break;
+                        case "falseRumors.maxPerDay":
+                            cfg.FalseRumors.MaxPerDay = raw;
                             break;
                         default:
                             return false;

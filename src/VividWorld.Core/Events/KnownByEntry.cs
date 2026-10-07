@@ -34,6 +34,47 @@ namespace VividWorld.Core.Events
         /// <summary>此人因這則傳聞而對他人施加的好感度變化。null = 尚未結算。規格 §6.7、§10.4.6。</summary>
         public List<RelationImpact>? RelationImpacts { get; set; }
 
+        /// <summary>這個人聽到這則消息時信不信。null = 沒判過，一律當成信（舊存檔、模板沒有 opinion、判定關閉）。
+        /// 只影響好感結算與他往下傳的機率，不影響他知不知道、記多久、會不會講給玩家。</summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public bool? Believes { get; set; }
+
+        /// <summary>判定那一天；null = 沒判過。</summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public double? BeliefDay { get; set; }
+
+        /// <summary>判定時的信的機率（百分點）；一律信或沿用舊結算時不擲骰，為 null。</summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public double? BeliefChance { get; set; }
+
+        /// <summary>佔最重的那一項因素（BeliefReason 的名字），或 "Witness"、"Legacy"。</summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string? BeliefReason { get; set; }
+
+        /// <summary>這是第幾次判（種子的一部分）；從 0 起算。</summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public int? BeliefRound { get; set; }
+
+        /// <summary>知情者站出狀態：null = 未判或不站出；"sent" = 當天已發出澄清/否認事件；"waiting" = 等待進城站出；"expired" = 等待超時。</summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string? StepForward { get; set; }
+
+        /// <summary>站出擲骰時的機率（5..95）；未擲骰為 null。</summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public double? StepForwardChance { get; set; }
+
+        /// <summary>站出擲骰的那一天；未擲骰為 null。</summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public double? StepForwardDay { get; set; }
+
+        /// <summary>站出後發出的事件 id；未發出為 null。</summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string? StepForwardEventId { get; set; }
+
+        /// <summary>知不知道是誰起頭的覆寫值（打探問到被說的人本人時照玩家的版本設定；null 不寫進檔案）。</summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public bool? OriginatorKnownOverride { get; set; }
+
         /// <summary>規格 §5.1：<b>任何會被寫進分片的型別都必須帶未知欄位保存。</b>
         /// EventShardStore.Flush() 是整片重寫，一次 read-modify-write 就會讓舊版建置永久刪掉
         /// 它不認識的欄位。這個類別是系統裡變動最頻繁的持久化型別（v3 加了 KnownFactIds、

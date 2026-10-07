@@ -99,6 +99,22 @@ namespace VividWorld.Core.Config
             return notes;
         }
 
+        public static readonly string[] UnusedConsequenceKeys =
+        {
+            "misconception"
+        };
+
+        /// <summary>後果設定中不再讀取的舊鍵說明。</summary>
+        public static string? DescribeUnusedConsequenceKeys(ConsequenceConfig? consequences)
+        {
+            if (consequences?.Extra == null || consequences.Extra.Count == 0) return null;
+            var found = FindKeys(consequences.Extra, UnusedConsequenceKeys, "consequences.");
+            if (found.Count == 0) return null;
+            return "config: " + string.Join(", ", found)
+                   + " " + (found.Count == 1 ? "is" : "are")
+                   + " no longer read (clarification and retracting false rumors are now handled by truth-knower responses); left in the file untouched.";
+        }
+
         private static List<string> FindKeys(IDictionary<string, Newtonsoft.Json.Linq.JToken> extra, string[] keys, string prefix)
         {
             var found = new List<string>();

@@ -39,7 +39,11 @@ namespace VividWorld.Campaign
                 IsClanLeader = hero.IsClanLeader,
                 ClanTier = hero.Clan != null ? (int?)hero.Clan.Tier : null,
                 SettlementId = settlement?.StringId,
-                SettlementKind = settlementKind
+                SettlementKind = settlementKind,
+                IsKingdomLeader = hero.IsKingdomLeader,
+                IsPlayer = hero == Hero.MainHero,
+                IsAlive = hero.IsAlive,
+                IsLord = hero.IsLord
             };
         }
     }

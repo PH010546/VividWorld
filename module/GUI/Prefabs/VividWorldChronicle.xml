@@ -38,20 +38,37 @@
                           <ItemTemplate>
                             <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" MarginBottom="16" Sprite="BlankWhiteSquare_9" Color="#FFFFFF0A">
                               <Children>
-                                <!-- Header: Headline and Date -->
+                                <!-- Header: Headline, Conflict and Date -->
                                 <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="16" MarginRight="16" MarginTop="12">
                                   <Children>
-                                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" MarginRight="180" Brush="Popup.Description.Text" Brush.FontSize="19" Brush.FontColor="#D9C08CFF" Brush.TextHorizontalAlignment="Left" Text="@HeadlineText" />
+                                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" MarginRight="320" Brush="Popup.Description.Text" Brush.FontSize="19" Brush.FontColor="#D9C08CFF" Brush.TextHorizontalAlignment="Left" Text="@HeadlineText" />
+                                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="150" HorizontalAlignment="Right" VerticalAlignment="Center" MarginRight="165" Brush="Popup.Description.Text" Brush.FontSize="14" Brush.FontColor="#D46A6AFF" Brush.TextHorizontalAlignment="Right" Text="@ConflictText" IsVisible="@HasConflict" />
                                     <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="160" HorizontalAlignment="Right" VerticalAlignment="Center" Brush="Popup.Description.Text" Brush.FontSize="14" Brush.FontColor="#8E8A80FF" Brush.TextHorizontalAlignment="Right" Text="@DayText" />
                                   </Children>
                                 </Widget>
-                                <!-- One block per person who told you: spoken line or plain facts, then provenance underneath -->
-                                <ListPanel DataSource="{Sources}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginBottom="8" StackLayout.LayoutMethod="VerticalTopToBottom">
+                                <!-- Matters in block: first matter has no heading; 2nd matter onwards shows heading and date -->
+                                <ListPanel DataSource="{Matters}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginBottom="8" StackLayout.LayoutMethod="VerticalTopToBottom">
                                   <ItemTemplate>
                                     <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
                                       <Children>
-                                        <RichTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="16" MarginRight="16" MarginTop="8" Brush="VividWorld.Chronicle.Body.Text" Brush.FontSize="15" Brush.TextHorizontalAlignment="Left" Text="@LineText" Command.LinkClick="ExecuteLink" Command.LinkAlternateClick="ExecuteLink" />
-                                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="16" MarginRight="16" MarginTop="4" MarginBottom="8" Brush="Popup.Description.Text" Brush.FontSize="13" Brush.FontColor="#8E8A80FF" Brush.TextHorizontalAlignment="Left" Text="@ProvenanceText" />
+                                        <!-- Sub-heading for 2nd matter onwards -->
+                                        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="16" MarginRight="16" MarginTop="10" IsVisible="@HasHeading">
+                                          <Children>
+                                            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" MarginRight="180" Brush="Popup.Description.Text" Brush.FontSize="16" Brush.FontColor="#C2AD7DFF" Brush.TextHorizontalAlignment="Left" Text="@HeadingText" />
+                                            <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="160" HorizontalAlignment="Right" VerticalAlignment="Center" Brush="Popup.Description.Text" Brush.FontSize="13" Brush.FontColor="#8E8A80FF" Brush.TextHorizontalAlignment="Right" Text="@DayText" />
+                                          </Children>
+                                        </Widget>
+                                        <!-- Sources in this matter -->
+                                        <ListPanel DataSource="{Sources}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+                                          <ItemTemplate>
+                                            <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+                                              <Children>
+                                                <RichTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="16" MarginRight="16" MarginTop="8" Brush="VividWorld.Chronicle.Body.Text" Brush.FontSize="15" Brush.TextHorizontalAlignment="Left" Text="@LineText" Command.LinkClick="ExecuteLink" Command.LinkAlternateClick="ExecuteLink" />
+                                                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="16" MarginRight="16" MarginTop="4" MarginBottom="8" Brush="Popup.Description.Text" Brush.FontSize="13" Brush.FontColor="#8E8A80FF" Brush.TextHorizontalAlignment="Left" Text="@ProvenanceText" />
+                                              </Children>
+                                            </ListPanel>
+                                          </ItemTemplate>
+                                        </ListPanel>
                                       </Children>
                                     </ListPanel>
                                   </ItemTemplate>

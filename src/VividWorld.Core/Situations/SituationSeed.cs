@@ -39,6 +39,35 @@ namespace VividWorld.Core.Situations
             return RumorSeed.Of(campaignSeed, situationInstanceId, "branch", deciderHeroId);
         }
 
+        public static long ComputeDerivedRoleSeed(
+            long campaignSeed,
+            string situationId,
+            double day,
+            string derivedRoleName,
+            string targetHeroId)
+        {
+            int dayBucket = RumorSeed.DayBucket(day);
+            return RumorSeed.Of(campaignSeed, situationId, dayBucket, "derivedRole", derivedRoleName, targetHeroId);
+        }
+
+        public static long ComputeChanceSeed(
+            long baseSeed,
+            string situationId,
+            double day,
+            IReadOnlyList<string>? seedHeroIds)
+        {
+            int dayBucket = RumorSeed.DayBucket(day);
+            var parts = new List<object> { situationId, dayBucket, "chance" };
+            if (seedHeroIds != null)
+            {
+                foreach (var hId in seedHeroIds)
+                {
+                    parts.Add(hId);
+                }
+            }
+            return RumorSeed.Of(baseSeed, parts.ToArray());
+        }
+
         public static long InstanceId(
             long campaignSeed,
             string templateId,
@@ -51,5 +80,15 @@ namespace VividWorld.Core.Situations
             long situationInstanceId,
             string deciderHeroId)
             => ComputeBranchSeed(campaignSeed, situationInstanceId, deciderHeroId);
+
+        public static long Compute(long baseSeed, params object[] parts)
+        {
+            var list = new List<object>();
+            if (parts != null)
+            {
+                list.AddRange(parts);
+            }
+            return RumorSeed.Of(baseSeed, list.ToArray());
+        }
     }
 }

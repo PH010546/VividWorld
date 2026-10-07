@@ -799,6 +799,495 @@
           ]
         }
       ]
+    },
+    {
+      "id": "spoke_against_ruler",
+      "enabledBy": "@falseRumors.enabled",
+      "trigger": "direct",
+      "maxPerDay": "@falseRumors.misconductPerDay",
+      "decider": "speaker",
+      "minBranchWeight": null,
+      "roles": {
+        "speaker": {},
+        "listener": {},
+        "ruler": {
+          "derived": "rulerOf:speaker"
+        }
+      },
+      "conditions": [
+        {
+          "type": "sameSettlement",
+          "roles": [
+            "speaker",
+            "listener"
+          ],
+          "kinds": [
+            "town",
+            "castle"
+          ]
+        },
+        {
+          "type": "sameKingdom",
+          "a": "speaker",
+          "b": "listener"
+        },
+        {
+          "type": "isLord",
+          "role": "speaker"
+        },
+        {
+          "type": "isLord",
+          "role": "listener"
+        },
+        {
+          "type": "roleBound",
+          "role": "ruler"
+        },
+        {
+          "type": "differentClan",
+          "a": "listener",
+          "b": "ruler"
+        },
+        {
+          "type": "traitAtMost",
+          "role": "speaker",
+          "trait": "honor",
+          "value": -1
+        },
+        {
+          "type": "cooldown",
+          "days": 30
+        }
+      ],
+      "branches": [
+        {
+          "id": "spoke",
+          "base": 1.0,
+          "preconditions": [],
+          "events": [
+            {
+              "type": "conduct_spoke_against_ruler",
+              "bind": {
+                "SPEAKER": "speaker",
+                "LISTENER": "listener",
+                "RULER": "ruler",
+                "SETTLEMENT": "@settlement"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "refused_aid",
+      "enabledBy": "@falseRumors.enabled",
+      "trigger": "direct",
+      "maxPerDay": "@falseRumors.misconductPerDay",
+      "decider": "refuser",
+      "minBranchWeight": null,
+      "roles": {
+        "asker": {},
+        "refuser": {}
+      },
+      "conditions": [
+        {
+          "type": "sameSettlement",
+          "roles": [
+            "asker",
+            "refuser"
+          ],
+          "kinds": [
+            "town",
+            "castle"
+          ]
+        },
+        {
+          "type": "sameKingdom",
+          "a": "asker",
+          "b": "refuser"
+        },
+        {
+          "type": "isLord",
+          "role": "asker"
+        },
+        {
+          "type": "isLord",
+          "role": "refuser"
+        },
+        {
+          "type": "traitAtMost",
+          "role": "refuser",
+          "trait": "generosity",
+          "value": -1
+        },
+        {
+          "type": "cooldown",
+          "days": 30
+        }
+      ],
+      "branches": [
+        {
+          "id": "refuse",
+          "base": 1.0,
+          "traits": {
+            "generosity": -0.6
+          },
+          "preconditions": [],
+          "events": [
+            {
+              "type": "conduct_refused_aid",
+              "bind": {
+                "ASKER": "asker",
+                "REFUSER": "refuser",
+                "SETTLEMENT": "@settlement"
+              }
+            }
+          ],
+          "grudges": [
+            {
+              "from": "asker",
+              "to": "refuser",
+              "amount": -4.0
+            }
+          ]
+        },
+        {
+          "id": "help",
+          "base": 1.0,
+          "traits": {
+            "generosity": 0.6
+          },
+          "preconditions": [],
+          "events": []
+        }
+      ]
+    },
+    {
+      "id": "rash_capture",
+      "enabledBy": "@falseRumors.enabled",
+      "trigger": "afterEvent",
+      "eventTypes": [
+        "hero_taken_prisoner"
+      ],
+      "bindFromEvent": {
+        "captor": "CAPTOR",
+        "prisoner": "PRISONER"
+      },
+      "decider": "prisoner",
+      "minBranchWeight": null,
+      "roles": {
+        "captor": {},
+        "prisoner": {}
+      },
+      "conditions": [
+        {
+          "type": "isLord",
+          "role": "captor"
+        },
+        {
+          "type": "isLord",
+          "role": "prisoner"
+        },
+        {
+          "type": "traitAtMost",
+          "role": "prisoner",
+          "trait": "calculating",
+          "value": -1
+        },
+        {
+          "type": "chance",
+          "value": "@falseRumors.captureMisconductChance",
+          "seedRoles": [
+            "prisoner",
+            "captor"
+          ]
+        }
+      ],
+      "branches": [
+        {
+          "id": "rash",
+          "base": 1.0,
+          "preconditions": [],
+          "events": [
+            {
+              "type": "conduct_rash_capture",
+              "bind": {
+                "CAPTOR": "captor",
+                "PRISONER": "prisoner",
+                "SETTLEMENT": "@settlement"
+              },
+              "linkTo": "@trigger"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mistreated_prisoner",
+      "enabledBy": "@falseRumors.enabled",
+      "trigger": "afterEvent",
+      "eventTypes": [
+        "hero_taken_prisoner"
+      ],
+      "bindFromEvent": {
+        "captor": "CAPTOR",
+        "prisoner": "PRISONER"
+      },
+      "decider": "captor",
+      "minBranchWeight": null,
+      "roles": {
+        "captor": {},
+        "prisoner": {}
+      },
+      "conditions": [
+        {
+          "type": "isLord",
+          "role": "captor"
+        },
+        {
+          "type": "isLord",
+          "role": "prisoner"
+        },
+        {
+          "type": "traitAtMost",
+          "role": "captor",
+          "trait": "mercy",
+          "value": -1
+        },
+        {
+          "type": "chance",
+          "value": "@falseRumors.captureMisconductChance",
+          "seedRoles": [
+            "captor",
+            "prisoner"
+          ]
+        }
+      ],
+      "branches": [
+        {
+          "id": "mistreat",
+          "base": 1.0,
+          "preconditions": [],
+          "events": [
+            {
+              "type": "conduct_mistreated_prisoner",
+              "bind": {
+                "CAPTOR": "captor",
+                "PRISONER": "prisoner"
+              },
+              "linkTo": "@trigger"
+            }
+          ],
+          "grudges": [
+            {
+              "from": "prisoner",
+              "to": "captor",
+              "amount": -6.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "poisoned_secretly",
+      "enabledBy": "@falseRumors.enabled",
+      "trigger": "afterEvent",
+      "eventTypes": [
+        "hero_died_of_old_age"
+      ],
+      "bindFromEvent": {
+        "victim": "VICTIM"
+      },
+      "decider": "poisoner",
+      "minBranchWeight": null,
+      "roles": {
+        "victim": {
+          "allowDead": true
+        },
+        "poisoner": {
+          "derived": "grudgeHolderAgainst:victim",
+          "grudgeLine": "@falseRumors.poisonGrudgeLine",
+          "nativeGrudgeLine": "@falseRumors.poisonNativeGrudgeLine",
+          "anyTraitAtMost": {
+            "honor": -1,
+            "mercy": -1
+          }
+        }
+      },
+      "conditions": [
+        {
+          "type": "isLord",
+          "role": "victim"
+        },
+        {
+          "type": "roleBound",
+          "role": "poisoner"
+        },
+        {
+          "type": "chance",
+          "value": "@falseRumors.poisonChance",
+          "seedRoles": [
+            "victim"
+          ]
+        }
+      ],
+      "branches": [
+        {
+          "id": "poison",
+          "base": 1.0,
+          "preconditions": [],
+          "events": [
+            {
+              "type": "conduct_poisoned",
+              "bind": {
+                "POISONER": "poisoner",
+                "VICTIM": "victim"
+              },
+              "linkTo": "@trigger"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "madeup_slander",
+      "enabledBy": "@falseRumors.enabled",
+      "trigger": "direct",
+      "quotaGroup": {
+        "id": "madeUpTalk",
+        "maxPerDay": "@falseRumors.maxPerDay",
+        "share": "@falseRumors.slanderMaxPerDay"
+      },
+      "decider": "teller",
+      "roles": {
+        "teller": { },
+        "listener": { },
+        "target": { "derived": "grudgeTargetOf:teller" }
+      },
+      "conditions": [
+        { "type": "sameSettlement", "roles": ["teller", "listener"], "kinds": ["town", "castle"] },
+        { "type": "isLord", "role": "teller" },
+        { "type": "isLord", "role": "listener" },
+        { "type": "roleBound", "role": "target" },
+        { "type": "differentClan", "a": "listener", "b": "target" },
+        { "type": "traitAtMost", "role": "teller", "trait": "honor", "value": 0 }
+      ],
+      "branches": [
+        {
+          "id": "say",
+          "base": 1.0,
+          "traits": { "honor": -0.5 },
+          "grudgeWeight": {
+            "from": "teller",
+            "toward": "target",
+            "perPoint": 0.05,
+            "max": 1.0
+          },
+          "madeUpTalk": {
+            "kind": "slander",
+            "teller": "teller",
+            "listener": "listener",
+            "about": "target"
+          },
+          "events": []
+        },
+        {
+          "id": "hold",
+          "base": 1.0,
+          "traits": { "honor": 0.5 },
+          "events": []
+        }
+      ]
+    },
+    {
+      "id": "madeup_rivalry",
+      "enabledBy": "@falseRumors.enabled",
+      "trigger": "direct",
+      "quotaGroup": {
+        "id": "madeUpTalk",
+        "maxPerDay": "@falseRumors.maxPerDay",
+        "share": "@falseRumors.rivalryPerDay"
+      },
+      "decider": "teller",
+      "roles": {
+        "teller": { },
+        "listener": { },
+        "target": { "derived": "rivalClanLeaderOf:teller" }
+      },
+      "conditions": [
+        { "type": "sameSettlement", "roles": ["teller", "listener"], "kinds": ["town", "castle"] },
+        { "type": "isClanLeader", "role": "teller", "value": true },
+        { "type": "isClanLeader", "role": "listener", "value": true },
+        { "type": "sameKingdom", "a": "teller", "b": "listener" },
+        { "type": "roleBound", "role": "target" },
+        { "type": "traitAtLeast", "role": "teller", "trait": "calculating", "value": 1 },
+        { "type": "traitAtMost", "role": "teller", "trait": "honor", "value": 0 }
+      ],
+      "branches": [
+        {
+          "id": "say",
+          "base": 1.0,
+          "traits": { "honor": -0.5 },
+          "madeUpTalk": {
+            "kind": "slander",
+            "teller": "teller",
+            "listener": "listener",
+            "about": "target"
+          },
+          "events": []
+        },
+        {
+          "id": "hold",
+          "base": 1.0,
+          "traits": { "honor": 0.5 },
+          "events": []
+        }
+      ]
+    },
+    {
+      "id": "madeup_praise",
+      "enabledBy": "@falseRumors.enabled",
+      "trigger": "direct",
+      "quotaGroup": {
+        "id": "madeUpTalk",
+        "maxPerDay": "@falseRumors.maxPerDay",
+        "share": "@falseRumors.praisePerDay"
+      },
+      "decider": "teller",
+      "roles": {
+        "teller": { },
+        "listener": { },
+        "target": { "derived": "kinOf:teller" }
+      },
+      "conditions": [
+        { "type": "sameSettlement", "roles": ["teller", "listener"], "kinds": ["town", "castle"] },
+        { "type": "isLord", "role": "teller" },
+        { "type": "isLord", "role": "listener" },
+        { "type": "roleBound", "role": "target" },
+        { "type": "differentClan", "a": "teller", "b": "listener" },
+        { "type": "traitAtLeast", "role": "teller", "trait": "calculating", "value": 1 },
+        { "type": "traitAtMost", "role": "teller", "trait": "honor", "value": 0 }
+      ],
+      "branches": [
+        {
+          "id": "say",
+          "base": 1.0,
+          "traits": { "honor": -0.5 },
+          "madeUpTalk": {
+            "kind": "praise",
+            "teller": "teller",
+            "listener": "listener",
+            "about": "target"
+          },
+          "events": []
+        },
+        {
+          "id": "hold",
+          "base": 1.0,
+          "traits": { "honor": 0.5 },
+          "events": []
+        }
+      ]
     }
   ]
 }

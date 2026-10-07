@@ -59,9 +59,13 @@ namespace VividWorld.Core.Rumors
             int b = outcome.Reheard?.Count ?? 0;
             int s = outcome.Reheard?.Count(r => r.Kind == RehearKind.SameTellerIgnored || r.Kind == RehearKind.SameTellerRelearned) ?? 0;
 
+            string disbelieverStr = outcome.DisbelieverMultiplier != 1.0
+                ? "; " + BeliefLogFormatter.FormatTellerMultiplier(outcome.DisbelieverMultiplier)
+                : string.Empty;
+
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "Teller {0} told {1} (weight {14}/10 (band {2}), tell {3:0.00}, fresh {4:0.00}, pick weight {5:0.000}, chance {6:0.0}%) - {7} topic(s): {8}{9}; inactive {10} -> new {11}, re-heard {12} (same teller {13})",
+                "Teller {0} told {1} (weight {14}/10 (band {2}), tell {3:0.00}, fresh {4:0.00}, pick weight {5:0.000}, chance {6:0.0}%) - {7} topic(s): {8}{9}; inactive {10} -> new {11}, re-heard {12} (same teller {13}){15}",
                 tellerId,
                 eventId,
                 drama,
@@ -76,7 +80,8 @@ namespace VividWorld.Core.Rumors
                 a,
                 b,
                 s,
-                dramaWeight);
+                dramaWeight,
+                disbelieverStr);
         }
 
         public static string FormatSkippedNotEligible(string tellerId)

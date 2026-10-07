@@ -250,7 +250,7 @@ namespace VividWorld.Core.Tests
     {
       ""id"": ""s1"", ""trigger"": ""direct"", ""decider"": ""a"",
       ""roles"": { ""a"": {}, ""b"": {} },
-      ""branches"": [ { ""id"": ""b1"", ""base"": 1.0, ""events"": [] } ]
+      ""branches"": [ { ""id"": ""b1"", ""base"": 1.0 } ]
     }
   ]
 }";
@@ -1064,7 +1064,7 @@ namespace VividWorld.Core.Tests
             var catalog = SituationCatalogLoader.Load(File.ReadAllText(sitPath));
             Assert.Empty(catalog.Issues.Where(i => i.IsError));
 
-            foreach (var situation in catalog.Situations.Where(s => !s.DevOnly))
+            foreach (var situation in catalog.Situations.Where(s => !s.DevOnly && string.Equals(s.Trigger, "direct", StringComparison.OrdinalIgnoreCase)))
             {
                 int nonDerived = situation.Roles.Count(r => !r.Value.IsDerived);
                 Assert.True(nonDerived == 2,
@@ -1088,8 +1088,8 @@ namespace VividWorld.Core.Tests
             {
                 foreach (var branch in situation.Branches)
                 {
-                    Assert.NotEmpty(branch.Events);
                     branchesChecked++;
+                    if (branch.Events.Count == 0) continue;
 
                     foreach (var evtRef in branch.Events)
                     {

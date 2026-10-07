@@ -22,12 +22,27 @@ namespace VividWorld.Campaign
             if (template == null || submission == null || string.IsNullOrEmpty(eventId)) return;
 
             var evt = eventStore?.Load(eventId);
+            if (MadeUpTalk.IsHearsayOnly(submission) || MadeUpTalk.IsHearsayOnly(evt))
+            {
+                string originatorId = evt?.OriginatorHeroId ?? submission.OriginatorHeroId ?? "unknown";
+                var listenerIds = evt?.KnownBy?.Where(k => k.Hop == 2).Select(k => k.HeroId).ToList()
+                    ?? submission.RelayKnowers?.Where(r => r.Hop == 2).Select(r => r.HeroId).ToList()
+                    ?? new List<string>();
+                string listenersStr = listenerIds.Count > 0 ? string.Join(", ", listenerIds) : "none";
+                ModLog.Info($"  [hop 0 summary] made-up talk: no hop 0; originator={originatorId} (hop 1, no source); listener(s)={listenersStr} (hop 2)");
+                return;
+            }
+
             int totalKnowers = evt?.KnownBy?.Count(k => k.Hop == 0) ?? 0;
 
             Hop0WitnessInfo witnessInfo;
             if (template.Origin == EventOrigin.Secret)
             {
                 witnessInfo = Hop0WitnessInfo.Secret();
+            }
+            else if (string.Equals(template.WitnessSource, "none", StringComparison.OrdinalIgnoreCase))
+            {
+                witnessInfo = Hop0WitnessInfo.NotDrawn(template.WitnessSource);
             }
             else
             {

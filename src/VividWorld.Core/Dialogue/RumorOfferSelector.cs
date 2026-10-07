@@ -538,6 +538,7 @@ namespace VividWorld.Core.Dialogue
                     case CandidateRejection.LeakedSecretHonorable:
                     case CandidateRejection.LeakedSecretCautiousStranger:
                     case CandidateRejection.SecretHolderNotWilling:
+                    case CandidateRejection.HeldBackShameful:
                         classification.FilteredOther++;
                         if (!string.IsNullOrEmpty(note)) classification.FilterNotes.Add(note);
                         break;
@@ -721,7 +722,11 @@ namespace VividWorld.Core.Dialogue
             return GetEffectiveWeight(candidate.Event);
         }
 
-        public RumorOffer BuildOffer(RumorCandidate candidate, HeroSocialProfile teller, double day, VolunteerTier tier = VolunteerTier.Full, bool withFeeling = true)
+        /// <param name="forProbe">
+        /// 打探的回答：玩家是自己問的，不能用「你大概聽說了吧」起頭，
+        /// 所以當事人重述的那種開頭語改用不是重述的那一種（旁人重述照舊）。
+        /// </param>
+        public RumorOffer BuildOffer(RumorCandidate candidate, HeroSocialProfile teller, double day, VolunteerTier tier = VolunteerTier.Full, bool withFeeling = true, bool forProbe = false)
         {
             if (candidate?.Event == null) throw new ArgumentNullException(nameof(candidate));
             bool isRetell = candidate.PlayerExistingHop.HasValue;
@@ -729,6 +734,10 @@ namespace VividWorld.Core.Dialogue
             var retainedFacts = _engine.FactsAtHop(candidate.Event, resultingPlayerHop, teller.HeroId);
             bool isParticipant = candidate.Event.RoleOf(teller.HeroId) != null;
             var prefix = RumorPrefixSelector.SelectPrefix(candidate.TellerHop, candidate.SourceHeroId, isRetell, candidate.IsCorrection, isParticipant);
+            if (forProbe && prefix.Kind == RumorPrefixKind.RetellSelf)
+            {
+                prefix = RumorPrefixSelector.SelectPrefix(candidate.TellerHop, candidate.SourceHeroId, false, candidate.IsCorrection, isParticipant);
+            }
 
             var composed = RumorTextComposer.Compose(
                 candidate.Event,
@@ -771,7 +780,21 @@ namespace VividWorld.Core.Dialogue
             };
         }
 
+        /// <summary>
+        /// 打探專用的過濾判定：跳過「玩家已經知道」之後的重述升級檢驗（玩家本來就聽過這件事，問的就是它）。
+        /// 回傳 CandidateRejection。
+        /// </summary>
+        public CandidateRejection EvaluateForProbe(HeroSocialProfile teller, RumorCandidate candidate, double day, out string note)
+        {
+            return EvaluateInternal(teller, candidate, day, isProbe: true, out note);
+        }
+
         private CandidateRejection Evaluate(HeroSocialProfile teller, RumorCandidate candidate, double day, out string note)
+        {
+            return EvaluateInternal(teller, candidate, day, isProbe: false, out note);
+        }
+
+        private CandidateRejection EvaluateInternal(HeroSocialProfile teller, RumorCandidate candidate, double day, bool isProbe, out string note)
         {
             note = string.Empty;
             if (candidate?.Event == null) return CandidateRejection.EventMissing;
@@ -855,6 +878,33 @@ namespace VividWorld.Core.Dialogue
                         return CandidateRejection.SecretHolderNotWilling;
                     }
                 }
+            }
+
+            // 羞恥判定：看說話者與玩家各自跟出醜者的關係
+            if (_config.Propagation.ShamefulNews.Enabled && _dialogueWorld != null)
+            {
+                var shamefulEval = ShamefulNewsRule.Evaluate(
+                    evt,
+                    teller.HeroId,
+                    _playerHeroId,
+                    _dialogueWorld,
+                    _getTemplate,
+                    _traits,
+                    _config,
+                    day,
+                    _playerHeroId);
+
+                if (!shamefulEval.CanTell)
+                {
+                    note = $"{evt.EventId}: shameful, held back ({shamefulEval.HeldBackDetail})";
+                    return CandidateRejection.HeldBackShameful;
+                }
+            }
+
+            if (isProbe)
+            {
+                // 打探情境：玩家本來就是問這件事，不檢驗是否聽過或重述增長
+                return CandidateRejection.None;
             }
 
             // 玩家未知 -> 合格

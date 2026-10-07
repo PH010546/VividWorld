@@ -383,6 +383,8 @@ namespace VividWorld.Core.Tests
         {
             var (engine, channel, traits, cfg) = CreateEngine();
             cfg.Propagation.BaseTellChancePerContact = 1.0;
+            // 這個測試只看手數上限，小事照傳：關掉領主之間傳話的分層
+            cfg.Propagation.TellTiers.Enabled = false;
 
             // Chain: H0 -> H1 -> H2 -> H3 -> H4
             for (int i = 0; i <= 4; i++)
@@ -638,7 +640,7 @@ namespace VividWorld.Core.Tests
             traits.Set(new TraitProfile { HeroId = "teller", IsAlive = true, IsLord = true });
             traits.Set(new TraitProfile { HeroId = "contact", IsAlive = true, IsLord = true });
 
-            channel.AddLink("teller", "contact", ChannelKind.Kingdom, weight: 1.0, relation: 50);
+            channel.AddLink("teller", "contact", ChannelKind.Kingdom, weight: 1.0, relation: 50, ownRelation: 50);
 
             var evt = new WorldEvent
             {
@@ -666,7 +668,7 @@ namespace VividWorld.Core.Tests
             traits.Set(new TraitProfile { HeroId = "teller", IsAlive = true, IsLord = true });
             traits.Set(new TraitProfile { HeroId = "contact", IsAlive = true, IsLord = true });
 
-            channel.AddLink("teller", "contact", ChannelKind.SameSettlement, weight: 1.0, relation: 40);
+            channel.AddLink("teller", "contact", ChannelKind.SameSettlement, weight: 1.0, relation: 40, ownRelation: 40);
 
             var evt = new WorldEvent
             {
@@ -694,7 +696,7 @@ namespace VividWorld.Core.Tests
             traits.Set(new TraitProfile { HeroId = "teller", IsAlive = true, IsLord = true });
             traits.Set(new TraitProfile { HeroId = "contact", IsAlive = true, IsLord = true });
 
-            channel.AddLink("teller", "contact", ChannelKind.SameClan, weight: 1.0, relation: 40);
+            channel.AddLink("teller", "contact", ChannelKind.SameClan, weight: 1.0, relation: 40, ownRelation: 40);
 
             var evt = new WorldEvent
             {
@@ -716,6 +718,7 @@ namespace VividWorld.Core.Tests
         {
             var cfg = new VividWorldConfig();
             cfg.Propagation.BaseTellChancePerContact = 0.5;
+            cfg.Propagation.TellTiers.Enabled = false;
 
             var recordingRng = new RecordingRng();
             var (engine, channel, traits, _) = CreateEngine(customConfig: cfg, customRng: recordingRng);
@@ -724,8 +727,8 @@ namespace VividWorld.Core.Tests
             traits.Set(new TraitProfile { HeroId = "neutral_contact", IsAlive = true, IsLord = true });
             traits.Set(new TraitProfile { HeroId = "hostile_contact", IsAlive = true, IsLord = true });
 
-            channel.AddLink("teller", "neutral_contact", ChannelKind.SameParty, weight: 1.0, relation: 0);
-            channel.AddLink("teller", "hostile_contact", ChannelKind.SameParty, weight: 1.0, relation: -60);
+            channel.AddLink("teller", "neutral_contact", ChannelKind.SameParty, weight: 1.0, relation: 0, ownRelation: 0);
+            channel.AddLink("teller", "hostile_contact", ChannelKind.SameParty, weight: 1.0, relation: -60, ownRelation: -60);
 
             var evt = new WorldEvent
             {
@@ -858,6 +861,82 @@ namespace VividWorld.Core.Tests
             Assert.Empty(outcome.NewKnowers);
             Assert.Equal(testDay, evt.State.LastPropagatedDay);
             Assert.Equal(0, channel.QueryCount);
+        }
+
+        [Fact]
+        public void Propagation_CalculatesProbabilityUsingOwnRelation_IgnoresRelation()
+        {
+            var cfg = new VividWorldConfig();
+            cfg.Propagation.BaseTellChancePerContact = 1.0;
+            // 關閉分層擋人，純測試機率乘數
+            cfg.Propagation.TellTiers.Enabled = false;
+
+            // 測試 1：Relation = +50, OwnRelation = -50
+            var rng1 = new RecordingRng();
+            var (engine1, channel1, traits1, _) = CreateEngine(customConfig: cfg, customRng: rng1);
+            traits1.Set(new TraitProfile { HeroId = "teller", IsAlive = true, IsLord = true });
+            traits1.Set(new TraitProfile { HeroId = "contact", IsAlive = true, IsLord = true });
+            channel1.AddLink("teller", "contact", ChannelKind.SameSettlement, weight: 1.0, relation: 50, ownRelation: -50);
+
+            var evt1 = new WorldEvent
+            {
+                EventId = "evt_rel_diff_1",
+                Origin = EventOrigin.Public,
+                Day = 1.0,
+                DramaWeight = 3,
+                KnownBy = { new KnownByEntry { HeroId = "teller", Hop = 0, LearnedDay = 1.0 } }
+            };
+            engine1.PropagateOnce(evt1, 2.0, 10);
+            Assert.Single(rng1.RecordedProbabilities);
+            double pNeg50 = rng1.RecordedProbabilities[0];
+
+            // 測試 2：反過來，Relation = -50, OwnRelation = +50
+            var rng2 = new RecordingRng();
+            var (engine2, channel2, traits2, _) = CreateEngine(customConfig: cfg, customRng: rng2);
+            traits2.Set(new TraitProfile { HeroId = "teller", IsAlive = true, IsLord = true });
+            traits2.Set(new TraitProfile { HeroId = "contact", IsAlive = true, IsLord = true });
+            channel2.AddLink("teller", "contact", ChannelKind.SameSettlement, weight: 1.0, relation: -50, ownRelation: 50);
+
+            var evt2 = new WorldEvent
+            {
+                EventId = "evt_rel_diff_2",
+                Origin = EventOrigin.Public,
+                Day = 1.0,
+                DramaWeight = 3,
+                KnownBy = { new KnownByEntry { HeroId = "teller", Hop = 0, LearnedDay = 1.0 } }
+            };
+            engine2.PropagateOnce(evt2, 2.0, 10);
+            Assert.Single(rng2.RecordedProbabilities);
+            double pPos50 = rng2.RecordedProbabilities[0];
+
+            double rfNeg50 = RelationFactor.For(ChannelKind.SameSettlement, -50, cfg.Relation);
+            double rfPos50 = RelationFactor.For(ChannelKind.SameSettlement, 50, cfg.Relation);
+            Assert.Equal(0.80 * rfNeg50, pNeg50, precision: 4);
+            Assert.Equal(0.80 * rfPos50, pPos50, precision: 4);
+            Assert.True(pPos50 > pNeg50);
+
+            // 測試 3：OwnRelation 固定為 20 時，Relation 怎麼變（-80, 0, +90）都不影響 p 與擲骰結果
+            foreach (int arbitraryRel in new[] { -80, 0, 90 })
+            {
+                var rng3 = new RecordingRng();
+                var (engine3, channel3, traits3, _) = CreateEngine(customConfig: cfg, customRng: rng3);
+                traits3.Set(new TraitProfile { HeroId = "teller", IsAlive = true, IsLord = true });
+                traits3.Set(new TraitProfile { HeroId = "contact", IsAlive = true, IsLord = true });
+                channel3.AddLink("teller", "contact", ChannelKind.SameSettlement, weight: 1.0, relation: arbitraryRel, ownRelation: 20);
+
+                var evt3 = new WorldEvent
+                {
+                    EventId = "evt_rel_invariance_" + arbitraryRel,
+                    Origin = EventOrigin.Public,
+                    Day = 1.0,
+                    DramaWeight = 3,
+                    KnownBy = { new KnownByEntry { HeroId = "teller", Hop = 0, LearnedDay = 1.0 } }
+                };
+                engine3.PropagateOnce(evt3, 2.0, 10);
+                Assert.Single(rng3.RecordedProbabilities);
+                double expectedP = 0.80 * RelationFactor.For(ChannelKind.SameSettlement, 20, cfg.Relation);
+                Assert.Equal(expectedP, rng3.RecordedProbabilities[0], precision: 4);
+            }
         }
 
         private sealed class RecordingRng : IDeterministicRng

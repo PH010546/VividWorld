@@ -5,6 +5,7 @@ using VividWorld.Core.Channels;
 using VividWorld.Core.Config;
 using VividWorld.Core.Diagnostics;
 using VividWorld.Core.Events;
+using VividWorld.Core.Memory;
 using VividWorld.Core.Rumors;
 
 namespace VividWorld.Core.Ingest
@@ -56,9 +57,10 @@ namespace VividWorld.Core.Ingest
             }
 
             string? anchorHeroId = AnchorOf(submission);
+            bool isMadeUpTalk = submission.Fabricated && string.IsNullOrEmpty(submission.MadeUpBy);
 
-            // 1. 參與者：只有 KnowingRoles 指名的角色。KnowingRoles 為空 → 全部參與者
-            if (submission.Participants != null)
+            // 1. 參與者：只有 KnowingRoles 指名的角色。KnowingRoles 為空 → 全部參與者。造謠（made-up talk）不種參與者
+            if (!isMadeUpTalk && submission.Participants != null)
             {
                 foreach (var kvp in submission.Participants)
                 {
@@ -102,9 +104,10 @@ namespace VividWorld.Core.Ingest
                 }
             }
 
-            // 3. ＋ 僅當 Origin == Public 且 AutoResolveWitnesses：channel.WitnessesAt(anchorHeroId, cfg.MaxInitialWitnesses)
+            // 3. ＋ 僅當 Origin == Public 且 AutoResolveWitnesses 且非造謠：channel.WitnessesAt(anchorHeroId, cfg.MaxInitialWitnesses)
             // 4. Origin == Secret 時無論旗標為何都絕不加入目擊者
-            if (evt.Origin == EventOrigin.Public
+            if (!isMadeUpTalk
+                && evt.Origin == EventOrigin.Public
                 && submission.AutoResolveWitnesses
                 && !string.IsNullOrEmpty(anchorHeroId)
                 && channel != null)
@@ -163,6 +166,29 @@ namespace VividWorld.Core.Ingest
                                 LearnedDay = day,
                                 SourceHeroId = null
                             });
+                        }
+                    }
+                }
+            }
+
+            // 6. ＋ RelayKnowers（指定 hop 與 sourceHeroId，呼叫 HeardFrom.Materialize）
+            if (submission.RelayKnowers != null)
+            {
+                foreach (var relay in submission.RelayKnowers)
+                {
+                    if (relay != null && !string.IsNullOrEmpty(relay.HeroId))
+                    {
+                        if (seen.Add(relay.HeroId))
+                        {
+                            var entry = new KnownByEntry
+                            {
+                                HeroId = relay.HeroId,
+                                Hop = relay.Hop,
+                                LearnedDay = day,
+                                SourceHeroId = relay.SourceHeroId
+                            };
+                            HeardFrom.Materialize(entry);
+                            evt.KnownBy.Add(entry);
                         }
                     }
                 }

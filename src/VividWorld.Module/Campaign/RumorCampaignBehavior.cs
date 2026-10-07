@@ -236,11 +236,13 @@ namespace VividWorld.Campaign
 
                 var stamper = new MemoryStamper(_config, _heroLookup, playerHeroId);
                 var feelingWorld = new GameFeelingWorld(_heroLookup, grudgeIndex);
+                _engine.FeelingWorld = feelingWorld;
+                _engine.Log = ModLogSink.Instance;
                 var feelingResolver = new FeelingResolver(_config, FeelingCatalogStore.Catalog, feelingWorld, _traitLookup, EventCatalogStore.TemplateByType, campaignSeed);
 
                 _eventStore = new WorldEventStore(_config, _store, _index, _knownBy, _channel, _traitLookup, playerHeroId, campaignSeed, stamper, grudgeIndex);
                 stamper.SetStore(_eventStore);
-                _scheduler = new RumorPropagationScheduler(_config, _eventStore, _engine, _knownBy, _heroLookup, _traitLookup, stamper);
+                _scheduler = new RumorPropagationScheduler(_config, _eventStore, _engine, _knownBy, _heroLookup, _traitLookup, stamper, feelingWorld);
                 stamper.SetEngineAndScheduler(_engine, _scheduler);
                 _scheduler.RebuildFrom(_index, _launchDay);
                 ModLog.Info(TellerLogFormatter.FormatRebuilt(_scheduler.TellerRingCount, _scheduler.RebuildSkippedForgotten));
@@ -253,6 +255,8 @@ namespace VividWorld.Campaign
 
                 string heardPath = VividWorldPaths.PlayerHeardFile(_campaignId);
                 PlayerHeardLog = new PlayerHeardLogStore(heardPath, writer);
+                PlayerHeardLog.EventLookup = id => _eventStore?.Load(id);
+                PlayerHeardLog.Log = msg => ModLog.Info(msg);
                 var heardLoad = PlayerHeardLog.Load();
                 if (heardLoad.Status == PlayerHeardLoadStatus.FileUnreadable && !string.IsNullOrEmpty(heardLoad.ExceptionMessage))
                 {
@@ -308,7 +312,9 @@ namespace VividWorld.Campaign
                         _sessionState,
                         _campaignId,
                         feelingResolver,
-                        () => _personalRelationsSeeded);
+                        feelingWorld,
+                        () => _personalRelationsSeeded,
+                        PlayerHeardLog);
                     devDialogs.RegisterDialogues(starter);
 
                     // M6a 自答探針 1：在地化探針 (D-09)
@@ -327,7 +333,7 @@ namespace VividWorld.Campaign
                         dialogueWorld: feelingWorld,
                         playerHeardLog: PlayerHeardLog,
                         getEvent: id => _store.Load(id, _index));
-                    _dialogs.Initialize(offerSelector, _store, _index, _knownBy, _traitLookup, _heroLookup, _campaignId, stamper, PlayerHeardLog);
+                    _dialogs.Initialize(offerSelector, _store, _index, _knownBy, _traitLookup, _heroLookup, _campaignId, stamper, PlayerHeardLog, _scheduler);
                     _dialogs.RegisterDialogues(starter);
 
                     var compat = _dialogs.CompatState;
@@ -351,7 +357,7 @@ namespace VividWorld.Campaign
 
                 if (_realEvents != null && _eventStore != null)
                 {
-                    _realEvents.Initialize(_eventStore, _traitLookup);
+                    _realEvents.Initialize(_eventStore, _traitLookup, _heroLookup);
                 }
 
                 if (_eventStore != null && !string.IsNullOrEmpty(_campaignId))
@@ -505,6 +511,9 @@ namespace VividWorld.Campaign
                 double day = CampaignTime.Now.ToDays;
                 _scheduler?.DailyTick(day);
 
+                // 檢查等著出面否認或澄清的人
+                CheckWaitingStepForwards(day);
+
                 if (_config.Debug.ListenTally && _dialogs?.ListenTally != null)
                 {
                     int reportDay = Math.Max(0, (int)day - 1);
@@ -524,6 +533,99 @@ namespace VividWorld.Campaign
             finally
             {
                 ModLog.Flush();
+            }
+        }
+
+        private void CheckWaitingStepForwards(double day)
+        {
+            if (_eventStore?.Index == null) return;
+            if (_config?.FalseRumors?.Enabled == false) return;
+
+            var waitingEntries = _eventStore.Index.Entries.Where(e => e != null && e.HasWaitingStepForward).ToList();
+            if (waitingEntries.Count == 0) return;
+
+            int maxWaitDays = _config?.FalseRumors?.StepForwardWaitDays ?? 30;
+
+            foreach (var indexEntry in waitingEntries)
+            {
+                var evt = _eventStore.Load(indexEntry.EventId);
+                if (evt?.KnownBy == null) continue;
+
+                bool anyModified = false;
+                string? linkedId = evt.LinkedEventId;
+                WorldEvent? lEvent = (linkedId != null && linkedId.Length > 0) ? _eventStore.Load(linkedId) : null;
+                var truthKnowers = MadeUpTalk.GetTruthKnowers(evt, lEvent, _eventStore.PlayerHeroId);
+
+                foreach (var knower in evt.KnownBy)
+                {
+                    if (!string.Equals(knower.StepForward, "waiting", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    var hero = _heroLookup?.Get(knower.HeroId);
+                    if (hero == null || !hero.IsAlive)
+                    {
+                        knower.StepForward = "expired";
+                        anyModified = true;
+                        ModLog.Info($"Waiting step forward expired (dead): {knower.HeroId} on {evt.EventId}");
+                        continue;
+                    }
+
+                    double rollDay = knower.StepForwardDay ?? evt.Day;
+                    if (day - rollDay > maxWaitDays)
+                    {
+                        knower.StepForward = "expired";
+                        anyModified = true;
+                        ModLog.Info($"Waiting step forward expired (waited > {maxWaitDays} days): {knower.HeroId} on {evt.EventId}");
+                        continue;
+                    }
+
+                    bool inTownOrCastle = hero.CurrentSettlement != null && (hero.CurrentSettlement.IsTown || hero.CurrentSettlement.IsCastle);
+                    if (inTownOrCastle)
+                    {
+                        var tk = truthKnowers.FirstOrDefault(t => string.Equals(t.HeroId, knower.HeroId, StringComparison.Ordinal));
+                        string? respType = tk?.ResponseType;
+                        if (tk != null && respType != null && respType.Length > 0)
+                        {
+                            string responseType = respType;
+                            string? respId = (_heroLookup != null && _traitLookup != null)
+                                ? ResponseSender.SendResponse(evt, knower, responseType, day, _eventStore, _heroLookup, _traitLookup)
+                                : null;
+
+                            if (respId != null)
+                            {
+                                knower.StepForward = "done";
+                                knower.StepForwardEventId = respId;
+                                anyModified = true;
+                                string settlementName = hero.CurrentSettlement?.Name?.ToString() ?? "settlement";
+                                ModLog.Info($"Waiting step forward completed: {knower.HeroId} entered {settlementName}, sent {responseType} ({respId}) on {evt.EventId}");
+                            }
+                            else
+                            {
+                                knower.StepForward = "expired";
+                                knower.StepForwardEventId = null;
+                                anyModified = true;
+                                ModLog.Info($"Waiting step forward failed to send response: {knower.HeroId} on {evt.EventId}; marked expired");
+                            }
+                        }
+                        else
+                        {
+                            knower.StepForward = "expired";
+                            anyModified = true;
+                            ModLog.Info($"Waiting step forward expired (no valid response type): {knower.HeroId} on {evt.EventId}");
+                        }
+                    }
+                    else
+                    {
+                        ModLog.Info($"Waiting step forward continues waiting: {knower.HeroId} (day {day - rollDay:F1}/{maxWaitDays}) on {evt.EventId}");
+                    }
+                }
+
+                if (anyModified)
+                {
+                    _eventStore.Upsert(evt);
+                }
             }
         }
 

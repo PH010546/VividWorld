@@ -24,6 +24,18 @@ namespace VividWorld.Core.Presentation
 
         public ComposedRumor Body = new();
 
+        /// <summary>區塊內是否存在相互矛盾的說法。</summary>
+        public bool HasConflict;
+
+        /// <summary>矛盾的成因或對立事件代號（供除錯與開發工具顯示）。</summary>
+        public string? ConflictReason;
+
+        public Dictionary<string, string> RootParticipants = new(StringComparer.Ordinal);
+        public Dictionary<string, string> Participants = new(StringComparer.Ordinal);
+
+        /// <summary>區塊內的事（源頭算第一件事，後續脫逃／獲釋／獲救各算一件事）。</summary>
+        public IReadOnlyList<ChronicleMatter> Matters = Array.Empty<ChronicleMatter>();
+
         /// <summary>每個告訴過玩家這件事的人一份，依第一次講的先後排列。</summary>
         public IReadOnlyList<ChronicleSource> Sources = Array.Empty<ChronicleSource>();
 
@@ -44,6 +56,13 @@ namespace VividWorld.Core.Presentation
 
         /// <summary>是否存了對話當下的原句。</summary>
         public bool HasSpokenLine;
+
+        /// <summary>是否為打探的回答。</summary>
+        public bool HasProbeAnswer;
+        public string? ProbeAnswerKey;
+        public IReadOnlyDictionary<string, string>? ProbeAnswerVars;
+        public string? ProbeAddressKey;
+        public string? ProbeAddressHeroId;
 
         /// <summary>有存原句時為重建的整句（含開頭語、當事人句尾／感想／收尾）；沒存時為照舊組的第三人稱事實。</summary>
         public ComposedRumor Body = new();

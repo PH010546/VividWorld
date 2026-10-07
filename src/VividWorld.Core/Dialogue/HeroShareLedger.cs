@@ -117,6 +117,16 @@ namespace VividWorld.Core.Dialogue
 
         public string TodaySummary(int dayBucket, int cap, Func<string, string?>? nameResolver = null)
         {
+            return TodaySummaryWithLabel("Shared today", dayBucket, cap, nameResolver);
+        }
+
+        public string TodaySummaryWithLabel(string label, double day, int cap, Func<string, string?>? nameResolver = null)
+        {
+            return TodaySummaryWithLabel(label, DailyCounter.BucketOf(day), cap, nameResolver);
+        }
+
+        public string TodaySummaryWithLabel(string label, int dayBucket, int cap, Func<string, string?>? nameResolver = null)
+        {
             var todayEntries = _entries
                 .Where(kv => kv.Value.Day == dayBucket && kv.Value.Count > 0)
                 .OrderByDescending(kv => kv.Value.Count)
@@ -125,7 +135,7 @@ namespace VividWorld.Core.Dialogue
 
             int n = todayEntries.Count;
             string capStr = cap.ToString(CultureInfo.InvariantCulture);
-            string header = $"Shared today: {n} people (cap {capStr} each; 0 = no limit)";
+            string header = $"{label}: {n} people (cap {capStr} each; 0 = no limit)";
 
             if (n == 0)
             {

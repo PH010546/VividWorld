@@ -130,13 +130,22 @@ namespace VividWorld.Core.Tests
             Assert.Equal(1, cfg.Consequences.MinAbsoluteDelta);
             Assert.Equal(6.0, cfg.Consequences.MaxAbsoluteDeltaPerHeroPerDay);
             Assert.False(cfg.Consequences.LedgerOnly);
-            Assert.Equal(0.15, cfg.Consequences.Misconception.BaseClearUpChancePerMeeting);
-            Assert.Equal(0.15, cfg.Consequences.Misconception.TraitWeights.HonorMisled);
-            Assert.Equal(0.15, cfg.Consequences.Misconception.TraitWeights.HonorBlamed);
-            Assert.Equal(0.10, cfg.Consequences.Misconception.TraitWeights.GenerosityBlamed);
-            Assert.Equal(-0.20, cfg.Consequences.Misconception.TraitWeights.CalculatingMisled);
-            Assert.Equal(0.05, cfg.Consequences.Misconception.MultiplierMin);
-            Assert.Equal(3.0, cfg.Consequences.Misconception.MultiplierMax);
+            Assert.Equal(-25.0, cfg.FalseRumors.Belief.DeniedDelta);
+            Assert.Equal(-50.0, cfg.FalseRumors.Belief.ClarifiedDelta);
+            Assert.Equal(50.0, cfg.FalseRumors.Denial.BaseChance);
+            Assert.Equal(25.0, cfg.FalseRumors.Denial.ValorBonus);
+            Assert.Equal(25.0, cfg.FalseRumors.Denial.HonorBonus);
+            Assert.Equal(-30.0, cfg.FalseRumors.Denial.CautiousPenalty);
+            Assert.Equal(1.5, cfg.FalseRumors.Denial.AccusedGrudgeMultiplier);
+            Assert.Equal(40.0, cfg.FalseRumors.Clarify.BaseChance);
+            Assert.Equal(30.0, cfg.FalseRumors.Clarify.HonorBonus);
+            Assert.Equal(30, cfg.FalseRumors.Clarify.FriendRelation);
+            Assert.Equal(20.0, cfg.FalseRumors.Clarify.FriendBonus);
+            Assert.Equal(-20, cfg.FalseRumors.Clarify.HostileRelation);
+            Assert.Equal(-40.0, cfg.FalseRumors.Clarify.HostilePenalty);
+            Assert.Equal(5.0, cfg.FalseRumors.StepForwardMinChance);
+            Assert.Equal(95.0, cfg.FalseRumors.StepForwardMaxChance);
+            Assert.Equal(30, cfg.FalseRumors.StepForwardWaitDays);
 
             // Embellishment
             Assert.False(cfg.Embellishment.Enabled);

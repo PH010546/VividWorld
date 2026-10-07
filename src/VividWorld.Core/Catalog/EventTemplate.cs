@@ -38,6 +38,17 @@ namespace VividWorld.Core.Catalog
         [JsonProperty("colocatedWitnessAsHearsay")]
         public bool ColocatedWitnessAsHearsay { get; set; } = false;
 
+        [JsonProperty("witnessSource")]
+        public string WitnessSource { get; set; } = "colocated";
+
+        [JsonProperty("madeUpBy")]
+        public string? MadeUpBy;
+
+        public bool MadeUpHearsay { get; set; } = false;
+
+        [JsonProperty("response")]
+        public string? Response;
+
         /// <summary>角色名 → 感想類別（<see cref="VividWorld.Core.Feelings.FeelingCategories"/> 的編號）。
         /// 沒列的角色講給玩家聽時不附感想。</summary>
         [JsonProperty("feelings")]
@@ -75,7 +86,47 @@ namespace VividWorld.Core.Catalog
         public string About = string.Empty;   // 這個模板自己的角色名，例 "favored"
         public double Amount;                 // 正負皆可。這是「第一手聽到、而且是當事人」的滿額
 
+        /// <summary>這條 opinion 牽涉的個性（honor／mercy／valor／generosity／calculating，不分大小寫）；
+        /// 聽的人用它判斷「這件事像不像被說的人會做的」。省略＝不比對。</summary>
+        public string? Trait;
+
+        /// <summary>這個模板裡「承受這件事」的角色名；目前只存起來。省略＝沒有特定承受的人。</summary>
+        public string? Receiver;
+
+        /// <summary>何時生效（"believed" 或 "disbelieved" 或 null/未填代表皆可或預設）</summary>
+        [JsonProperty("when")]
+        public string? When;
+
         [JsonExtensionData]
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
+    }
+
+    /// <summary>opinion 的 trait 欄位可以寫的五種個性，以及它們在 <see cref="VividWorld.Core.Rumors.TraitProfile"/> 上對應的等級。</summary>
+    public static class OpinionTraits
+    {
+        public static readonly string[] All = { "honor", "mercy", "valor", "generosity", "calculating" };
+
+        /// <summary>不分大小寫比對；不是五種之一回傳 null。</summary>
+        public static string? Normalize(string? raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw)) return null;
+            string t = raw!.Trim().ToLowerInvariant();
+            return System.Array.IndexOf(All, t) >= 0 ? t : null;
+        }
+
+        /// <summary>這個人在 trait 那一項的等級（-2～2）；trait 沒寫或不認得、或查不到這個人回傳 null。</summary>
+        public static int? LevelOf(string? trait, VividWorld.Core.Rumors.TraitProfile? profile)
+        {
+            if (profile == null) return null;
+            switch (Normalize(trait))
+            {
+                case "honor": return profile.Honor;
+                case "mercy": return profile.Mercy;
+                case "valor": return profile.Valor;
+                case "generosity": return profile.Generosity;
+                case "calculating": return profile.Calculating;
+                default: return null;
+            }
+        }
     }
 }

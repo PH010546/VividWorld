@@ -836,6 +836,12 @@ namespace VividWorld.Core.Tests
             }
         }
 
+        private static readonly HashSet<(string type, string role)> ExcludedRoles = new()
+        {
+            // 背後說君主的聽者純屬私下聆聽，非旁人感想之焦點
+            ("conduct_spoke_against_ruler", "listener")
+        };
+
         [Fact]
         public void Templates_EveryRoleHasACategory_ExceptTheTwoUnclassifiedTypes()
         {
@@ -852,12 +858,13 @@ namespace VividWorld.Core.Tests
                 Assert.NotNull(template.Feelings);
                 foreach (var role in template.Roles.Keys)
                 {
+                    if (ExcludedRoles.Contains((template.Type, role))) continue;
                     Assert.True(template.Feelings!.TryGetValue(role, out var cat), $"{template.Type}.{role} has no feeling category");
                     Assert.True(FeelingCategories.IsKnown(cat), $"{template.Type}.{role}: unknown category '{cat}'");
                 }
                 Assert.All(template.Feelings!.Keys, k => Assert.True(template.Roles.ContainsKey(k), $"{template.Type}: feelings names undeclared role '{k}'"));
             }
-            Assert.Equal(36, seen);
+            Assert.Equal(56, seen);
         }
 
         [Theory]
@@ -1006,20 +1013,27 @@ namespace VividWorld.Core.Tests
                 ("lost_face", FeelingMood.Owe),
                 ("cared", FeelingMood.Owe),
                 ("joy", FeelingMood.Owe),
-                ("pending", FeelingMood.Owe)
+                ("pending", FeelingMood.Owe),
+                ("shabby", FeelingMood.Owe),
+                ("wronged", FeelingMood.Sore),
+                ("wronged", FeelingMood.Owe)
             };
+
+            var emptyCells = new HashSet<(string category, FeelingMood mood)>();
 
             foreach (var category in FeelingCategories.Ids)
             {
                 foreach (FeelingMood mood in Enum.GetValues(typeof(FeelingMood)))
                 {
-                    int expected = singleLineCells.Contains((category, mood)) ? 1 : 2;
+                    int expected = emptyCells.Contains((category, mood))
+                        ? 0
+                        : (singleLineCells.Contains((category, mood)) ? 1 : 2);
                     Assert.True(RealFeelings.Value.Lines(category, mood).Count == expected,
                         $"{category}/{mood} must have {expected} line(s)");
                 }
             }
-            Assert.Equal(129, RealFeelings.Value.AllLines.Count());
-            Assert.Equal(129, RealFeelings.Value.AllLines.Select(l => l.Key).Distinct().Count());
+            Assert.Equal(146, RealFeelings.Value.AllLines.Count());
+            Assert.Equal(146, RealFeelings.Value.AllLines.Select(l => l.Key).Distinct().Count());
         }
 
         [Fact]

@@ -260,6 +260,7 @@ namespace VividWorld.Mcm
                 case "dialogue.askWillingnessThreshold": return (double)s.AskWillingnessThreshold;
                 case "dialogue.volunteerMode": return VolunteerModeOf(s.VolunteerMode);
                 case "dialogue.sharesPerHeroPerDay": return s.SharesPerHeroPerDay;
+                case "dialogue.probesPerHeroPerDay": return s.ProbesPerHeroPerDay;
                 case "consequences.enabled": return s.ConsequencesEnabled;
                 case "consequences.bystanderMultiplier": return (double)s.BystanderMultiplier;
                 case "consequences.maxAbsoluteDeltaPerHeroPerDay": return (double)s.MaxAbsoluteDeltaPerHeroPerDay;
@@ -274,6 +275,8 @@ namespace VividWorld.Mcm
                 case "events.sources.heroPrisonerReleased": return s.SourceHeroPrisonerReleased;
                 case "persistence.maxSnapshots": return s.MaxSnapshots;
                 case "ai.pushLanguage": return PushLanguageOf(s.PushLanguage);
+                case "falseRumors.enabled": return s.FalseRumorsEnabled;
+                case "falseRumors.maxPerDay": return (double)s.FalseRumorsMaxPerDay;
                 default: return null;
             }
         }
@@ -333,6 +336,7 @@ namespace VividWorld.Mcm
                 }
             });
             PushKey("dialogue.sharesPerHeroPerDay", () => s.SharesPerHeroPerDay = live.Dialogue.SharesPerHeroPerDay);
+            PushKey("dialogue.probesPerHeroPerDay", () => s.ProbesPerHeroPerDay = live.Dialogue.ProbesPerHeroPerDay);
             PushKey("consequences.enabled", () => s.ConsequencesEnabled = live.Consequences.Enabled);
             PushKey("consequences.bystanderMultiplier", () => s.BystanderMultiplier = (float)live.Consequences.BystanderMultiplier);
             PushKey("consequences.maxAbsoluteDeltaPerHeroPerDay", () => s.MaxAbsoluteDeltaPerHeroPerDay = (float)live.Consequences.MaxAbsoluteDeltaPerHeroPerDay);
@@ -359,6 +363,8 @@ namespace VividWorld.Mcm
                     s.PushLanguage = new Dropdown<string>(labels, index);
                 }
             });
+            PushKey("falseRumors.enabled", () => s.FalseRumorsEnabled = live.FalseRumors.Enabled);
+            PushKey("falseRumors.maxPerDay", () => s.FalseRumorsMaxPerDay = (float)live.FalseRumors.MaxPerDay);
             seededCount = count;
             skipped = list;
         }
@@ -461,6 +467,7 @@ namespace VividWorld.Mcm
                 s.AskWillingnessThreshold.ToString("R", CultureInfo.InvariantCulture),
                 VolunteerModeOf(s.VolunteerMode),
                 s.SharesPerHeroPerDay,
+                s.ProbesPerHeroPerDay,
                 s.ConsequencesEnabled,
                 s.BystanderMultiplier.ToString("R", CultureInfo.InvariantCulture),
                 s.MaxAbsoluteDeltaPerHeroPerDay.ToString("R", CultureInfo.InvariantCulture),
@@ -474,7 +481,9 @@ namespace VividWorld.Mcm
                 s.SourceHeroPrisonerTaken,
                 s.SourceHeroPrisonerReleased,
                 s.MaxSnapshots,
-                PushLanguageOf(s.PushLanguage));
+                PushLanguageOf(s.PushLanguage),
+                s.FalseRumorsEnabled,
+                s.FalseRumorsMaxPerDay.ToString("R", CultureInfo.InvariantCulture));
         }
 
         private static string CfgSignature(VividWorldConfig live)
@@ -492,6 +501,7 @@ namespace VividWorld.Mcm
                 live.Dialogue.AskWillingnessThreshold.ToString("R", CultureInfo.InvariantCulture),
                 live.Dialogue.VolunteerMode,
                 live.Dialogue.SharesPerHeroPerDay,
+                live.Dialogue.ProbesPerHeroPerDay,
                 live.Consequences.Enabled,
                 live.Consequences.BystanderMultiplier.ToString("R", CultureInfo.InvariantCulture),
                 live.Consequences.MaxAbsoluteDeltaPerHeroPerDay.ToString("R", CultureInfo.InvariantCulture),
@@ -505,7 +515,9 @@ namespace VividWorld.Mcm
                 live.Events.Sources.HeroPrisonerTaken,
                 live.Events.Sources.HeroPrisonerReleased,
                 live.Persistence.MaxSnapshots,
-                live.Ai.PushLanguage);
+                live.Ai.PushLanguage,
+                live.FalseRumors.Enabled,
+                live.FalseRumors.MaxPerDay.ToString("R", CultureInfo.InvariantCulture));
         }
 
         private static bool ValuesEqual(McmKeyKind kind, object? a, object? b)

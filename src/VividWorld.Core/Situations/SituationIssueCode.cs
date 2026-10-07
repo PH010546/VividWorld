@@ -38,6 +38,20 @@ namespace VividWorld.Core.Situations
         InvalidGrudgeAmount,
         InvalidGrudgeEscalate,
         GrudgeFromNotHop0Knower,
-        UnknownProperty
+        UnknownProperty,
+        UnknownRoleInDerivedRole,
+        MissingEventTypes,
+        MissingBindFromEvent,
+        MissingRoleInBindFromEvent,
+        UnknownRoleInBindFromEvent,
+        DerivedRoleInBindFromEvent,
+        InvalidLinkTo,
+        LinkToRequiresLinkedTemplateType,
+        InvalidConditionValue,
+        InvalidMaxPerDay,
+        InvalidConfigReference,
+        InvalidQuotaGroup,
+        InvalidMadeUpTalk,
+        InvalidGrudgeWeight
     }
 }

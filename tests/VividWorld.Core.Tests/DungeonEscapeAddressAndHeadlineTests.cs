@@ -551,11 +551,11 @@ namespace VividWorld.Core.Tests
 
         private static readonly (string Type, string Zh, string En, string PlainZh)[] NamedTitles =
         {
-            ("hero_taken_prisoner", "科爾被俘", "Corr taken prisoner", "被俘"),
-            ("hero_released", "科爾獲釋", "Corr released", "俘虜獲釋"),
+            ("hero_taken_prisoner", "科爾被俘", "Corr was taken prisoner", "被俘"),
+            ("hero_released", "科爾獲釋", "Corr was released", "俘虜獲釋"),
             ("hero_escaped_captivity", "科爾脫逃", "Corr escaped", "俘虜脫逃"),
-            ("hero_captured_by_bandits", "科爾被盜匪俘虜", "Corr captured by bandits", "被盜匪俘虜"),
-            ("hero_rescued_from_bandits", "科爾從盜匪手裡獲救", "Corr rescued from bandits", "從盜匪手裡獲救"),
+            ("hero_captured_by_bandits", "科爾被盜匪俘虜", "Corr was captured by bandits", "被盜匪俘虜"),
+            ("hero_rescued_from_bandits", "科爾從盜匪手裡獲救", "Corr was rescued from bandits", "從盜匪手裡獲救"),
             ("hero_escaped_bandits", "科爾從盜匪手裡逃脫", "Corr escaped from bandits", "從盜匪手裡逃脫")
         };
 
@@ -672,7 +672,7 @@ namespace VividWorld.Core.Tests
         [Fact]
         public void Headline_OtherKindsOfNews_KeepTheirPlainTitle()
         {
-            foreach (var type in new[] { "hero_murdered", "heroes_married", "child_born", "wager_struck" })
+            foreach (var type in new[] { "talk_denied_spoke_against_ruler", "talk_denied_mistreated_prisoner", "talk_not_so_seat_dispute_yielded", "talk_not_so_tavern_good_word" })
             {
                 Assert.Null(ChronicleHeadline.NamedTextIdFor(type));
                 Assert.Null(Zh.Value.Get("VividWorld_EventTypeNamed_" + type));

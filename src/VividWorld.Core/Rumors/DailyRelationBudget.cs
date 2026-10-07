@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using VividWorld.Core.Dialogue;
+using VividWorld.Core.Events;
 
 namespace VividWorld.Core.Rumors
 {
@@ -43,6 +44,51 @@ namespace VividWorld.Core.Rumors
             {
                 _used[heroId] = abs;
             }
+        }
+
+        /// <summary>
+        /// 退回已消耗的額度，最低至 0。回傳實際退回的量。
+        /// </summary>
+        public double Refund(string heroId, double amount)
+        {
+            if (string.IsNullOrEmpty(heroId)) return 0.0;
+            double abs = Math.Abs(amount);
+            if (abs <= 0.0) return 0.0;
+            if (!_used.TryGetValue(heroId, out var val) || val <= 0.0)
+            {
+                return 0.0;
+            }
+            double actual = Math.Min(val, abs);
+            _used[heroId] = Math.Max(0.0, val - actual);
+            return actual;
+        }
+
+        /// <summary>
+        /// 判定一筆關係影響是否符合退回當日額度的條件。
+        /// 僅限個人層次且為當日結算之傳聞影響。
+        /// </summary>
+        public static bool CanRefundImpact(RelationImpact? ri, double currentDay, out string? nonRefundReason)
+        {
+            if (ri == null)
+            {
+                nonRefundReason = null;
+                return false;
+            }
+
+            if (ri.Scope != GrudgeScope.Personal)
+            {
+                nonRefundReason = "clan-level";
+                return false;
+            }
+
+            if (DailyCounter.BucketOf(ri.AppliedDay) != DailyCounter.BucketOf(currentDay))
+            {
+                nonRefundReason = "applied on an earlier day";
+                return false;
+            }
+
+            nonRefundReason = null;
+            return true;
         }
 
         public double Used(string heroId)

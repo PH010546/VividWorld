@@ -1000,6 +1000,29 @@ namespace VividWorld.Core.Presentation
                         }
                     }
 
+                    if (!hasRole && string.Equals(name, "SOURCE", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!string.IsNullOrEmpty(r?.SourceHeroId))
+                        {
+                            roleHeroId = r!.SourceHeroId;
+                            hasRole = true;
+                        }
+                        else if (vars != null && vars.TryGetValue("SOURCE", out var srcVal) && !string.IsNullOrEmpty(srcVal))
+                        {
+                            roleHeroId = srcVal.StartsWith("hero:") ? srcVal.Substring("hero:".Length) : srcVal;
+                            hasRole = true;
+                        }
+                    }
+
+                    if (!hasRole && string.Equals(name, "ORIGINATOR", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (vars != null && vars.TryGetValue("ORIGINATOR", out var origVal) && !string.IsNullOrEmpty(origVal))
+                        {
+                            roleHeroId = origVal.StartsWith("hero:") ? origVal.Substring("hero:".Length) : origVal;
+                            hasRole = true;
+                        }
+                    }
+
                     if (!hasRole && !string.IsNullOrEmpty(r?.SpeakerRole) && string.Equals(r!.SpeakerRole, name, StringComparison.OrdinalIgnoreCase))
                     {
                         roleHeroId = r.SpeakerHeroId;
@@ -1212,6 +1235,156 @@ namespace VividWorld.Core.Presentation
                 || (c >= '一' && c <= '鿿')
                 || (c >= '가' && c <= '힯')
                 || (c >= '＀' && c <= '￯');
+        }
+        /// <summary>
+        /// 組裝打探回答的文字（對話與紀事共用）。
+        /// 處理：依性別選字（ME, YOU, SOURCE, ORIGINATOR, 角色佔位符）、
+        /// {ADDRESS} 稱呼替換、代名詞（{he}, {him}, {his}, {角色.he}...）、
+        /// 變數代換（{NAME}, {SOURCE}, {ORIGINATOR}, 角色名等）、
+        /// 殘留 { 檢查並退回英文後備。
+        /// </summary>
+        public static RumorRenderResult AssembleProbeResponse(
+            string templateKey,
+            IReadOnlyDictionary<string, string>? vars,
+            string? addressKey,
+            string? addressHeroId,
+            string? speakerHeroId,
+            string? listenerHeroId,
+            bool enableLinks,
+            Func<string, bool, string> resolveVar,
+            Func<string?, string, string>? getLocalized,
+            Func<string, bool?>? isFemale,
+            Action<string>? onWarning,
+            string? englishFallback = null)
+        {
+            if (string.IsNullOrEmpty(templateKey))
+            {
+                return new RumorRenderResult(string.Empty, string.Empty);
+            }
+
+            string rawTemplate = getLocalized != null ? getLocalized(templateKey, englishFallback ?? string.Empty) : (englishFallback ?? string.Empty);
+            if (string.IsNullOrEmpty(rawTemplate))
+            {
+                rawTemplate = englishFallback ?? string.Empty;
+            }
+
+            // 代換值一律存英雄代號；選字與代換都吃「hero:代號」的形狀
+            var normalizedVars = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (vars != null)
+            {
+                foreach (var kvp in vars)
+                {
+                    string val = kvp.Value ?? string.Empty;
+                    normalizedVars[kvp.Key] = val.StartsWith("hero:", StringComparison.Ordinal) ? val : "hero:" + val;
+                }
+            }
+
+            string RenderPass(bool useLinks, Action<string>? warn)
+            {
+                string text = rawTemplate;
+
+                // 1. 性別選字記號（先於人名代換，避免外來人名內容被誤當記號）
+                text = ApplyGenderSelectTokens(text, null, null, speakerHeroId, isFemale, normalizedVars, warn, templateKey, listenerHeroId);
+
+                // 2. {ADDRESS} 替換
+                const string tokenAddress = "{ADDRESS}";
+                if (text.Contains(tokenAddress))
+                {
+                    string address = string.IsNullOrEmpty(addressKey)
+                        ? string.Empty
+                        : (getLocalized != null ? getLocalized(addressKey, string.Empty) : string.Empty);
+
+                    // 查不到稱呼就不換：記號原樣留著，後面的殘留檢查會退回英文預設並發警告
+                    if (!string.IsNullOrEmpty(address))
+                    {
+                        if (address.Contains("{NAME}"))
+                        {
+                            string name = string.IsNullOrEmpty(addressHeroId)
+                                ? string.Empty
+                                : resolveVar("hero:" + addressHeroId, useLinks);
+                            address = address.Replace("{NAME}", name);
+                        }
+
+                        bool startsWithAddress = text.TrimStart().StartsWith(tokenAddress, StringComparison.Ordinal);
+                        text = text.Replace(tokenAddress, address);
+                        if (startsWithAddress) text = CapitalizeFirstAscii(text.TrimStart());
+                    }
+                }
+
+                // 3. 代名詞記號：{he}, {him}, {his}, {角色.he}...
+                // 指被說的人（或焦點人物）：如果 addressHeroId 有傳，用 addressHeroId 的性別
+                bool? focusFemale = null;
+                if (!string.IsNullOrEmpty(addressHeroId) && isFemale != null)
+                {
+                    focusFemale = isFemale(addressHeroId!);
+                }
+                text = ApplyFocusPronouns(text, focusFemale == true, getLocalized);
+
+                // 角色代名詞記號（{PRISONER.he}, {CAPTOR.his} 等）
+                text = PronounTokenRegex.Replace(text, match =>
+                {
+                    string roleName = match.Groups[1].Value;
+                    string pronoun = match.Groups[2].Value.ToLowerInvariant();
+                    string? rHeroId = null;
+                    if (vars != null)
+                    {
+                        if (vars.TryGetValue(roleName, out var vVal) && !string.IsNullOrEmpty(vVal))
+                        {
+                            rHeroId = vVal.StartsWith("hero:") ? vVal.Substring("hero:".Length) : vVal;
+                        }
+                    }
+
+                    if (string.IsNullOrEmpty(rHeroId))
+                    {
+                        return PronounFor(pronoun, 'N', getLocalized, match.Value);
+                    }
+
+                    bool? f = isFemale != null ? isFemale(rHeroId!) : null;
+                    return PronounFor(pronoun, f == true ? 'F' : (f == false ? 'M' : 'N'), getLocalized, match.Value);
+                });
+
+                // 4. 一般變數代換（FactTextSubstitution）
+                var dict = new Dictionary<string, string>(normalizedVars, StringComparer.OrdinalIgnoreCase);
+                if (!string.IsNullOrEmpty(addressHeroId) && !dict.ContainsKey("ADDRESS_HERO"))
+                {
+                    dict["ADDRESS_HERO"] = "hero:" + addressHeroId;
+                }
+
+                text = FactTextSubstitution.Apply(text, dict, val => resolveVar(val, useLinks));
+
+                // 5. 殘留 { 檢查：若殘留佔位符，退回英文預設
+                var unresolved = FactTextSubstitution.UnresolvedPlaceholders(text);
+                if (unresolved.Count > 0)
+                {
+                    warn?.Invoke($"Probe response: unresolved placeholders {{{string.Join(", ", unresolved)}}} in '{templateKey}'. Falling back to English default.");
+                    string fallbackText = englishFallback ?? string.Empty;
+                    if (!string.IsNullOrEmpty(fallbackText))
+                    {
+                        // 英文預設照同一條路再組一次（性別選字、代名詞、代換）
+                        fallbackText = ApplyGenderSelectTokens(fallbackText, null, null, speakerHeroId, isFemale, normalizedVars, null, templateKey, listenerHeroId);
+                        fallbackText = ApplyFocusPronouns(fallbackText, focusFemale == true, null);
+                        fallbackText = FactTextSubstitution.Apply(fallbackText, dict, val => resolveVar(val, useLinks));
+                        text = fallbackText;
+                    }
+
+                    // 還是有殘留（例如英文預設也缺稱呼）：拿掉殘留的記號，不把 { 送給玩家
+                    var stillUnresolved = FactTextSubstitution.UnresolvedPlaceholders(text);
+                    if (stillUnresolved.Count > 0)
+                    {
+                        foreach (var name in stillUnresolved.Distinct(StringComparer.Ordinal))
+                        {
+                            text = text.Replace("{" + name + "}", string.Empty);
+                        }
+                        text = System.Text.RegularExpressions.Regex.Replace(text, @"\s{2,}", " ");
+                    }
+                }
+
+                return text.Trim();
+            }
+
+            string display = RenderPass(enableLinks, null);
+            string plain = RenderPass(false, onWarning);
+            return new RumorRenderResult(display, plain);
         }
     }
 }

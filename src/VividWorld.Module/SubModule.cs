@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using HarmonyLib;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
@@ -297,13 +298,39 @@ namespace VividWorld
 
                 var entries = provider.ForPlayer(maxEntries, currentDay, out var stats);
 
-                string logLine = ChronicleLogFormatter.FormatOpen(playerId, currentDay, stats, maxEntries);
-                ModLog.Info(logLine);
+                int fallbackCount = 0;
+                var resolvedHeadlines = new List<ChronicleHeadlineResult>();
                 foreach (var shown in entries)
                 {
                     var headline = ChronicleEntryVM.ResolveHeadline(shown, heroLookup);
                     shown.HeadlineText = headline.Text;
-                    ModLog.Info(ChronicleLogFormatter.FormatEntrySources(shown.EventId, shown.Sources, headline.Note));
+                    resolvedHeadlines.Add(headline);
+                    if (!headline.UsedNamed)
+                    {
+                        fallbackCount++;
+                    }
+                }
+                stats.FallbackTitleBlocks = fallbackCount;
+
+                string logLine = ChronicleLogFormatter.FormatOpenBlocks(playerId, currentDay, stats, maxEntries);
+                ModLog.Info(logLine);
+                for (int i = 0; i < entries.Count; i++)
+                {
+                    var shown = entries[i];
+                    var headline = resolvedHeadlines[i];
+                    var counts = new List<int>();
+                    if (shown.Matters != null && shown.Matters.Count > 0)
+                    {
+                        foreach (var m in shown.Matters)
+                        {
+                            counts.Add(m.Sources.Count);
+                        }
+                    }
+                    else
+                    {
+                        counts.Add(shown.Sources.Count);
+                    }
+                    ModLog.Info(ChronicleLogFormatter.FormatBlock(shown.EventId, shown.EventType, headline.Text, headline.Note, counts, shown.HasConflict, shown.ConflictReason));
                 }
                 ModLog.Flush();
 

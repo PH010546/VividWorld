@@ -72,8 +72,23 @@ namespace VividWorld.Core.Persistence
         /// <summary>只講大概又少講時接的收尾句鍵；null＝不接。</summary>
         public string? ClosingKey { get; set; }
 
+        /// <summary>打探回答的句子鍵；非打探回答為 null。</summary>
+        public string? ProbeAnswerKey { get; set; }
+
+        /// <summary>打探回答的代換值（變數鍵 -> 英雄代號）；非打探回答為 null，不寫進檔案。</summary>
+        public Dictionary<string, string>? ProbeAnswerVars { get; set; }
+
+        /// <summary>打探回答中稱呼的字串鍵；null＝無稱呼。</summary>
+        public string? ProbeAddressKey { get; set; }
+
+        /// <summary>打探回答中稱呼所針對的英雄代號；null＝無稱呼對象。</summary>
+        public string? ProbeAddressHeroId { get; set; }
+
         [JsonExtensionData]
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
+
+        [JsonIgnore]
+        public bool HasProbeAnswer => !string.IsNullOrEmpty(ProbeAnswerKey);
 
         [JsonIgnore]
         public bool HasFeeling => !string.IsNullOrEmpty(FeelingLineKey);
@@ -164,6 +179,10 @@ namespace VividWorld.Core.Persistence
                 IsGist = IsGist,
                 HeldBack = HeldBack,
                 ClosingKey = ClosingKey,
+                ProbeAnswerKey = ProbeAnswerKey,
+                ProbeAnswerVars = ProbeAnswerVars != null ? new Dictionary<string, string>(ProbeAnswerVars) : null,
+                ProbeAddressKey = ProbeAddressKey,
+                ProbeAddressHeroId = ProbeAddressHeroId,
                 Extra = Extra != null
                     ? new Dictionary<string, JToken>(Extra)
                     : new Dictionary<string, JToken>()
@@ -187,7 +206,9 @@ namespace VividWorld.Core.Persistence
 
         public static bool SameTeller(PlayerHeardSource a, PlayerHeardSource b)
         {
-            return string.Equals(a.HeroId ?? string.Empty, b.HeroId ?? string.Empty, StringComparison.Ordinal);
+            // 打探的回答是另外一份，不跟同一個人講過的消息合併（合併會把原句換成打探的回答）
+            return a.HasProbeAnswer == b.HasProbeAnswer
+                && string.Equals(a.HeroId ?? string.Empty, b.HeroId ?? string.Empty, StringComparison.Ordinal);
         }
     }
 }

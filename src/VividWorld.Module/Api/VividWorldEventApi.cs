@@ -46,7 +46,7 @@ namespace VividWorld.Api
                 if (entry.Secret && !entry.Leaked) return null;
 
                 var evt = Store.Load(eventId);
-                return evt != null ? VividJson.Write(evt) : null;
+                return evt != null ? PublicEventSanitizer.SanitizeJson(evt) : null;
             }
             catch
             {

@@ -9,5 +9,9 @@ namespace VividWorld.Core.Situations
         public int? ClanTier;              // Clan 為 null 時 null
         public string? SettlementId;       // CurrentSettlement?.StringId
         public string? SettlementKind;     // "town" / "castle" / "other" / null
+        public bool IsKingdomLeader;
+        public bool IsPlayer;
+        public bool IsAlive = true;
+        public bool IsLord = true;
     }
 }

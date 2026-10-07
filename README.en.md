@@ -44,6 +44,11 @@ quarrel escalates into a feud between two families**: let the score run deep eno
 or their close kin involved, and the matter ceases to be between two people. A score fades with time,
 but only so far — it is never wiped clean.
 
+**Not everything said is true.** Lords will say things behind others' backs that never happened — smearing someone they bear a grudge against,
+running down a rival for position, making up good deeds for their own family. Whoever hears it decides whether to believe it:
+someone close to the person talked about, someone who distrusts the teller, or someone who finds it out of character will not change their view because of it.
+The person talked about may deny it publicly, and someone who was there and knows the truth may set it straight; those who heard it will think again.
+
 ---
 
 ## Installation
@@ -77,6 +82,8 @@ share so much with you in a day; once he has said enough, he will tell you to co
 installed mod take over the greeting entirely, the menu gains the fallback line *"You looked like you
 were about to say something."*
 
+**Probing.** In conversation, choose *"There's something I want to ask you."* and pick an item from *What you have heard* to ask about. They answer from what they know — never heard of it, the part they know, or, if they have heard both versions, which one they believe; ask about their own affairs and they may deny it. Each person will only let you ask so much in a day.
+
 **Rumor mode.** The Vivid World page of the game's settings offers
 Auto, Casual and Realistic; a change takes effect immediately. Casual: anyone whose character does not shy from talk
 may bring up his own affairs even to a new acquaintance, and even a commoner may ask. Realistic: he must be talkative
@@ -86,8 +93,8 @@ Casual otherwise.
 **Personal relations.** Everyone keeps their own opinion of you: helping or crossing someone only affects that person, not their whole clan (in the base game, a clan shares its leader's relation with you). Who is willing to talk to you, and what they think of you when news involves you, also follow that person's own opinion.
 The first time you load an existing campaign, each person gets the value shown on screen at that moment, so the numbers you see do not change. It can be turned off on the Vivid World page of the game's settings to go back to the original rule.
 
-**Reviewing what you have heard.** Press **Ctrl+L** for *What you have heard*, which lists every piece
-of news that has reached you so far, with each person's own words kept as a separate entry and how many tellings removed it is.
+**Reviewing what you have heard.** Press **Ctrl+L** for *What you have heard*, which gathers each matter
+that has reached you — follow-ups and differing accounts together, marked *Conflicting accounts* when they disagree — with each person's own words kept as a separate entry and how many tellings removed it is.
 Names of people and places in the text are clickable and lead to the game's encyclopedia.
 
 ---
@@ -190,7 +197,6 @@ being worked on:
 | Item | Where it is headed |
 |---|---|
 | **More authored scenes** | A steadily growing repertoire of occasions the lords play out among themselves — the feast, the campaign, the marketplace, and the business between families |
-| **Embellishment** | News will not merely lose detail in transit; it will be exaggerated and coloured, until what arrives is a good deal more than what happened |
 | **Setting the record straight** | When the version that reached you is at odds with the facts, you will be able to take it up with the party concerned and bring the misunderstanding into the open |
 | **Quarrels with a reply** | A dispute will no longer be settled in a single stroke; a contest such as a duel will let each party answer the other |
 | **Consequences that reach further** | Outcomes will touch not only standing but money, renown, influence — and, in time, life and limb |

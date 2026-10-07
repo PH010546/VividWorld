@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using VividWorld.Core.Channels;
 using VividWorld.Core.Config;
+using VividWorld.Core.Diagnostics;
 using VividWorld.Core.Events;
 using VividWorld.Core.Memory;
 using VividWorld.Core.Util;
@@ -20,6 +21,9 @@ namespace VividWorld.Core.Rumors
         private readonly long _campaignSeed;
         private readonly string _playerHeroId;
         private readonly Func<string, VividWorld.Core.Catalog.EventTemplate?>? _getTemplate;
+        private VividWorld.Core.Feelings.IFeelingWorld? _feelingWorld;
+        private ILogSink? _log;
+        private bool _warnedNullFeelingWorld;
 
         public RumorEngine(VividWorldConfig config,
                            IFactRetentionPolicy retention,
@@ -29,7 +33,9 @@ namespace VividWorld.Core.Rumors
                            IDeterministicRng rng,
                            long campaignSeed,
                            string playerHeroId,
-                           Func<string, VividWorld.Core.Catalog.EventTemplate?>? getTemplate = null)
+                           Func<string, VividWorld.Core.Catalog.EventTemplate?>? getTemplate = null,
+                           VividWorld.Core.Feelings.IFeelingWorld? feelingWorld = null,
+                           ILogSink? log = null)
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _retention = retention ?? throw new ArgumentNullException(nameof(retention));
@@ -40,6 +46,20 @@ namespace VividWorld.Core.Rumors
             _campaignSeed = campaignSeed;
             _playerHeroId = playerHeroId ?? string.Empty;
             _getTemplate = getTemplate;
+            _feelingWorld = feelingWorld;
+            _log = log;
+        }
+
+        public VividWorld.Core.Feelings.IFeelingWorld? FeelingWorld
+        {
+            get => _feelingWorld;
+            set => _feelingWorld = value;
+        }
+
+        public ILogSink? Log
+        {
+            get => _log;
+            set => _log = value;
         }
 
         public IHeroTraitLookup Traits => _traits;
@@ -268,20 +288,99 @@ namespace VividWorld.Core.Rumors
             var channelKinds = new Dictionary<string, ChannelKind>(StringComparer.Ordinal);
             double tellerTellFactor = Forgetting.TellFactor(teller, _config.Memory);
 
+            // 講述者自己不信這則消息：照樣會傳，但傳得少。沒判過（null）或信（true）不影響。
+            double disbelieverMultiplier = teller.Believes == false
+                ? _config.FalseRumors.Belief.DisbelieverTellMultiplier
+                : 1.0;
+
+            // 診斷用：每位聽的人的狀況。只在開著講述者日誌時收集，關著時不配置任何東西。
+            // 這裡只讀、只記，不擲骰、不改任何判斷，所以開與關傳話的結果完全相同。
+            List<ContactObservation>? observed = _config.Debug.LogTellerTurns ? new List<ContactObservation>() : null;
+            int visited = 0;
+
+            // 領主之間傳話分層：每位聽的人都算出層與意願（診斷要看得到全貌），
+            // 但只有 enabled 為真時才拿來擋人。分層不看 LogTellerTurns。
+            var tiersCfg = _config.Propagation.TellTiers;
+            int weightTen = evt.DramaWeightTen;
+            int bigNewsLine = _config.Dialogue.BigNewsLine;
+
+            ContactObservation Observe(ChannelLink l, double chance, ContactStatus status, string? heldBackReason = null)
+            {
+                double will = TellTierRule.Willingness(l.OwnRelation, tellerProfile, _config.Dialogue.AskTraitWeights);
+                var tier = TellTierRule.Classify(l.IsFamily, l.OwnRelation, will, tiersCfg);
+                double rf = RelationFactor.For(l.Kind, l.OwnRelation, _config.Relation);
+                return new ContactObservation(l.HeroId, l.Kind, l.Relation, chance, status,
+                    l.OwnRelation, l.IsFamily, will, tier, heldBackReason, rf);
+            }
+
             if (contacts != null)
             {
                 foreach (var link in contacts)
                 {
+                    visited++;
                     if (link == null || string.IsNullOrEmpty(link.HeroId)) continue;
                     if (link.HeroId == _playerHeroId) continue;
 
                     var existing = evt.EntryFor(link.HeroId);
                     bool forgotten = existing != null && Forgetting.IsForgotten(evt, existing, day, _playerHeroId, _config.Memory);
-                    if (existing != null && !forgotten && (!_config.Memory.Enabled || existing.Interest == null)) continue;
-                    if (!IsEligible(link.HeroId)) continue;
+                    if (existing != null && !forgotten && (!_config.Memory.Enabled || existing.Interest == null))
+                    {
+                        observed?.Add(Observe(link, 0.0, ContactStatus.AlreadyKnows));
+                        continue;
+                    }
+                    if (!IsEligible(link.HeroId))
+                    {
+                        observed?.Add(Observe(link, 0.0, ContactStatus.NotEligible));
+                        continue;
+                    }
+
+                    // 分層：被擋的這一位不擲骰、不算機率，所以不會動到別人的骰。
+                    if (tiersCfg.Enabled)
+                    {
+                        double ownWill = TellTierRule.Willingness(link.OwnRelation, tellerProfile, _config.Dialogue.AskTraitWeights);
+                        var tier = TellTierRule.Classify(link.IsFamily, link.OwnRelation, ownWill, tiersCfg);
+                        if (!TellTierRule.WouldStillTell(tier, weightTen, bigNewsLine))
+                        {
+                            observed?.Add(Observe(link, 0.0,
+                                tier == TellTier.Hostile ? ContactStatus.HeldBackHostile : ContactStatus.HeldBackSmallNews));
+                            continue;
+                        }
+                    }
+
+                    // 醜事講不講：看說話的人與聽的人各自跟出醜的人的關係
+                    if (_config.Propagation.ShamefulNews.Enabled)
+                    {
+                        if (_feelingWorld == null)
+                        {
+                            if (!_warnedNullFeelingWorld && ShamefulNewsRule.HasShamedPersons(evt, _getTemplate, tellerId))
+                            {
+                                _warnedNullFeelingWorld = true;
+                                _log?.Warn("RumorEngine: IFeelingWorld is not provided; shameful news filtering is inactive.");
+                            }
+                        }
+                        else
+                        {
+                            var shamefulEval = ShamefulNewsRule.Evaluate(
+                                evt,
+                                tellerId,
+                                link.HeroId,
+                                _feelingWorld,
+                                _getTemplate,
+                                _traits,
+                                _config,
+                                day,
+                                _playerHeroId);
+
+                            if (!shamefulEval.CanTell)
+                            {
+                                observed?.Add(Observe(link, 0.0, ContactStatus.HeldBackShameful, shamefulEval.HeldBackReason));
+                                continue;
+                            }
+                        }
+                    }
 
                     double channelWeight = _config.Propagation.ChannelWeights.For(link.Kind);
-                    double relationFactor = RelationFactor.For(link.Kind, link.Relation, _config.Relation);
+                    double relationFactor = RelationFactor.For(link.Kind, link.OwnRelation, _config.Relation);
 
                     string? contactRole = evt.RoleOf(link.HeroId);
                     bool contactIsTarget = string.Equals(contactRole, "target", StringComparison.OrdinalIgnoreCase);
@@ -297,10 +396,14 @@ namespace VividWorld.Core.Rumors
                              * tellerTraitFactor
                              * selfIncriminationMultiplier
                              * tellToSubjectMultiplier
-                             * tellerTellFactor;
+                             * tellerTellFactor
+                             * disbelieverMultiplier;
 
                     long contactSeed = RumorSeed.Of(_campaignSeed, evt.EventId, tellerId, link.HeroId, RumorSeed.DayBucket(day));
-                    if (_rng.Chance(p, contactSeed))
+                    bool hit = _rng.Chance(p, contactSeed);
+                    observed?.Add(Observe(link, p,
+                        !hit ? ContactStatus.Missed : (existing != null ? ContactStatus.Reheard : ContactStatus.Told)));
+                    if (hit)
                     {
                         if (existing != null)
                         {
@@ -346,15 +449,23 @@ namespace VividWorld.Core.Rumors
                             // 步驟 5：達到上限即停
                             if (newKnowers.Count >= _config.Propagation.MaxNewKnowersPerEventPerTick)
                             {
+                                // 還沒輪到的聯絡人只補記一筆「沒輪到」：不擲骰、不算機率。
+                                if (observed != null)
+                                {
+                                    for (int i = visited; i < contacts.Count; i++)
+                                    {
+                                        var rest = contacts[i];
+                                        if (rest == null || string.IsNullOrEmpty(rest.HeroId)) continue;
+                                        if (rest.HeroId == _playerHeroId) continue;
+                                        observed.Add(Observe(rest, 0.0, ContactStatus.NotReached));
+                                    }
+                                }
                                 break;
                             }
                         }
                     }
                 }
             }
-
-            // 步驟 6：誤會澄清骰掛鉤
-            TryClearMisconceptions(evt, tellerId, contacts ?? Array.Empty<ChannelLink>(), day);
 
             // 步驟 7：一律設 LastPropagatedDay；若有新增知情者另設 LastNewKnowerDay
             evt.State.LastPropagatedDay = day;
@@ -363,7 +474,11 @@ namespace VividWorld.Core.Rumors
                 evt.State.LastNewKnowerDay = day;
             }
 
-            return new PropagationOutcome(true, tellerId, newKnowers, channelKinds, reheard);
+            return new PropagationOutcome(true, tellerId, newKnowers, channelKinds, reheard)
+            {
+                DisbelieverMultiplier = disbelieverMultiplier,
+                Contacts = (IReadOnlyList<ContactObservation>?)observed ?? Array.Empty<ContactObservation>()
+            };
         }
 
         public DormancyReason? DormancyReasonFor(WorldEvent evt, double day)
@@ -446,10 +561,5 @@ namespace VividWorld.Core.Rumors
         {
             return Eligibility.IsEligible(_traits, heroId);
         }
-
-        // ── 誤會澄清（規格 §6.7.3）那張卡填入。M3 刻意留空，M6.5 沒有動它。 ──
-        // 嚴禁改成 throw new NotImplementedException()：這個方法在傳播時會被呼叫，丟例外會讓整個 tick 迴圈爆炸。
-        private void TryClearMisconceptions(WorldEvent evt, string tellerId,
-                                            IReadOnlyList<ChannelLink> contacts, double day) { }
     }
 }

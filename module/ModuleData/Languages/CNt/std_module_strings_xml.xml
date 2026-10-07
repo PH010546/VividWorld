@@ -26,6 +26,10 @@
     <string id="VividWorld_Dev_Menu_Person" text="(dev) 看這個人" />
     <string id="VividWorld_Dev_Menu_World" text="(dev) 看世界" />
     <string id="VividWorld_Dev_Menu_Act" text="(dev) 動手改東西" />
+    <string id="VividWorld_Dev_Menu_Belief" text="(dev) 信不信與編的話" />
+    <string id="VividWorld_Dev_Beliefs" text="(dev) 這個人信了哪些話" />
+    <string id="VividWorld_Dev_TellTiers" text="(dev) 領主之間怎麼傳話？" />
+    <string id="VividWorld_Dev_WhoCouldStartMadeUpTalk" text="(dev) 他現在可能編誰的話" />
     <string id="VividWorld_Dev_Menu_Back" text="(dev) 返回" />
     <string id="VividWorld_Dev_TellWithFeeling" text="(dev) 讓他把一則會附感想的消息講給我聽" />
 
@@ -131,6 +135,41 @@
     <string id="VividWorld_EventTypeNamed_hero_captured_by_bandits" text="{PRISONER}被盜匪俘虜" />
     <string id="VividWorld_EventTypeNamed_hero_rescued_from_bandits" text="{PRISONER}從盜匪手裡獲救" />
     <string id="VividWorld_EventTypeNamed_hero_escaped_bandits" text="{PRISONER}從盜匪手裡逃脫" />
+    <string id="VividWorld_EventTypeNamed_hero_murdered" text="{VICTIM}遇害" />
+    <string id="VividWorld_EventTypeNamed_hero_executed" text="{VICTIM}被處決" />
+    <string id="VividWorld_EventTypeNamed_hero_died_in_battle" text="{VICTIM}戰死" />
+    <string id="VividWorld_EventTypeNamed_hero_died_naturally" text="{VICTIM}過世" />
+    <string id="VividWorld_EventTypeNamed_hero_died_of_old_age" text="{VICTIM}過世" />
+    <string id="VividWorld_EventTypeNamed_hero_died_in_labor" text="{VICTIM}難產過世" />
+    <string id="VividWorld_EventTypeNamed_heroes_married" text="{SPOUSE_A}與{SPOUSE_B}成婚" />
+    <string id="VividWorld_EventTypeNamed_child_born" text="{MOTHER}生下{CHILD}" />
+    <string id="VividWorld_EventTypeNamed_seat_dispute_demanded" text="{SLIGHTED}當眾要{FAVORED}讓座" />
+    <string id="VividWorld_EventTypeNamed_seat_dispute_endured" text="{SLIGHTED}忍下席間的難堪" />
+    <string id="VividWorld_EventTypeNamed_seat_dispute_yielded" text="{SLIGHTED}讓座給{FAVORED}" />
+    <string id="VividWorld_EventTypeNamed_seat_dispute_walked_out" text="{SLIGHTED}拂袖離席" />
+    <string id="VividWorld_EventTypeNamed_advice_given_freely" text="{VETERAN}對{STUDENT}傾囊相授" />
+    <string id="VividWorld_EventTypeNamed_advice_brushed_off" text="{VETERAN}敷衍{STUDENT}的請教" />
+    <string id="VividWorld_EventTypeNamed_advice_mocked" text="{VETERAN}當眾取笑{STUDENT}的請教" />
+    <string id="VividWorld_EventTypeNamed_tavern_boast_told" text="{SPEAKER}酒後吹噓戰功" />
+    <string id="VividWorld_EventTypeNamed_tavern_confidence" text="{SPEAKER}酒後說漏心事" />
+    <string id="VividWorld_EventTypeNamed_tavern_sour_words" text="{SPEAKER}酒後對{LISTENER}口出惡言" />
+    <string id="VividWorld_EventTypeNamed_tavern_good_word" text="{SPEAKER}在酒桌上替{LISTENER}說話" />
+    <string id="VividWorld_EventTypeNamed_victory_credit_claimed" text="{CLAIMANT}當眾攬功" />
+    <string id="VividWorld_EventTypeNamed_victory_credit_deferred" text="{CLAIMANT}讓功給{RIVAL}" />
+    <string id="VividWorld_EventTypeNamed_victory_credit_belittled" text="{CLAIMANT}貶低{RIVAL}的戰功" />
+    <string id="VividWorld_EventTypeNamed_victory_credit_judged" text="{HOST}裁定{CLAIMANT}與{RIVAL}的戰功之爭" />
+    <string id="VividWorld_EventTypeNamed_brawl_man_handed_over" text="{PATRON}交出鬧事的手下" />
+    <string id="VividWorld_EventTypeNamed_brawl_shielded_own" text="{PATRON}護短" />
+    <string id="VividWorld_EventTypeNamed_brawl_counter_accused" text="{PATRON}反咬{AGGRIEVED}一口" />
+    <string id="VividWorld_EventTypeNamed_brawl_hushed_up" text="{PATRON}與{AGGRIEVED}壓下手下的衝突" />
+    <string id="VividWorld_EventTypeNamed_wager_struck" text="{CHALLENGER}與{CHALLENGED}的狩獵賭局" />
+    <string id="VividWorld_EventTypeNamed_wager_refused" text="{CHALLENGED}回絕{CHALLENGER}的賭局" />
+    <string id="VividWorld_EventTypeNamed_wager_secret_stake" text="{CHALLENGER}與{CHALLENGED}的賭局另有暗盤" />
+    <string id="VividWorld_EventTypeNamed_conduct_spoke_against_ruler" text="{SPEAKER}在背後議論君主" />
+    <string id="VividWorld_EventTypeNamed_conduct_mistreated_prisoner" text="{CAPTOR}苛待俘虜" />
+    <string id="VividWorld_EventTypeNamed_conduct_refused_aid" text="{REFUSER}拒絕同袍求援" />
+    <string id="VividWorld_EventTypeNamed_conduct_rash_capture" text="{PRISONER}莽撞被俘" />
+    <string id="VividWorld_EventTypeNamed_conduct_poisoned" text="{VICTIM}之死" />
 
     <!-- Real event template 1: hero_murdered -->
     <string id="VividWorld_Fact_HeroMurdered_Who" text="{KILLER}殘忍地謀殺了{VICTIM}" />
@@ -221,6 +260,8 @@
     <string id="VividWorld_Dev_TriggerSituation" text="(dev) 在他身上觸發情境" />
     <string id="VividWorld_Dev_GrudgeLedger" text="(dev) 他的恩怨帳本" />
     <string id="VividWorld_Dev_Feelings" text="(dev) 他對每則他知道的消息會附哪一句感想？" />
+    <string id="VividWorld_Dev_ShamefulNews" text="(dev) 他知道的醜事會跟誰講？" />
+    <string id="VividWorld_Dev_PlayerRelation" text="(dev) 他對你的好感（個人與家族）" />
     <string id="VividWorld_Dev_ScanToday" text="(dev) 今天的情境掃描" />
     <string id="VividWorld_Dev_Snapshots" text="(dev) 快照狀態" />
 
@@ -299,6 +340,7 @@
     <string id="VividWorld_Chronicle_SourceUnknown" text="不知道是誰說的" />
     <string id="VividWorld_Chronicle_Quote" text="{NAME}：「{LINE}」" />
     <string id="VividWorld_Chronicle_Plain" text="{NAME}：{FACTS}" />
+    <string id="VividWorld_Chronicle_Conflicting" text="有矛盾" />
 
     <!-- SNAP1：快照管理 -->
     <string id="VividWorld_Snapshots_Title" text="Vivid World 快照管理" />
@@ -348,8 +390,8 @@
     <string id="VividWorld_MCM_ChronicleHotkeyHint" text="在大地圖上開啟「你聽過的事」視窗的快捷鍵（例如 Ctrl+L、L）。" />
     <string id="VividWorld_MCM_SnapshotManagerHotkey" text="快照管理熱鍵" />
     <string id="VividWorld_MCM_SnapshotManagerHotkeyHint" text="開啟快照管理視窗的快捷鍵（例如 F9）。" />
-    <string id="VividWorld_MCM_ChronicleMaxEntries" text="最多顯示條數" />
-    <string id="VividWorld_MCM_ChronicleMaxEntriesHint" text="「你聽過的事」視窗中最多顯示的近期傳聞筆數。" />
+    <string id="VividWorld_MCM_ChronicleMaxEntries" text="最多顯示幾件事" />
+    <string id="VividWorld_MCM_ChronicleMaxEntriesHint" text="「你聽過的事」視窗最多顯示幾件事。同一件事的後續與各種說法收在一起，算一件。" />
     <string id="VividWorld_MCM_EncyclopediaLinksEnabled" text="傳聞百科連結" />
     <string id="VividWorld_MCM_EncyclopediaLinksEnabledHint" text="在傳聞文字中為英雄與聚落名稱加上可點擊的百科全書超連結。" />
 
@@ -1293,5 +1335,335 @@
     <string id="VividWorld_Address_Lower_High" text="老朋友" />
     <string id="VividWorld_Address_Lower_Neutral" text="{NAME}" />
     <string id="VividWorld_Address_Lower_Low" text="那個人" />
+    <string id="VividWorld_EventType_conduct_spoke_against_ruler" text="在背後議論君主" />
+    <string id="VividWorld_Fact_ConductSpokeAgainstRuler_Who" text="{SPEAKER}說{RULER}不配坐那個位子" />
+    <string id="VividWorld_Fact_ConductSpokeAgainstRuler_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_ConductSpokeAgainstRuler_Context" text="是私下對{LISTENER}說的" />
+    <string id="VividWorld_Sentence_ConductSpokeAgainstRuler_Who_Where_Context_Self_LISTENER" text="{SPEAKER}在{SETTLEMENT}私下跟我說，{RULER}不配坐那個位子" />
+    <string id="VividWorld_Sentence_ConductSpokeAgainstRuler_Who_Where_Self_LISTENER" text="我在{SETTLEMENT}聽{SPEAKER}說過，{RULER}不配坐那個位子" />
+    <string id="VividWorld_Sentence_ConductSpokeAgainstRuler_Who_Where_Context_From_LISTENER" text="{SPEAKER}在{SETTLEMENT}私下跟他講過，{RULER}不配坐那個位子" />
+    <string id="VividWorld_Sentence_ConductSpokeAgainstRuler_Who_Where" text="{SPEAKER}在{SETTLEMENT}私下講過，{RULER}不配坐那個位子" />
+    <string id="VividWorld_Sentence_ConductSpokeAgainstRuler_Who" text="{SPEAKER}說過{RULER}不配坐那個位子" />
+    <string id="VividWorld_SelfFeeling_ConductSpokeAgainstRuler_LISTENER" text="這種話他敢說，我可不敢接" />
+    <string id="VividWorld_EventType_conduct_mistreated_prisoner" text="苛待俘虜" />
+    <string id="VividWorld_Fact_ConductMistreatedPrisoner_Who" text="{CAPTOR}把{PRISONER}跟尋常俘虜鎖在同一條鏈子上" />
+    <string id="VividWorld_Fact_ConductMistreatedPrisoner_What" text="一路趕著走" />
+    <string id="VividWorld_Fact_ConductMistreatedPrisoner_Context" text="吃的是別人吃剩的" />
+    <string id="VividWorld_Sentence_ConductMistreatedPrisoner_Who_What_Context_Self_PRISONER" text="{CAPTOR}押著我的那段日子，把我跟尋常俘虜鎖在同一條鏈子上，一路趕著走，吃的是別人吃剩的" />
+    <string id="VividWorld_Sentence_ConductMistreatedPrisoner_Who_What_Self_PRISONER" text="{CAPTOR}押著我的時候，把我跟尋常俘虜鎖在同一條鏈子上，一路趕著走" />
+    <string id="VividWorld_Sentence_ConductMistreatedPrisoner_Who_What_Context_From_PRISONER" text="{CAPTOR}押著他的那段日子，把他跟尋常俘虜鎖在同一條鏈子上，一路趕著走，吃的是別人吃剩的" />
+    <string id="VividWorld_Sentence_ConductMistreatedPrisoner_Who_What_Context" text="{CAPTOR}押著{PRISONER}的那段日子，把他跟尋常俘虜鎖在同一條鏈子上，一路趕著走，吃的是別人吃剩的" />
+    <string id="VividWorld_Sentence_ConductMistreatedPrisoner_Who_What" text="{CAPTOR}押著{PRISONER}的時候，把他跟尋常俘虜鎖在同一條鏈子上，一路趕著走" />
+    <string id="VividWorld_Sentence_ConductMistreatedPrisoner_Who" text="{CAPTOR}把俘虜來的{PRISONER}跟尋常俘虜鎖在同一條鏈子上" />
+    <string id="VividWorld_SelfFeeling_ConductMistreatedPrisoner_PRISONER" text="打仗被俘我認了，可沒有人這樣待一位領主" />
+    <string id="VividWorld_EventType_conduct_refused_aid" text="拒絕同袍求援" />
+    <string id="VividWorld_Fact_ConductRefusedAid_Who" text="{ASKER}向{REFUSER}借糧，{REFUSER}手上有糧，卻一袋也沒借" />
+    <string id="VividWorld_Fact_ConductRefusedAid_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_ConductRefusedAid_Why" text="{REFUSER}說自己也不寬裕" />
+    <string id="VividWorld_Fact_ConductRefusedAid_Context" text="{REFUSER}的糧車就停在院子裡，裝得滿滿的" />
+    <string id="VividWorld_Sentence_ConductRefusedAid_Who_Where_Why_Context_Self_ASKER" text="我在{SETTLEMENT}開口向{REFUSER}借糧，他說自己也不寬裕，一袋也沒借給我。可他的糧車就停在院子裡，裝得滿滿的" />
+    <string id="VividWorld_Sentence_ConductRefusedAid_Who_Where_Context_Self_ASKER" text="我在{SETTLEMENT}開口向{REFUSER}借糧，他一袋也沒借給我。可他的糧車就停在院子裡，裝得滿滿的" />
+    <string id="VividWorld_Sentence_ConductRefusedAid_Who_Where_Why_Context_From_ASKER" text="他在{SETTLEMENT}開口向{REFUSER}借糧，{REFUSER}說自己也不寬裕，一袋也沒借給他。可{REFUSER}的糧車就停在院子裡，裝得滿滿的" />
+    <string id="VividWorld_Sentence_ConductRefusedAid_Who_Where_Context" text="{ASKER}在{SETTLEMENT}向{REFUSER}借糧，{REFUSER}的糧車就停在院子裡，裝得滿滿的，卻一袋也沒借" />
+    <string id="VividWorld_Sentence_ConductRefusedAid_Who" text="{ASKER}向{REFUSER}借糧，{REFUSER}手上有糧，卻一袋也沒借" />
+    <string id="VividWorld_SelfFeeling_ConductRefusedAid_ASKER" text="往後他要是有難處，也別指望我" />
+    <string id="VividWorld_EventType_conduct_rash_capture" text="莽撞被俘" />
+    <string id="VividWorld_Fact_ConductRashCapture_Who" text="{PRISONER}把自己的隊伍甩在後頭追上去，才被{CAPTOR}抓的" />
+    <string id="VividWorld_Fact_ConductRashCapture_Where" text="在{SETTLEMENT}附近" />
+    <string id="VividWorld_Fact_ConductRashCapture_What" text="帶著幾騎" />
+    <string id="VividWorld_Fact_ConductRashCapture_Context" text="被{CAPTOR}回頭圍住" />
+    <string id="VividWorld_Sentence_ConductRashCapture_Who_Where_What_Context_Self_CAPTOR" text="{SETTLEMENT}附近那一仗，{PRISONER}帶著幾騎一路追我，把自己的隊伍遠遠甩在後頭，我回頭一圍，他就落到我手裡了" />
+    <string id="VividWorld_Sentence_ConductRashCapture_Who_What_Context_Self_CAPTOR" text="那一仗，{PRISONER}帶著幾騎一路追我，把自己的隊伍遠遠甩在後頭，我回頭一圍，他就落到我手裡了" />
+    <string id="VividWorld_Sentence_ConductRashCapture_Who_Where_Context_Self_CAPTOR" text="{SETTLEMENT}附近那一仗，{PRISONER}一路追我，把自己的隊伍遠遠甩在後頭，我回頭一圍，他就落到我手裡了" />
+    <string id="VividWorld_Sentence_ConductRashCapture_Who_Context_Self_CAPTOR" text="那一仗，{PRISONER}一路追我，把自己的隊伍遠遠甩在後頭，我回頭一圍，他就落到我手裡了" />
+    <string id="VividWorld_Sentence_ConductRashCapture_Who_Where_What_Context_From_CAPTOR" text="{SETTLEMENT}附近那一仗，{PRISONER}帶著幾騎一路追他，把自己的隊伍遠遠甩在後頭，他回頭一圍，就把{PRISONER}抓了" />
+    <string id="VividWorld_Sentence_ConductRashCapture_Who_What_Context_From_CAPTOR" text="那一仗，{PRISONER}帶著幾騎一路追他，把自己的隊伍遠遠甩在後頭，他回頭一圍，就把{PRISONER}抓了" />
+    <string id="VividWorld_Sentence_ConductRashCapture_Who_Where_Context" text="{PRISONER}在{SETTLEMENT}附近一路追{CAPTOR}，把自己的隊伍甩在後頭，被{CAPTOR}回頭圍住抓了" />
+    <string id="VividWorld_Sentence_ConductRashCapture_Who_Context" text="{PRISONER}一路追{CAPTOR}，把自己的隊伍甩在後頭，被{CAPTOR}回頭圍住抓了" />
+    <string id="VividWorld_Sentence_ConductRashCapture_Who" text="{PRISONER}是把自己的隊伍甩在後頭追上去，才被{CAPTOR}抓的" />
+    <string id="VividWorld_SelfFeeling_ConductRashCapture_CAPTOR" text="他要是肯等一等後頭的人，我還未必抓得住他" />
+    <string id="VividWorld_EventType_conduct_poisoned" text="謀害" />
+    <string id="VividWorld_Fact_ConductPoisoned_Who" text="{VICTIM}不是壽終正寢的，是{POISONER}下的毒" />
+    <string id="VividWorld_Fact_ConductPoisoned_What" text="毒下在酒裡" />
+    <string id="VividWorld_Fact_ConductPoisoned_Context" text="那壺酒是{POISONER}派人送去的" />
+    <string id="VividWorld_Sentence_ConductPoisoned_Who_What_Context_Self_POISONER" text="{VICTIM}是怎麼走的，我比誰都清楚，他最後喝的那壺酒可是我送去的……" />
+    <string id="VividWorld_Sentence_ConductPoisoned_Who_What_Context_From_POISONER" text="{VICTIM}不是壽終正寢的，是他自己派人送了一壺酒過去，毒就下在酒裡。他話說到一半就不肯往下講了" />
+    <string id="VividWorld_Sentence_ConductPoisoned_Who_What" text="{VICTIM}不是壽終正寢的，是{POISONER}在他的酒裡下了毒" />
+    <string id="VividWorld_Sentence_ConductPoisoned_Who" text="{VICTIM}不是壽終正寢的，是{POISONER}下的毒" />
+    <string id="VividWorld_SelfFeeling_ConductPoisoned_POISONER" text="我說多了，你聽過就忘了吧" />
+    <string id="VividWorld_Feeling_Shabby_Close_1" text="這件事{ADDRESS}是有不對，可我認識的他不是這樣的人，多半有什麼緣故。" />
+    <string id="VividWorld_Feeling_Shabby_Close_2" text="這話傳開了對{ADDRESS}沒有好處。你跟他也親近，誰先碰到他，就提醒他一聲吧。" />
+    <string id="VividWorld_Feeling_Shabby_Sore_1" text="這種事出在{ADDRESS}身上，我真不想聽到。可要說他做不出來，我也說不出口，他那一面我自己也領教過。" />
+    <string id="VividWorld_Feeling_Shabby_Sore_2" text="改天碰面，我得當面問問{ADDRESS}。他對我也有過不周到的時候，可這種事，我還是想聽他自己怎麼說。" />
+    <string id="VividWorld_Feeling_Shabby_Neutral_1" text="人前一個樣，人後又是一個樣，這種事我見多了。" />
+    <string id="VividWorld_Feeling_Shabby_Neutral_2" text="這種事一傳開，往後還有誰肯跟{ADDRESS}打交道？" />
+    <string id="VividWorld_Feeling_Shabby_Hostile_1" text="{ADDRESS}私底下是什麼樣子，我早就清楚，如今不過是讓大家都看見了。" />
+    <string id="VividWorld_Feeling_Shabby_Hostile_2" text="這就是{ADDRESS}的為人，誰要是還信得過他，遲早要後悔。" />
+    <string id="VividWorld_Feeling_Shabby_Owe_1" text="{ADDRESS}會做這種事，我一點也不意外。只是他幫過我，落井下石的話，我就不多說了。" />
+    <string id="VividWorld_Feeling_Wronged_Close_1" text="{ADDRESS}被人這樣對待，我聽了就有氣，這筆帳我替他記著。" />
+    <string id="VividWorld_Feeling_Wronged_Close_2" text="{ADDRESS}待人向來不差，不該碰上這種事。" />
+    <string id="VividWorld_Feeling_Wronged_Neutral_1" text="這兩個人往後再碰面，怕是不會好看了。" />
+    <string id="VividWorld_Feeling_Wronged_Neutral_2" text="這口氣，{ADDRESS}遲早是要討回來的。" />
+    <string id="VividWorld_Feeling_Wronged_Hostile_1" text="{ADDRESS}也有被人這樣對待的一天，我聽了倒不覺得可惜。" />
+    <string id="VividWorld_Feeling_Wronged_Hostile_2" text="{ADDRESS}平常怎麼待人，人家就怎麼待他，怨不得誰。" />
+    <string id="VividWorld_Feeling_Wronged_Sore_1" text="{ADDRESS}被人這樣對待，我聽了替他不平。不過被人虧待是什麼滋味，我在他那裡嘗過，這回也輪到他了。" />
+    <string id="VividWorld_Feeling_Wronged_Owe_1" text="我跟{ADDRESS}向來處不來，他吃虧我本來懶得管。可他幫過我，聽到他被人這樣對待，我心裡也不是滋味。" />
+    <string id="VividWorld_Dev_ForceSpokeAgainstRuler" text="(dev) 讓他在這裡背後議論君主" />
+    <string id="VividWorld_Dev_ForceRefusedAid" text="(dev) 讓他在這裡拒絕同袍求援" />
+    <string id="VividWorld_Dev_ForceRashCapture" text="(dev) 拿他最近一次抓人或被抓觸發莽撞被俘" />
+    <string id="VividWorld_Dev_ForceMistreatedPrisoner" text="(dev) 拿他最近一次抓人或被抓觸發苛待俘虜" />
+    <string id="VividWorld_Dev_ForcePoisoned" text="(dev) 讓他毒死最近一位年老過世的人" />
+    <string id="VividWorld_Sentence_ConductRefusedAid_Who_Where_Why_Context" text="{ASKER}在{SETTLEMENT}開口向{REFUSER}借糧，{REFUSER}說自己也不寬裕，一袋也沒借。可他的糧車就停在院子裡，裝得滿滿的" />
+    <string id="VividWorld_Sentence_ConductRashCapture_Who_Where_What_Context" text="{SETTLEMENT}附近那一仗，{PRISONER}帶著幾騎一路追{CAPTOR}，把自己的隊伍遠遠甩在後頭，被{CAPTOR}回頭圍住，就這麼抓了" />
+    <string id="VividWorld_Sentence_ConductRashCapture_Who_What_Context" text="那一仗，{PRISONER}帶著幾騎一路追{CAPTOR}，把自己的隊伍遠遠甩在後頭，被{CAPTOR}回頭圍住，就這麼抓了" />
+    <string id="VividWorld_Sentence_ConductPoisoned_Who_What_Context" text="{VICTIM}不是壽終正寢的。{POISONER}派人給他送過一壺酒，毒就下在那壺酒裡" />
+    <string id="VividWorld_Fact_ConductPoisoned_WhoAnyDeath" text="{VICTIM}是{POISONER}毒死的" />
+    <string id="VividWorld_Sentence_ConductPoisoned_WhoAnyDeath_What_Context" text="{VICTIM}是被人毒死的。{POISONER}派人給他送過一壺酒，毒就下在那壺酒裡" />
+    <string id="VividWorld_Sentence_ConductPoisoned_WhoAnyDeath_What" text="{VICTIM}是被{POISONER}在酒裡下毒毒死的" />
+    <string id="VividWorld_Sentence_ConductPoisoned_WhoAnyDeath" text="{VICTIM}是{POISONER}毒死的" />
+    <string id="VividWorld_FeelingDisbelief_1" text="不過這話，我是不信的。" />
+    <string id="VividWorld_FeelingDisbelief_2" text="話是這麼傳的，我聽聽就算了。" />
+    <string id="VividWorld_FeelingDisbelief_3" text="我只是照聽來的說，自己並不當真。" />
+    <string id="VividWorld_MCM_Group_FalseRumors" text="真假難辨的傳聞" />
+    <string id="VividWorld_MCM_FalseRumorsEnabled" text="虛假消息" />
+    <string id="VividWorld_MCM_FalseRumorsEnabledHint" text="開啟後，領主會在背後說一些沒發生過的事，你聽到的消息不一定是真的。關掉之後不會再有人起頭，已經在流傳的照樣會傳。" />
+    <string id="VividWorld_MCM_FalseRumorsMaxPerDay" text="每天最多幾件虛假消息" />
+    <string id="VividWorld_MCM_FalseRumorsMaxPerDayHint" text="全世界每天最多出現幾件新的虛假消息。設成 0 就不會再有新的。" />
+    <string id="VividWorld_Dev_Menu_MadeUp" text="(dev) 編出來的話" />
+    <string id="VividWorld_Dev_ForceSlander" text="(dev) 讓他在這裡為私怨中傷他怨的人" />
+    <string id="VividWorld_Dev_ForceRivalrySlander" text="(dev) 讓他在這裡中傷爭位子的族長" />
+    <string id="VividWorld_Dev_ForcePraiseKin" text="(dev) 讓他在這裡替自家人編好話" />
+    <string id="VividWorld_Dev_MadeUpWorld" text="(dev) 編的話與發生過的事各幾則、三種起因各有幾對人" />
+    <!-- FALSE1f: Responses to made-up talk -->
+    <string id="VividWorld_Fact_TalkDeniedSpokeAgainstRuler_Who" text="{DENIER}出面澄清了有關在背後議論君主的謠言" />
+    <string id="VividWorld_Fact_TalkDeniedSpokeAgainstRuler_WhoNamed" text="{DENIER}出面澄清了有關在背後議論君主的謠言" />
+    <string id="VividWorld_Fact_TalkDeniedSpokeAgainstRuler_Where" text="在{SETTLEMENT}當眾" />
+    <string id="VividWorld_Fact_TalkDeniedSpokeAgainstRuler_What" text="並說誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedSpokeAgainstRuler_Who_Where_What" text="{DENIER}在{SETTLEMENT}當眾澄清有關在背後議論君主的謠言，並說誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedSpokeAgainstRuler_Who_Where_What_From_DENIER" text="外頭傳他在背後議論君主，沒有這回事，誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedSpokeAgainstRuler_Who_Where" text="{DENIER}在{SETTLEMENT}當眾澄清有關在背後議論君主的謠言" />
+    <string id="VividWorld_Sentence_TalkDeniedSpokeAgainstRuler_Who" text="{DENIER}出面澄清了有關在背後議論君主的謠言" />
+    <string id="VividWorld_Sentence_TalkDeniedSpokeAgainstRuler_Who_Where_What_Self_DENIER" text="外頭有人傳我私下講過{RULER}不配坐那個位子。沒有這回事，誰要是不信，儘管當面來問我" />
+    <string id="VividWorld_Sentence_TalkDeniedSpokeAgainstRuler_WhoNamed_Where_What" text="{DENIER}在{SETTLEMENT}當眾澄清有關在背後議論君主的謠言，並說誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedSpokeAgainstRuler_WhoNamed_Where_What_From_DENIER" text="外頭傳他在背後議論君主，沒有這回事，誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedSpokeAgainstRuler_WhoNamed_Where" text="{DENIER}在{SETTLEMENT}當眾澄清有關在背後議論君主的謠言" />
+    <string id="VividWorld_Sentence_TalkDeniedSpokeAgainstRuler_WhoNamed" text="{DENIER}出面澄清了有關在背後議論君主的謠言" />
+    <string id="VividWorld_Sentence_TalkDeniedSpokeAgainstRuler_WhoNamed_Where_What_Self_DENIER" text="{ORIGINATOR}在外頭傳我私下講過{RULER}不配坐那個位子。沒有這回事，誰要是不信，儘管當面來問我" />
+    <string id="VividWorld_SelfFeeling_TalkDeniedSpokeAgainstRuler_DENIER" text="我做過的事我認，沒做過的，誰也別想安在我頭上" />
+    <string id="VividWorld_Fact_TalkDeniedMistreatedPrisoner_Who" text="{DENIER}出面澄清了有關苛待俘虜的謠言" />
+    <string id="VividWorld_Fact_TalkDeniedMistreatedPrisoner_WhoNamed" text="{DENIER}出面澄清了有關苛待俘虜的謠言" />
+    <string id="VividWorld_Fact_TalkDeniedMistreatedPrisoner_Where" text="在{SETTLEMENT}當眾" />
+    <string id="VividWorld_Fact_TalkDeniedMistreatedPrisoner_What" text="並說誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedMistreatedPrisoner_Who_Where_What" text="{DENIER}在{SETTLEMENT}當眾澄清有關苛待俘虜的謠言，並說誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedMistreatedPrisoner_Who_Where_What_From_DENIER" text="外頭傳他苛待俘虜，沒有這回事，誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedMistreatedPrisoner_Who_Where" text="{DENIER}在{SETTLEMENT}當眾澄清有關苛待俘虜的謠言" />
+    <string id="VividWorld_Sentence_TalkDeniedMistreatedPrisoner_Who" text="{DENIER}出面澄清了有關苛待俘虜的謠言" />
+    <string id="VividWorld_Sentence_TalkDeniedMistreatedPrisoner_Who_Where_What_Self_DENIER" text="外頭有人傳我押著{PRISONER}的時候，把人跟尋常俘虜鎖在同一條鏈子上。沒有這回事，誰要是不信，儘管當面來問我" />
+    <string id="VividWorld_Sentence_TalkDeniedMistreatedPrisoner_WhoNamed_Where_What" text="{DENIER}在{SETTLEMENT}當眾澄清有關苛待俘虜的謠言，並說誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedMistreatedPrisoner_WhoNamed_Where_What_From_DENIER" text="外頭傳他苛待俘虜，沒有這回事，誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedMistreatedPrisoner_WhoNamed_Where" text="{DENIER}在{SETTLEMENT}當眾澄清有關苛待俘虜的謠言" />
+    <string id="VividWorld_Sentence_TalkDeniedMistreatedPrisoner_WhoNamed" text="{DENIER}出面澄清了有關苛待俘虜的謠言" />
+    <string id="VividWorld_Sentence_TalkDeniedMistreatedPrisoner_WhoNamed_Where_What_Self_DENIER" text="{ORIGINATOR}在外頭傳我押著{PRISONER}的時候，把人跟尋常俘虜鎖在同一條鏈子上。沒有這回事，誰要是不信，儘管當面來問我" />
+    <string id="VividWorld_SelfFeeling_TalkDeniedMistreatedPrisoner_DENIER" text="我做過的事我認，沒做過的，誰也別想安在我頭上" />
+    <string id="VividWorld_Fact_TalkDeniedRefusedAid_Who" text="{DENIER}出面澄清了有關拒絕同袍求援的謠言" />
+    <string id="VividWorld_Fact_TalkDeniedRefusedAid_WhoNamed" text="{DENIER}出面澄清了有關拒絕同袍求援的謠言" />
+    <string id="VividWorld_Fact_TalkDeniedRefusedAid_Where" text="在{SETTLEMENT}當眾" />
+    <string id="VividWorld_Fact_TalkDeniedRefusedAid_What" text="並說誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedRefusedAid_Who_Where_What" text="{DENIER}在{SETTLEMENT}當眾澄清有關拒絕同袍求援的謠言，並說誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedRefusedAid_Who_Where_What_From_DENIER" text="外頭傳他拒絕同袍求援，沒有這回事，誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedRefusedAid_Who_Where" text="{DENIER}在{SETTLEMENT}當眾澄清有關拒絕同袍求援的謠言" />
+    <string id="VividWorld_Sentence_TalkDeniedRefusedAid_Who" text="{DENIER}出面澄清了有關拒絕同袍求援的謠言" />
+    <string id="VividWorld_Sentence_TalkDeniedRefusedAid_Who_Where_What_Self_DENIER" text="外頭有人傳我手上有糧，卻一袋也不肯借給{ASKER}。沒有這回事，誰要是不信，儘管當面來問我" />
+    <string id="VividWorld_Sentence_TalkDeniedRefusedAid_WhoNamed_Where_What" text="{DENIER}在{SETTLEMENT}當眾澄清有關拒絕同袍求援的謠言，並說誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedRefusedAid_WhoNamed_Where_What_From_DENIER" text="外頭傳他拒絕同袍求援，沒有這回事，誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedRefusedAid_WhoNamed_Where" text="{DENIER}在{SETTLEMENT}當眾澄清有關拒絕同袍求援的謠言" />
+    <string id="VividWorld_Sentence_TalkDeniedRefusedAid_WhoNamed" text="{DENIER}出面澄清了有關拒絕同袍求援的謠言" />
+    <string id="VividWorld_Sentence_TalkDeniedRefusedAid_WhoNamed_Where_What_Self_DENIER" text="{ORIGINATOR}在外頭傳我手上有糧，卻一袋也不肯借給{ASKER}。沒有這回事，誰要是不信，儘管當面來問我" />
+    <string id="VividWorld_SelfFeeling_TalkDeniedRefusedAid_DENIER" text="我做過的事我認，沒做過的，誰也別想安在我頭上" />
+    <string id="VividWorld_Fact_TalkDeniedRashCapture_Who" text="{DENIER}出面澄清了有關莽撞被俘的謠言" />
+    <string id="VividWorld_Fact_TalkDeniedRashCapture_WhoNamed" text="{DENIER}出面澄清了有關莽撞被俘的謠言" />
+    <string id="VividWorld_Fact_TalkDeniedRashCapture_Where" text="在{SETTLEMENT}當眾" />
+    <string id="VividWorld_Fact_TalkDeniedRashCapture_What" text="並說誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedRashCapture_Who_Where_What" text="{DENIER}在{SETTLEMENT}當眾澄清有關莽撞被俘的謠言，並說誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedRashCapture_Who_Where_What_From_DENIER" text="外頭傳他莽撞被俘，沒有這回事，誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedRashCapture_Who_Where" text="{DENIER}在{SETTLEMENT}當眾澄清有關莽撞被俘的謠言" />
+    <string id="VividWorld_Sentence_TalkDeniedRashCapture_Who" text="{DENIER}出面澄清了有關莽撞被俘的謠言" />
+    <string id="VividWorld_Sentence_TalkDeniedRashCapture_Who_Where_What_Self_DENIER" text="外頭有人傳我是把自己的隊伍甩在後頭追上去，才被{CAPTOR}抓的。沒有這回事，誰要是不信，儘管當面來問我" />
+    <string id="VividWorld_Sentence_TalkDeniedRashCapture_WhoNamed_Where_What" text="{DENIER}在{SETTLEMENT}當眾澄清有關莽撞被俘的謠言，並說誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedRashCapture_WhoNamed_Where_What_From_DENIER" text="外頭傳他莽撞被俘，沒有這回事，誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedRashCapture_WhoNamed_Where" text="{DENIER}在{SETTLEMENT}當眾澄清有關莽撞被俘的謠言" />
+    <string id="VividWorld_Sentence_TalkDeniedRashCapture_WhoNamed" text="{DENIER}出面澄清了有關莽撞被俘的謠言" />
+    <string id="VividWorld_Sentence_TalkDeniedRashCapture_WhoNamed_Where_What_Self_DENIER" text="{ORIGINATOR}在外頭傳我是把自己的隊伍甩在後頭追上去，才被{CAPTOR}抓的。沒有這回事，誰要是不信，儘管當面來問我" />
+    <string id="VividWorld_SelfFeeling_TalkDeniedRashCapture_DENIER" text="我做過的事我認，沒做過的，誰也別想安在我頭上" />
+    <string id="VividWorld_Fact_TalkDeniedPoisoned_Who" text="{DENIER}出面澄清了有關毒害{VICTIM}的謠言" />
+    <string id="VividWorld_Fact_TalkDeniedPoisoned_WhoNamed" text="{DENIER}出面澄清了有關毒害{VICTIM}的謠言" />
+    <string id="VividWorld_Fact_TalkDeniedPoisoned_Where" text="在{SETTLEMENT}當眾" />
+    <string id="VividWorld_Fact_TalkDeniedPoisoned_What" text="並說誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedPoisoned_Who_Where_What" text="{DENIER}在{SETTLEMENT}當眾澄清有關毒害{VICTIM}的謠言，並說誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedPoisoned_Who_Where_What_From_DENIER" text="外頭傳他毒害{VICTIM}，沒有這回事，誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedPoisoned_Who_Where" text="{DENIER}在{SETTLEMENT}當眾澄清有關毒害{VICTIM}的謠言" />
+    <string id="VividWorld_Sentence_TalkDeniedPoisoned_Who" text="{DENIER}出面澄清了有關毒害{VICTIM}的謠言" />
+    <string id="VividWorld_Sentence_TalkDeniedPoisoned_Who_Where_What_Self_DENIER" text="外頭有人傳我給{VICTIM}下了毒。沒有這回事，誰要是不信，儘管當面來問我" />
+    <string id="VividWorld_Sentence_TalkDeniedPoisoned_WhoNamed_Where_What" text="{DENIER}在{SETTLEMENT}當眾澄清有關毒害{VICTIM}的謠言，並說誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedPoisoned_WhoNamed_Where_What_From_DENIER" text="外頭傳他毒害{VICTIM}，沒有這回事，誰要是不信，儘管當面去問他" />
+    <string id="VividWorld_Sentence_TalkDeniedPoisoned_WhoNamed_Where" text="{DENIER}在{SETTLEMENT}當眾澄清有關毒害{VICTIM}的謠言" />
+    <string id="VividWorld_Sentence_TalkDeniedPoisoned_WhoNamed" text="{DENIER}出面澄清了有關毒害{VICTIM}的謠言" />
+    <string id="VividWorld_Sentence_TalkDeniedPoisoned_WhoNamed_Where_What_Self_DENIER" text="{ORIGINATOR}在外頭傳我給{VICTIM}下了毒。沒有這回事，誰要是不信，儘管當面來問我" />
+    <string id="VividWorld_SelfFeeling_TalkDeniedPoisoned_DENIER" text="我做過的事我認，沒做過的，誰也別想安在我頭上" />
+    <string id="VividWorld_Fact_TalkCorrectedRashCaptureByCaptor_Who" text="{CAPTOR}出面說了，{PRISONER}沒有把自己的隊伍甩在後頭，是打到最後才被他抓的" />
+    <string id="VividWorld_Fact_TalkCorrectedRashCaptureByCaptor_Where" text="在{SETTLEMENT}當著大家的面" />
+    <string id="VividWorld_Fact_TalkCorrectedRashCaptureByCaptor_What" text="{PRISONER}是他抓的" />
+    <string id="VividWorld_Sentence_TalkCorrectedRashCaptureByCaptor_Who_Where_What" text="{CAPTOR}在{SETTLEMENT}當著大家的面說，{PRISONER}是他抓的，當時{PRISONER}沒有把自己的隊伍甩在後頭，是跟自己的人一起打到最後才被他擒住的" />
+    <string id="VividWorld_Sentence_TalkCorrectedRashCaptureByCaptor_Who_Where_What_From_CAPTOR" text="外頭傳{PRISONER}是把自己的隊伍甩在後頭追上去才被抓的，不是那樣：{PRISONER}是跟自己的人一起打到最後，才被他擒住的" />
+    <string id="VividWorld_Sentence_TalkCorrectedRashCaptureByCaptor_Who_Where" text="{CAPTOR}在{SETTLEMENT}當著大家的面說，{PRISONER}沒有把自己的隊伍甩在後頭，是跟自己的人一起打到最後才被他擒住的" />
+    <string id="VividWorld_Sentence_TalkCorrectedRashCaptureByCaptor_Who" text="{CAPTOR}出面說了，{PRISONER}沒有把自己的隊伍甩在後頭，是打到最後才被他抓的" />
+    <string id="VividWorld_Sentence_TalkCorrectedRashCaptureByCaptor_Who_Where_What_Self_CAPTOR" text="外頭傳{PRISONER}是把自己的隊伍甩在後頭追上來，才落到我手裡的。不是那樣：他是跟自己的人一起打到最後，才被我擒住的" />
+    <string id="VividWorld_SelfFeeling_TalkCorrectedRashCaptureByCaptor_CAPTOR" text="仗是我跟他打的，輪不到沒在場的人替我講" />
+    <string id="VividWorld_Fact_TalkCorrectedRashCaptureByBystander_Who" text="{BYSTANDER}出面說了，{PRISONER}被抓的時候他在場，{PRISONER}沒有把自己的隊伍甩在後頭" />
+    <string id="VividWorld_Fact_TalkCorrectedRashCaptureByBystander_Where" text="在{SETTLEMENT}當著大家的面" />
+    <string id="VividWorld_Fact_TalkCorrectedRashCaptureByBystander_What" text="{PRISONER}身邊還有自己的人" />
+    <string id="VividWorld_Sentence_TalkCorrectedRashCaptureByBystander_Who_Where_What" text="{BYSTANDER}在{SETTLEMENT}當著大家的面說，{PRISONER}被{CAPTOR}抓的時候他在場，{PRISONER}沒有把自己的隊伍甩在後頭，身邊還有自己的人" />
+    <string id="VividWorld_Sentence_TalkCorrectedRashCaptureByBystander_Who_Where_What_From_BYSTANDER" text="外頭傳{PRISONER}是把自己的隊伍甩在後頭追上去才被抓的，不是那樣：{PRISONER}被抓的時候他在場，{PRISONER}身邊還有自己的人" />
+    <string id="VividWorld_Sentence_TalkCorrectedRashCaptureByBystander_Who_Where" text="{BYSTANDER}在{SETTLEMENT}當著大家的面說，{PRISONER}被抓的時候他在場，{PRISONER}沒有把自己的隊伍甩在後頭" />
+    <string id="VividWorld_Sentence_TalkCorrectedRashCaptureByBystander_Who" text="{BYSTANDER}出面說了，{PRISONER}被抓的時候他在場，{PRISONER}沒有把自己的隊伍甩在後頭" />
+    <string id="VividWorld_Sentence_TalkCorrectedRashCaptureByBystander_Who_Where_What_Self_BYSTANDER" text="外頭傳{PRISONER}是把自己的隊伍甩在後頭追上去，才被{CAPTOR}抓的。不是那樣：他被抓的時候我在場，他身邊還有自己的人" />
+    <string id="VividWorld_SelfFeeling_TalkCorrectedRashCaptureByBystander_BYSTANDER" text="我看到什麼就說什麼，別的我不管" />
+    <string id="VividWorld_Fact_TalkCorrectedMistreatedByPrisoner_Who" text="{PRISONER}出面說了，{CAPTOR}押著他的時候，沒有把他跟尋常俘虜鎖在一起" />
+    <string id="VividWorld_Fact_TalkCorrectedMistreatedByPrisoner_Where" text="在{SETTLEMENT}當著大家的面" />
+    <string id="VividWorld_Fact_TalkCorrectedMistreatedByPrisoner_What" text="吃的跟{CAPTOR}的人一樣" />
+    <string id="VividWorld_Sentence_TalkCorrectedMistreatedByPrisoner_Who_Where_What" text="{PRISONER}在{SETTLEMENT}當著大家的面說，{CAPTOR}押著他的那段日子，沒給他上過鏈子，也沒把他跟尋常俘虜關在一起，吃的跟{CAPTOR}的人一樣" />
+    <string id="VividWorld_Sentence_TalkCorrectedMistreatedByPrisoner_Who_Where_What_From_PRISONER" text="外頭傳{CAPTOR}押著他的時候把他跟尋常俘虜鎖在同一條鏈子上，沒有那種事：那段日子{CAPTOR}沒給他上過鏈子，吃的也跟{CAPTOR}的人一樣" />
+    <string id="VividWorld_Sentence_TalkCorrectedMistreatedByPrisoner_Who_Where" text="{PRISONER}在{SETTLEMENT}當著大家的面說，{CAPTOR}押著他的時候，沒給他上過鏈子，也沒把他跟尋常俘虜關在一起" />
+    <string id="VividWorld_Sentence_TalkCorrectedMistreatedByPrisoner_Who" text="{PRISONER}出面說了，{CAPTOR}押著他的時候，沒有把他跟尋常俘虜鎖在一起" />
+    <string id="VividWorld_Sentence_TalkCorrectedMistreatedByPrisoner_Who_Where_What_Self_PRISONER" text="外頭傳{CAPTOR}押著我的時候，把我跟尋常俘虜鎖在同一條鏈子上。沒有那種事：那段日子他沒給我上過鏈子，吃的也跟他自己的人一樣" />
+    <string id="VividWorld_SelfFeeling_TalkCorrectedMistreatedByPrisoner_PRISONER" text="我跟他是打過仗，可一碼歸一碼，他沒做過的事就是沒做過" />
+    <string id="VividWorld_Fact_TalkCorrectedMistreatedByComrade_Who" text="{COMRADE}出面說了，{CAPTOR}押著{PRISONER}的時候他也在軍團裡，{PRISONER}沒有被跟尋常俘虜鎖在一起" />
+    <string id="VividWorld_Fact_TalkCorrectedMistreatedByComrade_Where" text="在{SETTLEMENT}當著大家的面" />
+    <string id="VividWorld_Fact_TalkCorrectedMistreatedByComrade_What" text="吃的跟他們的人一樣" />
+    <string id="VividWorld_Sentence_TalkCorrectedMistreatedByComrade_Who_Where_What" text="{COMRADE}在{SETTLEMENT}當著大家的面說，{CAPTOR}押著{PRISONER}的那一路他也在軍團裡，{PRISONER}沒上過鏈子，也沒跟尋常俘虜關在一起，吃的跟他們的人一樣" />
+    <string id="VividWorld_Sentence_TalkCorrectedMistreatedByComrade_Who_Where_What_From_COMRADE" text="外頭傳{CAPTOR}押著{PRISONER}的時候把他跟尋常俘虜鎖在同一條鏈子上，沒有那種事：那一路他跟{CAPTOR}同在一支軍團裡，{PRISONER}沒上過鏈子，吃的也跟他們的人一樣" />
+    <string id="VividWorld_Sentence_TalkCorrectedMistreatedByComrade_Who_Where" text="{COMRADE}在{SETTLEMENT}當著大家的面說，{CAPTOR}押著{PRISONER}的那一路他也在軍團裡，{PRISONER}沒上過鏈子，也沒跟尋常俘虜關在一起" />
+    <string id="VividWorld_Sentence_TalkCorrectedMistreatedByComrade_Who" text="{COMRADE}出面說了，{CAPTOR}押著{PRISONER}的時候他也在軍團裡，{PRISONER}沒有被跟尋常俘虜鎖在一起" />
+    <string id="VividWorld_Sentence_TalkCorrectedMistreatedByComrade_Who_Where_What_Self_COMRADE" text="外頭傳{CAPTOR}押著{PRISONER}的時候，把他跟尋常俘虜鎖在同一條鏈子上。沒有那種事：那一路我跟{CAPTOR}同在一支軍團裡，{PRISONER}沒上過鏈子，吃的也跟我們的人一樣" />
+    <string id="VividWorld_SelfFeeling_TalkCorrectedMistreatedByComrade_COMRADE" text="同行的人那麼多，這種話也有人敢編" />
+    <string id="VividWorld_Fact_TalkCorrectedRefusedAidByAsker_Who" text="{ASKER}出面說了，他沒向{REFUSER}借過糧" />
+    <string id="VividWorld_Fact_TalkCorrectedRefusedAidByAsker_Where" text="在{SETTLEMENT}當著大家的面" />
+    <string id="VividWorld_Fact_TalkCorrectedRefusedAidByAsker_What" text="外頭傳{REFUSER}有糧不肯借給他，沒有這回事" />
+    <string id="VividWorld_Sentence_TalkCorrectedRefusedAidByAsker_Who_Where_What" text="{ASKER}在{SETTLEMENT}當著大家的面說，他沒向{REFUSER}借過糧，外頭傳{REFUSER}有糧不肯借給他，沒有這回事" />
+    <string id="VividWorld_Sentence_TalkCorrectedRefusedAidByAsker_Who_Where_What_From_ASKER" text="外頭傳他向{REFUSER}借糧、{REFUSER}有糧卻不肯借，沒有這回事：他沒向{REFUSER}開過這個口" />
+    <string id="VividWorld_Sentence_TalkCorrectedRefusedAidByAsker_Who_Where" text="{ASKER}在{SETTLEMENT}當著大家的面說，他沒向{REFUSER}借過糧" />
+    <string id="VividWorld_Sentence_TalkCorrectedRefusedAidByAsker_Who" text="{ASKER}出面說了，他沒向{REFUSER}借過糧" />
+    <string id="VividWorld_Sentence_TalkCorrectedRefusedAidByAsker_Who_Where_What_Self_ASKER" text="外頭傳我向{REFUSER}借糧，他手上有糧卻一袋也不肯借。沒有這回事：我沒向他開過這個口" />
+    <string id="VividWorld_SelfFeeling_TalkCorrectedRefusedAidByAsker_ASKER" text="拿我的名字去說別人的不是，也不先來問問我" />
+    <string id="VividWorld_Fact_TalkNotSoVictoryCreditDeferred_Who" text="{RIVAL}出面澄清了有關{CLAIMANT}讓功給他的謠言" />
+    <string id="VividWorld_Fact_TalkNotSoVictoryCreditDeferred_Where" text="在{SETTLEMENT}當眾" />
+    <string id="VividWorld_Fact_TalkNotSoVictoryCreditDeferred_What" text="並說不知道這話是從哪裡傳出來的" />
+    <string id="VividWorld_Sentence_TalkNotSoVictoryCreditDeferred_Who_Where_What" text="{RIVAL}在{SETTLEMENT}當眾澄清有關{CLAIMANT}讓功給他的謠言，並說不知道這話是從哪裡傳出來的" />
+    <string id="VividWorld_Sentence_TalkNotSoVictoryCreditDeferred_Who_Where_What_From_RIVAL" text="外頭傳{CLAIMANT}把上一場勝仗的功勞讓給了他，沒有這回事，也不知道這話是從哪裡傳出來的" />
+    <string id="VividWorld_Sentence_TalkNotSoVictoryCreditDeferred_Who_Where" text="{RIVAL}在{SETTLEMENT}當眾澄清有關{CLAIMANT}讓功給他的謠言" />
+    <string id="VividWorld_Sentence_TalkNotSoVictoryCreditDeferred_Who" text="{RIVAL}出面澄清了有關{CLAIMANT}讓功給他的謠言" />
+    <string id="VividWorld_Sentence_TalkNotSoVictoryCreditDeferred_Who_Where_What_Self_RIVAL" text="外頭傳{CLAIMANT}把上一場勝仗的功勞讓給了我。沒有這回事，也不知道這話是從哪裡傳出來的" />
+    <string id="VividWorld_SelfFeeling_TalkNotSoVictoryCreditDeferred_RIVAL" text="沒受過的好處，我可不白擔這個人情" />
+    <string id="VividWorld_Fact_TalkNotSoAdviceGivenFreely_Who" text="{STUDENT}出面澄清了有關{VETERAN}對他傾囊相授的謠言" />
+    <string id="VividWorld_Fact_TalkNotSoAdviceGivenFreely_Where" text="在{SETTLEMENT}當眾" />
+    <string id="VividWorld_Fact_TalkNotSoAdviceGivenFreely_What" text="並說不知道這話是從哪裡傳出來的" />
+    <string id="VividWorld_Sentence_TalkNotSoAdviceGivenFreely_Who_Where_What" text="{STUDENT}在{SETTLEMENT}當眾澄清有關{VETERAN}對他傾囊相授的謠言，並說不知道這話是從哪裡傳出來的" />
+    <string id="VividWorld_Sentence_TalkNotSoAdviceGivenFreely_Who_Where_What_From_STUDENT" text="外頭傳{VETERAN}把當年那一仗怎麼打贏的都講給他聽了，沒有這回事，也不知道這話是從哪裡傳出來的" />
+    <string id="VividWorld_Sentence_TalkNotSoAdviceGivenFreely_Who_Where" text="{STUDENT}在{SETTLEMENT}當眾澄清有關{VETERAN}對他傾囊相授的謠言" />
+    <string id="VividWorld_Sentence_TalkNotSoAdviceGivenFreely_Who" text="{STUDENT}出面澄清了有關{VETERAN}對他傾囊相授的謠言" />
+    <string id="VividWorld_Sentence_TalkNotSoAdviceGivenFreely_Who_Where_What_Self_STUDENT" text="外頭傳{VETERAN}把當年那一仗怎麼打贏的都講給我聽了。沒有這回事，也不知道這話是從哪裡傳出來的" />
+    <string id="VividWorld_SelfFeeling_TalkNotSoAdviceGivenFreely_STUDENT" text="沒受過的好處，我可不白擔這個人情" />
+    <string id="VividWorld_Fact_TalkNotSoBrawlManHandedOver_Who" text="{AGGRIEVED}出面澄清了有關{PATRON}交出手下向他賠不是的謠言" />
+    <string id="VividWorld_Fact_TalkNotSoBrawlManHandedOver_Where" text="在{SETTLEMENT}當眾" />
+    <string id="VividWorld_Fact_TalkNotSoBrawlManHandedOver_What" text="並說不知道這話是從哪裡傳出來的" />
+    <string id="VividWorld_Sentence_TalkNotSoBrawlManHandedOver_Who_Where_What" text="{AGGRIEVED}在{SETTLEMENT}當眾澄清有關{PATRON}交出手下向他賠不是的謠言，並說不知道這話是從哪裡傳出來的" />
+    <string id="VividWorld_Sentence_TalkNotSoBrawlManHandedOver_Who_Where_What_From_AGGRIEVED" text="外頭傳{PATRON}把先動手的手下交給了他，還向他賠了不是，沒有這回事，也不知道這話是從哪裡傳出來的" />
+    <string id="VividWorld_Sentence_TalkNotSoBrawlManHandedOver_Who_Where" text="{AGGRIEVED}在{SETTLEMENT}當眾澄清有關{PATRON}交出手下向他賠不是的謠言" />
+    <string id="VividWorld_Sentence_TalkNotSoBrawlManHandedOver_Who" text="{AGGRIEVED}出面澄清了有關{PATRON}交出手下向他賠不是的謠言" />
+    <string id="VividWorld_Sentence_TalkNotSoBrawlManHandedOver_Who_Where_What_Self_AGGRIEVED" text="外頭傳{PATRON}把先動手的手下交給了我，還向我賠了不是。沒有這回事，也不知道這話是從哪裡傳出來的" />
+    <string id="VividWorld_SelfFeeling_TalkNotSoBrawlManHandedOver_AGGRIEVED" text="沒受過的好處，我可不白擔這個人情" />
+    <string id="VividWorld_Fact_TalkNotSoSeatDisputeYielded_Who" text="{FAVORED}出面澄清了有關{SLIGHTED}在宴席上讓座給他的謠言" />
+    <string id="VividWorld_Fact_TalkNotSoSeatDisputeYielded_Where" text="在{SETTLEMENT}當眾" />
+    <string id="VividWorld_Fact_TalkNotSoSeatDisputeYielded_What" text="並說不知道這話是從哪裡傳出來的" />
+    <string id="VividWorld_Sentence_TalkNotSoSeatDisputeYielded_Who_Where_What" text="{FAVORED}在{SETTLEMENT}當眾澄清有關{SLIGHTED}在宴席上讓座給他的謠言，並說不知道這話是從哪裡傳出來的" />
+    <string id="VividWorld_Sentence_TalkNotSoSeatDisputeYielded_Who_Where_What_From_FAVORED" text="外頭傳{SLIGHTED}在宴席上把上座讓給了他，沒有這回事，也不知道這話是從哪裡傳出來的" />
+    <string id="VividWorld_Sentence_TalkNotSoSeatDisputeYielded_Who_Where" text="{FAVORED}在{SETTLEMENT}當眾澄清有關{SLIGHTED}在宴席上讓座給他的謠言" />
+    <string id="VividWorld_Sentence_TalkNotSoSeatDisputeYielded_Who" text="{FAVORED}出面澄清了有關{SLIGHTED}在宴席上讓座給他的謠言" />
+    <string id="VividWorld_Sentence_TalkNotSoSeatDisputeYielded_Who_Where_What_Self_FAVORED" text="外頭傳{SLIGHTED}在宴席上把上座讓給了我。沒有這回事，也不知道這話是從哪裡傳出來的" />
+    <string id="VividWorld_SelfFeeling_TalkNotSoSeatDisputeYielded_FAVORED" text="沒受過的好處，我可不白擔這個人情" />
+    <string id="VividWorld_Fact_TalkNotSoTavernGoodWord_Who" text="{LISTENER}出面澄清了有關{SPEAKER}在酒桌上替他說話的謠言" />
+    <string id="VividWorld_Fact_TalkNotSoTavernGoodWord_Where" text="在{SETTLEMENT}當眾" />
+    <string id="VividWorld_Fact_TalkNotSoTavernGoodWord_What" text="並說不知道這話是從哪裡傳出來的" />
+    <string id="VividWorld_Sentence_TalkNotSoTavernGoodWord_Who_Where_What" text="{LISTENER}在{SETTLEMENT}當眾澄清有關{SPEAKER}在酒桌上替他說話的謠言，並說不知道這話是從哪裡傳出來的" />
+    <string id="VividWorld_Sentence_TalkNotSoTavernGoodWord_Who_Where_What_From_LISTENER" text="外頭傳同桌的人拿他取笑的時候，{SPEAKER}站出來替他說話，沒有這回事，也不知道這話是從哪裡傳出來的" />
+    <string id="VividWorld_Sentence_TalkNotSoTavernGoodWord_Who_Where" text="{LISTENER}在{SETTLEMENT}當眾澄清有關{SPEAKER}在酒桌上替他說話的謠言" />
+    <string id="VividWorld_Sentence_TalkNotSoTavernGoodWord_Who" text="{LISTENER}出面澄清了有關{SPEAKER}在酒桌上替他說話的謠言" />
+    <string id="VividWorld_Sentence_TalkNotSoTavernGoodWord_Who_Where_What_Self_LISTENER" text="外頭傳同桌的人拿我取笑的時候，{SPEAKER}站出來替我說話。沒有這回事，也不知道這話是從哪裡傳出來的" />
+    <string id="VividWorld_SelfFeeling_TalkNotSoTavernGoodWord_LISTENER" text="沒受過的好處，我可不白擔這個人情" />
+    <string id="VividWorld_EventType_talk_denied_spoke_against_ruler" text="在背後議論君主" />
+    <string id="VividWorld_EventType_talk_denied_mistreated_prisoner" text="苛待俘虜" />
+    <string id="VividWorld_EventType_talk_denied_refused_aid" text="拒絕同袍求援" />
+    <string id="VividWorld_EventType_talk_denied_rash_capture" text="莽撞被俘" />
+    <string id="VividWorld_EventType_talk_denied_poisoned" text="謀害" />
+    <string id="VividWorld_EventType_talk_corrected_rash_capture_by_captor" text="莽撞被俘" />
+    <string id="VividWorld_EventType_talk_corrected_rash_capture_by_bystander" text="莽撞被俘" />
+    <string id="VividWorld_EventType_talk_corrected_mistreated_by_prisoner" text="苛待俘虜" />
+    <string id="VividWorld_EventType_talk_corrected_mistreated_by_comrade" text="苛待俘虜" />
+    <string id="VividWorld_EventType_talk_corrected_refused_aid_by_asker" text="拒絕同袍求援" />
+    <string id="VividWorld_EventType_talk_not_so_victory_credit_deferred" text="有人把戰功讓了出去" />
+    <string id="VividWorld_EventType_talk_not_so_advice_given_freely" text="老將傾囊相授" />
+    <string id="VividWorld_EventType_talk_not_so_brawl_man_handed_over" text="鬧事的隨從被交了出去" />
+    <string id="VividWorld_EventType_talk_not_so_seat_dispute_yielded" text="有人讓出了座位" />
+    <string id="VividWorld_EventType_talk_not_so_tavern_good_word" text="酒桌上替人說的公道話" />
+    <string id="VividWorld_Dev_TalkReachesAccused" text="(dev) 把他最近知道的那句編的話傳給當事人，並讓他們一定出面" />
+    <string id="VividWorld_Dev_ResponseReachesListeners" text="(dev) 他知道的那句已有人回應的編的話：讓還信的人都聽到最新回應，改成不信" />
+    <string id="VividWorld_Dev_TellMeMadeUpTalk" text="(dev) 把他最近知道、你還沒聽過的那句編的話講給你聽，後來的回應也一起" />
+    <string id="VividWorld_Dev_ChronicleBlocks" text="(dev) 紀事怎麼分區塊？" />
+    <string id="VividWorld_Probe_Option" text="我想問你一件事。" />
+    <string id="VividWorld_Probe_Prompt" text="你問吧，是哪一件事？" />
+    <string id="VividWorld_Probe_WindowTitle" text="你想問哪一件事？" />
+    <string id="VividWorld_Probe_Confirm" text="就問這件" />
+    <string id="VividWorld_Probe_Cancel" text="算了" />
+    <string id="VividWorld_Probe_CancelReply" text="好吧，等你想好了再問我。" />
+    <string id="VividWorld_Probe_NotHeard_1" text="這件事我沒聽說過。" />
+    <string id="VividWorld_Probe_NotHeard_2" text="沒聽人提過，你得去問別人。" />
+    <string id="VividWorld_Probe_AlreadyTold_1" text="這不是我告訴過你的事嗎？" />
+    <string id="VividWorld_Probe_AlreadyTold_2" text="你忘了？這件事我跟你說過了。" />
+    <string id="VividWorld_Probe_Reason_SubjectRelation_Believe" text="兩種說法我都聽過。{ADDRESS}是什麼樣的人，我可領教過，我看是真有其事。" />
+    <string id="VividWorld_Probe_Reason_SubjectRelation_Disbelieve" text="兩種說法我都聽過。{ADDRESS}是什麼樣的人我清楚，我看沒有這回事。" />
+    <string id="VividWorld_Probe_Reason_TellerRelation_Believe" text="兩種說法我都聽過。這件事是{SOURCE}告訴我的，{SOURCE:他|她}說話向來靠得住，我信是真的。" />
+    <string id="VividWorld_Probe_Reason_TellerRelation_Disbelieve" text="兩種說法我都聽過。這件事是{SOURCE}告訴我的，{SOURCE:他|她}嘴裡的話，我向來只聽一半。我看沒有這回事。" />
+    <string id="VividWorld_Probe_Reason_TraitFit_Believe" text="兩種說法我都聽過。照{ADDRESS}平常的作風，這像是{he}會做的事，我看是真有其事。" />
+    <string id="VividWorld_Probe_Reason_TraitFit_Disbelieve" text="兩種說法我都聽過。這不像{ADDRESS}平常的作風，我看沒有這回事。" />
+    <string id="VividWorld_Probe_Reason_ListenerNature_Believe" text="兩種說法我都聽過。無風不起浪，要是沒有那回事，哪會傳成這樣？我信。" />
+    <string id="VividWorld_Probe_Reason_ListenerNature_Disbelieve" text="兩種說法我都聽過。沒憑沒據的話，我向來不輕易當真，這一件也一樣。" />
+    <string id="VividWorld_Probe_Reason_Distance_Disbelieve" text="兩種說法我都聽過。那句話傳到我耳裡，不知道已經轉過幾個人的嘴了，我不敢當真。" />
+    <string id="VividWorld_Probe_Reason_None_Believe" text="兩種說法我都聽過。真要我說，我看是真有其事，可也說不上為什麼。" />
+    <string id="VividWorld_Probe_Reason_None_Disbelieve" text="兩種說法我都聽過。真要我說，我是不信的，可也說不上為什麼。" />
+    <string id="VividWorld_Probe_Truth_RashCaptureByCaptor" text="不是外頭傳的那樣。人是我抓的，{PRISONER}是跟自己的人一起打到最後，才被我擒住的。" />
+    <string id="VividWorld_Probe_Truth_RashCaptureByBystander" text="不是外頭傳的那樣。{PRISONER}被抓的時候我在場，他身邊還有自己的人。" />
+    <string id="VividWorld_Probe_Truth_MistreatedByPrisoner" text="沒有那種事。{CAPTOR}押著我的那段日子，沒給我上過鏈子，吃的也跟他自己的人一樣。" />
+    <string id="VividWorld_Probe_Truth_RefusedAidByAsker" text="沒有這回事。我沒向{REFUSER}開過這個口。" />
+    <string id="VividWorld_Probe_Truth_NotSo_VictoryCreditDeferred" text="沒有這回事。外頭傳{CLAIMANT}把上一場勝仗的功勞讓給了我，我可沒受過。" />
+    <string id="VividWorld_Probe_Truth_NotSo_AdviceGivenFreely" text="沒有這回事。外頭傳{VETERAN}把當年那一仗怎麼打贏的都講給我聽了，我可沒受過。" />
+    <string id="VividWorld_Probe_Truth_NotSo_BrawlManHandedOver" text="沒有這回事。外頭傳{PATRON}把先動手的手下交給了我，還向我賠了不是，我可沒受過。" />
+    <string id="VividWorld_Probe_Truth_NotSo_SeatDisputeYielded" text="沒有這回事。外頭傳{SLIGHTED}在宴席上把上座讓給了我，我可沒受過。" />
+    <string id="VividWorld_Probe_Truth_NotSo_TavernGoodWord" text="沒有這回事。外頭傳同桌的人拿我取笑的時候，{SPEAKER}站出來替我說話，我可沒受過。" />
+    <string id="VividWorld_Probe_Accused_DenyNamed" text="沒有這回事。我知道這話是{ORIGINATOR}在傳，我沒做過那種事。" />
+    <string id="VividWorld_Probe_Accused_DenyUnnamed" text="沒有這回事。不知道是誰在外頭這樣說我，我沒做過那種事。" />
+    <string id="VividWorld_Probe_Accused_PraiseSubject" text="沒有這回事。話是說得好聽，可那件事我沒做過。" />
+    <string id="VividWorld_Probe_Refuse_1" text="這件事我不想談。" />
+    <string id="VividWorld_Probe_Refuse_2" text="你問別的吧，這一件我沒什麼好說的。" />
+    <string id="VividWorld_Probe_Insist_1" text="事情就是我聽到的那樣，別人愛怎麼說，我不改口。" />
+    <string id="VividWorld_Probe_Insist_2" text="這件事我跟人說過，現在還是那句話：是真的。" />
+    <string id="VividWorld_Probe_Slip_Grudge_1" text="誰叫{ADDRESS}當初那樣對我，我氣不過才……算了，當我沒說。" />
+    <string id="VividWorld_Probe_Slip_Grudge_2" text="那陣子我正在氣頭上，話就這麼出口了……這個你聽過就算了，別往外說。" />
+    <string id="VividWorld_Probe_Slip_Rivalry" text="不那樣說，{ADDRESS}就要爬到我頭上了……我是說，那是我聽來的。" />
+    <string id="VividWorld_Probe_Slip_Praise" text="替自家人添點光彩，也不算什麼……我是說，我聽到的就是那樣。" />
+    <string id="VividWorld_Probe_Insist_Boast" text="我那天說的每一仗，都是我親手打下來的。" />
+    <string id="VividWorld_Probe_Slip_Boast" text="那天酒喝多了，數字是往上添了一點……不過仗是真的打過。" />
+    <string id="VividWorld_MCM_ProbesPerHeroPerDay" text="每天最多可以對同一個NPC探聽幾次" />
+    <string id="VividWorld_MCM_ProbesPerHeroPerDayHint" text="同一位 NPC 一天最多讓你探聽幾次，跟他每天分享給你的消息分開算。" />
+    <string id="VividWorld_Dev_ProbePreview" text="(dev) 打探預覽：他今天被問過幾次、你紀事裡每一件他會怎麼答" />
   </strings>
 </base>

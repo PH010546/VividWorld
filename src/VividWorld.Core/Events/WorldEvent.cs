@@ -39,6 +39,15 @@ namespace VividWorld.Core.Events
         public List<Fact> Facts { get; set; } = new();
         public List<KnownByEntry> KnownBy { get; set; } = new();
         public RumorState State { get; set; } = new();
+        public List<string>? CaptorArmyLeaderHeroIds { get; set; }
+
+        public bool ShouldSerializeCaptorArmyLeaderHeroIds() => CaptorArmyLeaderHeroIds != null && CaptorArmyLeaderHeroIds.Count > 0;
+
+        public bool Fabricated { get; set; }
+        public string? OriginatorHeroId { get; set; }
+
+        public bool ShouldSerializeFabricated() => Fabricated;
+        public bool ShouldSerializeOriginatorHeroId() => !string.IsNullOrEmpty(OriginatorHeroId);
 
         [JsonExtensionData]
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
