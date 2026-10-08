@@ -129,7 +129,9 @@ Documents\Mount and Blade II Bannerlord\Configs\VividWorld\config.json
 
 ## 語言
 
-目前僅支援英文與**繁體中文**，歡迎自行新增。
+目前支援英文、繁體中文與[俄文](https://www.nexusmods.com/mountandblade2bannerlord/mods/13594)，歡迎自行新增語言。
+
+- 感謝 Lingaraja 提供俄文翻譯！
 
 ---
 

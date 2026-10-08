@@ -148,7 +148,9 @@ above. Settings not on the page are left untouched.
 
 ## Languages
 
-English and **Traditional Chinese** only at present. Further translations are welcome.
+English, Traditional Chinese and [Russian](https://www.nexusmods.com/mountandblade2bannerlord/mods/13594) are included. More languages are welcome.
+
+- Thanks to Lingaraja for the Russian localization!
 
 ---
 
