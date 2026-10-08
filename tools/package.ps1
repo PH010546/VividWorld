@@ -165,10 +165,25 @@ foreach ($rel in $devOnly) {
 $harmonyLicense = Join-Path $repoRoot 'lib\0Harmony.LICENSE.txt'
 if (Test-Path $harmonyLicense) { Copy-Item $harmonyLicense $stageRoot -Force }
 
-foreach ($doc in @('README.md', 'README.en.md', 'LICENSE')) {
-    $src = Join-Path $repoRoot $doc
-    if (Test-Path $src) { Copy-Item $src $stageRoot -Force }
-}
+Copy-Item (Join-Path $repoRoot 'LICENSE') $stageRoot -Force
+
+# 發行包是給玩家的：說明用 Nexus 介紹頁那一份（中英同一份），打包時轉成純文字，兩邊永遠一致。
+# 根目錄的 README.md／.en.md 是給 GitHub 上的開發者看的，不出貨。
+$bbPath = Join-Path $repoRoot 'docs\nexus-description.bbcode'
+$readme = [System.IO.File]::ReadAllText($bbPath, [System.Text.Encoding]::UTF8) -replace "`r`n", "`n"
+$readme = [regex]::Replace($readme, '\[url=([^\]]+)\](.*?)\[/url\]', '$2 ($1)')
+$readme = [regex]::Replace($readme, '(?s)\[list=1\](.*?)\[/list\]', {
+    param($m)
+    $script:n = 0
+    [regex]::Replace($m.Groups[1].Value, '\[\*\]', { param($x) $script:n++; "$($script:n). " })
+})
+$readme = $readme -replace '\[line\]', ('-' * 60)
+$readme = $readme -replace '\[\*\]', '- '
+$readme = [regex]::Replace($readme, '\[/?(b|i|u|size|color|list)(=[^\]]*)?\]', '')
+$readme = [regex]::Replace($readme, "\n{3,}", "`n`n").Trim() + "`n"
+$leftTag = [regex]::Match($readme, '\[/?[a-z*]+(=[^\]]*)?\]')
+if ($leftTag.Success) { Write-Error "README.txt 轉換後還留著 BBCode 標籤：$($leftTag.Value)" }
+[System.IO.File]::WriteAllText((Join-Path $stageRoot 'README.txt'), ($readme -replace "`n", "`r`n"), (New-Object System.Text.UTF8Encoding $true))
 # 更新紀錄附玩家版（決策 0046）；根目錄的 CHANGELOG.md 是給 GitHub 上的開發者看的，不出貨
 foreach ($name in $playerLogs) {
     Copy-Item (Join-Path $repoRoot "module\$name") $stageRoot -Force
@@ -180,6 +195,8 @@ foreach ($dll in $dlls) {
     if (-not (Test-Path (Join-Path $stageBin $dll))) { $problems += "缺少 bin\Win64_Shipping_Client\$dll" }
 }
 foreach ($required in @('SubModule.xml',
+                        'README.txt',
+                        'LICENSE',
                         'CHANGELOG.txt',
                         'CHANGELOG.en.txt',
                         'ModuleData\vividworld_events.json',
@@ -192,6 +209,9 @@ foreach ($required in @('SubModule.xml',
     if (-not (Test-Path (Join-Path $stageRoot $required))) { $problems += "缺少 $required" }
 }
 $leftovers = Get-ChildItem $stageRoot -Recurse -Force -Filter '.gitkeep' -ErrorAction SilentlyContinue
+foreach ($devDoc in @('README.md', 'README.en.md')) {
+    if (Test-Path (Join-Path $stageRoot $devDoc)) { $problems += "給開發者的說明混進出貨包：$devDoc" }
+}
 if ($leftovers) { $problems += ".gitkeep 沒清乾淨：$($leftovers.Count) 個" }
 foreach ($rel in $devOnly) {
     if (Test-Path (Join-Path $stageRoot $rel)) { $problems += "開發用檔案混進出貨包：$rel" }
