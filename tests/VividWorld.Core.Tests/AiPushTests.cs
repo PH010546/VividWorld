@@ -489,5 +489,215 @@ namespace VividWorld.Core.Tests
 
             Assert.Contains("Fallback raw text", fallbackResult.PlainText);
         }
+
+        [Fact]
+        public void AiMemoryKind_For_NpcNotParticipant_ReturnsHearsay()
+        {
+            var evt = new WorldEvent
+            {
+                EventId = "evt_2",
+                Fabricated = false,
+                Participants = new Dictionary<string, string>
+                {
+                    { "other", "hero_someone_else" }
+                }
+            };
+
+            string kind = AiMemoryKind.For(evt, "hero_npc", "hero_player", 1);
+
+            Assert.Equal(AiMemoryKind.Hearsay, kind);
+        }
+
+        [Fact]
+        public void AiMemoryKind_For_BothNpcAndPlayerAreParticipants_ReturnsOther()
+        {
+            var evt = new WorldEvent
+            {
+                EventId = "evt_3",
+                Fabricated = false,
+                Participants = new Dictionary<string, string>
+                {
+                    { "actor", "hero_npc" },
+                    { "victim", "hero_player" }
+                }
+            };
+
+            Assert.Equal(AiMemoryKind.Other, AiMemoryKind.For(evt, "hero_npc", "hero_player", 0));
+            Assert.Equal(AiMemoryKind.Other, AiMemoryKind.For(evt, "hero_npc", "hero_player", 1));
+        }
+
+        [Fact]
+        public void AiMemoryKind_For_NpcIsParticipant_PlayerIsNot_ReturnsOwnLife()
+        {
+            var evt = new WorldEvent
+            {
+                EventId = "evt_4",
+                Fabricated = false,
+                Participants = new Dictionary<string, string>
+                {
+                    { "actor", "hero_npc" },
+                    { "victim", "hero_other" }
+                }
+            };
+
+            Assert.Equal(AiMemoryKind.OwnLife, AiMemoryKind.For(evt, "hero_npc", "hero_player", 0));
+            Assert.Equal(AiMemoryKind.OwnLife, AiMemoryKind.For(evt, "hero_npc", "hero_player", 1));
+        }
+
+        [Fact]
+        public void AiMemoryKind_For_NotParticipant_Hop0_ReturnsOwnLife()
+        {
+            var evt = new WorldEvent
+            {
+                EventId = "evt_eyewitness_1",
+                Fabricated = false,
+                Participants = new Dictionary<string, string>
+                {
+                    { "actor", "hero_lord_a" },
+                    { "victim", "hero_lord_b" }
+                }
+            };
+
+            // 不是當事人、hop 0（在場親眼看到的旁觀者）⇒ OwnLife
+            string kind = AiMemoryKind.For(evt, "hero_bystander", "hero_player", 0);
+            Assert.Equal(AiMemoryKind.OwnLife, kind);
+        }
+
+        [Fact]
+        public void AiMemoryKind_For_NotParticipant_Hop0_PlayerIsParticipant_ReturnsOther()
+        {
+            var evt = new WorldEvent
+            {
+                EventId = "evt_eyewitness_2",
+                Fabricated = false,
+                Participants = new Dictionary<string, string>
+                {
+                    { "actor", "hero_lord_a" },
+                    { "victim", "hero_player" }
+                }
+            };
+
+            // 不是當事人、hop 0、玩家是當事人 ⇒ Other
+            string kind = AiMemoryKind.For(evt, "hero_bystander", "hero_player", 0);
+            Assert.Equal(AiMemoryKind.Other, kind);
+        }
+
+        [Fact]
+        public void AiMemoryKind_For_NotParticipant_Hop1OrMore_ReturnsHearsay()
+        {
+            var evt = new WorldEvent
+            {
+                EventId = "evt_hearsay_multi_hop",
+                Fabricated = false,
+                Participants = new Dictionary<string, string>
+                {
+                    { "actor", "hero_lord_a" },
+                    { "victim", "hero_lord_b" }
+                }
+            };
+
+            // 不是當事人、hop 1 ⇒ Hearsay；hop 2 ⇒ Hearsay
+            Assert.Equal(AiMemoryKind.Hearsay, AiMemoryKind.For(evt, "hero_listener", "hero_player", 1));
+            Assert.Equal(AiMemoryKind.Hearsay, AiMemoryKind.For(evt, "hero_listener", "hero_player", 2));
+        }
+
+        [Fact]
+        public void AiMemoryKind_For_Participant_Hop1_ReturnsOwnLifeOrOther()
+        {
+            // 當事人、hop 1（後來才聽到自己的事）⇒ 照舊 OwnLife／Other
+            var evtOwnLife = new WorldEvent
+            {
+                EventId = "evt_participant_hop1_ownlife",
+                Fabricated = false,
+                Participants = new Dictionary<string, string>
+                {
+                    { "target", "hero_npc" },
+                    { "other", "hero_other" }
+                }
+            };
+            Assert.Equal(AiMemoryKind.OwnLife, AiMemoryKind.For(evtOwnLife, "hero_npc", "hero_player", 1));
+
+            var evtOther = new WorldEvent
+            {
+                EventId = "evt_participant_hop1_other",
+                Fabricated = false,
+                Participants = new Dictionary<string, string>
+                {
+                    { "target", "hero_npc" },
+                    { "player", "hero_player" }
+                }
+            };
+            Assert.Equal(AiMemoryKind.Other, AiMemoryKind.For(evtOther, "hero_npc", "hero_player", 1));
+        }
+
+        [Fact]
+        public void AiMemoryKind_For_DoesNotDependOnWhetherTheEventWasMadeUp()
+        {
+            // 種類不能透露真假：同樣的當事人，編出來的與真的給出同一種
+            foreach (bool madeUp in new[] { false, true })
+            {
+                var evt = new WorldEvent
+                {
+                    EventId = "evt_5",
+                    Fabricated = madeUp,
+                    OriginatorHeroId = madeUp ? "hero_npc" : null,
+                    Participants = new Dictionary<string, string>
+                    {
+                        { "claimant", "hero_npc" },
+                        { "witness", "hero_player" }
+                    }
+                };
+
+                Assert.Equal(AiMemoryKind.Other, AiMemoryKind.For(evt, "hero_npc", "hero_player", 1));
+                Assert.Equal(AiMemoryKind.OwnLife, AiMemoryKind.For(evt, "hero_npc", "hero_someone", 1));
+                Assert.Equal(AiMemoryKind.Hearsay, AiMemoryKind.For(evt, "hero_listener", "hero_player", 1));
+            }
+        }
+
+        [Fact]
+        public void AiMemoryKind_For_PlayerHeroIdNull_WhenNpcIsParticipant_ReturnsOwnLife()
+        {
+            // playerHeroId 為 null、NPC 是當事人 => OwnLife
+            var evt = new WorldEvent
+            {
+                EventId = "evt_6",
+                Fabricated = false,
+                Participants = new Dictionary<string, string>
+                {
+                    { "actor", "hero_npc" }
+                }
+            };
+
+            string kindNull = AiMemoryKind.For(evt, "hero_npc", null, 0);
+            string kindEmpty = AiMemoryKind.For(evt, "hero_npc", string.Empty, 0);
+
+            Assert.Equal(AiMemoryKind.OwnLife, kindNull);
+            Assert.Equal(AiMemoryKind.OwnLife, kindEmpty);
+        }
+
+        [Fact]
+        public void AiMemoryKind_For_ParticipantMatching_RespectsCaseSensitivity()
+        {
+            // 當事人比對大小寫照 WorldEvent.RoleOf 現有行為（不另外放寬）
+            var evt = new WorldEvent
+            {
+                EventId = "evt_7",
+                Fabricated = false,
+                Participants = new Dictionary<string, string>
+                {
+                    { "actor", "hero_npc" },
+                    { "target", "hero_player" }
+                }
+            };
+
+            // "HERO_NPC" 不符合 "hero_npc" => 不是當事人，傳 hop 1 => Hearsay
+            string kindMismatch = AiMemoryKind.For(evt, "HERO_NPC", "hero_player", 1);
+            Assert.Equal(AiMemoryKind.Hearsay, kindMismatch);
+
+            // "hero_npc" 符合，但 "HERO_PLAYER" 不符合 => 玩家不是當事人 => OwnLife
+            string kindPlayerMismatch = AiMemoryKind.For(evt, "hero_npc", "HERO_PLAYER", 1);
+            Assert.Equal(AiMemoryKind.OwnLife, kindPlayerMismatch);
+        }
     }
 }
+

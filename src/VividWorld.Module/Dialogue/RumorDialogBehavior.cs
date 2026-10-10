@@ -84,6 +84,7 @@ namespace VividWorld.Dialogue
         private string? _renderedProbeText;
         private string? _renderedProbeTextPlain;
         private bool _probesGateReported;
+        private bool _probeAwaitingWindow;
 
         // 記憶化快取（規格 §9.2）
         private string? _cachedHeroId;
@@ -718,7 +719,7 @@ namespace VividWorld.Dialogue
                 "vividworld_probe_answer",
                 "{=!}{VIVIDWORLD_PROBE_PROMPT}",
                 ProbePromptCondition,
-                null,
+                () => { _probeAwaitingWindow = true; },
                 100,
                 null);
 
@@ -1690,6 +1691,7 @@ namespace VividWorld.Dialogue
             _probeClassification = null;
             _renderedProbeText = null;
             _renderedProbeTextPlain = null;
+            _probeAwaitingWindow = false;
         }
 
         private void OnProbeOptionChosen()
@@ -1803,6 +1805,7 @@ namespace VividWorld.Dialogue
             {
                 _probeChosenEventId = null;
                 ModLog.Info($"Probe window result ignored: {why} (picked {chosen ?? "none"})");
+                ModLog.Info($"Probe window closed (confirmed): did not continue the conversation ({why})");
                 ModLog.Flush();
                 return;
             }
@@ -1810,6 +1813,25 @@ namespace VividWorld.Dialogue
             _probeChosenEventId = chosen;
             _probeClassification = null;
             ModLog.Info($"Probe window confirmed: block {chosen ?? "none"}, partner {_probeSpeakerId}");
+
+            if (_probeAwaitingWindow)
+            {
+                _probeAwaitingWindow = false;
+                try
+                {
+                    TaleWorlds.CampaignSystem.Campaign.Current.ConversationManager.ContinueConversation();
+                    ModLog.Info("Probe window closed (confirmed): continued the conversation to the reply without an extra click");
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn($"Probe window closed: could not continue the conversation ({ex.GetType().Name}: {ex.Message}); the player has to click once");
+                }
+            }
+            else
+            {
+                ModLog.Info("Probe window closed (confirmed): did not continue the conversation (the prompt line was not showing)");
+            }
+
             ModLog.Flush();
         }
 
@@ -1818,6 +1840,32 @@ namespace VividWorld.Dialogue
             _probeChosenEventId = null;
             _probeClassification = null;
             ModLog.Info($"Probe window cancelled by the player: partner {_probeSpeakerId ?? "unknown"}");
+
+            if (!ProbeCallbackStillValid(out var why))
+            {
+                ModLog.Info($"Probe window closed (cancelled): did not continue the conversation ({why})");
+                ModLog.Flush();
+                return;
+            }
+
+            if (_probeAwaitingWindow)
+            {
+                _probeAwaitingWindow = false;
+                try
+                {
+                    TaleWorlds.CampaignSystem.Campaign.Current.ConversationManager.ContinueConversation();
+                    ModLog.Info("Probe window closed (cancelled): continued the conversation to the reply without an extra click");
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn($"Probe window closed: could not continue the conversation ({ex.GetType().Name}: {ex.Message}); the player has to click once");
+                }
+            }
+            else
+            {
+                ModLog.Info("Probe window closed (cancelled): did not continue the conversation (the prompt line was not showing)");
+            }
+
             ModLog.Flush();
         }
 

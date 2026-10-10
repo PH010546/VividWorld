@@ -27,9 +27,10 @@ namespace VividWorld.Ai
         public int CharCount { get; }
         public bool IsTruncated { get; }
         public int DaysAgo { get; }
+        public string Kind { get; }
         public bool AlreadyPushed { get; }
 
-        public AiPushPreviewItem(string eventId, string version, string text, int charCount, bool isTruncated, int daysAgo, bool alreadyPushed)
+        public AiPushPreviewItem(string eventId, string version, string text, int charCount, bool isTruncated, int daysAgo, string kind, bool alreadyPushed)
         {
             EventId = eventId;
             Version = version;
@@ -37,6 +38,7 @@ namespace VividWorld.Ai
             CharCount = charCount;
             IsTruncated = isTruncated;
             DaysAgo = daysAgo;
+            Kind = kind ?? AiMemoryKind.Other;
             AlreadyPushed = alreadyPushed;
         }
     }
@@ -372,7 +374,7 @@ namespace VividWorld.Ai
                     maxPerChat);
 
                 string pushLang = cfg.Ai.PushLanguage ?? "english";
-                var pushedEntries = new List<(string EventId, string Version, int Chars, bool Truncated, string Result)>();
+                var pushedEntries = new List<(string EventId, string Version, int Chars, bool Truncated, string Kind, string Result)>();
 
                 foreach (var candidate in plan.ToPush)
                 {
@@ -392,10 +394,12 @@ namespace VividWorld.Ai
                             return FallbackTextRenderer.RenderRecallMemory(composed, pushLang, cfg.Presentation);
                         });
 
+                    string kind = AiMemoryKind.For(candidate.Memory.Event, hero.StringId, Hero.MainHero?.StringId, candidate.Memory.Hop);
+
                     object entry = Activator.CreateInstance(binding.MemoryEntryType);
                     binding.MemoryEntryType.GetProperty("NpcId")?.SetValue(entry, hero.StringId);
                     binding.MemoryEntryType.GetProperty("Summary")?.SetValue(entry, text);
-                    binding.MemoryEntryType.GetProperty("Kind")?.SetValue(entry, "Other");
+                    binding.MemoryEntryType.GetProperty("Kind")?.SetValue(entry, kind);
                     int daysAgo = (int)Math.Max(0, Math.Floor(currentDay - candidate.Memory.LearnedDay));
                     binding.MemoryEntryType.GetProperty("DaysAgo")?.SetValue(entry, daysAgo);
                     binding.MemoryEntryType.GetProperty("SourceMod")?.SetValue(entry, "VividWorld");
@@ -415,7 +419,7 @@ namespace VividWorld.Ai
                         }
                     }
 
-                    pushedEntries.Add((candidate.Memory.EventId, candidate.Version, text.Length, isTruncated, resStr));
+                    pushedEntries.Add((candidate.Memory.EventId, candidate.Version, text.Length, isTruncated, kind, resStr));
                 }
 
                 // Log structured outcome
@@ -443,7 +447,7 @@ namespace VividWorld.Ai
                     sb.AppendLine("  Pushed:");
                     foreach (var p in pushedEntries)
                     {
-                        sb.AppendLine($"    {p.EventId}: ver={p.Version}, chars={p.Chars}, truncated={p.Truncated}, result={p.Result}");
+                        sb.AppendLine($"    {p.EventId}: ver={p.Version}, chars={p.Chars}, truncated={p.Truncated}, kind={p.Kind}, result={p.Result}");
                     }
                 }
 
@@ -575,6 +579,7 @@ namespace VividWorld.Ai
 
                     int daysAgo = (int)Math.Max(0, Math.Floor(currentDay - candidate.Memory.LearnedDay));
                     bool alreadyPushed = existingPushes.ContainsKey(candidate.Memory.EventId);
+                    string kind = AiMemoryKind.For(candidate.Memory.Event, hero.StringId, Hero.MainHero?.StringId, candidate.Memory.Hop);
 
                     previewItems.Add(new AiPushPreviewItem(
                         candidate.Memory.EventId,
@@ -583,6 +588,7 @@ namespace VividWorld.Ai
                         text.Length,
                         isTruncated,
                         daysAgo,
+                        kind,
                         alreadyPushed));
                 }
 

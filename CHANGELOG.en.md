@@ -10,6 +10,12 @@ Every release states three things:
 
 ## Unreleased
 
+## v0.9.9
+
+- **Fixed: when probing, the answer comes right after you pick what to ask**: after pressing "Ask about this" (or "Never mind"), the screen used to stay on "Go ahead. What is it?" until another click, so players often thought nothing had happened. The picking window opens after the player's line, by which time the NPC has already said the prompt line; now the conversation is moved on one step as soon as the window closes (only when the NPC has just said that prompt line).
+- **Changed: memories handed to AI chat mods carry a kind**: they were all `Other`, which Calradia Remembers treats as "history between this character and the player", so rumors crowded out real history. Now anything heard is `Hearsay`; things the character lived through or saw in person are `OwnLife`; only things the player was also part of are `Other`. The kind never depends on whether the story was made up. Calradia Remembers 2.7.5 or later understands all three; older versions treat them all as `Other`, as before. The "AI integration" developer preview and the log now print `kind=` for each item.
+- Existing campaigns can simply be continued; no config changes needed. Memories already handed to Calradia Remembers can't be changed; only new ones use the new kinds.
+
 ## v0.9.8
 
 - **New: what you hear isn't always true (false rumors)**: Lords now talk about things that never happened — smearing someone they hold a grudge against, smearing a clan leader of similar standing to get ahead, making up good deeds for their own family, or spinning a real capture or death (he was captured because he chased too rashly; he chained his prisoner like a common captive; it was poison, not old age).

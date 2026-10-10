@@ -2,7 +2,7 @@
 <Module>
   <Id value="VividWorld" />
   <Name value="Vivid World" />
-  <Version value="v0.9.8" />
+  <Version value="v0.9.9" />
   <DefaultModule value="false" />
   <ModuleCategory value="Singleplayer" />
   <ModuleType value="Community" />

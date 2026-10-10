@@ -1,5 +1,10 @@
 Vivid World changelog
 
+v0.9.9
+Fixed: when probing, the lord now answers as soon as you pick what to ask about, without an extra click.
+With Calradia Remembers 2.7.5 or later, rumors an NPC only heard are no longer treated as their history with you.
+Existing campaigns can be continued as they are; no settings need to be changed.
+
 v0.9.8
 New "False rumors": lords will say things behind others' backs that never happened, so what you hear may not be true.
 Lords can also do shabby things to each other, such as speaking ill of the ruler in private or mistreating a prisoner.

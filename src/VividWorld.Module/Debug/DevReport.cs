@@ -1224,8 +1224,8 @@ namespace VividWorld.Debug
                     {
                         var item = target.PlannedPushes[i];
                         sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
-                            "  [{0}] {1} | ver={2} | chars={3} | truncated={4} | daysAgo={5}",
-                            i + 1, item.EventId, item.Version, item.CharCount, item.IsTruncated, item.DaysAgo));
+                            "  [{0}] {1} | ver={2} | chars={3} | truncated={4} | daysAgo={5} | kind={6}",
+                            i + 1, item.EventId, item.Version, item.CharCount, item.IsTruncated, item.DaysAgo, item.Kind));
                         sb.AppendLine($"      \"{item.Text}\"");
                     }
                 }
