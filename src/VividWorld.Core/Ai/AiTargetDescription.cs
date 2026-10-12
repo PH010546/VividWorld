@@ -13,6 +13,8 @@ namespace VividWorld.Core.Ai
         public string ApiVersionMemberName { get; set; } = string.Empty;
         public int AcceptedApiVersion { get; set; } = 1;
         public bool IsPersistent { get; set; } = true;
+        public string LivePromptTypeName { get; set; } = string.Empty;
+        public string LivePromptMethodName { get; set; } = string.Empty;
 
         public static AiTargetDescription CalradiaRemembers() => new AiTargetDescription
         {
@@ -26,7 +28,9 @@ namespace VividWorld.Core.Ai
             MemoryEntryTypeName = "CalradiaRemembers.CrMemoryEntry",
             ApiVersionMemberName = "ApiVersion",
             AcceptedApiVersion = 1,
-            IsPersistent = true
+            IsPersistent = true,
+            LivePromptTypeName = "CalradiaRemembers.CrPrompt",
+            LivePromptMethodName = "RegisterVariable"
         };
 
         public static AiTargetDescription ImmersiveAI() => new AiTargetDescription

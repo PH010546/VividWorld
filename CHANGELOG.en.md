@@ -10,6 +10,11 @@ Every release states three things:
 
 ## Unreleased
 
+## v0.9.10
+
+- **Changed: Calradia Remembers AI chat now goes by what the NPC remembers right now, on every reply**: news used to be added to CR as memories when a chat started, and CR kept them forever, so an NPC kept talking about things he had forgotten in Vivid World, news that was out of date, or events undone by loading an older save. Now, with Calradia Remembers 2.7.7 or later, Vivid World registers the prompt variable `{{vividworld_news}}` at startup (shipped with `ModuleData/cr_patch/post_history_instructions.txt`); CR asks for it every time it builds a prompt (every reply), and Vivid World hands over what this NPC remembers at that moment (500 characters, 300 for compact prompts) and no longer adds memories. Each call logs one `AI live news for …` line listing what was given, what was left out and why; the "AI integration" developer preview also prints the live mode and the full block under both limits. Older CR versions still get memories added as before; ImmersiveAI is unchanged.
+- Existing campaigns can simply be continued; no config changes needed. Memories already added to Calradia Remembers can't be removed (CR 2.7.7 has no removal API) and the AI will still see them alongside the new block.
+
 ## v0.9.9
 
 - **Fixed: when probing, the answer comes right after you pick what to ask**: after pressing "Ask about this" (or "Never mind"), the screen used to stay on "Go ahead. What is it?" until another click, so players often thought nothing had happened. The picking window opens after the player's line, by which time the NPC has already said the prompt line; now the conversation is moved on one step as soon as the window closes (only when the NPC has just said that prompt line).

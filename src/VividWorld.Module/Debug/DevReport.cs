@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using TaleWorlds.CampaignSystem;
@@ -1210,6 +1211,100 @@ namespace VividWorld.Debug
                 if (!target.IsEnabled)
                 {
                     sb.AppendLine($"Target: {target.TargetId} (disabled: {target.DisabledReason})");
+                    continue;
+                }
+
+                if (target.IsLive)
+                {
+                    sb.AppendLine($"Target: {target.TargetId} (Live Mode: active)");
+                    sb.AppendLine("  Live News Block (Standard, max 500 chars):");
+                    if (target.StandardBlock == null || string.IsNullOrEmpty(target.StandardBlock.Text))
+                    {
+                        sb.AppendLine("    (empty)");
+                    }
+                    else
+                    {
+                        using (var reader = new StringReader(target.StandardBlock.Text))
+                        {
+                            string? line;
+                            while ((line = reader.ReadLine()) != null)
+                            {
+                                sb.AppendLine($"    {line}");
+                            }
+                        }
+                    }
+
+                    sb.AppendLine("  Live News Block (Lean, max 300 chars):");
+                    if (target.LeanBlock == null || string.IsNullOrEmpty(target.LeanBlock.Text))
+                    {
+                        sb.AppendLine("    (empty)");
+                    }
+                    else
+                    {
+                        using (var reader = new StringReader(target.LeanBlock.Text))
+                        {
+                            string? line;
+                            while ((line = reader.ReadLine()) != null)
+                            {
+                                sb.AppendLine($"    {line}");
+                            }
+                        }
+                    }
+
+                    sb.AppendLine("  Items Given / Excluded:");
+                    if (target.StandardBlock != null)
+                    {
+                        if (target.StandardBlock.IncludedEventIds.Count > 0)
+                        {
+                            sb.AppendLine("    Included in Standard:");
+                            foreach (var id in target.StandardBlock.IncludedEventIds)
+                            {
+                                sb.AppendLine($"      - {id}");
+                            }
+                        }
+                        if (target.StandardBlock.ExcludedItems.Count > 0)
+                        {
+                            sb.AppendLine("    Excluded by Standard limit:");
+                            foreach (var exc in target.StandardBlock.ExcludedItems)
+                            {
+                                sb.AppendLine($"      - {exc.EventId}: over length limit ({exc.ItemChars} chars, {exc.UsedCharsBefore} used)");
+                            }
+                        }
+                    }
+
+                    if (target.LeanBlock != null)
+                    {
+                        if (target.LeanBlock.IncludedEventIds.Count > 0)
+                        {
+                            sb.AppendLine("    Included in Lean:");
+                            foreach (var id in target.LeanBlock.IncludedEventIds)
+                            {
+                                sb.AppendLine($"      - {id}");
+                            }
+                        }
+                        if (target.LeanBlock.ExcludedItems.Count > 0)
+                        {
+                            sb.AppendLine("    Excluded by Lean limit:");
+                            foreach (var exc in target.LeanBlock.ExcludedItems)
+                            {
+                                sb.AppendLine($"      - {exc.EventId}: over length limit ({exc.ItemChars} chars, {exc.UsedCharsBefore} used)");
+                            }
+                        }
+                    }
+
+                    sb.AppendLine("  Recall Exclusions:");
+                    if (target.Exclusions.Count == 0)
+                    {
+                        sb.AppendLine("    (none)");
+                    }
+                    else
+                    {
+                        foreach (var exc in target.Exclusions)
+                        {
+                            sb.AppendLine($"    - {exc}");
+                        }
+                    }
+
                     continue;
                 }
 
