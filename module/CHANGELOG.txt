@@ -1,5 +1,10 @@
 Vivid World 更新紀錄
 
+v0.9.11
+修正：在設定裡關掉「啟用模組」時，Calradia Remembers 的 AI 不會再收到一行多餘的文字。
+搭配 Calradia Remembers 2.7.7 以前的版本時，消息照舊加進 NPC 的記憶。
+舊戰役可以直接繼續玩，設定不用改。
+
 v0.9.10
 搭配 Calradia Remembers 2.7.7 以上時，AI 聊天裡的 NPC 每句話都照他當下記得的消息講：忘了的、已經過時的不再提，讀舊存檔也跟著回到當時。
 之前版本存進 Calradia Remembers 記憶裡的消息還在，目前沒辦法清除。

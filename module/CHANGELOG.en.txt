@@ -1,5 +1,10 @@
 Vivid World changelog
 
+v0.9.11
+Fixed: with "Enable mod" turned off, Calradia Remembers' AI no longer receives a stray line of text.
+With Calradia Remembers older than 2.7.7, news is still added to NPC memories as before.
+Existing campaigns can be continued as they are; no settings need to be changed.
+
 v0.9.10
 With Calradia Remembers 2.7.7 or later, NPCs in AI chat now speak from what they remember right now: news they have forgotten or that is out of date no longer comes up, and loading an older save takes them back to how things stood then.
 News that earlier versions saved into Calradia Remembers' memory is still there and can't be cleared for now.

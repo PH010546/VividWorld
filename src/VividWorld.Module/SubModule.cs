@@ -66,6 +66,19 @@ namespace VividWorld
             }
         }
 
+        protected override void OnBeforeInitialModuleScreenSetAsRoot()
+        {
+            base.OnBeforeInitialModuleScreenSetAsRoot();
+            try
+            {
+                AiPushCoordinator.RegisterLivePromptVariables();
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Failed to register live prompt variables before initial module screen.", ex);
+            }
+        }
+
         /// <summary>
         /// 「跟玩家的好感各人各算」現在是不是開著。補丁每次被叫都會問，所以只讀記憶體裡的設定、不碰檔案。
         /// 設定物件還沒載入、或模組整個被關掉，一律當關著（原版行為）。

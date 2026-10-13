@@ -10,6 +10,12 @@
 
 ## 尚未發佈
 
+## v0.9.11
+
+- **修正：Calradia Remembers 的提示裡不再冒出字面的 `{{vividworld_news}}`**：這個變數原本在開始或讀取戰役時才登記，而且 Vivid World 關掉（`enabled`）、AI 串接關掉（`ai.enabled`）或 CR 記憶接口版本對不上時都不登記；但 `cr_patch/post_history_instructions.txt` 照樣被 CR 讀進去，沒登記的變數 CR 原樣留著，AI 每一句都看到那行字。現在只要 CR 有這個接口，開到主選單前就登記，設定關著時交空字串；登記失敗寫警告。
+- **改：即時交消息只限 Calradia Remembers 2.7.7 以上**，跟 v0.9.10 寫的一致。變數接口更早就有，但更舊的版本讀不讀模組附的提示檔沒驗過；現在看 CR 的 `SubModule.xml` 版本，2.7.7 以前的照樣登記變數（交空字串）、照舊加記憶。讀不到版本當 2.7.7 以上並寫警告。開機那行日誌印出讀到的版本與走哪一種。
+- 舊戰役可以直接繼續玩，設定檔不必動。
+
 ## v0.9.10
 
 - **改：Calradia Remembers 的 AI 聊天每一句都照 NPC 當下記得的消息講**：以前是對話開始時把消息「加進記憶」，CR 就永久記著，NPC 在 Vivid World 裡忘了、消息過時了、或玩家讀舊檔回溯了，AI 聊天裡還照講。現在裝 Calradia Remembers 2.7.7 以上時，開機登記提示變數 `{{vividworld_news}}`（隨模組附 `ModuleData/cr_patch/post_history_instructions.txt`），CR 每組一次提示（每一句回覆）就來要一次，Vivid World 當場交出這位 NPC 現在記得的消息（一般 500 字元、精簡提示 300 字元），而且不再加記憶。日誌每次一行 `AI live news for …`，列出交了哪些、排除哪些與原因；開發者工具「AI 串接」預覽多印即時模式與兩種上限下的整段文字。更舊的 CR 照舊加記憶；ImmersiveAI 不變。

@@ -145,6 +145,8 @@ namespace VividWorld.Ai
         private static readonly object _lock = new object();
         private static readonly HashSet<string> _subscribedTargets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private static readonly HashSet<string> _liveRegisteredTargets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private static readonly HashSet<string> _liveNewsTargets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private static bool _livePromptVariablesRegistered;
 
         // 清單要完整交給推送規劃，先扣「已推過的」再取上限；先截前幾筆的話，推久了前面都推過，後面的永遠輪不到
         private const int RecallAll = int.MaxValue;
@@ -204,8 +206,12 @@ namespace VividWorld.Ai
                         state.IsSubscribed = true;
                         state.Listener = listener;
 
-                        // 對方有即時提示變數就改成每句回覆即時交，沒有就照舊加記憶
-                        TryRegisterLivePromptVariable(desc, asm, state);
+                        // 即時提示變數已在主選單前登記；此處僅記錄目標是否處於即時模式
+                        state.IsLive = _liveNewsTargets.Contains(desc.TargetId);
+                        if (state.IsLive)
+                        {
+                            ModLog.Info($"AI target '{desc.TargetId}': live prompt variable '{{{{{AiLiveNewsBlock.VariableName}}}}}' registered; adding memories is off for this target.");
+                        }
 
                         _bindings[desc.TargetId] = state;
 
@@ -221,56 +227,131 @@ namespace VividWorld.Ai
             }
         }
 
-        private static void TryRegisterLivePromptVariable(AiTargetDescription desc, Assembly asm, TargetBindingState state)
+        /// <summary>
+        /// 在遊戲載入至主選單前登記外部 AI 模組的即時提示變數。
+        /// 只要外部組件存在且具有變數登記介面即予以登記，避免外部提示模板中殘留未替換的標記。
+        /// 同一遊戲程序僅執行一次。
+        /// </summary>
+        public static void RegisterLivePromptVariables()
         {
-            if (string.IsNullOrEmpty(desc.LivePromptTypeName) || string.IsNullOrEmpty(desc.LivePromptMethodName))
+            lock (_lock)
             {
-                return;
-            }
-
-            try
-            {
-                Type? promptType = asm.GetType(desc.LivePromptTypeName);
-                if (promptType == null)
+                if (_livePromptVariablesRegistered)
                 {
-                    ModLog.Info($"AI target '{desc.TargetId}': no live prompt variable ({desc.LivePromptTypeName}.{desc.LivePromptMethodName} not found); keeps adding memories.");
                     return;
                 }
+                _livePromptVariablesRegistered = true;
 
-                MethodInfo[] methods = promptType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
-                MethodInfo? registerMethod = methods.FirstOrDefault(m =>
-                    m.Name == desc.LivePromptMethodName &&
-                    m.GetParameters().Length == 2 &&
-                    m.GetParameters()[0].ParameterType == typeof(string) &&
-                    m.GetParameters()[1].ParameterType.IsGenericType &&
-                    m.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(Func<,>));
-
-                if (registerMethod == null)
+                foreach (var desc in _targets)
                 {
-                    ModLog.Info($"AI target '{desc.TargetId}': no live prompt variable ({desc.LivePromptTypeName}.{desc.LivePromptMethodName} not found); keeps adding memories.");
-                    return;
+                    if (string.IsNullOrEmpty(desc.LivePromptTypeName) || string.IsNullOrEmpty(desc.LivePromptMethodName))
+                    {
+                        continue;
+                    }
+
+                    if (_liveRegisteredTargets.Contains(desc.TargetId))
+                    {
+                        continue;
+                    }
+
+                    Assembly? asm = AppDomain.CurrentDomain.GetAssemblies()
+                        .FirstOrDefault(a => string.Equals(a.GetName().Name, desc.AssemblyName, StringComparison.OrdinalIgnoreCase));
+                    if (asm == null)
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        Type? promptType = asm.GetType(desc.LivePromptTypeName);
+                        if (promptType == null)
+                        {
+                            ModLog.Info($"AI target '{desc.TargetId}': no live prompt variable ({desc.LivePromptTypeName}.{desc.LivePromptMethodName} not found); keeps adding memories.");
+                            continue;
+                        }
+
+                        MethodInfo[] methods = promptType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+                        MethodInfo? registerMethod = methods.FirstOrDefault(m =>
+                            m.Name == desc.LivePromptMethodName &&
+                            m.GetParameters().Length == 2 &&
+                            m.GetParameters()[0].ParameterType == typeof(string) &&
+                            m.GetParameters()[1].ParameterType.IsGenericType &&
+                            m.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(Func<,>));
+
+                        if (registerMethod == null)
+                        {
+                            ModLog.Info($"AI target '{desc.TargetId}': no live prompt variable ({desc.LivePromptTypeName}.{desc.LivePromptMethodName} not found); keeps adding memories.");
+                            continue;
+                        }
+
+                        bool isCr = string.Equals(desc.TargetId, "CalradiaRemembers", StringComparison.OrdinalIgnoreCase);
+                        bool isLiveNews = true;
+                        TaleWorlds.Library.ApplicationVersion? crVersion = null;
+
+                        if (isCr)
+                        {
+                            try
+                            {
+                                var modInfo = TaleWorlds.ModuleManager.ModuleHelper.GetModuleInfo("CalradiaRemembers");
+                                if (modInfo != null)
+                                {
+                                    crVersion = modInfo.Version;
+                                    isLiveNews = CrLiveVersionGate.IsLiveVersion(crVersion.Value.Major, crVersion.Value.Minor, crVersion.Value.Revision);
+                                }
+                                else
+                                {
+                                    ModLog.Warn($"AI target '{desc.TargetId}': unable to read Calradia Remembers module version; assuming v2.7.7 or newer and enabling live news.");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                ModLog.Warn($"AI target '{desc.TargetId}': unable to read Calradia Remembers module version ({ex.Message}); assuming v2.7.7 or newer and enabling live news.");
+                            }
+                        }
+
+                        Type funcType = registerMethod.GetParameters()[1].ParameterType;
+                        Type tFacts = funcType.GetGenericArguments()[0];
+
+                        MethodInfo openProvider = typeof(AiPushCoordinator).GetMethod(nameof(ProvideLiveNews), BindingFlags.NonPublic | BindingFlags.Static)!;
+                        MethodInfo closedProvider = openProvider.MakeGenericMethod(tFacts);
+                        Delegate providerDelegate = Delegate.CreateDelegate(funcType, closedProvider);
+
+                        registerMethod.Invoke(null, new object[] { AiLiveNewsBlock.VariableName, providerDelegate });
+                        _liveRegisteredTargets.Add(desc.TargetId);
+                        if (isLiveNews)
+                        {
+                            _liveNewsTargets.Add(desc.TargetId);
+                        }
+
+                        if (isCr)
+                        {
+                            if (crVersion != null)
+                            {
+                                var v = crVersion.Value;
+                                if (isLiveNews)
+                                {
+                                    ModLog.Info($"AI target '{desc.TargetId}': live prompt variable '{{{{{AiLiveNewsBlock.VariableName}}}}}' registered before the main menu (Calradia Remembers v{v.Major}.{v.Minor}.{v.Revision}: news is given live, memories are not added; it returns an empty string while Vivid World or AI integration is off).");
+                                }
+                                else
+                                {
+                                    ModLog.Info($"AI target '{desc.TargetId}': live prompt variable '{{{{{AiLiveNewsBlock.VariableName}}}}}' registered before the main menu (Calradia Remembers v{v.Major}.{v.Minor}.{v.Revision}: older than v2.7.7, the variable stays empty and memories are added as before).");
+                                }
+                            }
+                            else
+                            {
+                                ModLog.Info($"AI target '{desc.TargetId}': live prompt variable '{{{{{AiLiveNewsBlock.VariableName}}}}}' registered before the main menu (Calradia Remembers: news is given live, memories are not added; it returns an empty string while Vivid World or AI integration is off).");
+                            }
+                        }
+                        else
+                        {
+                            ModLog.Info($"AI target '{desc.TargetId}': live prompt variable '{{{{{AiLiveNewsBlock.VariableName}}}}}' registered before the main menu; it returns an empty string while Vivid World or AI integration is off.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ModLog.Warn($"AI target '{desc.TargetId}': registering live prompt variable '{{{{{AiLiveNewsBlock.VariableName}}}}}' failed ({ex.Message}); CR prompts will show the literal token and memories will be added instead.");
+                    }
                 }
-
-                Type funcType = registerMethod.GetParameters()[1].ParameterType;
-                Type tFacts = funcType.GetGenericArguments()[0];
-
-                if (!_liveRegisteredTargets.Contains(desc.TargetId))
-                {
-                    MethodInfo openProvider = typeof(AiPushCoordinator).GetMethod(nameof(ProvideLiveNews), BindingFlags.NonPublic | BindingFlags.Static)!;
-                    MethodInfo closedProvider = openProvider.MakeGenericMethod(tFacts);
-                    Delegate providerDelegate = Delegate.CreateDelegate(funcType, closedProvider);
-
-                    registerMethod.Invoke(null, new object[] { AiLiveNewsBlock.VariableName, providerDelegate });
-                    _liveRegisteredTargets.Add(desc.TargetId);
-                }
-
-                state.IsLive = true;
-                ModLog.Info($"AI target '{desc.TargetId}': live prompt variable '{{{{{AiLiveNewsBlock.VariableName}}}}}' registered; adding memories is off for this target.");
-            }
-            catch (Exception ex)
-            {
-                state.IsLive = false;
-                ModLog.Info($"AI target '{desc.TargetId}': no live prompt variable ({ex.Message}); keeps adding memories.");
             }
         }
 
@@ -625,6 +706,18 @@ namespace VividWorld.Ai
             }
 
             if (string.IsNullOrEmpty(npcId)) return string.Empty;
+
+            bool isCrLive;
+            lock (_lock)
+            {
+                isCrLive = _liveNewsTargets.Contains("CalradiaRemembers");
+            }
+
+            if (!isCrLive)
+            {
+                ModLog.Info($"AI live news for '{npcId}' (lean={lean.ToString().ToLowerInvariant()}): empty (Calradia Remembers older than v2.7.7; memories are added instead).");
+                return string.Empty;
+            }
 
             VividWorldConfig? cfg;
             WorldEventStore? store;
