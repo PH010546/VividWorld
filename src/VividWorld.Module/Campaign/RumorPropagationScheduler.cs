@@ -7,6 +7,7 @@ using TaleWorlds.Library;
 using VividWorld.Core.Channels;
 using VividWorld.Core.Config;
 using VividWorld.Core.Events;
+using VividWorld.Core.Diagnostics;
 using VividWorld.Core.Feelings;
 using VividWorld.Core.Memory;
 using VividWorld.Core.Persistence;
@@ -289,220 +290,248 @@ namespace VividWorld.Campaign
 
         internal void HourlyTick(double day, int hourOfDay)
         {
-            using (DevMetrics.Measure("hourly"))
-            {
-                var batch = _tellers.TakeBatch(_config.Scheduling.TellersPerHourlyTick);
-                string playerId = _store.PlayerHeroId;
-                var traits = _store.Traits;
+            long tickStart = DevMetrics.Enabled ? System.Diagnostics.Stopwatch.GetTimestamp() : 0;
+            double lookupMs = 0.0;
+            double chooseMs = 0.0;
+            double propagateMs = 0.0;
 
-                if (_config.Debug.VerboseTickLog)
+            var batch = _tellers.TakeBatch(_config.Scheduling.TellersPerHourlyTick);
+            string playerId = _store.PlayerHeroId;
+            var traits = _store.Traits;
+
+            if (_config.Debug.VerboseTickLog)
+            {
+                ModLog.Info($"HourlyTick at day {day:0.00} hour {hourOfDay}: {batch.Count} teller(s) this tick, teller ring size {_tellers.Count}, cursor {_tellers.Cursor}");
+            }
+
+            foreach (var t in batch)
+            {
+                // 1. profile = traits.Of(T)；null、!IsAlive、或 T 是玩家 ⇒ Remove，印 left the ring: hero not found or dead；continue
+                var profile = traits.Of(t);
+                if (profile == null || !profile.IsAlive || string.Equals(t, playerId, StringComparison.Ordinal))
                 {
-                    ModLog.Info($"HourlyTick at day {day:0.00} hour {hourOfDay}: {batch.Count} teller(s) this tick, teller ring size {_tellers.Count}, cursor {_tellers.Cursor}");
+                    _tellers.Remove(t);
+                    _sessionLeftRing++;
+                    if (_config.Debug.LogTellerTurns)
+                    {
+                        ModLog.Info(TellerLogFormatter.FormatLeftRingHeroNotFoundOrDead(t));
+                    }
+                    continue;
                 }
 
-                foreach (var t in batch)
+                // 2. !Eligibility.IsEligible(profile) ⇒ 計數、印 skipped；continue（留在輪裡）
+                if (!Eligibility.IsEligible(profile))
                 {
-                    // 1. profile = traits.Of(T)；null、!IsAlive、或 T 是玩家 ⇒ Remove，印 left the ring: hero not found or dead；continue
-                    var profile = traits.Of(t);
-                    if (profile == null || !profile.IsAlive || string.Equals(t, playerId, StringComparison.Ordinal))
+                    _sessionSkippedNotEligible++;
+                    if (_config.Debug.LogTellerTurns)
                     {
-                        _tellers.Remove(t);
-                        _sessionLeftRing++;
-                        if (_config.Debug.LogTellerTurns)
-                        {
-                            ModLog.Info(TellerLogFormatter.FormatLeftRingHeroNotFoundOrDead(t));
-                        }
-                        continue;
+                        ModLog.Info(TellerLogFormatter.FormatSkippedNotEligible(t));
                     }
+                    continue;
+                }
 
-                    // 2. !Eligibility.IsEligible(profile) ⇒ 計數、印 skipped；continue（留在輪裡）
-                    if (!Eligibility.IsEligible(profile))
+                // 3. ids = _knownBy.EventsKnownBy(T)；不在作用中集合的只計 inactive；在的 _store.Load（null 也計 inactive）
+                //    每則先 _stamper?.EnsureStamped(evt)，回傳 true 就 _store.Upsert(evt)
+                long lookupStart = DevMetrics.Enabled ? System.Diagnostics.Stopwatch.GetTimestamp() : 0;
+                var ids = _knownBy.EventsKnownBy(t, day);
+                int inactiveCount = 0;
+                var activeEvents = new List<WorldEvent>();
+
+                foreach (var id in ids)
+                {
+                    if (!_activeRingSet.Contains(id))
                     {
-                        _sessionSkippedNotEligible++;
-                        if (_config.Debug.LogTellerTurns)
-                        {
-                            ModLog.Info(TellerLogFormatter.FormatSkippedNotEligible(t));
-                        }
-                        continue;
+                        inactiveCount++;
                     }
-
-                    // 3. ids = _knownBy.EventsKnownBy(T)；不在作用中集合的只計 inactive；在的 _store.Load（null 也計 inactive）
-                    //    每則先 _stamper?.EnsureStamped(evt)，回傳 true 就 _store.Upsert(evt)
-                    var ids = _knownBy.EventsKnownBy(t, day);
-                    int inactiveCount = 0;
-                    var activeEvents = new List<WorldEvent>();
-
-                    foreach (var id in ids)
+                    else
                     {
-                        if (!_activeRingSet.Contains(id))
+                        var evt = _store.Load(id);
+                        if (evt == null)
                         {
                             inactiveCount++;
                         }
                         else
                         {
-                            var evt = _store.Load(id);
-                            if (evt == null)
+                            if (_stamper != null && _stamper.EnsureStamped(evt))
                             {
-                                inactiveCount++;
+                                _store.Upsert(evt);
                             }
-                            else
-                            {
-                                if (_stamper != null && _stamper.EnsureStamped(evt))
-                                {
-                                    _store.Upsert(evt);
-                                }
-                                activeEvents.Add(evt);
-                            }
+                            activeEvents.Add(evt);
                         }
-                    }
-
-                    // 4. choice = _engine.ChooseTopic(T, events, day, hourOfDay)
-                    var choice = _engine.ChooseTopic(t, activeEvents, day, hourOfDay);
-
-                    // 5. PickedIndex < 0 ⇒ Remove，印 left the ring: no tellable topic …；continue
-                    if (choice.PickedIndex < 0)
-                    {
-                        _tellers.Remove(t);
-                        _sessionLeftRing++;
-                        if (_config.Debug.LogTellerTurns)
-                        {
-                            ModLog.Info(TellerLogFormatter.FormatLeftRingNoTellableTopic(
-                                t, ids.Count, choice.Exclusions, inactiveCount,
-                                _knownBy.HiddenFutureCountKnownBy(t, day)));
-                        }
-                        continue;
-                    }
-
-                    // 6. outcome = _engine.PropagateFromTeller(picked, T, day, hourOfDay)
-                    var picked = activeEvents.FirstOrDefault(e =>
-                        string.Equals(e.EventId, choice.PickedEventId, StringComparison.Ordinal));
-                    if (picked == null)
-                    {
-                        // 走不到：PickedIndex >= 0 就保證 PickedEventId 來自 activeEvents 裡的某一則。
-                        // 真的發生就是上游壞了，記一行 ERROR 並讓這位講述者這一輪什麼都不做（留在輪裡）。
-                        ModLog.Error(string.Format(CultureInfo.InvariantCulture,
-                            "Teller {0}: picked event {1} not found in active set ({2} active) - turn skipped",
-                            t, choice.PickedEventId ?? "(null)", activeEvents.Count));
-                        continue;
-                    }
-                    var outcome = _engine.PropagateFromTeller(picked, t, day, hourOfDay);
-
-                    if (outcome.NewKnowers != null && outcome.NewKnowers.Count > 0)
-                    {
-                        _stamper?.StampLearned(picked, outcome.NewKnowers);
-                        _stamper?.StampOutdated(picked, outcome.NewKnowers, day);
-                        foreach (var k in outcome.NewKnowers)
-                        {
-                            if (!string.IsNullOrEmpty(k.HeroId))
-                            {
-                                _knownBy.NoteKnower(k.HeroId, picked.EventId, picked.Day);
-                                if (!string.Equals(k.HeroId, playerId, StringComparison.Ordinal))
-                                {
-                                    _tellers.Add(k.HeroId);
-                                }
-                            }
-                        }
-
-                        if (_config.Debug.AnnounceRumorEvents)
-                        {
-                            foreach (var k in outcome.NewKnowers)
-                            {
-                                var tellerHero = !string.IsNullOrEmpty(outcome.TellerHeroId) ? Hero.Find(outcome.TellerHeroId) : null;
-                                string tellerName = tellerHero?.Name?.ToString() ?? outcome.TellerHeroId ?? "?";
-                                var knowerHero = !string.IsNullOrEmpty(k.HeroId) ? Hero.Find(k.HeroId) : null;
-                                string knowerName = knowerHero?.Name?.ToString() ?? k.HeroId ?? "?";
-                                ChannelKind kind = ChannelKind.SameSettlement;
-                                if (!string.IsNullOrEmpty(k.HeroId))
-                                {
-                                    outcome.ChannelKinds.TryGetValue(k.HeroId!, out kind);
-                                }
-                                string text = $"[VW] {tellerName} -> {knowerName}  {picked.EventId}  hop {k.Hop}  {kind}";
-                                InformationManager.DisplayMessage(new InformationMessage(text));
-                            }
-                        }
-                    }
-
-                    if (outcome.Reheard != null && outcome.Reheard.Count > 0)
-                    {
-                        _stamper?.StampReheard(picked, outcome.Reheard, t);
-                        foreach (var r in outcome.Reheard)
-                        {
-                            if (r.WasForgotten && !string.Equals(r.Entry.HeroId, playerId, StringComparison.Ordinal))
-                            {
-                                _tellers.Add(r.Entry.HeroId);
-                            }
-
-                            switch (r.Kind)
-                            {
-                                case RehearKind.Counted:
-                                    _sessionReheardCounted++;
-                                    break;
-                                case RehearKind.SameTellerIgnored:
-                                    _sessionReheardSameTellerIgnored++;
-                                    break;
-                                case RehearKind.SameTellerRelearned:
-                                    _sessionReheardSameTellerRelearned++;
-                                    break;
-                            }
-                        }
-                    }
-
-                    _sessionTurns++;
-                    int drama = picked.DramaBand;
-                    _sessionToldByDrama[drama - 1]++;
-
-                    // M6.5：結算傳聞好感度變更
-                    var affectedKnowers = new List<KnownByEntry>();
-                    if (outcome.NewKnowers != null)
-                    {
-                        affectedKnowers.AddRange(outcome.NewKnowers);
-                    }
-                    if (outcome.Reheard != null)
-                    {
-                        foreach (var record in outcome.Reheard)
-                        {
-                            if (record.Rule.AdoptVersion && record.Entry != null)
-                            {
-                                affectedKnowers.Add(record.Entry);
-                            }
-                        }
-                    }
-
-                    if (affectedKnowers.Count > 0 && _heroLookup != null && _traitLookup != null)
-                    {
-                        ConsequenceRunner.Settle(
-                            picked, affectedKnowers, day,
-                            _engine, _store, _heroLookup, _traitLookup,
-                            _dailyRelationBudget, _config, _feelingWorld);
-                    }
-
-                    _store.Upsert(picked);
-
-                    var dormancyReason = _engine.DormancyReasonFor(picked, day);
-                    if (dormancyReason != null)
-                    {
-                        picked.State.Dormant = true;
-                        _store.Upsert(picked);
-                        RemoveActive(picked.EventId);
-                        ModLog.Info(MemoryLogFormatter.FormatDormancy(picked.EventId, dormancyReason));
-                    }
-
-                    // 7. 印一輪講述行
-                    if (_config.Debug.LogTellerTurns)
-                    {
-                        ModLog.Info(TellerLogFormatter.FormatTellerTurn(t, picked.EventId, choice, outcome, inactiveCount));
-
-                        int weightTen = picked.DramaWeightTen;
-                        int bigNewsLine = _config.Dialogue.BigNewsLine;
-                        var contactList = outcome.Contacts;
-                        for (int ci = 0; ci < contactList.Count; ci++)
-                        {
-                            _tellTiersToday.Record(contactList[ci], weightTen, bigNewsLine);
-                        }
-                        ModLog.Info(TellTierLogFormatter.FormatTurnLine(
-                            t, picked.EventId, weightTen, weightTen >= bigNewsLine, contactList));
                     }
                 }
+                if (DevMetrics.Enabled)
+                {
+                    lookupMs += (double)(System.Diagnostics.Stopwatch.GetTimestamp() - lookupStart) / System.Diagnostics.Stopwatch.Frequency * 1000.0;
+                }
+
+                // 4. choice = _engine.ChooseTopic(T, events, day, hourOfDay)
+                long chooseStart = DevMetrics.Enabled ? System.Diagnostics.Stopwatch.GetTimestamp() : 0;
+                var choice = _engine.ChooseTopic(t, activeEvents, day, hourOfDay);
+                if (DevMetrics.Enabled)
+                {
+                    chooseMs += (double)(System.Diagnostics.Stopwatch.GetTimestamp() - chooseStart) / System.Diagnostics.Stopwatch.Frequency * 1000.0;
+                }
+
+                // 5. PickedIndex < 0 ⇒ Remove，印 left the ring: no tellable topic …；continue
+                if (choice.PickedIndex < 0)
+                {
+                    _tellers.Remove(t);
+                    _sessionLeftRing++;
+                    if (_config.Debug.LogTellerTurns)
+                    {
+                        ModLog.Info(TellerLogFormatter.FormatLeftRingNoTellableTopic(
+                            t, ids.Count, choice.Exclusions, inactiveCount,
+                            _knownBy.HiddenFutureCountKnownBy(t, day)));
+                    }
+                    continue;
+                }
+
+                // 6. outcome = _engine.PropagateFromTeller(picked, T, day, hourOfDay)
+                var picked = activeEvents.FirstOrDefault(e =>
+                    string.Equals(e.EventId, choice.PickedEventId, StringComparison.Ordinal));
+                if (picked == null)
+                {
+                    // 走不到：PickedIndex >= 0 就保證 PickedEventId 來自 activeEvents 裡的某一則。
+                    // 真的發生就是上游壞了，記一行 ERROR 並讓這位講述者這一輪什麼都不做（留在輪裡）。
+                    ModLog.Error(string.Format(CultureInfo.InvariantCulture,
+                        "Teller {0}: picked event {1} not found in active set ({2} active) - turn skipped",
+                        t, choice.PickedEventId ?? "(null)", activeEvents.Count));
+                    continue;
+                }
+
+                long propStart = DevMetrics.Enabled ? System.Diagnostics.Stopwatch.GetTimestamp() : 0;
+                var outcome = _engine.PropagateFromTeller(picked, t, day, hourOfDay);
+
+                if (outcome.NewKnowers != null && outcome.NewKnowers.Count > 0)
+                {
+                    _stamper?.StampLearned(picked, outcome.NewKnowers);
+                    _stamper?.StampOutdated(picked, outcome.NewKnowers, day);
+                    foreach (var k in outcome.NewKnowers)
+                    {
+                        if (!string.IsNullOrEmpty(k.HeroId))
+                        {
+                            _knownBy.NoteKnower(k.HeroId, picked.EventId, picked.Day);
+                            if (!string.Equals(k.HeroId, playerId, StringComparison.Ordinal))
+                            {
+                                _tellers.Add(k.HeroId);
+                            }
+                        }
+                    }
+
+                    if (_config.Debug.AnnounceRumorEvents)
+                    {
+                        foreach (var k in outcome.NewKnowers)
+                        {
+                            var tellerHero = !string.IsNullOrEmpty(outcome.TellerHeroId) ? Hero.Find(outcome.TellerHeroId) : null;
+                            string tellerName = tellerHero?.Name?.ToString() ?? outcome.TellerHeroId ?? "?";
+                            var knowerHero = !string.IsNullOrEmpty(k.HeroId) ? Hero.Find(k.HeroId) : null;
+                            string knowerName = knowerHero?.Name?.ToString() ?? k.HeroId ?? "?";
+                            ChannelKind kind = ChannelKind.SameSettlement;
+                            if (!string.IsNullOrEmpty(k.HeroId))
+                            {
+                                outcome.ChannelKinds.TryGetValue(k.HeroId!, out kind);
+                            }
+                            string text = $"[VW] {tellerName} -> {knowerName}  {picked.EventId}  hop {k.Hop}  {kind}";
+                            InformationManager.DisplayMessage(new InformationMessage(text));
+                        }
+                    }
+                }
+
+                if (outcome.Reheard != null && outcome.Reheard.Count > 0)
+                {
+                    _stamper?.StampReheard(picked, outcome.Reheard, t);
+                    foreach (var r in outcome.Reheard)
+                    {
+                        if (r.WasForgotten && !string.Equals(r.Entry.HeroId, playerId, StringComparison.Ordinal))
+                        {
+                            _tellers.Add(r.Entry.HeroId);
+                        }
+
+                        switch (r.Kind)
+                        {
+                            case RehearKind.Counted:
+                                _sessionReheardCounted++;
+                                break;
+                            case RehearKind.SameTellerIgnored:
+                                _sessionReheardSameTellerIgnored++;
+                                break;
+                            case RehearKind.SameTellerRelearned:
+                                _sessionReheardSameTellerRelearned++;
+                                break;
+                        }
+                    }
+                }
+
+                _sessionTurns++;
+                int drama = picked.DramaBand;
+                _sessionToldByDrama[drama - 1]++;
+
+                // 結算聽到傳聞造成的好感度變更
+                var affectedKnowers = new List<KnownByEntry>();
+                if (outcome.NewKnowers != null)
+                {
+                    affectedKnowers.AddRange(outcome.NewKnowers);
+                }
+                if (outcome.Reheard != null)
+                {
+                    foreach (var record in outcome.Reheard)
+                    {
+                        if (record.Rule.AdoptVersion && record.Entry != null)
+                        {
+                            affectedKnowers.Add(record.Entry);
+                        }
+                    }
+                }
+
+                if (affectedKnowers.Count > 0 && _heroLookup != null && _traitLookup != null)
+                {
+                    ConsequenceRunner.Settle(
+                        picked, affectedKnowers, day,
+                        _engine, _store, _heroLookup, _traitLookup,
+                        _dailyRelationBudget, _config, _feelingWorld);
+                }
+
+                _store.Upsert(picked);
+
+                var dormancyReason = _engine.DormancyReasonFor(picked, day);
+                if (dormancyReason != null)
+                {
+                    picked.State.Dormant = true;
+                    _store.Upsert(picked);
+                    RemoveActive(picked.EventId);
+                    ModLog.Info(MemoryLogFormatter.FormatDormancy(picked.EventId, dormancyReason));
+                }
+
+                if (DevMetrics.Enabled)
+                {
+                    propagateMs += (double)(System.Diagnostics.Stopwatch.GetTimestamp() - propStart) / System.Diagnostics.Stopwatch.Frequency * 1000.0;
+                }
+
+                // 7. 印一輪講述行
+                if (_config.Debug.LogTellerTurns)
+                {
+                    ModLog.Info(TellerLogFormatter.FormatTellerTurn(t, picked.EventId, choice, outcome, inactiveCount));
+
+                    int weightTen = picked.DramaWeightTen;
+                    int bigNewsLine = _config.Dialogue.BigNewsLine;
+                    var contactList = outcome.Contacts;
+                    for (int ci = 0; ci < contactList.Count; ci++)
+                    {
+                        _tellTiersToday.Record(contactList[ci], weightTen, bigNewsLine);
+                    }
+                    ModLog.Info(TellTierLogFormatter.FormatTurnLine(
+                        t, picked.EventId, weightTen, weightTen >= bigNewsLine, contactList));
+                }
+            }
+
+            if (DevMetrics.Enabled)
+            {
+                double totalElapsedMs = (double)(System.Diagnostics.Stopwatch.GetTimestamp() - tickStart) / System.Diagnostics.Stopwatch.Frequency * 1000.0;
+                double measuredSub = lookupMs + chooseMs + propagateMs;
+                double otherMs = Math.Max(0.0, totalElapsedMs - measuredSub);
+                var sub = new HourlySubMetrics(lookupMs, chooseMs, propagateMs, otherMs, batch.Count);
+                DevMetrics.RecordHourlyTick(totalElapsedMs, day, hourOfDay, sub);
             }
         }
 

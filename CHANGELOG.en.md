@@ -10,6 +10,13 @@ Every release states three things:
 
 ## Unreleased
 
+## v1.0.0
+
+- **Full release**: a month public (since 2026-09-21) with no bug reports and the long-campaign performance test passed (next entry), so all three conditions for 1.0 are met. Same features as v0.9.11.
+- **Changed: performance logging (`debug.metricsEnabled`) prints one summary line per game day**: `Perf day N:` lists, for the previous day, each measured scope's count, average and maximum, with the day and hour of the maximum, its call number and whether it was the first call after loading; the hourly pass is also split into looking up news, choosing a topic, passing it on and other. The line ends with the size of the world at the time (people in the teller ring, active rumors, secrets being watched, events on disk). Rebuilding on load has its own scope, with one line per load. The developer tool's performance report also prints the details of the all-time maximum. With the setting off, nothing extra is spent.
+- Measured on a long campaign up to day 131: the hourly pass averages 1.1–1.7 ms and the daily situation scan 50–120 ms, both flat from about day 80 on (news stops spreading after 120 days, so active rumors settle at 540–600). The 47→84 ms spike measured earlier is the first hourly pass after loading a save when the game has just been started; reloading within the same game session doesn't produce it.
+- Existing campaigns can simply be continued; no config changes needed.
+
 ## v0.9.11
 
 - **Fixed: a literal `{{vividworld_news}}` no longer shows up in Calradia Remembers' prompt**: the variable used to be registered only when a campaign started or loaded, and not at all when Vivid World was off (`enabled`), AI integration was off (`ai.enabled`) or CR's memory API version didn't match; CR still read `cr_patch/post_history_instructions.txt` and leaves an unregistered variable as written, so the AI saw that line on every reply. Now, whenever CR has the interface, the variable is registered before the main menu and returns an empty string while those settings are off; a failed registration logs a warning.

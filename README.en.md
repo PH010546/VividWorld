@@ -140,9 +140,10 @@ The rules for adding a language (every language folder must carry exactly the En
 In order:
 
 1. **Caught up in it** (next): when the player is present they can witness a situation, take one of its roles and choose how to respond (instead of a trait-weighted roll); their choice becomes an event that travels. Right now the player is never counted as a witness
-2. **Secrets, rebuilt**: model the secret itself (what it is, whose it is, who knows) separately from the situation that reveals it. The two existing kinds where "the secret is a piece of information" are paused until they can be converted
-3. **Third-party events and news sources**: feed other mods' events (and native ones such as defections, rebellions and fallen cities) into the same propagation pipeline
-4. **Your turn to talk**: the player retells and spreads news, under the same propagation and belief rules as NPCs
+2. **Among your companions**: events between companions in the player's party, and between a companion and the player, reusing Caught up in it's "present, take a role, choose a response". Right now companions travelling with the player are never picked for a situation
+3. **Secrets, rebuilt**: model the secret itself (what it is, whose it is, who knows) separately from the situation that reveals it. The two existing kinds where "the secret is a piece of information" are paused until they can be converted
+4. **Third-party events and news sources**: feed other mods' events (and native ones such as defections, rebellions and fallen cities) into the same propagation pipeline
+5. **Your turn to talk**: the player retells and spreads news, under the same propagation and belief rules as NPCs
 
 Two more directions, not yet scheduled:
 

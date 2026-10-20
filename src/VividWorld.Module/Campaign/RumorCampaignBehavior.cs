@@ -191,64 +191,81 @@ namespace VividWorld.Campaign
                 var writer = new SystemFileWriter();
                 _store = new EventShardStore(eventsDir, _config.Persistence.ShardDays, writer, _config.Persistence.ShardCacheIdleFlushes);
                 _store.Log = ModLogSink.Instance;
-                _index = _store.LoadIndex();
-                ModLog.Info($"Event index: {_store.LastLoadNote}, {_index.Count} entries");
-
-                _launchDay = CampaignTime.Now.ToDays;
-                var (rollbackCount, rollbackMaxDay) = StoreTimeline.EventsAfter(_index, _launchDay);
-                _rollbackCount = rollbackCount;
-                _rollbackMaxDay = rollbackMaxDay;
-
-                if (_rollbackCount > 0)
-                {
-                    string verdict = SnapshotLogFormatter.FormatRollbackVerdict(_sessionState.LastRestore);
-                    ModLog.Warn(string.Format(CultureInfo.InvariantCulture,
-                        "Event store is ahead of the save: {0} events dated after day {1:F1} (max {2:F1}).\n" +
-                        "      Snapshot revert {3}.\n" +
-                        "      Those events are still in the store, but every reader hides them until the date catches up; nothing was deleted.",
-                        _rollbackCount, _launchDay, _rollbackMaxDay, verdict));
-                }
-
-                _knownBy = new KnownByIndex();
-                _knownBy.Rebuild(_index);
-
-                var grudgeIndex = GrudgeIndex.RebuildFrom(_index, id => _store.Load(id, _index), _launchDay,
-                    out int grudgeEventsRead, out int grudgeSkipped, out int grudgeHiddenFuture);
-                ModLog.Info(string.Format(CultureInfo.InvariantCulture,
-                    "Grudge ledger: rebuilt from {0} event(s) of {1} indexed, {2} skipped, {6} hidden (dated after day {7:F1}) - {3} pair(s) (personal {4}, clan {5}).",
-                    grudgeEventsRead, _index.Entries.Count, grudgeSkipped, grudgeIndex.Pairs.Count,
-                    grudgeIndex.PairCount(GrudgeScope.Personal), grudgeIndex.PairCount(GrudgeScope.Clan),
-                    grudgeHiddenFuture, _launchDay));
-
-                _heroLookup = new HeroLookup();
-                _heroLookup.RebuildAll();
 
                 string playerHeroId = mainHero?.StringId ?? "player";
-                _channel = new GameWorldChannel(_config, _heroLookup, playerHeroId);
-                _traitLookup = new GameTraitLookup(_heroLookup);
-                FallbackTextRenderer.TraitLookup = _traitLookup;
+                MemoryStamper? stamper = null;
+                GameFeelingWorld? feelingWorld = null;
+                FeelingResolver? feelingResolver = null;
 
-                long campaignSeed = (long)RumorSeed.Of(0, _campaignId);
-                var rng = new SplitMix64Rng();
-                var retentionPolicy = FactRetentionPolicies.Create(_config, rng, campaignSeed);
-                var embellishmentPolicy = NullEmbellishmentPolicy.Instance;
-                _engine = new RumorEngine(_config, retentionPolicy, embellishmentPolicy, _channel, _traitLookup, rng, campaignSeed, playerHeroId, EventCatalogStore.TemplateByType);
+                long loadStart = DevMetrics.Enabled ? System.Diagnostics.Stopwatch.GetTimestamp() : 0;
+                using (DevMetrics.Measure("load"))
+                {
+                    _index = _store.LoadIndex();
+                    ModLog.Info($"Event index: {_store.LastLoadNote}, {_index.Count} entries");
 
-                var stamper = new MemoryStamper(_config, _heroLookup, playerHeroId);
-                var feelingWorld = new GameFeelingWorld(_heroLookup, grudgeIndex);
-                _engine.FeelingWorld = feelingWorld;
-                _engine.Log = ModLogSink.Instance;
-                var feelingResolver = new FeelingResolver(_config, FeelingCatalogStore.Catalog, feelingWorld, _traitLookup, EventCatalogStore.TemplateByType, campaignSeed);
+                    _launchDay = CampaignTime.Now.ToDays;
+                    var (rollbackCount, rollbackMaxDay) = StoreTimeline.EventsAfter(_index, _launchDay);
+                    _rollbackCount = rollbackCount;
+                    _rollbackMaxDay = rollbackMaxDay;
 
-                _eventStore = new WorldEventStore(_config, _store, _index, _knownBy, _channel, _traitLookup, playerHeroId, campaignSeed, stamper, grudgeIndex);
-                stamper.SetStore(_eventStore);
-                _scheduler = new RumorPropagationScheduler(_config, _eventStore, _engine, _knownBy, _heroLookup, _traitLookup, stamper, feelingWorld);
-                stamper.SetEngineAndScheduler(_engine, _scheduler);
-                _scheduler.RebuildFrom(_index, _launchDay);
-                ModLog.Info(TellerLogFormatter.FormatRebuilt(_scheduler.TellerRingCount, _scheduler.RebuildSkippedForgotten));
-                // 游標要在講述者輪重建**之後**才還原：TellerRing.Cursor 在 Count == 0 時一律歸零，
-                // 而且要對回「同一個人」而不是同一個位置（§7.3.1）
-                RestoreTickCursor();
+                    if (_rollbackCount > 0)
+                    {
+                        string verdict = SnapshotLogFormatter.FormatRollbackVerdict(_sessionState.LastRestore);
+                        ModLog.Warn(string.Format(CultureInfo.InvariantCulture,
+                            "Event store is ahead of the save: {0} events dated after day {1:F1} (max {2:F1}).\n" +
+                            "      Snapshot revert {3}.\n" +
+                            "      Those events are still in the store, but every reader hides them until the date catches up; nothing was deleted.",
+                            _rollbackCount, _launchDay, _rollbackMaxDay, verdict));
+                    }
+
+                    _knownBy = new KnownByIndex();
+                    _knownBy.Rebuild(_index);
+
+                    var grudgeIndex = GrudgeIndex.RebuildFrom(_index, id => _store.Load(id, _index), _launchDay,
+                        out int grudgeEventsRead, out int grudgeSkipped, out int grudgeHiddenFuture);
+                    ModLog.Info(string.Format(CultureInfo.InvariantCulture,
+                        "Grudge ledger: rebuilt from {0} event(s) of {1} indexed, {2} skipped, {6} hidden (dated after day {7:F1}) - {3} pair(s) (personal {4}, clan {5}).",
+                        grudgeEventsRead, _index.Entries.Count, grudgeSkipped, grudgeIndex.Pairs.Count,
+                        grudgeIndex.PairCount(GrudgeScope.Personal), grudgeIndex.PairCount(GrudgeScope.Clan),
+                        grudgeHiddenFuture, _launchDay));
+
+                    _heroLookup = new HeroLookup();
+                    _heroLookup.RebuildAll();
+
+                    _channel = new GameWorldChannel(_config, _heroLookup, playerHeroId);
+                    _traitLookup = new GameTraitLookup(_heroLookup);
+                    FallbackTextRenderer.TraitLookup = _traitLookup;
+
+                    long campaignSeed = (long)RumorSeed.Of(0, _campaignId);
+                    var rng = new SplitMix64Rng();
+                    var retentionPolicy = FactRetentionPolicies.Create(_config, rng, campaignSeed);
+                    var embellishmentPolicy = NullEmbellishmentPolicy.Instance;
+                    _engine = new RumorEngine(_config, retentionPolicy, embellishmentPolicy, _channel, _traitLookup, rng, campaignSeed, playerHeroId, EventCatalogStore.TemplateByType);
+
+                    stamper = new MemoryStamper(_config, _heroLookup, playerHeroId);
+                    feelingWorld = new GameFeelingWorld(_heroLookup, grudgeIndex);
+                    _engine.FeelingWorld = feelingWorld;
+                    _engine.Log = ModLogSink.Instance;
+                    feelingResolver = new FeelingResolver(_config, FeelingCatalogStore.Catalog, feelingWorld, _traitLookup, EventCatalogStore.TemplateByType, campaignSeed);
+
+                    _eventStore = new WorldEventStore(_config, _store, _index, _knownBy, _channel, _traitLookup, playerHeroId, campaignSeed, stamper, grudgeIndex);
+                    stamper.SetStore(_eventStore);
+                    _scheduler = new RumorPropagationScheduler(_config, _eventStore, _engine, _knownBy, _heroLookup, _traitLookup, stamper, feelingWorld);
+                    stamper.SetEngineAndScheduler(_engine, _scheduler);
+                    _scheduler.RebuildFrom(_index, _launchDay);
+                    ModLog.Info(TellerLogFormatter.FormatRebuilt(_scheduler.TellerRingCount, _scheduler.RebuildSkippedForgotten));
+                    // 游標要在講述者輪重建**之後**才還原：TellerRing.Cursor 在 Count == 0 時一律歸零，
+                    // 而且要對回「同一個人」而不是同一個位置（§7.3.1）
+                    RestoreTickCursor();
+                }
+
+                if (DevMetrics.Enabled)
+                {
+                    double loadElapsedMs = (double)(System.Diagnostics.Stopwatch.GetTimestamp() - loadStart) / System.Diagnostics.Stopwatch.Frequency * 1000.0;
+                    int eventCount = _index.Count;
+                    int tellerCount = _scheduler.TellerRingCount;
+                    ModLog.Info(ScopeMetricsFormatter.FormatLoadLine(loadElapsedMs, eventCount, tellerCount));
+                }
 
                 _eventStore.SetScheduler(_scheduler);
                 _eventStore.MarkIndexLoaded();
@@ -441,6 +458,7 @@ namespace VividWorld.Campaign
 
         private void OnGameLoaded(CampaignGameStarter starter)
         {
+            DevMetrics.NotifyGameLoaded();
             try
             {
                 if (string.IsNullOrEmpty(_snapshotToken))
@@ -510,6 +528,17 @@ namespace VividWorld.Campaign
 
                 double day = CampaignTime.Now.ToDays;
                 _scheduler?.DailyTick(day);
+
+                if (DevMetrics.Enabled)
+                {
+                    int reportDay = Math.Max(0, (int)day - 1);
+                    int? tellerRing = _scheduler?.TellerRingCount;
+                    int? activeRumors = _scheduler?.ActiveRingSize;
+                    int? secretsWatched = _scheduler?.SecretWatchSize;
+                    int? eventsOnDisk = _eventStore?.Index?.Count;
+                    var worldScale = new WorldScaleMetrics(tellerRing, activeRumors, secretsWatched, eventsOnDisk);
+                    ModLog.Info(DevMetrics.DailySummary(reportDay, worldScale));
+                }
 
                 // 檢查等著出面否認或澄清的人
                 CheckWaitingStepForwards(day);

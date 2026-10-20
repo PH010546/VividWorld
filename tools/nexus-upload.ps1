@@ -32,6 +32,8 @@ param(
     [string]$ZipPath,
     # 要加版本的模組檔案名稱；模組頁上只有一個有效的檔案時可以不給
     [string]$ModFileName,
+    # 給了就先把模組檔案改成這個名稱（PUT /mod-files/{id}），新版本也用這個名稱；不給沿用上一版的名稱
+    [string]$RenameTo,
     [int]$WaitSeconds = 300,
     [switch]$Send
 )
@@ -117,6 +119,7 @@ if (-not $previous) { $previous = $versions | Select-Object -Last 1 }
 if (-not $previous) { Write-Error "檔案 '$($target.name)' 底下沒有任何版本，這支腳本只處理「在既有檔案下加新版本」" }
 
 # 版本字串照上一版的寫法：上一版帶 v 就帶 v
+$versionName = if ($RenameTo) { $RenameTo } else { $previous.name }
 $nexusVersion = if ($previous.version -match '^v') { $version } else { $version.TrimStart('v') }
 if ($previous.version -eq $nexusVersion) { Write-Error "Nexus 上一版已經是 $nexusVersion —— 版本號沒有加" }
 
@@ -128,7 +131,8 @@ Write-Host '── 計畫 ──' -ForegroundColor Cyan
 Write-Host "上傳：$($zip.Name)（$($zip.Length) bytes，md5 $md5Hex）"
 Write-Host "加在檔案：$($target.name)（id $($target.id)）"
 Write-Host "上一版：$($previous.version)  名稱 '$($previous.name)'  類別 $($previous.category)  上傳於 $($previous.uploaded_at)"
-Write-Host "新版本：$nexusVersion  名稱 '$($previous.name)'  類別 main  mod manager 預設下載=是  更新模組版本號=是  上一版不封存（留成舊版）"
+if ($RenameTo) { Write-Host "改名：模組檔案 '$($target.name)' → '$RenameTo'" }
+Write-Host "新版本：$nexusVersion  名稱 '$versionName'  類別 main  mod manager 預設下載=是  更新模組版本號=是  上一版不封存（留成舊版）"
 foreach ($k in $changelogs.Keys) {
     Write-Host "`n追加更新紀錄（$k，版本 $nexusVersion）：" -ForegroundColor Cyan
     Write-Host $changelogs[$k]
@@ -171,10 +175,15 @@ do {
 } while ($state -ne 'available' -and (Get-Date) -lt $deadline)
 if ($state -ne 'available') { throw "等了 $WaitSeconds 秒上傳仍是 '$state'（上傳 id $($upload.id)），停在這一步。" }
 
+if ($RenameTo -and $RenameTo -ne $target.name) {
+    $null = Invoke-Nexus 'PUT' "/mod-files/$($target.id)" @{ name = $RenameTo }
+    Write-Host "模組檔案已改名：$RenameTo" -ForegroundColor Green
+}
+
 # ── 6. 建新版本 ──────────────────────────────────────────────────────
 $created = Invoke-Nexus 'POST' "/mod-files/$($target.id)/versions" @{
     upload_id             = $upload.id
-    name                  = $previous.name
+    name                  = $versionName
     version               = $nexusVersion
     file_category         = 'main'
     # 「mod manager 的預設下載」建版本之後就沒有端點能改，只能在這裡設：一律給新上傳的這一版

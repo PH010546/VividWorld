@@ -1,5 +1,8 @@
 Vivid World 更新紀錄
 
+v1.0.0
+正式版，長期戰役穩定度測試通過。
+
 v0.9.11
 修正：在設定裡關掉「啟用模組」時，Calradia Remembers 的 AI 不會再收到一行多餘的文字。
 搭配 Calradia Remembers 2.7.7 以前的版本時，消息照舊加進 NPC 的記憶。

@@ -14,8 +14,27 @@ namespace VividWorld.Debug
         private static bool _enabled = false;
         private static long _relationCallCount = 0;
 
-        private static readonly Dictionary<string, ScopeMetrics> _scopes =
-            new Dictionary<string, ScopeMetrics>(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<string, ScopeMetricTracker> _trackers =
+            new Dictionary<string, ScopeMetricTracker>(StringComparer.OrdinalIgnoreCase);
+
+        // 每小時那一輪會更新這兩個值；其他範圍沒有自己的遊戲時間，最大值的細節就記最近一次每小時那輪的時間。
+        private static double _lastDay = -1.0;
+        private static int _lastHour = -1;
+
+        private static readonly HashSet<string> _calledSinceLoad =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        // Standard ordered scopes for daily summary report
+        private static readonly string[] StandardDailyScopes = new[]
+        {
+            "hourly",
+            "daily",
+            "contacts",
+            "situationScan",
+            "snapshot",
+            "purge",
+            "load"
+        };
 
         internal static bool Enabled
         {
@@ -29,6 +48,21 @@ namespace VividWorld.Debug
             return new ActiveScope(scope);
         }
 
+        internal static void RecordHourlyTick(double elapsedMs, double day, int hourOfDay, HourlySubMetrics subMetrics)
+        {
+            if (!_enabled) return;
+            RecordInternal("hourly", elapsedMs, day, hourOfDay, subMetrics);
+        }
+
+
+        internal static void NotifyGameLoaded()
+        {
+            lock (Sync)
+            {
+                _calledSinceLoad.Clear();
+            }
+        }
+
         internal static void RecordGetRelationCall()
         {
             if (!_enabled) return;
@@ -39,7 +73,8 @@ namespace VividWorld.Debug
         {
             lock (Sync)
             {
-                _scopes.Clear();
+                _trackers.Clear();
+                _calledSinceLoad.Clear();
                 _relationCallCount = 0;
             }
         }
@@ -50,9 +85,9 @@ namespace VividWorld.Debug
 
             lock (Sync)
             {
-                string hourlyStr = FormatScope("hourly");
-                string dailyStr = FormatScope("daily");
-                string contactsStr = FormatScope("contacts");
+                string hourlyStr = FormatScopeCompact("hourly");
+                string dailyStr = FormatScopeCompact("daily");
+                string contactsStr = FormatScopeCompact("contacts");
 
                 return $"(dev) {hourlyStr} | {dailyStr} | {contactsStr}";
             }
@@ -69,10 +104,12 @@ namespace VividWorld.Debug
                 AppendScopeDetail(sb, "hourly");
                 AppendScopeDetail(sb, "daily");
                 AppendScopeDetail(sb, "contacts");
-                AppendScopeDetail(sb, "situationScan");   // SE3：每日情境掃描，Measure 有量但這份報告原本沒印
+                AppendScopeDetail(sb, "situationScan");
                 AppendScopeDetail(sb, "snapshot");
+                AppendScopeDetail(sb, "purge");
+                AppendScopeDetail(sb, "load");
 
-                long contactsCount = _scopes.TryGetValue("contacts", out var c) ? c.CallCount : 0;
+                long contactsCount = _trackers.TryGetValue("contacts", out var c) ? c.SnapshotSession().CallCount : 0;
                 double avgGetRelation = contactsCount > 0 ? (double)_relationCallCount / contactsCount : 0.0;
                 sb.Append(string.Format(CultureInfo.InvariantCulture,
                     "- GetRelation calls: {0} ({1:0.0} avg per ContactsOf query)",
@@ -82,55 +119,73 @@ namespace VividWorld.Debug
             return sb.ToString();
         }
 
-        private static string FormatScope(string scope)
+        internal static string DailySummary(int dayNumber, WorldScaleMetrics worldScale)
         {
-            if (!_scopes.TryGetValue(scope, out var m) || m.CallCount == 0)
+            var snapshots = new List<ScopeStatsSnapshot>(StandardDailyScopes.Length);
+            lock (Sync)
+            {
+                foreach (var scope in StandardDailyScopes)
+                {
+                    if (_trackers.TryGetValue(scope, out var tracker))
+                    {
+                        snapshots.Add(tracker.SnapshotAndResetDaily());
+                    }
+                    else
+                    {
+                        snapshots.Add(new ScopeStatsSnapshot(scope, 0, 0.0, 0.0, null));
+                    }
+                }
+            }
+
+            return ScopeMetricsFormatter.FormatDailyLine(dayNumber, snapshots, worldScale);
+        }
+
+        private static string FormatScopeCompact(string scope)
+        {
+            if (!_trackers.TryGetValue(scope, out var tracker))
             {
                 return ScopeMetricsFormatter.Compact(scope, 0, 0.0, 0.0);
             }
 
-            return ScopeMetricsFormatter.Compact(scope, m.CallCount, m.TotalMilliseconds, m.PeakMilliseconds);
+            var snap = tracker.SnapshotSession();
+            return ScopeMetricsFormatter.Compact(scope, snap.CallCount, snap.TotalMilliseconds, snap.PeakMilliseconds);
         }
 
         private static void AppendScopeDetail(StringBuilder sb, string scope)
         {
-            if (_scopes.TryGetValue(scope, out var m) && m.CallCount > 0)
+            if (_trackers.TryGetValue(scope, out var tracker))
             {
-                sb.AppendLine(ScopeMetricsFormatter.Detail(scope, m.CallCount, m.TotalMilliseconds, m.PeakMilliseconds));
+                var snap = tracker.SnapshotSession();
+                sb.AppendLine(ScopeMetricsFormatter.Detail(scope, snap.CallCount, snap.TotalMilliseconds, snap.PeakMilliseconds, snap.PeakDetail));
             }
             else
             {
-                sb.AppendLine(ScopeMetricsFormatter.Detail(scope, 0, 0.0, 0.0));
+                sb.AppendLine(ScopeMetricsFormatter.Detail(scope, 0, 0.0, 0.0, null));
             }
         }
 
-        private static void Record(string scope, double elapsedMs)
+        private static void RecordInternal(string scope, double elapsedMs, double day, int hourOfDay, HourlySubMetrics? hourlySub)
         {
             lock (Sync)
             {
-                if (!_scopes.TryGetValue(scope, out var metrics))
+                if (day >= 0)
                 {
-                    metrics = new ScopeMetrics();
-                    _scopes[scope] = metrics;
+                    _lastDay = day;
+                    _lastHour = hourOfDay;
                 }
-                metrics.Record(elapsedMs);
-            }
-        }
-
-        private sealed class ScopeMetrics
-        {
-            public long CallCount;
-            public double TotalMilliseconds;
-            public double PeakMilliseconds;
-
-            public void Record(double ms)
-            {
-                CallCount++;
-                TotalMilliseconds += ms;
-                if (ms > PeakMilliseconds)
+                else
                 {
-                    PeakMilliseconds = ms;
+                    day = _lastDay;
+                    hourOfDay = _lastHour;
                 }
+
+                bool firstAfterLoad = _calledSinceLoad.Add(scope);
+                if (!_trackers.TryGetValue(scope, out var tracker))
+                {
+                    tracker = new ScopeMetricTracker(scope);
+                    _trackers[scope] = tracker;
+                }
+                tracker.Record(elapsedMs, day, hourOfDay, firstAfterLoad, hourlySub);
             }
         }
 
@@ -156,7 +211,7 @@ namespace VividWorld.Debug
             {
                 long elapsedTicks = Stopwatch.GetTimestamp() - _startTimestamp;
                 double elapsedMs = (double)elapsedTicks / Stopwatch.Frequency * 1000.0;
-                Record(_scope, elapsedMs);
+                RecordInternal(_scope, elapsedMs, -1.0, -1, null);
             }
         }
     }

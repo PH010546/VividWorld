@@ -1,5 +1,8 @@
 Vivid World changelog
 
+v1.0.0
+Full release: long-campaign stability testing passed.
+
 v0.9.11
 Fixed: with "Enable mod" turned off, Calradia Remembers' AI no longer receives a stray line of text.
 With Calradia Remembers older than 2.7.7, news is still added to NPC memories as before.
