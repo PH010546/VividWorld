@@ -574,6 +574,8 @@ namespace VividWorld.Core.Tests
                         string name = match.Value.Substring(1, match.Value.IndexOf(':') - 1).Trim();
                         if (string.Equals(name, "SOURCE", StringComparison.Ordinal)) continue;
                     }
+                    // 玩家在場視窗的字串也放行：視窗取字時用情境綁定的角色套記號，角色名另有測試檢查
+                    if (match.Success && id.StartsWith("VividWorld_Presence_", StringComparison.Ordinal)) continue;
                     Assert.False(match.Success,
                         $"Shipping string '{id}' in {Path.GetFileName(path)} must not use gender select tokens yet: found '{match.Value}'");
                 }

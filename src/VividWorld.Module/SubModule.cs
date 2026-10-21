@@ -129,23 +129,25 @@ namespace VividWorld
             var producer = new FakeEventProducerBehavior(config);  // 同上
             var realEvents = new RealEventSourceBehavior(config);  // MS2: 真事件掛鉤
             var situationScan = new SituationScanBehavior(config); // SE3: 每日情境掃描
+            var playerPresence = new PlayerPresenceBehavior(config); // 情境在玩家面前發生
             EventCatalogStore.Load(config);
             SituationCatalogStore.Load(config);
             FeelingCatalogStore.Load();
             SituationRunner.ResetSessionCounters();
             GrudgeApplier.ResetSessionCounters();
             SituationScanBehavior.ResetSessionState();
-            _activeBehavior = new RumorCampaignBehavior(config, dialogs, producer, realEvents, situationScan);
+            _activeBehavior = new RumorCampaignBehavior(config, dialogs, producer, realEvents, situationScan, playerPresence);
 
             starter.AddBehavior(_activeBehavior);
             starter.AddBehavior(dialogs);
             starter.AddBehavior(producer);
             starter.AddBehavior(realEvents);
             starter.AddBehavior(situationScan);
+            starter.AddBehavior(playerPresence);
 
             AiPushCoordinator.Initialize(config);
 
-            ModLog.Info("Registered 5 campaign behaviors on the game starter.");
+            ModLog.Info("Registered 6 campaign behaviors on the game starter.");
             ModLog.Flush();
         }
 
@@ -375,6 +377,7 @@ namespace VividWorld
             {
                 ChronicleWindowManager.ReturnTracker.Cancel("campaign ended");
                 ChronicleWindowManager.Close();
+                PlayerPresenceWindowManager.Close();   // 離開戰役時入局視窗還開著就關掉，暫停與時間鎖一併還原
                 AiPushCoordinator.Reset();
                 _activeBehavior?.Flush();
                 _activeBehavior = null;

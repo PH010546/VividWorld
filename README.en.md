@@ -14,7 +14,7 @@ An **event** is something that settled in the world: who, where, which day, what
 
 A **rumor** is one person's copy of that event, and copies are lossy. Each time it is retold, every fact in the event (the day, the place, who else was there…) may drop out according to its own fragility, so the version that reaches the sixth person really holds less than the witness's.
 
-Nothing in the mod asks "is this important enough to tell the player?" The player is just another node, hearing whatever reaches them by the same rules as everyone else. If nobody tells them, they never find out.
+Nothing in the mod asks "is this important enough to tell the player?" The player is just another node, hearing whatever reaches them by the same rules as everyone else. If nobody tells them and they were not there, they never find out.
 
 ---
 
@@ -40,7 +40,7 @@ Three rules that do not bend:
 
 1. **It happens.** Three sources:
    - The game's own big events (death, capture, release, marriage, childbirth), told apart by cause and circumstance
-   - **Situations**: scenes described in data (conditions → branches), whose outcome is weighted by the participants' traits
+   - **Situations**: scenes described in data (conditions → branches), whose outcome is weighted by the participants' traits. While the player is in a town or castle, a separate roll now and then makes one happen in front of them: they look on, are told something about the ruler in private, or take one of its roles and choose how to respond (instead of the trait-weighted roll)
    - **Made-up talk**: people with a grudge, a rival for position, or family to flatter produce events that never happened. Type and sentences are identical to the real thing; only one flag in the data differs
 2. **It travels.** Six channels in two groups. In person (same party, army, settlement) is not chosen, so relations barely matter; at a distance (same clan, kin married away, same kingdom) is a choice of whom to write to, so relations matter a lot. A round runs on a game-time schedule; a limited number of people take a turn, each picking one story. Whether something shameful gets told depends on how both the teller and the listener stand with the person shamed
 3. **It is judged.** A listener first decides whether to believe it, based on how they stand with the person talked about and with the teller, and whether it fits that person's character. The person talked about may deny it, someone who knows the truth may set it straight, and those who heard it judge again
@@ -56,6 +56,7 @@ Every relation the mod reads is the two people's own value, not the clan-leader 
 
 - **Two Harmony patches**, both only for the pair "the player and someone": that pair's relation is no longer swapped for the two clan leaders' relation, and a change of clan leader does not add the old leader's relation on top of the new one. Both can be switched off in the settings to restore the original rule
 - Relations and clan feuds are written through the game's own API
+- When the player makes a choice in a situation, the player's own renown, influence, party morale and trait XP are changed through the game's own API; situations between NPCs only touch relations and grudges
 - Beyond that it does not change the game's AI decisions and overwrites no native files
 
 ---
@@ -139,16 +140,15 @@ The rules for adding a language (every language folder must carry exactly the En
 
 In order:
 
-1. **Caught up in it** (next): when the player is present they can witness a situation, take one of its roles and choose how to respond (instead of a trait-weighted roll); their choice becomes an event that travels. Right now the player is never counted as a witness
-2. **Among your companions**: events between companions in the player's party, and between a companion and the player, reusing Caught up in it's "present, take a role, choose a response". Right now companions travelling with the player are never picked for a situation
-3. **Secrets, rebuilt**: model the secret itself (what it is, whose it is, who knows) separately from the situation that reveals it. The two existing kinds where "the secret is a piece of information" are paused until they can be converted
-4. **Third-party events and news sources**: feed other mods' events (and native ones such as defections, rebellions and fallen cities) into the same propagation pipeline
-5. **Your turn to talk**: the player retells and spreads news, under the same propagation and belief rules as NPCs
+1. **Among your companions** (next): events between companions in the player's party, and between a companion and the player, reusing the "present, take a role, choose a response" shape of situations in front of the player. Right now companions travelling with the player are never picked for a situation
+2. **Secrets, rebuilt**: model the secret itself (what it is, whose it is, who knows) separately from the situation that reveals it. The two existing kinds where "the secret is a piece of information" are paused until they can be converted
+3. **Third-party events and news sources**: feed other mods' events (and native ones such as defections, rebellions and fallen cities) into the same propagation pipeline
+4. **Your turn to talk**: the player retells and spreads news, under the same propagation and belief rules as NPCs
 
 Two more directions, not yet scheduled:
 
 - **More events and situations**: mostly data files and strings
-- **Real effects on the game**: events currently touch only relations and grudges; later, outcomes reaching money, renown, influence and other native state
+- **Real effects on the game**: events currently touch only relations and grudges (plus the player's own renown, influence, morale and traits when they make a choice); later, outcomes reaching money, renown, influence and other native state
 
 ---
 

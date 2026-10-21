@@ -74,6 +74,9 @@ $body = @{ description = $bbcode } | ConvertTo-Json -Compress
 $null = Invoke-RestMethod -Method Patch -Headers $headers -ContentType 'application/json; charset=utf-8' `
     -Body ([Text.Encoding]::UTF8.GetBytes($body)) "https://api.nexusmods.com/v3/mods/$($mod.id)"
 Write-Host '介紹頁已送出，讀回比對…' -ForegroundColor Green
-if (-not (Compare-Description (Get-LiveDescription))) {
-    Write-Warning '讀回來跟檔案不一樣，要到網站上看是哪裡被改了（可能只是 Nexus 讀回的快取還沒更新）'
+# 讀回走 v1，有快取：送出後十幾秒內讀到的常是舊的，所以隔 10 秒重讀，最多一分鐘
+for ($try = 1; $try -le 6; $try++) {
+    Start-Sleep -Seconds 10
+    if (Compare-Description (Get-LiveDescription)) { return }
 }
+Write-Warning '一分鐘後讀回來仍跟檔案不一樣，要到網站上看是哪裡被改了'

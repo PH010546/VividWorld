@@ -67,6 +67,10 @@ namespace VividWorld.Debug
         private const string TokenDevMadeUp = "vividworld_dev_madeup";
         private const string TokenDevResultMadeUp = "vividworld_dev_result_madeup";
 
+        private const string TokenDevPresencePrompt = "vividworld_dev_presence_prompt";
+        private const string TokenDevPresence = "vividworld_dev_presence";
+        private const string TokenDevResultPresence = "vividworld_dev_result_presence";
+
         private readonly VividWorldConfig _config;
         private readonly WorldEventStore _eventStore;
         private readonly GameWorldChannel _channel;
@@ -250,6 +254,25 @@ namespace VividWorld.Debug
                 "vividworld_dev_madeup_prompt_line",
                 TokenDevMadeUpPrompt,
                 TokenDevMadeUp,
+                "{=!}...",
+                null,
+                null,
+                100,
+                null);
+
+            starter.AddPlayerLine(
+                "vividworld_dev_menu_presence",
+                TokenDevCategories,
+                TokenDevPresencePrompt,
+                "{=VividWorld_Dev_Menu_Presence}(dev) Situations in front of me",
+                Condition_AlwaysAvailable,
+                null,
+                DevDialoguePriority);
+
+            starter.AddDialogLine(
+                "vividworld_dev_presence_prompt_line",
+                TokenDevPresencePrompt,
+                TokenDevPresence,
                 "{=!}...",
                 null,
                 null,
@@ -822,7 +845,47 @@ namespace VividWorld.Debug
                 100,
                 null);
 
-            ModLog.Info("Registered 40 developer dialogue lines in 5 categories (person: 9, world: 8, act: 9, belief: 8, made-up talk: 4) behind main menu entry.");
+            // ── Category 6: Situations in front of the player (2 tools) ──
+            // 1. (dev) Cooldown and the last roll
+            starter.AddPlayerLine(
+                "vividworld_dev_presence_status",
+                TokenDevPresence,
+                TokenDevResultPresence,
+                "{=VividWorld_Dev_PresenceStatus}(dev) Cooldown and the last roll",
+                Condition_AlwaysAvailable,
+                Consequence_PresenceStatus,
+                DevDialoguePriority);
+
+            // 2. (dev) Roll for me now, ignoring cooldown and chance (pick the situation and role in a window)
+            starter.AddPlayerLine(
+                "vividworld_dev_presence_force",
+                TokenDevPresence,
+                TokenDevResultPresence,
+                "{=VividWorld_Dev_PresenceForce}(dev) Make a situation happen in front of me now",
+                Condition_AlwaysAvailable,
+                Consequence_PresenceForce,
+                DevDialoguePriority);
+
+            starter.AddPlayerLine(
+                "vividworld_dev_back_presence",
+                TokenDevPresence,
+                TokenDevCategoriesPrompt,
+                "{=VividWorld_Dev_Menu_Back}(dev) Back",
+                null,
+                null,
+                DevDialoguePriority);
+
+            starter.AddDialogLine(
+                "vividworld_dev_result_presence_line",
+                TokenDevResultPresence,
+                TokenDevPresence,
+                "{=!}{VIVIDWORLD_DEV_RESULT}",
+                null,
+                null,
+                100,
+                null);
+
+            ModLog.Info("Registered 42 developer dialogue lines in 6 categories (person: 9, world: 8, act: 9, belief: 8, made-up talk: 4, player presence: 2) behind main menu entry.");
         }
 
         private static void SetResult(string line)
@@ -834,6 +897,285 @@ namespace VividWorld.Debug
         {
             SetResult(result);
             ModLog.Flush();
+        }
+
+        private void Consequence_PresenceStatus()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var presence = PlayerPresenceBehavior.Current;
+                if (presence == null)
+                {
+                    Finish("(dev) Player presence is not running in this campaign.");
+                    return;
+                }
+
+                var settings = TownPresenceTrigger.Instance.Settings(_config);
+                var lastOccur = presence.LastOccurrenceDay;
+                string onOff = new TextObject(settings.Enabled ? "{=VividWorld_Dev_PresenceStatus_On}on" : "{=VividWorld_Dev_PresenceStatus_Off}off").ToString();
+
+                string lastText;
+                if (!lastOccur.HasValue)
+                {
+                    lastText = new TextObject("{=VividWorld_Dev_PresenceStatus_Never}never happened.").ToString();
+                }
+                else
+                {
+                    double today = TaleWorlds.CampaignSystem.Campaign.Current != null ? CampaignTime.Now.ToDays : lastOccur.Value;
+                    double left = Math.Max(0.0, settings.CooldownDays - (today - lastOccur.Value));
+                    var tLast = new TextObject("{=VividWorld_Dev_PresenceStatus_Last}last happened on day {DAY}, {LEFT} days of cooldown left.");
+                    tLast.SetTextVariable("DAY", lastOccur.Value.ToString("0.0", CultureInfo.InvariantCulture));
+                    tLast.SetTextVariable("LEFT", left.ToString("0.0", CultureInfo.InvariantCulture));
+                    lastText = tLast.ToString();
+                }
+
+                var last = presence.LastRoll;
+                string rollText;
+                if (last == null)
+                {
+                    rollText = new TextObject("{=VividWorld_Dev_PresenceStatus_NoRoll}No roll since loading.").ToString();
+                }
+                else
+                {
+                    var tRoll = new TextObject("{=VividWorld_Dev_PresenceStatus_Roll}Last roll on day {DAY}: {RESULT}");
+                    tRoll.SetTextVariable("DAY", (presence.LastRollDay ?? 0.0).ToString("0.0", CultureInfo.InvariantCulture));
+                    tRoll.SetTextVariable("RESULT", LocalizePresenceOutcome(last));
+                    rollText = tRoll.ToString();
+                }
+
+                var tLine = new TextObject("{=VividWorld_Dev_PresenceStatus_Line}(dev) Player presence: {ONOFF}, chance {CHANCE}, cooldown {DAYS} days; {LAST} {ROLL}");
+                tLine.SetTextVariable("ONOFF", onOff);
+                tLine.SetTextVariable("CHANCE", settings.Chance.ToString("0.###", CultureInfo.InvariantCulture));
+                tLine.SetTextVariable("DAYS", settings.CooldownDays.ToString(CultureInfo.InvariantCulture));
+                tLine.SetTextVariable("LAST", lastText);
+                tLine.SetTextVariable("ROLL", rollText);
+                string uiText = tLine.ToString();
+
+                // 日誌維持照舊英文
+                var sb = new StringBuilder();
+                sb.Append("(dev) Player presence: ").Append(presence.CooldownStatus()).Append('.');
+                if (last == null)
+                {
+                    sb.Append(" No roll since loading.");
+                }
+                else
+                {
+                    sb.Append(" Last roll on day ")
+                      .Append((presence.LastRollDay ?? 0.0).ToString("0.0", CultureInfo.InvariantCulture))
+                      .Append(": ")
+                      .Append(PlayerPresenceLogFormatter.FormatRoll(last));
+                }
+
+                string logText = sb.ToString();
+                ModLog.Info(logText);
+                if (last != null)
+                {
+                    foreach (var line in PlayerPresenceLogFormatter.FormatCandidates(last))
+                    {
+                        ModLog.Info(line);
+                    }
+                }
+                Finish(uiText);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("[DevDialogue] PresenceStatus failed", ex);
+                Finish("(dev) Failed - see log.txt.");
+            }
+        }
+
+        private static string LocalizePresenceOutcome(PlayerPresenceRollResult result)
+        {
+            switch (result.Outcome)
+            {
+                case PlayerPresenceOutcome.Disabled:
+                    return new TextObject("{=VividWorld_Dev_PresenceOutcome_Disabled}switched off.").ToString();
+                case PlayerPresenceOutcome.PlaceNotAllowed:
+                    return new TextObject("{=VividWorld_Dev_PresenceOutcome_PlaceNotAllowed}not in a town or castle.").ToString();
+                case PlayerPresenceOutcome.TooFewHeroes:
+                    return new TextObject("{=VividWorld_Dev_PresenceOutcome_TooFewHeroes}fewer than two usable people present.").ToString();
+                case PlayerPresenceOutcome.Cooldown:
+                    return new TextObject("{=VividWorld_Dev_PresenceOutcome_Cooldown}still on cooldown.").ToString();
+                case PlayerPresenceOutcome.ChanceMissed:
+                    return new TextObject("{=VividWorld_Dev_PresenceOutcome_ChanceMissed}the roll missed.").ToString();
+                case PlayerPresenceOutcome.NoCandidate:
+                    return new TextObject("{=VividWorld_Dev_PresenceOutcome_NoCandidate}no situation's conditions held.").ToString();
+                case PlayerPresenceOutcome.Happened:
+                    if (result.Pick != null)
+                    {
+                        string sitText = LocalizeSituationTitle(result.Pick.Template.Id);
+                        string roleText = LocalizePresenceRole(result.Pick.Template.Id, result.Pick.Role);
+                        var tHappened = new TextObject("{=VividWorld_Dev_PresenceOutcome_Happened}{SITUATION}: {ROLE} happened.");
+                        tHappened.SetTextVariable("SITUATION", sitText);
+                        tHappened.SetTextVariable("ROLE", roleText);
+                        return tHappened.ToString();
+                    }
+                    return string.Empty;
+                default:
+                    return result.Outcome.ToString();
+            }
+        }
+
+        private static string LocalizeSituationTitle(string situationId)
+        {
+            string key = "VividWorld_Dev_PresenceSituation_" + situationId;
+            var t = new TextObject("{=" + key + "}" + situationId);
+            return t.ToString();
+        }
+
+        private static string LocalizePresenceRole(string situationId, PlayerPresenceRole role)
+        {
+            switch (role)
+            {
+                case PlayerPresenceRole.Bystander:
+                    return new TextObject("{=VividWorld_Dev_PresenceRole_Bystander}you watch").ToString();
+                case PlayerPresenceRole.Listener:
+                    return new TextObject("{=VividWorld_Dev_PresenceRole_Listener}you listen").ToString();
+                case PlayerPresenceRole.Decider:
+                    string key = "VividWorld_Dev_PresenceDecider_" + situationId;
+                    var t = new TextObject("{=" + key + "}" + PlayerPresenceLogFormatter.RoleToken(role));
+                    return t.ToString();
+                default:
+                    return PlayerPresenceLogFormatter.RoleToken(role);
+            }
+        }
+
+        private void Consequence_PresenceForce()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var presence = PlayerPresenceBehavior.Current;
+                if (presence == null)
+                {
+                    Finish("(dev) Player presence is not running in this campaign.");
+                    return;
+                }
+
+                var settlement = MobileParty.MainParty?.CurrentSettlement;
+                if (settlement == null || (!settlement.IsTown && !settlement.IsCastle))
+                {
+                    Finish(new TextObject("{=VividWorld_Dev_PresenceForce_NotHere}(dev) Only in a town or castle.").ToString());
+                    return;
+                }
+
+                var heroes = presence.GetUsableHeroes(settlement);
+                if (heroes.Count < 2)
+                {
+                    var tTooFew = new TextObject("{=VividWorld_Dev_PresenceForce_TooFew}(dev) Nothing can happen here right now: only {COUNT} usable people present, need two.");
+                    tTooFew.SetTextVariable("COUNT", heroes.Count);
+                    Finish(tTooFew.ToString());
+                    return;
+                }
+
+                var preview = presence.PreviewRoll(settlement);
+                var passing = preview?.Candidates.Where(c => c.Passed && c.Weight > 0.0).ToList() ?? new List<PlayerPresenceCandidateReport>();
+
+                if (passing.Count == 0)
+                {
+                    int withClan = heroes.Count(h => h.Clan != null);
+                    int noClan = heroes.Count(h => h.Clan == null);
+                    int clanCount = heroes.Where(h => h.Clan != null).Select(h => h.Clan).Distinct().Count();
+
+                    var playerKingdom = Hero.MainHero?.Clan?.Kingdom;
+                    string kingdomText;
+                    if (playerKingdom == null)
+                    {
+                        kingdomText = new TextObject("{=VividWorld_Dev_PresenceForce_NoKingdom}You are not in a kingdom.").ToString();
+                    }
+                    else
+                    {
+                        int sameKingdom = heroes.Count(h => h.Clan?.Kingdom != null && h.Clan.Kingdom == playerKingdom);
+                        var tSame = new TextObject("{=VividWorld_Dev_PresenceForce_SameKingdom}{SAME} of them are in your kingdom.");
+                        tSame.SetTextVariable("SAME", sameKingdom);
+                        kingdomText = tSame.ToString();
+                    }
+
+                    var tNone = new TextObject("{=VividWorld_Dev_PresenceForce_None}(dev) Nothing can happen here right now. {COUNT} usable people present: {WITHCLAN} in {CLANS} clan(s), {NOCLAN} without a clan. {KINGDOM} Why each one failed is in log.txt.");
+                    tNone.SetTextVariable("COUNT", heroes.Count);
+                    tNone.SetTextVariable("WITHCLAN", withClan);
+                    tNone.SetTextVariable("CLANS", clanCount);
+                    tNone.SetTextVariable("NOCLAN", noClan);
+                    tNone.SetTextVariable("KINGDOM", kingdomText);
+                    Finish(tNone.ToString());
+                    return;
+                }
+
+                var elements = new List<InquiryElement>();
+                var tAny = new TextObject("{=VividWorld_Dev_PresenceForce_Any}(dev) Any of these ({COUNT})");
+                tAny.SetTextVariable("COUNT", passing.Count);
+                elements.Add(new InquiryElement("any", tAny.ToString(), new EmptyImageIdentifier(), true, string.Empty));
+
+                foreach (var c in passing)
+                {
+                    string token = c.SituationId + "|" + c.Role;
+                    string sitText = LocalizeSituationTitle(c.SituationId);
+                    string roleText = LocalizePresenceRole(c.SituationId, c.Role);
+                    var tItem = new TextObject("{=VividWorld_Dev_PresenceForce_Item}(dev) {SITUATION}: {ROLE}");
+                    tItem.SetTextVariable("SITUATION", sitText);
+                    tItem.SetTextVariable("ROLE", roleText);
+                    elements.Add(new InquiryElement(token, tItem.ToString(), new EmptyImageIdentifier(), true, string.Empty));
+                }
+
+                MBInformationManager.ShowMultiSelectionInquiry(
+                    new MultiSelectionInquiryData(
+                        new TextObject("{=VividWorld_Dev_PresenceForce_Title}(dev) Make a situation happen in front of me").ToString(),
+                        new TextObject("{=VividWorld_Dev_PresenceForce_Desc}(dev) Only what can happen here right now is listed. Cooldown and chance are ignored; each situation's own conditions still apply.").ToString(),
+                        elements,
+                        true,
+                        1,
+                        1,
+                        new TextObject("{=VividWorld_Dev_PresenceForce_Roll}(dev) Roll").ToString(),
+                        new TextObject("{=VividWorld_Dev_PresenceForce_Cancel}(dev) Cancel").ToString(),
+                        picked => OnPresenceForcePicked(picked),
+                        _ => ModLog.Info("[DevDialogue] PresenceForce cancelled."),
+                        string.Empty,
+                        false),
+                    true,
+                    false);
+
+                Finish(new TextObject("{=VividWorld_Dev_PresenceForce_Picked}(dev) Pick one in the window; the outcome pops up, the reasons are in log.txt.").ToString());
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("[DevDialogue] PresenceForce failed", ex);
+                Finish("(dev) Failed - see log.txt.");
+            }
+        }
+
+        private static void OnPresenceForcePicked(List<InquiryElement> picked)
+        {
+            try
+            {
+                var presence = PlayerPresenceBehavior.Current;
+                string? token = picked != null && picked.Count > 0 ? picked[0].Identifier?.ToString() : null;
+                if (presence == null || token == null)
+                {
+                    ModLog.Info("[DevDialogue] PresenceForce: nothing picked or player presence is not running.");
+                    return;
+                }
+
+                string? situationId = null;
+                PlayerPresenceRole? role = null;
+                int bar = token.IndexOf('|');
+                if (bar > 0 && Enum.TryParse<PlayerPresenceRole>(token.Substring(bar + 1), out var parsedRole))
+                {
+                    situationId = token.Substring(0, bar);
+                    role = parsedRole;
+                }
+
+                ModLog.Info($"[DevDialogue] PresenceForce: {situationId ?? "any situation"} as {(role.HasValue ? PlayerPresenceLogFormatter.RoleToken(role.Value) : "any role")}");
+                ModLog.Info(presence.ForceRoll(situationId, role));
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("[DevDialogue] PresenceForce roll failed", ex);
+            }
+            finally
+            {
+                ModLog.Flush();
+            }
         }
 
         private bool Condition_AlwaysAvailable()

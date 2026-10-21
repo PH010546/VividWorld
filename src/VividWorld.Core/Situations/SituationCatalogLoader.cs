@@ -44,7 +44,7 @@ namespace VividWorld.Core.Situations
         private static readonly HashSet<string> KnownSituationKeys = new(StringComparer.OrdinalIgnoreCase)
         {
             "id", "trigger", "decider", "minBranchWeight", "roles", "conditions", "branches", "weight", "devOnly",
-            "maxPerDay", "eventTypes", "bindFromEvent", "enabledBy", "quotaGroup"
+            "maxPerDay", "eventTypes", "bindFromEvent", "enabledBy", "quotaGroup", "player"
         };
 
         private static readonly HashSet<string> KnownRoleKeys = new(StringComparer.OrdinalIgnoreCase)
@@ -60,7 +60,17 @@ namespace VividWorld.Core.Situations
 
         private static readonly HashSet<string> KnownBranchKeys = new(StringComparer.OrdinalIgnoreCase)
         {
-            "id", "base", "traits", "preconditions", "events", "grudges", "madeUpTalk", "grudgeWeight"
+            "id", "base", "traits", "preconditions", "events", "grudges", "madeUpTalk", "grudgeWeight", "playerEffects"
+        };
+
+        private static readonly HashSet<string> KnownPlayerKeys = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "bystander", "deciderRole", "listenerRole", "skipConditionsWhenPlayer", "influenceOnlySameKingdom"
+        };
+
+        private static readonly HashSet<string> KnownPlayerEffectsKeys = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "renown", "influence", "morale", "traits"
         };
 
         private static readonly HashSet<string> KnownQuotaGroupKeys = new(StringComparer.OrdinalIgnoreCase)
@@ -1181,6 +1191,7 @@ namespace VividWorld.Core.Situations
                 }
 
                 // 7. branches
+                bool anyPlayerEffectsBad = false;
                 var branchesList = new List<SituationBranchDef>();
                 var seenBranchIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 var branchesProp = sitObj.Property("branches", StringComparison.OrdinalIgnoreCase);
@@ -1966,6 +1977,12 @@ namespace VividWorld.Core.Situations
                             }
                         }
 
+                        // 玩家做決定時的數值後果（選填）。寫錯只發警告、不讓整個情境被跳過：
+                        // NPC 之間的情境不能因為玩家用的欄位而消失。
+                        bool playerEffectsBad = false;
+                        var playerEffects = ParsePlayerEffects(bObj, i, situationId, bIdx, situationIssues, ref playerEffectsBad);
+                        if (playerEffectsBad) anyPlayerEffectsBad = true;
+
                         branchesList.Add(new SituationBranchDef
                         {
                             Id = bId,
@@ -1975,9 +1992,26 @@ namespace VividWorld.Core.Situations
                             Events = eventsList,
                             Grudges = grudgesList,
                             MadeUpTalk = madeUpTalk,
-                            GrudgeWeight = grudgeWeight
+                            GrudgeWeight = grudgeWeight,
+                            PlayerEffects = playerEffects
                         });
                     }
+                }
+
+                // 8. player（選填）：寫錯一律只發警告、這個情境不開放給玩家，NPC 之間照常
+                var playerDef = ParsePlayerBlock(sitObj, i, situationId, rolesDict, decider, situationIssues);
+                if (playerDef != null && anyPlayerEffectsBad)
+                {
+                    situationIssues.Add(new SituationIssue
+                    {
+                        SituationIndex = i,
+                        SituationId = situationId,
+                        Field = "player",
+                        Code = SituationIssueCode.InvalidPlayerBlock,
+                        IsError = false,
+                        Detail = "A branch has invalid playerEffects; the situation is not offered to the player."
+                    });
+                    playerDef = null;
                 }
 
                 allIssues.AddRange(situationIssues);
@@ -2005,12 +2039,260 @@ namespace VividWorld.Core.Situations
                         BindFromEvent = bindFromEventDict,
                         Roles = rolesDict,
                         Conditions = conditionsList,
-                        Branches = branchesList
+                        Branches = branchesList,
+                        Player = playerDef
                     });
                 }
             }
 
             return new SituationCatalog(acceptedSituations, allIssues, skippedCount);
+        }
+
+        private static SituationIssue PlayerWarning(int index, string situationId, string field, SituationIssueCode code, string detail)
+        {
+            return new SituationIssue
+            {
+                SituationIndex = index,
+                SituationId = situationId,
+                Field = field,
+                Code = code,
+                IsError = false,
+                Detail = detail
+            };
+        }
+
+        /// <summary>讀情境層級的 <c>player</c>。沒有這塊回 null；有錯也回 null（附警告），
+        /// 因為玩家用的欄位寫錯不准讓 NPC 之間的情境跟著被跳過。</summary>
+        private static SituationPlayerDef? ParsePlayerBlock(
+            JObject sitObj,
+            int index,
+            string situationId,
+            IReadOnlyDictionary<string, SituationRoleDef> rolesDict,
+            string decider,
+            List<SituationIssue> issues)
+        {
+            var prop = sitObj.Property("player", StringComparison.OrdinalIgnoreCase);
+            if (prop == null || prop.Value.Type == JTokenType.Null) return null;
+
+            if (prop.Value is not JObject obj)
+            {
+                issues.Add(PlayerWarning(index, situationId, "player", SituationIssueCode.InvalidPlayerBlock,
+                    "player must be a JSON object; the situation is not offered to the player."));
+                return null;
+            }
+
+            foreach (var p in obj.Properties())
+            {
+                if (!KnownPlayerKeys.Contains(p.Name))
+                {
+                    issues.Add(PlayerWarning(index, situationId, $"player.{p.Name}", SituationIssueCode.UnknownProperty,
+                        $"Unknown property '{p.Name}' in player."));
+                }
+            }
+
+            bool bad = false;
+            var def = new SituationPlayerDef();
+
+            bool? ReadBool(string name)
+            {
+                var bp = obj.Property(name, StringComparison.OrdinalIgnoreCase);
+                if (bp == null || bp.Value.Type == JTokenType.Null) return null;
+                if (bp.Value.Type != JTokenType.Boolean)
+                {
+                    issues.Add(PlayerWarning(index, situationId, $"player.{name}", SituationIssueCode.InvalidPlayerBlock,
+                        $"player.{name} must be true or false."));
+                    bad = true;
+                    return null;
+                }
+                return bp.Value.Value<bool>();
+            }
+
+            string? ReadRole(string name)
+            {
+                var rp = obj.Property(name, StringComparison.OrdinalIgnoreCase);
+                if (rp == null || rp.Value.Type == JTokenType.Null) return null;
+                string? raw = rp.Value.Type == JTokenType.String ? rp.Value.Value<string>()?.Trim() : null;
+                if (string.IsNullOrEmpty(raw))
+                {
+                    issues.Add(PlayerWarning(index, situationId, $"player.{name}", SituationIssueCode.InvalidPlayerBlock,
+                        $"player.{name} must be a role name or null."));
+                    bad = true;
+                    return null;
+                }
+                if (!rolesDict.TryGetValue(raw!, out var roleDef))
+                {
+                    issues.Add(PlayerWarning(index, situationId, $"player.{name}", SituationIssueCode.InvalidPlayerBlock,
+                        $"player.{name} '{raw}' is not defined in roles."));
+                    bad = true;
+                    return null;
+                }
+                if (roleDef.IsDerived)
+                {
+                    issues.Add(PlayerWarning(index, situationId, $"player.{name}", SituationIssueCode.InvalidPlayerBlock,
+                        $"player.{name} '{raw}' is a derived role; the player is never derived into a role."));
+                    bad = true;
+                    return null;
+                }
+                return raw;
+            }
+
+            def.Bystander = ReadBool("bystander") ?? false;
+            def.InfluenceOnlySameKingdom = ReadBool("influenceOnlySameKingdom") ?? false;
+            def.DeciderRole = ReadRole("deciderRole");
+            def.ListenerRole = ReadRole("listenerRole");
+
+            if (def.DeciderRole != null && !string.Equals(def.DeciderRole, decider, StringComparison.OrdinalIgnoreCase))
+            {
+                issues.Add(PlayerWarning(index, situationId, "player.deciderRole", SituationIssueCode.InvalidPlayerBlock,
+                    $"player.deciderRole '{def.DeciderRole}' must be the situation's decider '{decider}'."));
+                bad = true;
+            }
+
+            if (def.ListenerRole != null && string.Equals(def.ListenerRole, decider, StringComparison.OrdinalIgnoreCase))
+            {
+                issues.Add(PlayerWarning(index, situationId, "player.listenerRole", SituationIssueCode.InvalidPlayerBlock,
+                    $"player.listenerRole '{def.ListenerRole}' cannot be the decider; use deciderRole for that."));
+                bad = true;
+            }
+
+            var skipProp = obj.Property("skipConditionsWhenPlayer", StringComparison.OrdinalIgnoreCase);
+            if (skipProp != null && skipProp.Value.Type != JTokenType.Null)
+            {
+                if (skipProp.Value is not JArray skipArr)
+                {
+                    issues.Add(PlayerWarning(index, situationId, "player.skipConditionsWhenPlayer", SituationIssueCode.InvalidPlayerBlock,
+                        "player.skipConditionsWhenPlayer must be an array of condition types."));
+                    bad = true;
+                }
+                else
+                {
+                    var list = new List<string>();
+                    foreach (var t in skipArr)
+                    {
+                        string? type = t.Type == JTokenType.String ? t.Value<string>()?.Trim() : null;
+                        if (string.IsNullOrEmpty(type) || !ValidConditionTypes.Contains(type!))
+                        {
+                            issues.Add(PlayerWarning(index, situationId, "player.skipConditionsWhenPlayer", SituationIssueCode.InvalidPlayerBlock,
+                                $"Unknown condition type '{t}' in player.skipConditionsWhenPlayer."));
+                            bad = true;
+                            continue;
+                        }
+                        list.Add(type!);
+                    }
+                    def.SkipConditionsWhenPlayer = list;
+                }
+            }
+
+            if (bad) return null;
+
+            if (!def.Bystander && def.DeciderRole == null && def.ListenerRole == null)
+            {
+                issues.Add(PlayerWarning(index, situationId, "player", SituationIssueCode.InvalidPlayerBlock,
+                    "player opens no role (bystander false, no deciderRole, no listenerRole)."));
+                return null;
+            }
+
+            return def;
+        }
+
+        /// <summary>讀分支層級的 <c>playerEffects</c>。沒有這塊回 null。</summary>
+        private static SituationPlayerEffectsDef? ParsePlayerEffects(
+            JObject bObj,
+            int index,
+            string situationId,
+            int bIdx,
+            List<SituationIssue> issues,
+            ref bool bad)
+        {
+            var prop = bObj.Property("playerEffects", StringComparison.OrdinalIgnoreCase);
+            if (prop == null || prop.Value.Type == JTokenType.Null) return null;
+
+            string field = $"branches[{bIdx}].playerEffects";
+            if (prop.Value is not JObject obj)
+            {
+                issues.Add(PlayerWarning(index, situationId, field, SituationIssueCode.InvalidPlayerEffects,
+                    "playerEffects must be a JSON object."));
+                bad = true;
+                return null;
+            }
+
+            foreach (var p in obj.Properties())
+            {
+                if (!KnownPlayerEffectsKeys.Contains(p.Name))
+                {
+                    issues.Add(PlayerWarning(index, situationId, $"{field}.{p.Name}", SituationIssueCode.UnknownProperty,
+                        $"Unknown property '{p.Name}' in playerEffects."));
+                }
+            }
+
+            var def = new SituationPlayerEffectsDef();
+            bool localBad = false;
+
+            double ReadNumber(string name)
+            {
+                var np = obj.Property(name, StringComparison.OrdinalIgnoreCase);
+                if (np == null || np.Value.Type == JTokenType.Null) return 0.0;
+                if (np.Value.Type != JTokenType.Integer && np.Value.Type != JTokenType.Float)
+                {
+                    issues.Add(PlayerWarning(index, situationId, $"{field}.{name}", SituationIssueCode.InvalidPlayerEffects,
+                        $"playerEffects.{name} must be a number."));
+                    localBad = true;
+                    return 0.0;
+                }
+                double v = np.Value.Value<double>();
+                if (double.IsNaN(v) || double.IsInfinity(v))
+                {
+                    issues.Add(PlayerWarning(index, situationId, $"{field}.{name}", SituationIssueCode.InvalidPlayerEffects,
+                        $"playerEffects.{name} must be a finite number."));
+                    localBad = true;
+                    return 0.0;
+                }
+                return v;
+            }
+
+            def.Renown = ReadNumber("renown");
+            def.Influence = ReadNumber("influence");
+            def.Morale = ReadNumber("morale");
+
+            var traitsProp = obj.Property("traits", StringComparison.OrdinalIgnoreCase);
+            if (traitsProp != null && traitsProp.Value.Type != JTokenType.Null)
+            {
+                if (traitsProp.Value is not JObject tObj)
+                {
+                    issues.Add(PlayerWarning(index, situationId, $"{field}.traits", SituationIssueCode.InvalidPlayerEffects,
+                        "playerEffects.traits must be an object of trait name to experience."));
+                    localBad = true;
+                }
+                else
+                {
+                    foreach (var tp in tObj.Properties())
+                    {
+                        if (!ValidTraits.Contains(tp.Name))
+                        {
+                            issues.Add(PlayerWarning(index, situationId, $"{field}.traits.{tp.Name}", SituationIssueCode.InvalidPlayerEffects,
+                                $"Unknown trait '{tp.Name}' in playerEffects.traits."));
+                            localBad = true;
+                            continue;
+                        }
+                        if (tp.Value.Type != JTokenType.Integer)
+                        {
+                            issues.Add(PlayerWarning(index, situationId, $"{field}.traits.{tp.Name}", SituationIssueCode.InvalidPlayerEffects,
+                                $"playerEffects.traits.{tp.Name} must be a whole number of trait experience."));
+                            localBad = true;
+                            continue;
+                        }
+                        def.Traits[tp.Name.ToLowerInvariant()] = tp.Value.Value<int>();
+                    }
+                }
+            }
+
+            if (localBad)
+            {
+                bad = true;
+                return null;
+            }
+
+            return def;
         }
 
         private static SituationConditionDef? ParseCondition(

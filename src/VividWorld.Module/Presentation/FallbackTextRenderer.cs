@@ -195,6 +195,89 @@ namespace VividWorld.Presentation
                 Hero.MainHero?.StringId);
         }
 
+        /// <summary>
+        /// 把情境視窗上的樣板取出、套用選字記號並解析角色人名。
+        /// 英文樣板優先取英文字串表，取不到才用呼叫端傳入的後備。
+        /// 任何一步丟例外時警告一次並退回基本樣板（{=key}englishFallback + 填人名），不准回傳空字串。
+        /// </summary>
+        internal static string RenderRoleTemplate(
+            string key,
+            string? english,
+            IReadOnlyDictionary<string, string?> boundHeroIds)
+        {
+            string englishTemplate = EnglishStringTableStore.Instance.Get(key) ?? english ?? string.Empty;
+            try
+            {
+                string rawTemplate = LocalizedTemplate(key, englishTemplate);
+
+                Dictionary<string, string>? vars = null;
+                if (boundHeroIds != null && boundHeroIds.Count > 0)
+                {
+                    vars = new Dictionary<string, string>(StringComparer.Ordinal);
+                    foreach (var kv in boundHeroIds)
+                    {
+                        if (string.IsNullOrEmpty(kv.Key) || string.IsNullOrEmpty(kv.Value)) continue;
+                        vars[kv.Key.ToUpperInvariant()] = "hero:" + kv.Value;
+                    }
+                }
+
+                Func<string, bool?> isFemale = id => TraitLookup?.Of(id)?.IsFemale ?? Hero.Find(id)?.IsFemale;
+                string processed = RumorTextAssembler.ApplyGenderSelectTokens(
+                    rawTemplate,
+                    null,
+                    null,
+                    null,
+                    isFemale,
+                    vars,
+                    msg => WarnFixedLineOnce(key, msg),
+                    key);
+
+                var t = new TextObject(processed);
+                if (boundHeroIds != null)
+                {
+                    foreach (var kv in boundHeroIds)
+                    {
+                        if (string.IsNullOrEmpty(kv.Key) || string.IsNullOrEmpty(kv.Value)) continue;
+                        t.SetTextVariable(kv.Key.ToUpperInvariant(), ResolveVar("hero:" + kv.Value, false));
+                    }
+                }
+
+                string result = t.ToString();
+                if (string.IsNullOrWhiteSpace(result))
+                {
+                    WarnFixedLineOnce(key, $"Role template '{key}' rendered to empty string - falling back to basic template.");
+                    return FallbackBasic(key, englishTemplate, boundHeroIds);
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                WarnFixedLineOnce(key, $"Role template '{key}' could not be rendered ({ex.GetType().Name}: {ex.Message}) - falling back to basic template.");
+                return FallbackBasic(key, englishTemplate, boundHeroIds);
+            }
+        }
+
+        private static string FallbackBasic(string key, string englishTemplate, IReadOnlyDictionary<string, string?>? boundHeroIds)
+        {
+            try
+            {
+                var t = new TextObject("{=" + key + "}" + englishTemplate);
+                if (boundHeroIds != null)
+                {
+                    foreach (var kv in boundHeroIds)
+                    {
+                        if (string.IsNullOrEmpty(kv.Key) || string.IsNullOrEmpty(kv.Value)) continue;
+                        t.SetTextVariable(kv.Key.ToUpperInvariant(), ResolveVar("hero:" + kv.Value, false));
+                    }
+                }
+                return t.ToString();
+            }
+            catch
+            {
+                return englishTemplate;
+            }
+        }
+
         /// <summary>固定句子的警告每個字串鍵每個 session 只印一次：這些條件每次重畫對話選單都會跑。</summary>
         private static readonly HashSet<string> FixedLineWarnedKeys = new HashSet<string>(StringComparer.Ordinal);
 

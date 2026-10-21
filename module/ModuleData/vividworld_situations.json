@@ -5,6 +5,7 @@
       "trigger": "direct",
       "weight": 1.0,
       "decider": "slighted",
+      "player": { "bystander": true, "deciderRole": "slighted", "listenerRole": null },
       "minBranchWeight": null,
       "roles": {
         "slighted": { },
@@ -23,6 +24,7 @@
       "branches": [
         {
           "id": "demand_seat",
+          "playerEffects": { "renown": 3, "influence": 10, "traits": { "valor": 100 } },
           "base": 1.0,
           "traits": { "valor": 0.6, "honor": 0.8 },
           "preconditions": [],
@@ -37,6 +39,7 @@
         },
         {
           "id": "endure",
+          "playerEffects": { "influence": -5, "traits": { "calculating": 100 } },
           "base": 1.0,
           "traits": { "calculating": 0.8, "mercy": -0.5 },
           "preconditions": [],
@@ -50,6 +53,7 @@
         },
         {
           "id": "yield",
+          "playerEffects": { "renown": 3, "influence": -10, "traits": { "generosity": 100 } },
           "base": 1.0,
           "traits": { "generosity": 0.7, "mercy": 0.5 },
           "preconditions": [],
@@ -63,6 +67,7 @@
         },
         {
           "id": "walk_out",
+          "playerEffects": { "renown": 3, "influence": -15, "traits": { "calculating": -100 } },
           "base": 0.5,
           "traits": { "honor": 0.6, "calculating": -0.6 },
           "preconditions": [ { "type": "roleBound", "role": "host" } ],
@@ -154,6 +159,7 @@
       "trigger": "direct",
       "weight": 2.0,
       "decider": "veteran",
+      "player": { "bystander": true, "deciderRole": "veteran", "listenerRole": null },
       "minBranchWeight": null,
       "roles": {
         "student": {},
@@ -195,6 +201,7 @@
       "branches": [
         {
           "id": "teach_freely",
+          "playerEffects": { "renown": 3, "traits": { "generosity": 100 } },
           "base": 1.0,
           "traits": {
             "generosity": 0.8,
@@ -221,6 +228,7 @@
         },
         {
           "id": "brush_off",
+          "playerEffects": { "traits": { "generosity": -50 } },
           "base": 1.0,
           "traits": {
             "calculating": 0.7,
@@ -248,6 +256,7 @@
         },
         {
           "id": "mock",
+          "playerEffects": { "traits": { "mercy": -100 } },
           "base": 0.9,
           "traits": {
             "generosity": -0.6,
@@ -285,6 +294,7 @@
       "trigger": "direct",
       "weight": 0.4,
       "decider": "speaker",
+      "player": { "bystander": true, "deciderRole": "speaker", "listenerRole": null },
       "minBranchWeight": null,
       "roles": {
         "speaker": {},
@@ -314,6 +324,7 @@
       "branches": [
         {
           "id": "good_word",
+          "playerEffects": { "traits": { "generosity": 50 } },
           "base": 1.0,
           "traits": {
             "honor": 0.5,
@@ -341,6 +352,7 @@
         },
         {
           "id": "boast",
+          "playerEffects": { "renown": 3 },
           "base": 1.0,
           "traits": {
             "valor": 0.6,
@@ -368,6 +380,7 @@
         },
         {
           "id": "sour_words",
+          "playerEffects": { "traits": { "mercy": -50 } },
           "base": 0.7,
           "traits": {
             "honor": -0.6,
@@ -399,6 +412,7 @@
       "trigger": "direct",
       "weight": 0.8,
       "decider": "claimant",
+      "player": { "bystander": true, "deciderRole": null, "listenerRole": null },
       "minBranchWeight": null,
       "roles": {
         "claimant": {},
@@ -542,6 +556,7 @@
       "trigger": "direct",
       "weight": 4.0,
       "decider": "patron",
+      "player": { "bystander": true, "deciderRole": "patron", "listenerRole": null, "skipConditionsWhenPlayer": ["sameKingdom"], "influenceOnlySameKingdom": true },
       "minBranchWeight": null,
       "roles": {
         "aggrieved": {},
@@ -587,6 +602,7 @@
       "branches": [
         {
           "id": "hand_over",
+          "playerEffects": { "influence": 5, "morale": -5, "traits": { "honor": 100 } },
           "base": 1.0,
           "traits": {
             "honor": 0.6,
@@ -613,6 +629,7 @@
         },
         {
           "id": "shield_own",
+          "playerEffects": { "influence": -5, "morale": 5, "traits": { "generosity": 100 } },
           "base": 1.0,
           "traits": {
             "valor": 0.6,
@@ -640,6 +657,7 @@
         },
         {
           "id": "counter_accuse",
+          "playerEffects": { "influence": -10, "morale": 5, "traits": { "honor": -200 } },
           "base": 0.8,
           "traits": {
             "mercy": -0.6,
@@ -672,6 +690,7 @@
         },
         {
           "id": "hush_it_up",
+          "playerEffects": { "traits": { "calculating": 100 } },
           "base": 0.8,
           "traits": {
             "calculating": 0.8
@@ -695,6 +714,7 @@
       "trigger": "direct",
       "weight": 0.5,
       "decider": "challenged",
+      "player": { "bystander": true, "deciderRole": null, "listenerRole": null },
       "minBranchWeight": null,
       "roles": {
         "challenger": {},
@@ -806,6 +826,7 @@
       "trigger": "direct",
       "maxPerDay": "@falseRumors.misconductPerDay",
       "decider": "speaker",
+      "player": { "bystander": false, "deciderRole": null, "listenerRole": "listener" },
       "minBranchWeight": null,
       "roles": {
         "speaker": {},

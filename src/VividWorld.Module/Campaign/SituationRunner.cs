@@ -42,6 +42,18 @@ namespace VividWorld.Campaign
         public ISituationHistory? History;
     }
 
+    /// <summary>玩家在場時跑情境的額外設定。null＝NPC 之間的情境，照原本的路走。</summary>
+    internal sealed class PlayerPresenceRunOptions
+    {
+        public string PlayerHeroId = string.Empty;
+
+        /// <summary>玩家做決定時選的做法：照它執行，不擲分支。null＝照原本由 decider 的個性擲。</summary>
+        public SituationBranchDef? ChosenBranch;
+
+        /// <summary>玩家旁觀：只產生祕密事件的做法不參加擲骰（有人在旁邊看著就不是祕密）。</summary>
+        public bool ExcludeSecretOnlyBranches;
+    }
+
     internal static class SituationRunner
     {
         public static int ForcedThisSession { get; internal set; }
@@ -49,6 +61,7 @@ namespace VividWorld.Campaign
         public static int AfterEventTriggeredThisSession { get; internal set; }
         public static int EventsSubmittedThisSession { get; internal set; }
         public static int NoBranchThisSession { get; internal set; }
+        public static int PresenceTriggeredThisSession { get; internal set; }
 
         /// <summary>靜態計數器跨讀檔存活；每次 OnGameStart 歸零，「this session」才名副其實。</summary>
         public static void ResetSessionCounters()
@@ -58,6 +71,7 @@ namespace VividWorld.Campaign
             AfterEventTriggeredThisSession = 0;
             EventsSubmittedThisSession = 0;
             NoBranchThisSession = 0;
+            PresenceTriggeredThisSession = 0;
         }
 
         private static Dictionary<string, (Hero? Hero, string? FailureReason)>? _scanAbsentCache;
@@ -93,7 +107,8 @@ namespace VividWorld.Campaign
             VividWorldConfig? config = null,
             SituationWorldContext? context = null,
             bool forced = false,
-            IReadOnlyDictionary<string, Hero>? preBoundDerivedHeroes = null)
+            IReadOnlyDictionary<string, Hero>? preBoundDerivedHeroes = null,
+            IReadOnlyList<SituationConditionDef>? conditionsOverride = null)
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
             if (nonDerivedHeroes == null) throw new ArgumentNullException(nameof(nonDerivedHeroes));
@@ -276,8 +291,9 @@ namespace VividWorld.Campaign
                 .ToList();
             evaluation.NonDerivedHeroIds = nonDerivedHeroIds;
 
+            // 玩家在場時呼叫端會扣掉不檢查的那幾條再傳進來；其餘一律照情境原本的條件
             var conditionResults = SituationConditionEvaluator.EvaluateAll(
-                template.Conditions,
+                conditionsOverride ?? (IEnumerable<SituationConditionDef>)template.Conditions,
                 factsByRole,
                 boundHeroIds,
                 unboundReasons,
@@ -304,7 +320,8 @@ namespace VividWorld.Campaign
             VividWorldConfig config,
             HeroLookup? heroLookup = null,
             string? triggerEventId = null,
-            bool forced = false)
+            bool forced = false,
+            PlayerPresenceRunOptions? presence = null)
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
             if (evaluation == null) throw new ArgumentNullException(nameof(evaluation));
@@ -324,7 +341,11 @@ namespace VividWorld.Campaign
                 return result;
             }
 
-            if (string.Equals(triggerSource, "daily scan", StringComparison.OrdinalIgnoreCase))
+            if (presence != null)
+            {
+                PresenceTriggeredThisSession++;
+            }
+            else if (string.Equals(triggerSource, "daily scan", StringComparison.OrdinalIgnoreCase))
             {
                 ScanTriggeredThisSession++;
             }
@@ -348,70 +369,99 @@ namespace VividWorld.Campaign
             long campaignSeed = eventStore?.CampaignSeed ?? 0;
             long instanceId = SituationSeed.ComputeInstanceId(campaignSeed, template.Id, day, boundHeroIds);
 
-            // 5. Decider traits
-            string deciderRole = template.Decider;
-            allHeroes.TryGetValue(deciderRole, out var deciderHero);
-            string deciderHeroId = deciderHero?.StringId ?? string.Empty;
-            var deciderProfile = !string.IsNullOrEmpty(deciderHeroId) && traitLookup != null
-                ? traitLookup.Of(deciderHeroId)
-                : null;
-
-            if (deciderProfile == null)
+            SituationDecision decision;
+            if (presence?.ChosenBranch != null)
             {
-                // Print header and conditions first
-                var emptyDecision = new SituationDecision();
-                var headerLines = SituationLogFormatter.FormatExecution(
+                // 玩家做決定：照玩家選的做法執行，不讀 decider 的個性、不擲分支
+                decision = new SituationDecision
+                {
+                    SelectedBranchId = presence.ChosenBranch.Id,
+                    SelectedBranch = presence.ChosenBranch
+                };
+                var presenceHeader = SituationLogFormatter.FormatExecution(
                     template.Id,
                     instanceId,
                     boundHeroIds,
                     settlementId,
                     conditionResults,
-                    emptyDecision);
-
-                // 空決策的最後一行是 "pick: no branch available"，那不是這裡的原因——只印標頭與條件兩行
-                foreach (var line in headerLines.Take(2))
+                    new SituationDecision());
+                foreach (var line in presenceHeader.Take(2))
                 {
                     ModLog.Info(line);
                 }
-                ModLog.Info("  pick: decider traits unavailable");
-
-                result.AbortReason = "decider traits unavailable";
-                return result;
+                ModLog.Info($"  pick: the player chose {presence.ChosenBranch.Id}");
+                result.SelectedBranchId = presence.ChosenBranch.Id;
             }
-
-            // 6. Select branch
-            long branchSeed = SituationSeed.ComputeBranchSeed(campaignSeed, instanceId, deciderHeroId);
-            var rng = new SplitMix64Rng();
-            var decision = SituationBranchSelector.Select(
-                template,
-                factsByRole,
-                boundHeroIds,
-                unboundReasons,
-                deciderProfile,
-                config.Situations.MinBranchWeight,
-                rng,
-                branchSeed,
-                context: evaluation.Context,
-                situationId: template.Id,
-                day: day,
-                history: evaluation.History,
-                nonDerivedHeroIds: evaluation.NonDerivedHeroIds,
-                forced: forced);
-
-            result.SelectedBranchId = decision.SelectedBranchId;
-
-            // 7. Log branch calculation
-            var logLines = SituationLogFormatter.FormatExecution(
-                template.Id,
-                instanceId,
-                boundHeroIds,
-                settlementId,
-                conditionResults,
-                decision);
-
-            foreach (var line in logLines)
+            else
             {
-                ModLog.Info(line);
+                // 5. Decider traits
+                string deciderRole = template.Decider;
+                allHeroes.TryGetValue(deciderRole, out var deciderHero);
+                string deciderHeroId = deciderHero?.StringId ?? string.Empty;
+                var deciderProfile = !string.IsNullOrEmpty(deciderHeroId) && traitLookup != null
+                    ? traitLookup.Of(deciderHeroId)
+                    : null;
+
+                if (deciderProfile == null)
+                {
+                    // Print header and conditions first
+                    var emptyDecision = new SituationDecision();
+                    var headerLines = SituationLogFormatter.FormatExecution(
+                        template.Id,
+                        instanceId,
+                        boundHeroIds,
+                        settlementId,
+                        conditionResults,
+                        emptyDecision);
+
+                    // 空決策的最後一行是 "pick: no branch available"，那不是這裡的原因——只印標頭與條件兩行
+                    foreach (var line in headerLines.Take(2))
+                    {
+                        ModLog.Info(line);
+                    }
+                    ModLog.Info("  pick: decider traits unavailable");
+
+                    result.AbortReason = "decider traits unavailable";
+                    return result;
+                }
+
+                // 6. Select branch
+                long branchSeed = SituationSeed.ComputeBranchSeed(campaignSeed, instanceId, deciderHeroId);
+                var rng = new SplitMix64Rng();
+                decision = SituationBranchSelector.Select(
+                    template,
+                    factsByRole,
+                    boundHeroIds,
+                    unboundReasons,
+                    deciderProfile,
+                    config.Situations.MinBranchWeight,
+                    rng,
+                    branchSeed,
+                    context: evaluation.Context,
+                    situationId: template.Id,
+                    day: day,
+                    history: evaluation.History,
+                    nonDerivedHeroIds: evaluation.NonDerivedHeroIds,
+                    forced: forced,
+                    excludeBranch: presence != null && presence.ExcludeSecretOnlyBranches
+                        ? branchDef => PlayerBystanderBranches.SecretOnlyReason(branchDef, SituationCatalogStore.EventCatalog.ByType)
+                        : (Func<SituationBranchDef, string?>?)null);
+
+                result.SelectedBranchId = decision.SelectedBranchId;
+
+                // 7. Log branch calculation
+                var logLines = SituationLogFormatter.FormatExecution(
+                    template.Id,
+                    instanceId,
+                    boundHeroIds,
+                    settlementId,
+                    conditionResults,
+                    decision);
+
+                foreach (var line in logLines)
+                {
+                    ModLog.Info(line);
+                }
             }
 
             if (decision.SelectedBranch == null)
@@ -554,6 +604,22 @@ namespace VividWorld.Campaign
                 // Set SituationId on the submission (spec §3.1)
                 submission.SituationId = template.Id;
 
+                // 玩家在場：公開的事玩家親眼看到，算第一手知情者。祕密的事照祕密的規則，
+                // 只有那則事件指名的知情角色知道（玩家擔任其中一個就已經是了）
+                if (presence != null && !string.IsNullOrEmpty(presence.PlayerHeroId)
+                    && !submission.InitialKnowerHeroIds.Contains(presence.PlayerHeroId))
+                {
+                    if (eventTemplate.Origin == EventOrigin.Public)
+                    {
+                        submission.InitialKnowerHeroIds.Add(presence.PlayerHeroId);
+                        ModLog.Info($"  player presence: {presence.PlayerHeroId} added as a first-hand knower of {bEvent.Type}");
+                    }
+                    else
+                    {
+                        ModLog.Info($"  player presence: {bEvent.Type} is secret, the player is not added as a knower");
+                    }
+                }
+
                 string varsStr = string.Join(", ", bEvent.Bind.Select(b =>
                 {
                     bindings.TryGetValue(b.Key, out var val);
@@ -656,7 +722,16 @@ namespace VividWorld.Campaign
                     lastDuplicateEventId = lastDuplicate.EventId;
                 }
 
-                foreach (var gDef in selectedBranch.Grudges)
+                IEnumerable<SituationGrudgeDef> grudgeDefs = selectedBranch.Grudges;
+                if (presence != null)
+                {
+                    // 玩家怎麼看別人由玩家自己決定：從玩家出發的恩怨不記，對玩家的照記
+                    var playerFilter = PlayerGrudgeFilter.Filter(selectedBranch.Grudges, boundHeroIds, presence.PlayerHeroId);
+                    ModLog.Info(PlayerPresenceLogFormatter.FormatGrudgeFilter(template.Id, selectedBranch.Id, playerFilter));
+                    grudgeDefs = playerFilter.Kept;
+                }
+
+                foreach (var gDef in grudgeDefs)
                 {
                     allHeroes.TryGetValue(gDef.From, out var heroFrom);
                     allHeroes.TryGetValue(gDef.To, out var heroTo);

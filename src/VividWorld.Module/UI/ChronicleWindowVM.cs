@@ -22,7 +22,7 @@ namespace VividWorld.UI
 
         internal ChronicleWindowVM(IReadOnlyList<ChronicleEntry> entries, PresentationConfig? cfg, HeroLookup? heroLookup)
         {
-            _titleText = new TextObject("{=VividWorld_Chronicle_Title}What you have heard").ToString();
+            _titleText = new TextObject("{=VividWorld_Chronicle_Title}What you have seen and heard").ToString();
             _emptyText = new TextObject("{=VividWorld_Chronicle_Empty}You have not been told anything yet.").ToString();
             _closeText = new TextObject("{=VividWorld_Chronicle_Close}Close").ToString();
 
@@ -472,7 +472,7 @@ namespace VividWorld.UI
             }
             else
             {
-                string hopText = new TextObject("{=VividWorld_Chronicle_Hop}passed through {HOPS} hands")
+                string hopText = new TextObject("{=VividWorld_Chronicle_Hop}passed through {HOPS} hand(s)")
                     .SetTextVariable("HOPS", source.Hop)
                     .ToString();
 

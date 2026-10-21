@@ -72,19 +72,22 @@ namespace VividWorld.Campaign
         private readonly FakeEventProducerBehavior _producer;
         private readonly RealEventSourceBehavior? _realEvents;
         private readonly SituationScanBehavior? _situationScan;
+        private readonly PlayerPresenceBehavior? _playerPresence;
 
         internal RumorCampaignBehavior(
             VividWorldConfig config,
             RumorDialogBehavior dialogs,
             FakeEventProducerBehavior producer,
             RealEventSourceBehavior? realEvents = null,
-            SituationScanBehavior? situationScan = null)
+            SituationScanBehavior? situationScan = null,
+            PlayerPresenceBehavior? playerPresence = null)
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
             _producer = producer ?? throw new ArgumentNullException(nameof(producer));
             _realEvents = realEvents;
             _situationScan = situationScan;
+            _playerPresence = playerPresence;
         }
 
         public override void RegisterEvents()
@@ -370,6 +373,7 @@ namespace VividWorld.Campaign
                 {
                     _producer.Initialize(_eventStore, _heroLookup, _traitLookup);
                     _situationScan?.Initialize(_eventStore, _heroLookup, _traitLookup);
+                    _playerPresence?.Initialize(_eventStore, _heroLookup, _traitLookup, () => PlayerHeardLog, () => _engine);
                 }
 
                 if (_realEvents != null && _eventStore != null)

@@ -77,6 +77,7 @@ namespace VividWorld.Core.Config
                 new McmExposedKey("situations.maxPerDay", McmKeyKind.Double, 0.0, 10.0),
                 new McmExposedKey("situations.grudgesEnabled", McmKeyKind.Bool),
                 new McmExposedKey("situations.clanEscalationThreshold", McmKeyKind.Int, 0, 200),
+                new McmExposedKey("situations.playerPresence.enabled", McmKeyKind.Bool),
 
                 // Group 6: Event Sources
                 new McmExposedKey("events.sources.heroKilled", McmKeyKind.Bool),
@@ -148,6 +149,8 @@ namespace VividWorld.Core.Config
                     return cfg.Situations.GrudgesEnabled;
                 case "situations.clanEscalationThreshold":
                     return cfg.Situations.ClanEscalationThreshold;
+                case "situations.playerPresence.enabled":
+                    return cfg.Situations.PlayerPresence.Enabled;
                 case "events.sources.heroKilled":
                     return cfg.Events.Sources.HeroKilled;
                 case "events.sources.heroPrisonerTaken":
@@ -211,6 +214,9 @@ namespace VividWorld.Core.Config
                             return true;
                         case "situations.grudgesEnabled":
                             cfg.Situations.GrudgesEnabled = bVal;
+                            return true;
+                        case "situations.playerPresence.enabled":
+                            cfg.Situations.PlayerPresence.Enabled = bVal;
                             return true;
                         case "events.sources.heroKilled":
                             cfg.Events.Sources.HeroKilled = bVal;

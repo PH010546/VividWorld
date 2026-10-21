@@ -142,7 +142,10 @@ first part is used. A part may be empty (`{PRISONER:|а}`), and may not contain 
 
 A mistyped marker (one part only, or a name that is not a role in that sentence) is logged as a
 warning naming the string key, and the first part is shown. The shipped English and Traditional
-Chinese tables do not use `{NAME:…|…}`; a test keeps it that way. The ten fixed lines of the
+Chinese tables use `{NAME:…|…}` only in the probe replies (`SOURCE`) and in the window where a
+situation plays out in front of the player (`VividWorld_Presence_…`); a test keeps the rest that way.
+In that window `NAME` can be any role of the situation, even one the sentence does not name
+(`{STUDENT:he|she}` in a line that only names `{VETERAN}`). The ten fixed lines of the
 dialogue menu (the two questions the player asks and the NPC's short replies) can use it too, but
 only `ME` and `YOU` (in the player's lines `ME` is the player and `YOU` is the NPC); role names
 and `FOCUS` have nothing to point at there.

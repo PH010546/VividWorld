@@ -332,10 +332,10 @@
     <string id="VividWorld_Fact_WagerSecretStake_What" text="and neither of them would say what it was" />
 
     <!-- Chronicle interface strings -->
-    <string id="VividWorld_Chronicle_Title" text="What you have heard" />
+    <string id="VividWorld_Chronicle_Title" text="What you have seen and heard" />
     <string id="VividWorld_Chronicle_Empty" text="You have not been told anything yet." />
     <string id="VividWorld_Chronicle_Close" text="Close" />
-    <string id="VividWorld_Chronicle_Hop" text="passed through {HOPS} hands" />
+    <string id="VividWorld_Chronicle_Hop" text="passed through {HOPS} hand(s)" />
     <string id="VividWorld_Chronicle_HopZero" text="you were there" />
     <string id="VividWorld_Chronicle_SourceUnknown" text="source unknown" />
     <string id="VividWorld_Chronicle_Quote" text="{NAME}: “{LINE}”" />
@@ -386,12 +386,12 @@
     <string id="VividWorld_MCM_LogTellerTurnsHint" text="Writes detailed diagnostic information about hourly rumor propagation choices to log.txt. Useful for troubleshooting." />
 
     <!-- Group 1: Interface -->
-    <string id="VividWorld_MCM_ChronicleHotkey" text="'What you have heard' hotkey" />
-    <string id="VividWorld_MCM_ChronicleHotkeyHint" text="Hotkey to open the 'What you have heard' window on the campaign map (e.g. Ctrl+L, L)." />
+    <string id="VividWorld_MCM_ChronicleHotkey" text="'What you have seen and heard' hotkey" />
+    <string id="VividWorld_MCM_ChronicleHotkeyHint" text="Hotkey to open the 'What you have seen and heard' window on the campaign map (e.g. Ctrl+L, L)." />
     <string id="VividWorld_MCM_SnapshotManagerHotkey" text="Snapshot manager hotkey" />
     <string id="VividWorld_MCM_SnapshotManagerHotkeyHint" text="Hotkey to open the snapshot manager window (e.g. F9)." />
     <string id="VividWorld_MCM_ChronicleMaxEntries" text="Max stories shown" />
-    <string id="VividWorld_MCM_ChronicleMaxEntriesHint" text="Maximum number of stories shown in the &apos;What you have heard&apos; window. Follow-ups and different accounts of the same story are grouped together and count as one." />
+    <string id="VividWorld_MCM_ChronicleMaxEntriesHint" text="Maximum number of stories shown in the &apos;What you have seen and heard&apos; window. Follow-ups and different accounts of the same story are grouped together and count as one." />
     <string id="VividWorld_MCM_EncyclopediaLinksEnabled" text="Encyclopedia links in rumors" />
     <string id="VividWorld_MCM_EncyclopediaLinksEnabledHint" text="Enables clickable links to hero and settlement encyclopedia pages within rumor text." />
 
@@ -434,6 +434,8 @@
     <string id="VividWorld_MCM_GrudgesEnabledHint" text="Lets conflicts between lords leave a score behind in the mod's own grudge ledger. Scenes still play out when disabled, but leave nothing behind." />
     <string id="VividWorld_MCM_ClanEscalationThreshold" text="Clan escalation grudge threshold" />
     <string id="VividWorld_MCM_ClanEscalationThresholdHint" text="Accumulated grudge intensity required before personal hostility escalates into an inter-clan feud." />
+    <string id="VividWorld_MCM_PlayerPresenceEnabled" text="Situations happen in front of you" />
+    <string id="VividWorld_MCM_PlayerPresenceEnabledHint" text="Now and then, while you are in a town or castle, a situation between lords plays out in front of you, or you are the one who must decide. Turn off to stop these windows and the changes your choices make." />
 
     <!-- Group 6: Event Sources -->
     <string id="VividWorld_MCM_SourceHeroKilled" text="Hero deaths" />
@@ -1119,7 +1121,7 @@
     <string id="VividWorld_Sentence_WagerRefused_Who_Where_What_Self_CHALLENGER" text="I challenged {CHALLENGED} to a wager over the next hunt in {SETTLEMENT}. {CHALLENGED.He} turned me down and made a joke of it, and the hall laughed for quite a while" />
     <string id="VividWorld_Sentence_WagerRefused_Who_Where_What_Self_CHALLENGED" text="{CHALLENGER} challenged me to a wager over the next hunt in {SETTLEMENT}. I turned {CHALLENGER.him} down and made a joke of it, and the hall laughed for quite a while" />
     <string id="VividWorld_SelfFeeling_WagerRefused_CHALLENGER" text="I&apos;ll settle that score" />
-    <string id="VividWorld_SelfFeeling_WagerRefused_CHALLENGER_Valor" text="Too timid even for a wager — what kind of hunter is that" />
+    <string id="VividWorld_SelfFeeling_WagerRefused_CHALLENGER_Valor" text="Too timid even for a wager — no hunter worth the name" />
     <string id="VividWorld_SelfFeeling_WagerRefused_CHALLENGER_Mercy" text="Fine, never mind; it was only meant in fun" />
     <string id="VividWorld_SelfFeeling_WagerRefused_CHALLENGED" text="That&apos;s not a bet worth my time" />
     <!-- Whole sentence templates: WagerSecretStake -->
@@ -1257,7 +1259,7 @@
     <string id="VividWorld_Feeling_Freed_Owe_1" text="{ADDRESS} is out. I can&apos;t say I&apos;m glad, but I am relieved. Had {he} never got out, the debt I owe {him} would have hung over me for the rest of my days." />
     <string id="VividWorld_Feeling_LostPrisoner_Close_1" text="Losing a prisoner like that — {ADDRESS} must be sore about it." />
     <string id="VividWorld_Feeling_LostPrisoner_Close_2" text="{ADDRESS} took a loss this time, but will win it back next time." />
-    <string id="VividWorld_Feeling_LostPrisoner_Neutral_1" text="Can&apos;t even keep hold of a prisoner — such things happen." />
+    <string id="VividWorld_Feeling_LostPrisoner_Neutral_1" text="Lost a prisoner — such things happen." />
     <string id="VividWorld_Feeling_LostPrisoner_Neutral_2" text="With the prisoner gone, so is the ransom." />
     <string id="VividWorld_Feeling_LostPrisoner_Hostile_1" text="{ADDRESS} couldn&apos;t even keep hold of one prisoner. Not much to boast of." />
     <string id="VividWorld_Feeling_LostPrisoner_Hostile_2" text="This time {ADDRESS} went to all that trouble for nothing." />
@@ -1286,7 +1288,7 @@
     <string id="VividWorld_Feeling_Brash_Neutral_1" text="With that kind of scene, you just sit back and enjoy the show." />
     <string id="VividWorld_Feeling_Brash_Neutral_2" text="Offend people and sooner or later you pay for it." />
     <string id="VividWorld_Feeling_Brash_Hostile_1" text="That&apos;s {ADDRESS} all over. Not the least bit surprised." />
-    <string id="VividWorld_Feeling_Brash_Hostile_2" text="{ADDRESS} leaves others no way to save face; that will come back to bite one day." />
+    <string id="VividWorld_Feeling_Brash_Hostile_2" text="{ADDRESS} leaves others no way to save face; that will come back to bite {him} one day." />
     <string id="VividWorld_Feeling_Brash_Sore_1" text="{ADDRESS} is a fine sort in every way, except that {he} sometimes gives no thought to others. I&apos;ve been on the receiving end a few times myself; I must have a word with {him} when we next meet." />
     <string id="VividWorld_Feeling_Brash_Sore_2" text="{ADDRESS} went too far this time. I know what it&apos;s like to be treated that way by {him}, so this once I can&apos;t speak up for {him}." />
     <string id="VividWorld_Feeling_Brash_Owe_1" text="{ADDRESS} helped me once, and that is one thing; carrying on like this is another, and I still can&apos;t abide it." />
@@ -1646,7 +1648,7 @@
     <string id="VividWorld_Probe_Truth_RefusedAidByAsker" text="There&apos;s no truth to it. I never asked {REFUSER} for any such thing." />
     <string id="VividWorld_Probe_Truth_NotSo_VictoryCreditDeferred" text="There&apos;s no truth to it. People are saying {CLAIMANT} gave me the credit for the last victory, but nothing of the sort ever came my way." />
     <string id="VividWorld_Probe_Truth_NotSo_AdviceGivenFreely" text="There&apos;s no truth to it. People are saying {VETERAN} told me all about how that battle was won back in the day, but nothing of the sort ever came my way." />
-    <string id="VividWorld_Probe_Truth_NotSo_BrawlManHandedOver" text="There&apos;s no truth to it. People are saying {PATRON} handed {PATRON.his} man who drew first over to me and apologised to me as well, but nothing of the sort ever came my way." />
+    <string id="VividWorld_Probe_Truth_NotSo_BrawlManHandedOver" text="There&apos;s no truth to it. People are saying {PATRON} handed {PATRON.his} man who drew first over to me and apologized to me as well, but nothing of the sort ever came my way." />
     <string id="VividWorld_Probe_Truth_NotSo_SeatDisputeYielded" text="There&apos;s no truth to it. People are saying {SLIGHTED} gave up the seat of honor to me at a feast, but nothing of the sort ever came my way." />
     <string id="VividWorld_Probe_Truth_NotSo_TavernGoodWord" text="There&apos;s no truth to it. People are saying that when the others at the table were mocking me, {SPEAKER} stood up for me, but nothing of the sort ever came my way." />
     <string id="VividWorld_Probe_Accused_DenyNamed" text="There&apos;s no truth to it. I know it&apos;s {ORIGINATOR} spreading this, and I never did any such thing." />
@@ -1665,5 +1667,114 @@
     <string id="VividWorld_MCM_ProbesPerHeroPerDay" text="Questions per person per day" />
     <string id="VividWorld_MCM_ProbesPerHeroPerDayHint" text="How many times a day the same person will let you ask them about something. This is counted separately from the news they share with you each day." />
     <string id="VividWorld_Dev_ProbePreview" text="(dev) Ask preview: how many times he has been asked today, and how he would answer each entry in your chronicle" />
+    <string id="VividWorld_Dev_Menu_Presence" text="(dev) Situations in front of me" />
+    <string id="VividWorld_Dev_PresenceStatus" text="(dev) Cooldown and the last roll" />
+    <string id="VividWorld_Dev_PresenceForce" text="(dev) Make a situation happen in front of me now" />
+    <string id="VividWorld_Dev_PresenceForce_Title" text="(dev) Make a situation happen in front of me" />
+    <string id="VividWorld_Dev_PresenceForce_Desc" text="(dev) Only what can happen here right now is listed. Cooldown and chance are ignored; each situation&apos;s own conditions still apply." />
+    <string id="VividWorld_Dev_PresenceForce_Any" text="(dev) Any of these ({COUNT})" />
+    <string id="VividWorld_Dev_PresenceForce_Item" text="(dev) {SITUATION}: {ROLE}" />
+    <string id="VividWorld_Dev_PresenceForce_Roll" text="(dev) Roll" />
+    <string id="VividWorld_Dev_PresenceForce_Cancel" text="(dev) Cancel" />
+    <string id="VividWorld_Dev_PresenceForce_Picked" text="(dev) Pick one in the window; the outcome pops up, the reasons are in log.txt." />
+    <string id="VividWorld_Dev_PresenceForce_NotHere" text="(dev) Only in a town or castle." />
+    <string id="VividWorld_Dev_PresenceForce_TooFew" text="(dev) Nothing can happen here right now: only {COUNT} usable people present, need two." />
+    <string id="VividWorld_Dev_PresenceForce_None" text="(dev) Nothing can happen here right now. {COUNT} usable people present: {WITHCLAN} in {CLANS} clan(s), {NOCLAN} without a clan. {KINGDOM} Why each one failed is in log.txt." />
+    <string id="VividWorld_Dev_PresenceForce_NoKingdom" text="You are not in a kingdom." />
+    <string id="VividWorld_Dev_PresenceForce_SameKingdom" text="{SAME} of them are in your kingdom." />
+    <string id="VividWorld_Dev_PresenceStatus_Line" text="(dev) Player presence: {ONOFF}, chance {CHANCE}, cooldown {DAYS} days; {LAST} {ROLL}" />
+    <string id="VividWorld_Dev_PresenceStatus_On" text="on" />
+    <string id="VividWorld_Dev_PresenceStatus_Off" text="off" />
+    <string id="VividWorld_Dev_PresenceStatus_Never" text="never happened." />
+    <string id="VividWorld_Dev_PresenceStatus_Last" text="last happened on day {DAY}, {LEFT} days of cooldown left." />
+    <string id="VividWorld_Dev_PresenceStatus_NoRoll" text="No roll since loading." />
+    <string id="VividWorld_Dev_PresenceStatus_Roll" text="Last roll on day {DAY}: {RESULT}" />
+    <string id="VividWorld_Dev_PresenceOutcome_Disabled" text="switched off." />
+    <string id="VividWorld_Dev_PresenceOutcome_PlaceNotAllowed" text="not in a town or castle." />
+    <string id="VividWorld_Dev_PresenceOutcome_TooFewHeroes" text="fewer than two usable people present." />
+    <string id="VividWorld_Dev_PresenceOutcome_Cooldown" text="still on cooldown." />
+    <string id="VividWorld_Dev_PresenceOutcome_ChanceMissed" text="the roll missed." />
+    <string id="VividWorld_Dev_PresenceOutcome_NoCandidate" text="no situation&apos;s conditions held." />
+    <string id="VividWorld_Dev_PresenceOutcome_Happened" text="{SITUATION}: {ROLE} happened." />
+    <string id="VividWorld_Dev_PresenceRole_Bystander" text="you watch" />
+    <string id="VividWorld_Dev_PresenceRole_Listener" text="you listen" />
+    <string id="VividWorld_Dev_PresenceSituation_seat_dispute" text="Seat dispute" />
+    <string id="VividWorld_Dev_PresenceSituation_advice_sought" text="Advice sought" />
+    <string id="VividWorld_Dev_PresenceSituation_tavern_words" text="Tavern words" />
+    <string id="VividWorld_Dev_PresenceSituation_market_brawl" text="Market brawl" />
+    <string id="VividWorld_Dev_PresenceSituation_victory_credit" text="Victory credit" />
+    <string id="VividWorld_Dev_PresenceSituation_hunt_wager" text="Hunt wager" />
+    <string id="VividWorld_Dev_PresenceSituation_spoke_against_ruler" text="Spoke against the ruler" />
+    <string id="VividWorld_Dev_PresenceDecider_seat_dispute" text="you are the clan leader seated lower" />
+    <string id="VividWorld_Dev_PresenceDecider_advice_sought" text="you are the veteran asked for advice" />
+    <string id="VividWorld_Dev_PresenceDecider_tavern_words" text="you are the one who spoke" />
+    <string id="VividWorld_Dev_PresenceDecider_market_brawl" text="you are the brawlers&apos; lord" />
+
+    <!-- Player presence window -->
+    <string id="VividWorld_Presence_Title" text="In {SETTLEMENT}" />
+    <string id="VividWorld_Presence_Scene_seat_dispute_Bystander" text="At the feast, {SLIGHTED} has been seated below {FAVORED}. {FAVORED} is only one member of a great house, while {SLIGHTED} is the head of a house and by rights should sit higher. Around the table, people keep glancing at {SLIGHTED}." />
+    <string id="VividWorld_Presence_Scene_seat_dispute_Decider" text="At the feast, you have been seated below {FAVORED}. {FAVORED} is only one member of a great house, while you are the head of yours and by rights should sit higher. The table falls quiet, waiting for you." />
+    <string id="VividWorld_Presence_Scene_advice_sought_Bystander" text="{STUDENT} comes over to {VETERAN}, cup in hand, and asks politely how best to lead men in the field." />
+    <string id="VividWorld_Presence_Scene_advice_sought_Decider" text="{STUDENT} comes over to you, cup in hand, and asks politely how best to lead men in the field. The words have clearly been rehearsed." />
+    <string id="VividWorld_Presence_Scene_tavern_words_Bystander" text="In the tavern, {SPEAKER} and {LISTENER} share a table. A few cups in, the talk grows looser." />
+    <string id="VividWorld_Presence_Scene_tavern_words_Decider" text="In the tavern, you share a table with {LISTENER}. A few cups in, someone starts making fun of {LISTENER}, and the whole table turns to see what you will say." />
+    <string id="VividWorld_Presence_Scene_market_brawl_Bystander" text="In the market, men of {PATRON} and men of {AGGRIEVED} have come to blows. It takes some doing to pull the two sides apart, and {AGGRIEVED} goes straight to {PATRON} for an answer." />
+    <string id="VividWorld_Presence_Scene_market_brawl_Decider" text="In the market, some of your men have come to blows with men of {AGGRIEVED}. It takes some doing to pull the two sides apart, and {AGGRIEVED} comes straight to you demanding an answer." />
+    <string id="VividWorld_Presence_Scene_victory_credit_Bystander" text="In the hall, well into the evening, someone raises a cup to the last victory. {CLAIMANT} and {RIVAL} exchange a look: both of them fought in that battle." />
+    <string id="VividWorld_Presence_Scene_hunt_wager_Bystander" text="In the hall, {CHALLENGER} slaps the table and challenges {CHALLENGED} to a wager on who brings back more game from the next hunt." />
+    <string id="VividWorld_Presence_Scene_spoke_against_ruler_Listener" text="{SPEAKER} draws you aside and, voice lowered, starts talking about {RULER}." />
+    <string id="VividWorld_Presence_Outcome_seat_dispute_demand_seat" text="{SLIGHTED} sets down the cup and, in front of everyone, tells {FAVORED} to give up the higher seat. The whole hall falls silent." />
+    <string id="VividWorld_Presence_Outcome_seat_dispute_yield" text="{SLIGHTED} lets it pass, gives the higher seat to {FAVORED}, and raises a cup to {FAVORED:him|her|them} as well." />
+    <string id="VividWorld_Presence_Outcome_seat_dispute_walk_out" text="{SLIGHTED} gets up without a word and walks out of {HOST}&apos;s hall." />
+    <string id="VividWorld_Presence_Outcome_advice_sought_teach_freely" text="{VETERAN} tells the whole story of how that battle was won, holding nothing back, not even the mistakes." />
+    <string id="VividWorld_Presence_Outcome_advice_sought_brush_off" text="{VETERAN} offers a few things everyone already knows and, before the cup is empty, changes the subject." />
+    <string id="VividWorld_Presence_Outcome_advice_sought_mock" text="{VETERAN} makes a joke of the question in front of the whole hall, saying some people should first learn to sit still. As {STUDENT} leaves the hall, people are still laughing." />
+    <string id="VividWorld_Presence_Outcome_tavern_words_good_word" text="Someone at the table makes fun of {LISTENER}, and {SPEAKER} speaks up for {LISTENER}, adding that it is not the wine talking." />
+    <string id="VividWorld_Presence_Outcome_tavern_words_boast" text="{SPEAKER} starts telling of past battles, and the tale grows taller with every cup; the table only smiles." />
+    <string id="VividWorld_Presence_Outcome_tavern_words_sour_words" text="With the wine loosening the tongue, {SPEAKER} says something to {LISTENER}, and {LISTENER}&apos;s face changes at once." />
+    <string id="VividWorld_Presence_Outcome_market_brawl_hand_over" text="In front of the whole street, {PATRON} hands the man who struck first over to {AGGRIEVED}, and apologizes as well." />
+    <string id="VividWorld_Presence_Outcome_market_brawl_shield_own" text="{PATRON} refuses to hand anyone over: a house deals with its own men, and it is no one else&apos;s business." />
+    <string id="VividWorld_Presence_Outcome_market_brawl_counter_accuse" text="{PATRON} not only refuses to hand anyone over, but says before everyone that the men of {AGGRIEVED} struck first, and that {AGGRIEVED} owes an answer. The two houses stand there, neither giving way." />
+    <string id="VividWorld_Presence_Outcome_victory_credit_claim_aloud" text="{CLAIMANT} is first on {CLAIMANT:his|her|their} feet, claims the credit for that battle, and says {RIVAL} only arrived once the enemy line had already broken." />
+    <string id="VividWorld_Presence_Outcome_victory_credit_defer" text="The toast was meant for {CLAIMANT}, but {CLAIMANT} gives the credit to {RIVAL}." />
+    <string id="VividWorld_Presence_Outcome_victory_credit_let_the_host_judge" text="Neither will give way, so in the end they ask {HOST} to decide. {HOST} gives the credit to {RIVAL}." />
+    <string id="VividWorld_Presence_Outcome_hunt_wager_take_the_wager" text="{CHALLENGED} accepts on the spot, and half the hall puts money on it too." />
+    <string id="VividWorld_Presence_Outcome_hunt_wager_refuse_and_jest" text="{CHALLENGED} turns it down and makes a joke of it; the hall laughs for a good while." />
+    <string id="VividWorld_Presence_Option_seat_dispute_demand_seat" text="Tell {FAVORED}, in front of everyone, to give up the seat" />
+    <string id="VividWorld_Presence_Option_seat_dispute_endure" text="Say nothing and swallow it" />
+    <string id="VividWorld_Presence_Option_seat_dispute_yield" text="Let {FAVORED} keep the seat and raise a cup to {FAVORED:him|her|them}" />
+    <string id="VividWorld_Presence_Option_seat_dispute_walk_out" text="Get up and walk out of {HOST}&apos;s feast" />
+    <string id="VividWorld_Presence_Option_advice_sought_teach_freely" text="Tell {STUDENT} everything, your own mistakes included" />
+    <string id="VividWorld_Presence_Option_advice_sought_brush_off" text="Offer a few things everyone knows and change the subject" />
+    <string id="VividWorld_Presence_Option_advice_sought_mock" text="Make a joke of the question in front of everyone" />
+    <string id="VividWorld_Presence_Option_tavern_words_good_word" text="Stand up for {LISTENER}" />
+    <string id="VividWorld_Presence_Option_tavern_words_boast" text="Turn the talk to your own deeds in battle" />
+    <string id="VividWorld_Presence_Option_tavern_words_sour_words" text="Join in with a cutting remark about {LISTENER}" />
+    <string id="VividWorld_Presence_Option_market_brawl_hand_over" text="Hand over the men who started it and apologize to {AGGRIEVED}" />
+    <string id="VividWorld_Presence_Option_market_brawl_shield_own" text="Your men, your business: hand no one over" />
+    <string id="VividWorld_Presence_Option_market_brawl_counter_accuse" text="Say it was the men of {AGGRIEVED} who struck first" />
+    <string id="VividWorld_Presence_Option_market_brawl_hush_it_up" text="Agree with {AGGRIEVED} that neither house will speak of it again" />
+    <string id="VividWorld_Presence_Ack" text="I see." />
+    <string id="VividWorld_Presence_Confirm" text="Done" />
+    <string id="VividWorld_Presence_Dir_None" text="No lasting effect" />
+    <string id="VividWorld_Presence_Dir_Separator" text=", " />
+    <string id="VividWorld_Presence_Dir_Affection_Up" text="Relation with {NAME} ↑" />
+    <string id="VividWorld_Presence_Dir_Affection_Down" text="Relation with {NAME} ↓" />
+    <string id="VividWorld_Presence_Dir_Renown_Up" text="Renown ↑" />
+    <string id="VividWorld_Presence_Dir_Renown_Down" text="Renown ↓" />
+    <string id="VividWorld_Presence_Dir_Influence_Up" text="Influence ↑" />
+    <string id="VividWorld_Presence_Dir_Influence_Down" text="Influence ↓" />
+    <string id="VividWorld_Presence_Dir_Morale_Up" text="Morale ↑" />
+    <string id="VividWorld_Presence_Dir_Morale_Down" text="Morale ↓" />
+    <string id="VividWorld_Presence_Dir_Mercy_Up" text="Mercy ↑" />
+    <string id="VividWorld_Presence_Dir_Mercy_Down" text="Mercy ↓" />
+    <string id="VividWorld_Presence_Dir_Valor_Up" text="Valor ↑" />
+    <string id="VividWorld_Presence_Dir_Valor_Down" text="Valor ↓" />
+    <string id="VividWorld_Presence_Dir_Honor_Up" text="Honor ↑" />
+    <string id="VividWorld_Presence_Dir_Honor_Down" text="Honor ↓" />
+    <string id="VividWorld_Presence_Dir_Generosity_Up" text="Generosity ↑" />
+    <string id="VividWorld_Presence_Dir_Generosity_Down" text="Generosity ↓" />
+    <string id="VividWorld_Presence_Dir_Calculating_Up" text="Calculating ↑" />
+    <string id="VividWorld_Presence_Dir_Calculating_Down" text="Calculating ↓" />
   </strings>
 </base>

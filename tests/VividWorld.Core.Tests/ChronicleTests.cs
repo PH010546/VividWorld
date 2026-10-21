@@ -601,8 +601,8 @@ namespace VividWorld.Core.Tests
             }
 
             // Verify specific values
-            Assert.Equal("What you have heard", enDict["VividWorld_Chronicle_Title"]);
-            Assert.Equal("你聽過的事", cntDict["VividWorld_Chronicle_Title"]);
+            Assert.Equal("What you have seen and heard", enDict["VividWorld_Chronicle_Title"]);
+            Assert.Equal("你的見聞", cntDict["VividWorld_Chronicle_Title"]);
 
             Assert.Equal("You have not been told anything yet.", enDict["VividWorld_Chronicle_Empty"]);
             Assert.Equal("還沒有人跟你說過什麼。", cntDict["VividWorld_Chronicle_Empty"]);
@@ -610,7 +610,7 @@ namespace VividWorld.Core.Tests
             Assert.Equal("Close", enDict["VividWorld_Chronicle_Close"]);
             Assert.Equal("關閉", cntDict["VividWorld_Chronicle_Close"]);
 
-            Assert.Equal("passed through {HOPS} hands", enDict["VividWorld_Chronicle_Hop"]);
+            Assert.Equal("passed through {HOPS} hand(s)", enDict["VividWorld_Chronicle_Hop"]);
             Assert.Equal("傳了 {HOPS} 手", cntDict["VividWorld_Chronicle_Hop"]);
 
             Assert.Equal("you were there", enDict["VividWorld_Chronicle_HopZero"]);

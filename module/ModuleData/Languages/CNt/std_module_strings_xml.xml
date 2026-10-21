@@ -332,7 +332,7 @@
     <string id="VividWorld_Fact_WagerSecretStake_What" text="押的是什麼，兩個人都沒透露" />
 
     <!-- Chronicle interface strings -->
-    <string id="VividWorld_Chronicle_Title" text="你聽過的事" />
+    <string id="VividWorld_Chronicle_Title" text="你的見聞" />
     <string id="VividWorld_Chronicle_Empty" text="還沒有人跟你說過什麼。" />
     <string id="VividWorld_Chronicle_Close" text="關閉" />
     <string id="VividWorld_Chronicle_Hop" text="傳了 {HOPS} 手" />
@@ -386,12 +386,12 @@
     <string id="VividWorld_MCM_LogTellerTurnsHint" text="將每小時 NPC 挑選傳聞並分享的詳細決策資訊寫入 log.txt。適合排查問題時開啟。" />
 
     <!-- Group 1: 介面 -->
-    <string id="VividWorld_MCM_ChronicleHotkey" text="「你聽過的事」熱鍵" />
-    <string id="VividWorld_MCM_ChronicleHotkeyHint" text="在大地圖上開啟「你聽過的事」視窗的快捷鍵（例如 Ctrl+L、L）。" />
+    <string id="VividWorld_MCM_ChronicleHotkey" text="「你的見聞」熱鍵" />
+    <string id="VividWorld_MCM_ChronicleHotkeyHint" text="在大地圖上開啟「你的見聞」視窗的快捷鍵（例如 Ctrl+L、L）。" />
     <string id="VividWorld_MCM_SnapshotManagerHotkey" text="快照管理熱鍵" />
     <string id="VividWorld_MCM_SnapshotManagerHotkeyHint" text="開啟快照管理視窗的快捷鍵（例如 F9）。" />
     <string id="VividWorld_MCM_ChronicleMaxEntries" text="最多顯示幾件事" />
-    <string id="VividWorld_MCM_ChronicleMaxEntriesHint" text="「你聽過的事」視窗最多顯示幾件事。同一件事的後續與各種說法收在一起，算一件。" />
+    <string id="VividWorld_MCM_ChronicleMaxEntriesHint" text="「你的見聞」視窗最多顯示幾件事。同一件事的後續與各種說法收在一起，算一件。" />
     <string id="VividWorld_MCM_EncyclopediaLinksEnabled" text="傳聞百科連結" />
     <string id="VividWorld_MCM_EncyclopediaLinksEnabledHint" text="在傳聞文字中為英雄與聚落名稱加上可點擊的百科全書超連結。" />
 
@@ -434,6 +434,8 @@
     <string id="VividWorld_MCM_GrudgesEnabledHint" text="讓領主之間的衝突留下樑子，記進模組自己的恩怨帳本。關掉之後橋段照樣會演，但不留下任何恩怨。" />
     <string id="VividWorld_MCM_ClanEscalationThreshold" text="家族衝突恩怨門檻" />
     <string id="VividWorld_MCM_ClanEscalationThresholdHint" text="個人敵意升級為家族世仇所需的累積恩怨強度門檻。" />
+    <string id="VividWorld_MCM_PlayerPresenceEnabled" text="啟用「以身入局」" />
+    <string id="VividWorld_MCM_PlayerPresenceEnabledHint" text="待在城鎮或城堡時，偶爾會有領主之間的事在你面前發生，有時要由你來決定怎麼做。關掉之後不再跳出這種視窗。" />
 
     <!-- Group 6: 消息來源 -->
     <string id="VividWorld_MCM_SourceHeroKilled" text="英雄死亡事件" />
@@ -1665,5 +1667,114 @@
     <string id="VividWorld_MCM_ProbesPerHeroPerDay" text="每天最多可以對同一個NPC探聽幾次" />
     <string id="VividWorld_MCM_ProbesPerHeroPerDayHint" text="同一位 NPC 一天最多讓你探聽幾次，跟他每天分享給你的消息分開算。" />
     <string id="VividWorld_Dev_ProbePreview" text="(dev) 打探預覽：他今天被問過幾次、你紀事裡每一件他會怎麼答" />
+    <string id="VividWorld_Dev_Menu_Presence" text="(dev) 在你面前發生的事" />
+    <string id="VividWorld_Dev_PresenceStatus" text="(dev) 冷卻與上一次擲骰" />
+    <string id="VividWorld_Dev_PresenceForce" text="(dev) 現在讓一件事在我面前發生" />
+    <string id="VividWorld_Dev_PresenceForce_Title" text="(dev) 讓一件事在我面前發生" />
+    <string id="VividWorld_Dev_PresenceForce_Desc" text="(dev) 只列在這裡現在叫得出來的。不看冷卻和機率，情境自己的條件照算。" />
+    <string id="VividWorld_Dev_PresenceForce_Any" text="(dev) 隨便一件（從這 {COUNT} 項裡挑）" />
+    <string id="VividWorld_Dev_PresenceForce_Item" text="(dev) {SITUATION}：{ROLE}" />
+    <string id="VividWorld_Dev_PresenceForce_Roll" text="(dev) 擲" />
+    <string id="VividWorld_Dev_PresenceForce_Cancel" text="(dev) 取消" />
+    <string id="VividWorld_Dev_PresenceForce_Picked" text="(dev) 在視窗裡選一項；結果會跳視窗，原因寫在 log.txt。" />
+    <string id="VividWorld_Dev_PresenceForce_NotHere" text="(dev) 要在城鎮或城堡裡才叫得出來。" />
+    <string id="VividWorld_Dev_PresenceForce_TooFew" text="(dev) 這裡現在叫不出任何一件：在場可用的只有 {COUNT} 人，要兩人以上。" />
+    <string id="VividWorld_Dev_PresenceForce_None" text="(dev) 這裡現在叫不出任何一件。在場可用的 {COUNT} 人：有家族的 {WITHCLAN} 人，分屬 {CLANS} 個家族；沒有家族的 {NOCLAN} 人。{KINGDOM}每一件卡在哪一條，log.txt 有寫。" />
+    <string id="VividWorld_Dev_PresenceForce_NoKingdom" text="你沒有加入王國。" />
+    <string id="VividWorld_Dev_PresenceForce_SameKingdom" text="跟你同一個王國的有 {SAME} 人。" />
+    <string id="VividWorld_Dev_PresenceStatus_Line" text="(dev) 玩家入局：{ONOFF}，機率 {CHANCE}，冷卻 {DAYS} 天；{LAST}{ROLL}" />
+    <string id="VividWorld_Dev_PresenceStatus_On" text="開" />
+    <string id="VividWorld_Dev_PresenceStatus_Off" text="關" />
+    <string id="VividWorld_Dev_PresenceStatus_Never" text="還沒發生過。" />
+    <string id="VividWorld_Dev_PresenceStatus_Last" text="上次發生在第 {DAY} 天，冷卻還剩 {LEFT} 天。" />
+    <string id="VividWorld_Dev_PresenceStatus_NoRoll" text="讀檔後還沒擲過。" />
+    <string id="VividWorld_Dev_PresenceStatus_Roll" text="上一次擲在第 {DAY} 天：{RESULT}" />
+    <string id="VividWorld_Dev_PresenceOutcome_Disabled" text="開關是關的。" />
+    <string id="VividWorld_Dev_PresenceOutcome_PlaceNotAllowed" text="不在城鎮或城堡。" />
+    <string id="VividWorld_Dev_PresenceOutcome_TooFewHeroes" text="在場可用的人不到兩位。" />
+    <string id="VividWorld_Dev_PresenceOutcome_Cooldown" text="還在冷卻。" />
+    <string id="VividWorld_Dev_PresenceOutcome_ChanceMissed" text="沒擲中。" />
+    <string id="VividWorld_Dev_PresenceOutcome_NoCandidate" text="沒有一件的條件成立。" />
+    <string id="VividWorld_Dev_PresenceOutcome_Happened" text="發生了「{SITUATION}：{ROLE}」。" />
+    <string id="VividWorld_Dev_PresenceRole_Bystander" text="你旁觀" />
+    <string id="VividWorld_Dev_PresenceRole_Listener" text="你是聽的人" />
+    <string id="VividWorld_Dev_PresenceSituation_seat_dispute" text="座次之爭" />
+    <string id="VividWorld_Dev_PresenceSituation_advice_sought" text="請教" />
+    <string id="VividWorld_Dev_PresenceSituation_tavern_words" text="酒後言語" />
+    <string id="VividWorld_Dev_PresenceSituation_market_brawl" text="手下鬥毆" />
+    <string id="VividWorld_Dev_PresenceSituation_victory_credit" text="爭功" />
+    <string id="VividWorld_Dev_PresenceSituation_hunt_wager" text="狩獵賭局" />
+    <string id="VividWorld_Dev_PresenceSituation_spoke_against_ruler" text="背後議論君主" />
+    <string id="VividWorld_Dev_PresenceDecider_seat_dispute" text="你是被排在下首的族長" />
+    <string id="VividWorld_Dev_PresenceDecider_advice_sought" text="你是被請教的老將" />
+    <string id="VividWorld_Dev_PresenceDecider_tavern_words" text="你是說話的人" />
+    <string id="VividWorld_Dev_PresenceDecider_market_brawl" text="你是鬧事手下的主人" />
+
+    <!-- 玩家入局視窗 -->
+    <string id="VividWorld_Presence_Title" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Presence_Scene_seat_dispute_Bystander" text="宴席上，{SLIGHTED}被排在{FAVORED}的下首。{FAVORED}不過是大家族裡的一員，{SLIGHTED}卻是一家之主，照理不該坐在下面。席間的人都在偷看{SLIGHTED}的臉色。" />
+    <string id="VividWorld_Presence_Scene_seat_dispute_Decider" text="宴席上，你被排在{FAVORED}的下首。{FAVORED}不過是大家族裡的一員，你卻是一家之主，照理不該坐在下面。席間一下子靜了下來，大家都在等你開口。" />
+    <string id="VividWorld_Presence_Scene_advice_sought_Bystander" text="{STUDENT}端著酒杯走到{VETERAN}面前，客客氣氣地請教帶兵打仗的事。" />
+    <string id="VividWorld_Presence_Scene_advice_sought_Decider" text="{STUDENT}端著酒杯走到你面前，客客氣氣地向你請教帶兵打仗的事。看得出來，這幾句話是先想好了才來的。" />
+    <string id="VividWorld_Presence_Scene_tavern_words_Bystander" text="酒館裡，{SPEAKER}和{LISTENER}同坐一桌。幾杯下肚，桌上的話越說越放肆。" />
+    <string id="VividWorld_Presence_Scene_tavern_words_Decider" text="酒館裡，你和{LISTENER}同坐一桌。幾杯下肚，桌上有人拿{LISTENER}開起玩笑，一桌人都轉頭看你，等你接話。" />
+    <string id="VividWorld_Presence_Scene_market_brawl_Bystander" text="市集上，{PATRON}家的人跟{AGGRIEVED}家的人打了起來。好不容易才把雙方架開，{AGGRIEVED}就找上{PATRON}要個說法。" />
+    <string id="VividWorld_Presence_Scene_market_brawl_Decider" text="市集上，你的手下跟{AGGRIEVED}家的人打了起來。好不容易才把雙方架開，{AGGRIEVED}就找上門來，要你給個交代。" />
+    <string id="VividWorld_Presence_Scene_victory_credit_Bystander" text="大廳裡酒過三巡，有人舉杯敬上一場勝仗。{CLAIMANT}和{RIVAL}互看了一眼：那一仗，兩個人都在。" />
+    <string id="VividWorld_Presence_Scene_hunt_wager_Bystander" text="大廳裡，{CHALLENGER}拍著桌子，要跟{CHALLENGED}賭下一場狩獵誰打的獵物多。" />
+    <string id="VividWorld_Presence_Scene_spoke_against_ruler_Listener" text="{SPEAKER}把你拉到一旁，壓低了聲音，說起{RULER}的事。" />
+    <string id="VividWorld_Presence_Outcome_seat_dispute_demand_seat" text="{SLIGHTED}放下酒杯，當眾要{FAVORED}把上座讓出來，整個大廳一下子都安靜了。" />
+    <string id="VividWorld_Presence_Outcome_seat_dispute_yield" text="{SLIGHTED}沒有計較，把上座讓給了{FAVORED}，還敬了{FAVORED:他|她}一杯。" />
+    <string id="VividWorld_Presence_Outcome_seat_dispute_walk_out" text="{SLIGHTED}站起身，一句話也沒說，就走出了{HOST}的大廳。" />
+    <string id="VividWorld_Presence_Outcome_advice_sought_teach_freely" text="{VETERAN}把當年那一仗怎麼打贏的，一五一十講給{STUDENT:他|她}聽，連自己犯過的錯都沒藏。" />
+    <string id="VividWorld_Presence_Outcome_advice_sought_brush_off" text="{VETERAN}只回了{STUDENT:他|她}幾句誰都知道的道理，一杯酒還沒喝完，就把話題岔開了。" />
+    <string id="VividWorld_Presence_Outcome_advice_sought_mock" text="{VETERAN}當著滿廳的人拿這事說笑，說有些人該先學會坐得住。{STUDENT}走出大廳的時候，後面還有人在笑。" />
+    <string id="VividWorld_Presence_Outcome_tavern_words_good_word" text="同桌有人拿{LISTENER}開玩笑，{SPEAKER}站出來替{LISTENER:他|她}說話，還說自己可不是喝醉了才這麼講。" />
+    <string id="VividWorld_Presence_Outcome_tavern_words_boast" text="{SPEAKER}講起自己的戰功，越喝說得越誇張，同桌的人聽了只是笑笑。" />
+    <string id="VividWorld_Presence_Outcome_tavern_words_sour_words" text="{SPEAKER}藉著酒意對{LISTENER}說了句話，{LISTENER}當場就變了臉。" />
+    <string id="VividWorld_Presence_Outcome_market_brawl_hand_over" text="{PATRON}當著一整條街的人，把先動手的那個手下交給了{AGGRIEVED}，還向{AGGRIEVED:他|她}賠了不是。" />
+    <string id="VividWorld_Presence_Outcome_market_brawl_shield_own" text="{PATRON}不肯交人，說自家的人自家管，輪不到別家開口。" />
+    <string id="VividWorld_Presence_Outcome_market_brawl_counter_accuse" text="{PATRON}不但不交人，還當著大家的面說是{AGGRIEVED}的人先動的手，要{AGGRIEVED}先給個交代。兩家就這麼僵著，誰也不讓。" />
+    <string id="VividWorld_Presence_Outcome_victory_credit_claim_aloud" text="{CLAIMANT}搶先站起來，說那一仗是{CLAIMANT:他|她}的功勞，還說{RIVAL}是等敵陣都垮了才趕到的。" />
+    <string id="VividWorld_Presence_Outcome_victory_credit_defer" text="大家本來要敬{CLAIMANT}，{CLAIMANT:他|她}卻把功勞讓給了{RIVAL}。" />
+    <string id="VividWorld_Presence_Outcome_victory_credit_let_the_host_judge" text="兩人誰也不讓，最後請{HOST}出面裁定。{HOST}把功勞判給了{RIVAL}。" />
+    <string id="VividWorld_Presence_Outcome_hunt_wager_take_the_wager" text="{CHALLENGED}一口答應，大廳裡有一半的人也跟著下注。" />
+    <string id="VividWorld_Presence_Outcome_hunt_wager_refuse_and_jest" text="{CHALLENGED}沒接，還拿這事開了個玩笑，大廳裡的人笑了好一陣子。" />
+    <string id="VividWorld_Presence_Option_seat_dispute_demand_seat" text="當眾要{FAVORED}把上座讓出來" />
+    <string id="VividWorld_Presence_Option_seat_dispute_endure" text="不說話，忍下這口氣" />
+    <string id="VividWorld_Presence_Option_seat_dispute_yield" text="大方讓座，舉杯敬{FAVORED}" />
+    <string id="VividWorld_Presence_Option_seat_dispute_walk_out" text="拂袖離開{HOST}的宴席" />
+    <string id="VividWorld_Presence_Option_advice_sought_teach_freely" text="傾囊相授，連自己犯過的錯也講" />
+    <string id="VividWorld_Presence_Option_advice_sought_brush_off" text="說幾句誰都知道的道理，把話題帶開" />
+    <string id="VividWorld_Presence_Option_advice_sought_mock" text="當眾拿這個問題說笑" />
+    <string id="VividWorld_Presence_Option_tavern_words_good_word" text="替{LISTENER}打抱不平" />
+    <string id="VividWorld_Presence_Option_tavern_words_boast" text="把話題拉到自己的戰功上" />
+    <string id="VividWorld_Presence_Option_tavern_words_sour_words" text="跟著說一句刺{LISTENER}的話" />
+    <string id="VividWorld_Presence_Option_market_brawl_hand_over" text="交出先動手的人，向{AGGRIEVED}賠不是" />
+    <string id="VividWorld_Presence_Option_market_brawl_shield_own" text="自家的人自家管，不交人" />
+    <string id="VividWorld_Presence_Option_market_brawl_counter_accuse" text="反說是{AGGRIEVED}的人先動的手" />
+    <string id="VividWorld_Presence_Option_market_brawl_hush_it_up" text="跟{AGGRIEVED}講好，兩家都不再提這件事" />
+    <string id="VividWorld_Presence_Ack" text="知道了" />
+    <string id="VividWorld_Presence_Confirm" text="完成" />
+    <string id="VividWorld_Presence_Dir_None" text="沒有後續影響" />
+    <string id="VividWorld_Presence_Dir_Separator" text="、" />
+    <string id="VividWorld_Presence_Dir_Affection_Up" text="與{NAME}好感↑" />
+    <string id="VividWorld_Presence_Dir_Affection_Down" text="與{NAME}好感↓" />
+    <string id="VividWorld_Presence_Dir_Renown_Up" text="聲望↑" />
+    <string id="VividWorld_Presence_Dir_Renown_Down" text="聲望↓" />
+    <string id="VividWorld_Presence_Dir_Influence_Up" text="影響力↑" />
+    <string id="VividWorld_Presence_Dir_Influence_Down" text="影響力↓" />
+    <string id="VividWorld_Presence_Dir_Morale_Up" text="士氣↑" />
+    <string id="VividWorld_Presence_Dir_Morale_Down" text="士氣↓" />
+    <string id="VividWorld_Presence_Dir_Mercy_Up" text="仁慈↑" />
+    <string id="VividWorld_Presence_Dir_Mercy_Down" text="仁慈↓" />
+    <string id="VividWorld_Presence_Dir_Valor_Up" text="勇猛↑" />
+    <string id="VividWorld_Presence_Dir_Valor_Down" text="勇猛↓" />
+    <string id="VividWorld_Presence_Dir_Honor_Up" text="榮譽↑" />
+    <string id="VividWorld_Presence_Dir_Honor_Down" text="榮譽↓" />
+    <string id="VividWorld_Presence_Dir_Generosity_Up" text="仗義↑" />
+    <string id="VividWorld_Presence_Dir_Generosity_Down" text="仗義↓" />
+    <string id="VividWorld_Presence_Dir_Calculating_Up" text="理性↑" />
+    <string id="VividWorld_Presence_Dir_Calculating_Down" text="理性↓" />
   </strings>
 </base>

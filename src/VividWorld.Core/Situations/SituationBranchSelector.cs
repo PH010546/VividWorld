@@ -53,7 +53,8 @@ namespace VividWorld.Core.Situations
             double day = 0.0,
             ISituationHistory? history = null,
             IReadOnlyCollection<string>? nonDerivedHeroIds = null,
-            bool forced = false)
+            bool forced = false,
+            Func<SituationBranchDef, string?>? excludeBranch = null)
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
             if (deciderTraits == null) throw new ArgumentNullException(nameof(deciderTraits));
@@ -91,6 +92,16 @@ namespace VividWorld.Core.Situations
                 {
                     detail.IsExcluded = true;
                     detail.ExcludedReason = string.Join("; ", failedPreconds.Select(p => p.Detail));
+                    branchDetails.Add(detail);
+                    continue;
+                }
+
+                // 呼叫端另外排除的做法（玩家旁觀時不擲只產生祕密事件的做法）；NPC 之間不傳，照原本
+                string? callerExclusion = excludeBranch?.Invoke(b);
+                if (callerExclusion != null)
+                {
+                    detail.IsExcluded = true;
+                    detail.ExcludedReason = callerExclusion;
                     branchDetails.Add(detail);
                     continue;
                 }

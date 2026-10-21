@@ -21,7 +21,7 @@ namespace VividWorld
             "- campaigns\\: Contains subdirectories per campaign (campaign_<id>), storing event shards and rumor indices.\n" +
             "- campaigns\\campaign_<id>\\_snapshots\\: One photograph of that campaign's rumor data per save\n  slot, used to rewind rumors when you load an older save. **You do not have to come here to manage them:\n  press F9 in game (presentation.snapshotManagerHotkey) to list them and delete the ones you no longer\n  want.** Nothing is deleted on its own - persistence.maxSnapshots defaults to 0, which means no limit.\n  Deleting snapshots by hand is also safe: older saves simply stop rewinding, nothing else breaks.\n\n" +
             "In-game keys (both can be rebound in config.json, under presentation):\n" +
-            "- Ctrl+L  What you have heard - everything you have been told so far (presentation.chronicleHotkey).\n" +
+            "- Ctrl+L  What you have seen and heard - everything you have been told or saw yourself (presentation.chronicleHotkey).\n" +
             "- F9      Snapshot manager (presentation.snapshotManagerHotkey).\n" +
             "A modifier prefix is allowed: \"Ctrl+L\", \"Alt+K\", \"Shift+F9\", or a bare key name such as \"L\".\n\n" +
             "Uninstalling or removing this mod does not corrupt native save files.\n";
@@ -89,7 +89,7 @@ namespace VividWorld
                 else
                 {
                     // 標記字串＝說明檔的世代。改內容時一起換掉，舊玩家手上那份才會被更新。
-                    if (!writer.Exists(VividWorldPaths.ReadmeFile) || !(writer.ReadAllText(VividWorldPaths.ReadmeFile) ?? "").Contains("What you have heard"))
+                    if (!writer.Exists(VividWorldPaths.ReadmeFile) || !(writer.ReadAllText(VividWorldPaths.ReadmeFile) ?? "").Contains("What you have seen and heard"))
                     {
                         writer.WriteAllText(VividWorldPaths.ReadmeFile, DefaultReadme);
                     }

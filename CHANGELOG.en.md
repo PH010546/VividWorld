@@ -10,6 +10,17 @@ Every release states three things:
 
 ## Unreleased
 
+## v1.1.0
+
+- **Fix: English strings**: the chronicle hop count now reads `hand(s)` (no plural for a single hand), two developer-tool lines get the missing space between sentences, `apologise` is spelled the US way like the rest, and three NPC lines are reworded (Chinese unchanged).
+- **New: situations happen in front of you** (`situations.playerPresence`): when the player is in a town or castle with at least two usable lords or wanderers, a roll is made on arrival and once a day while staying (`chance` 0.25); on a hit a situation plays out in front of them, followed by a cooldown (`cooldownDays` 7). It does not take from the world's daily situation budget. The player takes one of three parts: **bystander** (seat dispute, counsel, drunken words, retainers' brawl, credit dispute, hunting wager), **decider** (the clan leader seated lower, the veteran asked for counsel, the one speaking in drink, the master of the brawling retainer) or **listener** (someone talks about the ruler behind their back to the player).
+  - The window pauses the game and looks like the base game's random-event window (its own data and buttons, not the native incident flow), with an illustration for each situation on the right. As decider, each response is an option whose hint gives directions only ("relation with X ↓, renown ↑, influence ↓, Valor ↑"); the chosen one records the others' grudges toward the player with the situation's own numbers (none from the player toward others), moves the player's own renown, influence (only when in a kingdom), party morale and trait XP, and the event spreads among NPCs as usual. As bystander, the second paragraph is the outcome sentence of the response rolled; responses that only produce secret events are left out of a bystander's roll.
+  - Lines in the window follow each person's gender (him/her, `them` when the gender cannot be found), and translators can use gender-select tokens there too; in English the window always shows the English string table's version.
+  - What the player witnesses or overhears counts as first-hand and goes into the chronicle as soon as it is shown ("you were there").
+  - The log has one line for each roll, for choosing the situation (with every one left out and why), and for the player's choice with every value before and after. Developer tool "(dev) Situations in front of me": previews first and lists only the situations and parts possible here, or describes who is present when none are; another line prints the cooldown and the last roll.
+- **Changed: the chronicle window is now called "What you have seen and heard"**, and the settings for its hotkey and size say so.
+- Existing campaigns can simply be continued: the new cooldown record (save key `VividWorld_PlayerPresenceLastDay`) counts as no cooldown when missing; events, grudges and the chronicle keep their formats. The three new settings are added automatically, so no config changes are needed; to turn the windows off, untick "Situations happen in front of you" (`situations.playerPresence.enabled`) in the settings.
+
 ## v1.0.0
 
 - **Full release**: a month public (since 2026-09-21) with no bug reports and the long-campaign performance test passed (next entry), so all three conditions for 1.0 are met. Same features as v0.9.11.

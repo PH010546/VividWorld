@@ -56,6 +56,7 @@ namespace VividWorld.Core.Config
             Events.WeightBonusByClanStanding ??= new ClanStandingWeightBonusConfig();
             Situations ??= new SituationsConfig();
             Situations.Contest ??= new SituationContestConfig();
+            Situations.PlayerPresence ??= new PlayerPresenceConfig();
             Memory ??= new MemoryConfig();
             Memory.InterestFloors ??= new InterestFloorsConfig();
             Ai ??= new AiConfig();
@@ -592,6 +593,10 @@ namespace VividWorld.Core.Config
                     AllowedRange = ">= 0"
                 });
             }
+
+            // Situations: PlayerPresence
+            Situations.PlayerPresence.Chance = ClampTracked("situations.playerPresence.chance", Situations.PlayerPresence.Chance, 0.0, 1.0, notices);
+            Situations.PlayerPresence.CooldownDays = ClampInt("situations.playerPresence.cooldownDays", Situations.PlayerPresence.CooldownDays, 0, 365, notices);
 
             // Situations: GrudgeDecay
             Situations.GrudgeDecay ??= new GrudgeDecayConfig();

@@ -37,8 +37,8 @@ namespace VividWorld.Mcm
 
         // ── Group 1: Interface ──────────────────────────────────────────────────────
 
-        [SettingPropertyText("{=VividWorld_MCM_ChronicleHotkey}'What you have heard' hotkey", Order = 0, RequireRestart = false,
-            HintText = "{=VividWorld_MCM_ChronicleHotkeyHint}Hotkey to open the 'What you have heard' window on the campaign map (e.g. Ctrl+L, L).")]
+        [SettingPropertyText("{=VividWorld_MCM_ChronicleHotkey}'What you have seen and heard' hotkey", Order = 0, RequireRestart = false,
+            HintText = "{=VividWorld_MCM_ChronicleHotkeyHint}Hotkey to open the 'What you have seen and heard' window on the campaign map (e.g. Ctrl+L, L).")]
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Interface}Interface", GroupOrder = 1)]
         public string ChronicleHotkey { get; set; } = "Ctrl+L";
 
@@ -48,7 +48,7 @@ namespace VividWorld.Mcm
         public string SnapshotManagerHotkey { get; set; } = "F9";
 
         [SettingPropertyInteger("{=VividWorld_MCM_ChronicleMaxEntries}Max stories shown", 1, 200, "0", Order = 2, RequireRestart = false,
-            HintText = "{=VividWorld_MCM_ChronicleMaxEntriesHint}Maximum number of stories shown in the 'What you have heard' window. Follow-ups and different accounts of the same story are grouped together and count as one.")]
+            HintText = "{=VividWorld_MCM_ChronicleMaxEntriesHint}Maximum number of stories shown in the 'What you have seen and heard' window. Follow-ups and different accounts of the same story are grouped together and count as one.")]
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Interface}Interface", GroupOrder = 1)]
         public int ChronicleMaxEntries { get; set; } = 50;
 
@@ -140,6 +140,11 @@ namespace VividWorld.Mcm
             HintText = "{=VividWorld_MCM_ClanEscalationThresholdHint}Accumulated grudge intensity required before personal hostility escalates into an inter-clan feud.")]
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Situations}Situations", GroupOrder = 5)]
         public int ClanEscalationThreshold { get; set; } = 30;
+
+        [SettingPropertyBool("{=VividWorld_MCM_PlayerPresenceEnabled}Situations happen in front of you", Order = 4, RequireRestart = false,
+            HintText = "{=VividWorld_MCM_PlayerPresenceEnabledHint}Now and then, while you are in a town or castle, a situation between lords plays out in front of you, or you are the one who must decide. Turn off to stop these windows and the changes your choices make.")]
+        [SettingPropertyGroup("{=VividWorld_MCM_Group_Situations}Situations", GroupOrder = 5)]
+        public bool PlayerPresenceEnabled { get; set; } = true;
 
         // ── Group 6: Event Sources ──────────────────────────────────────────────────
 

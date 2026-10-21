@@ -22,6 +22,22 @@ namespace VividWorld.Core.Config
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
     }
 
+    /// <summary>玩家在城鎮或城堡時另外替他擲的「情境在他面前發生」。不佔全世界每天的情境量。</summary>
+    public sealed class PlayerPresenceConfig
+    {
+        /// <summary>整個玩家入局的開關；關掉就不擲、不跳視窗、不動玩家的數值。</summary>
+        public bool Enabled { get; set; } = true;
+
+        /// <summary>每次擲（進城當下、待在城裡每天）發生的機率，0～1。</summary>
+        public double Chance { get; set; } = 0.25;
+
+        /// <summary>發生一次之後幾天內不再擲。</summary>
+        public int CooldownDays { get; set; } = 7;
+
+        [JsonExtensionData]
+        public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
+    }
+
     public sealed class SituationsConfig
     {
         public string CatalogFile { get; set; } = "vividworld_situations.json";
@@ -50,6 +66,8 @@ namespace VividWorld.Core.Config
         public int MaxPendingChars { get; set; } = 20000;
 
         public SituationContestConfig Contest { get; set; } = new();
+
+        public PlayerPresenceConfig PlayerPresence { get; set; } = new();
 
         [JsonExtensionData]
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();

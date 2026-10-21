@@ -52,6 +52,8 @@ namespace VividWorld.Core.Situations
         InvalidConfigReference,
         InvalidQuotaGroup,
         InvalidMadeUpTalk,
-        InvalidGrudgeWeight
+        InvalidGrudgeWeight,
+        InvalidPlayerBlock,
+        InvalidPlayerEffects
     }
 }

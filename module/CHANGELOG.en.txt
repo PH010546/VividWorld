@@ -1,5 +1,11 @@
 Vivid World changelog
 
+v1.1.0
+Fixed: some wording in the English text.
+New: "Situations happen in front of you". While in a town or castle you will now and then see something happen between lords with your own eyes, and sometimes it is your turn to decide; your choice changes how others feel about you and word of it gets around. You can turn it off in the settings.
+New: what you see or overhear yourself goes into the chronicle, and the chronicle window is now called "What you have seen and heard".
+Existing campaigns can be continued as they are; no settings need to be changed.
+
 v1.0.0
 Full release: long-campaign stability testing passed.
 
