@@ -301,7 +301,8 @@ namespace VividWorld.Core.Tests
             Assert.Equal("這件事他自己心裡清楚，他可少不了要為他自己討個公道。", maleResult);
 
             string? femaleResult = RumorTextAssembler.RenderFeeling(dFemale, false, (v, _) => v, getTemplate, getLocalized, "。", out _);
-            Assert.Equal("這件事她自己心裡清楚，她可少不了要為她自己討個公道。", femaleResult);
+            // 繁中不依性別分「她」：焦點人物是女性也寫「他」
+            Assert.Equal("這件事他自己心裡清楚，他可少不了要為他自己討個公道。", femaleResult);
         }
 
         [Fact]

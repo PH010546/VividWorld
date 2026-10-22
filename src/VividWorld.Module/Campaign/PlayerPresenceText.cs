@@ -57,7 +57,7 @@ namespace VividWorld.Campaign
             ["tavern_words_good_word"] = "Someone at the table makes fun of {LISTENER}, and {SPEAKER} speaks up for {LISTENER}, adding that it is not the wine talking.",
             ["tavern_words_boast"] = "{SPEAKER} starts telling of past battles, and the tale grows taller with every cup; the table only smiles.",
             ["tavern_words_sour_words"] = "With the wine loosening the tongue, {SPEAKER} says something to {LISTENER}, and {LISTENER}'s face changes at once.",
-            ["market_brawl_hand_over"] = "In front of the whole street, {PATRON} hands the man who struck first over to {AGGRIEVED}, and apologizes as well.",
+            ["market_brawl_hand_over"] = "In front of the whole street, {PATRON} hands the retainer who struck first over to {AGGRIEVED}, and apologizes as well.",
             ["market_brawl_shield_own"] = "{PATRON} refuses to hand anyone over: a house deals with its own men, and it is no one else's business.",
             ["market_brawl_counter_accuse"] = "{PATRON} not only refuses to hand anyone over, but says before everyone that the men of {AGGRIEVED} struck first, and that {AGGRIEVED} owes an answer. The two houses stand there, neither giving way.",
             ["victory_credit_claim_aloud"] = "{CLAIMANT} is first on {CLAIMANT:his|her|their} feet, claims the credit for that battle, and says {RIVAL} only arrived once the enemy line had already broken.",

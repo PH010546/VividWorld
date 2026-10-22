@@ -221,7 +221,7 @@
   },
   {
     "type": "advice_given_freely",
-    "headline": "A veteran taught what he knew",
+    "headline": "A veteran shared all they knew",
     "origin": "public",
     "dramaWeight": 3,
     "dramaScale": 10,
@@ -378,7 +378,7 @@
         "id": "why",
         "category": "WHY",
         "textId": "VividWorld_Fact_AdviceMocked_Why",
-        "text": "saying some men should first learn to sit still",
+        "text": "saying some people should first learn to sit still",
         "vars": {},
         "fragility": 3
       },
@@ -848,7 +848,7 @@
         "id": "who",
         "category": "WHO",
         "textId": "VividWorld_Fact_BrawlManHandedOver_Who",
-        "text": "{PATRON} handed over the man who drew first and made {PATRON.his} apology to {AGGRIEVED}",
+        "text": "{PATRON} handed over the retainer who drew first and made {PATRON.his} apology to {AGGRIEVED}",
         "vars": {
           "PATRON": "hero:{PATRON}",
           "AGGRIEVED": "hero:{AGGRIEVED}"
@@ -877,7 +877,7 @@
   },
   {
     "type": "brawl_shielded_own",
-    "headline": "A lord shielded his own after a brawl",
+    "headline": "A lord shielded their own after a brawl",
     "origin": "public",
     "dramaWeight": 5,
     "dramaScale": 10,
@@ -899,7 +899,7 @@
         "id": "who",
         "category": "WHO",
         "textId": "VividWorld_Fact_BrawlShieldedOwn_Who",
-        "text": "{PATRON}'s men and {AGGRIEVED}'s men fought, and {PATRON} refused to hand the man over to {AGGRIEVED}",
+        "text": "{PATRON}'s men and {AGGRIEVED}'s men fought, and {PATRON} refused to hand the retainer over to {AGGRIEVED}",
         "vars": {
           "PATRON": "hero:{PATRON}",
           "AGGRIEVED": "hero:{AGGRIEVED}"
@@ -2131,7 +2131,7 @@
   },
   {
     "type": "talk_not_so_advice_given_freely",
-    "headline": "A veteran taught what he knew",
+    "headline": "A veteran shared all they knew",
     "origin": "public",
     "dramaWeight": 3,
     "dramaScale": 10,
@@ -2213,7 +2213,7 @@
         "id": "who",
         "category": "WHO",
         "textId": "VividWorld_Fact_TalkNotSoBrawlManHandedOver_Who",
-        "text": "{AGGRIEVED} came forward to clear up the rumor that {PATRON} had handed over {PATRON.his} man and apologized to {AGGRIEVED.him}",
+        "text": "{AGGRIEVED} came forward to clear up the rumor that {PATRON} had handed over {PATRON.his} retainer and apologized to {AGGRIEVED.him}",
         "vars": {
           "AGGRIEVED": "hero:{AGGRIEVED}",
           "PATRON": "hero:{PATRON}"

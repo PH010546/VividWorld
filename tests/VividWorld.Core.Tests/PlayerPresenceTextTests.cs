@@ -217,7 +217,11 @@ namespace VividWorld.Core.Tests
                     }
                 }
 
-                Assert.True(tokensFound > 0, $"Expected gender select tokens in {Path.GetFileName(path)}, but found none");
+                // 繁中不依性別分「她」，一律寫「他」，所以只有英文表一定要有選字記號
+                if (path == enPath)
+                {
+                    Assert.True(tokensFound > 0, $"Expected gender select tokens in {Path.GetFileName(path)}, but found none");
+                }
             }
         }
     }

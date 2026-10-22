@@ -983,8 +983,8 @@ namespace VividWorld.Campaign
                     else if (plan.ModeKind == ModeSectionKind.ForcedRealistic)
                     {
                         modeText = isMcmBound
-                            ? new TextObject("{=VividWorld_ModeNotice_PopupRealisticForced_Mcm}Vivid World is now running: what happens across the land passes by word of mouth among lords and wanderers. You are in Realistic mode: a lord needs to think well of you, or be the talkative sort, before he brings up the news of the land. If you would rather more people be willing to chat, open Vivid World's settings in MCM and set \"Rumor mode\" to \"Casual\".")
-                            : new TextObject("{=VividWorld_ModeNotice_PopupRealisticForced_NoMcm}Vivid World is now running: what happens across the land passes by word of mouth among lords and wanderers. You are in Realistic mode: a lord needs to think well of you, or be the talkative sort, before he brings up the news of the land. If you would rather more people be willing to chat, open config.json and set \"volunteerMode\" to \"casual\".");
+                            ? new TextObject("{=VividWorld_ModeNotice_PopupRealisticForced_Mcm}Vivid World is now running: what happens across the land passes by word of mouth among lords and wanderers. You are in Realistic mode: a lord needs to think well of you, or be the talkative sort, before they bring up the news of the land. If you would rather more people be willing to chat, open Vivid World's settings in MCM and set \"Rumor mode\" to \"Casual\".")
+                            : new TextObject("{=VividWorld_ModeNotice_PopupRealisticForced_NoMcm}Vivid World is now running: what happens across the land passes by word of mouth among lords and wanderers. You are in Realistic mode: a lord needs to think well of you, or be the talkative sort, before they bring up the news of the land. If you would rather more people be willing to chat, open config.json and set \"volunteerMode\" to \"casual\".");
                     }
                     else
                     {

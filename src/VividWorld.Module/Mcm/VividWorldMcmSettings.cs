@@ -72,7 +72,7 @@ namespace VividWorld.Mcm
         public int AskRelationGate { get; set; } = 0;
 
         [SettingPropertyFloatingInteger("{=VividWorld_MCM_AskWillingnessThreshold}Willingness needed to answer", -20f, 40f, "0.0", Order = 3, RequireRestart = false,
-            HintText = "{=VividWorld_MCM_AskWillingnessThresholdHint}The threshold a lord must clear before he will answer you. The score weighs his opinion of you together with his character (generosity and honor add, a calculating nature subtracts).")]
+            HintText = "{=VividWorld_MCM_AskWillingnessThresholdHint}The threshold a lord must clear before they will answer you. The score weighs their opinion of you together with their character (generosity and honor add, a calculating nature subtracts).")]
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Dialogue}Dialogue", GroupOrder = 3)]
         public float AskWillingnessThreshold { get; set; } = 5.0f;
 

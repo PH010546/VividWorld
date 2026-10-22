@@ -462,7 +462,7 @@ namespace VividWorld.Core.Catalog
                     vars["SETTLEMENT"] = "settlement:{SETTLEMENT}";
                     break;
                 case "PlayerChoice":
-                    text = "the man {CAPTOR} had defeated, released without a ransom";
+                    text = "someone {CAPTOR} had defeated was let go";
                     vars["CAPTOR"] = "hero:{CAPTOR}";
                     break;
                 case "Disbanded":

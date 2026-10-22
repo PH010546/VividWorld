@@ -10,6 +10,14 @@
 
 ## 尚未發佈
 
+## v1.1.1
+
+- **修正：英文傳聞句子不再把可能是女性的人寫死成 man／his**：沒要贖金就放人的三句（`the man he had defeated` 改 `the foe he had defeated`，只剩原因那一塊的備用句改成 `someone … had defeated was let go`、不再提贖金，跟旁人整句一樣）、爭座位族長自己的句尾（`a man who doesn't even head his own` 改 `someone … their own`）。
+- **修正：英文其他寫死性別的字**：老將取笑人的 `some men` 改 `some people`；`a drunk man's words` 改 `words spoken in drink`；收贖金放人的句尾 `A man keeps his word` 改 `I keep my word`；手下鬥毆裡先動手的那一個手下從 `the man`／`him` 改 `the retainer`／`them`（複數的 `men` 指部隊，照舊）。開發者工具標籤、事件類型名稱（`A veteran shared all they knew`、`A lord shielded their own after a brawl`）、設定說明與開場通知的 he／his 改 they／their。
+- **改：繁中一律用「他」**：不再依性別寫「她」。代名詞表女性那幾格改成跟男性一樣，感想句、以身入局視窗 7 句結果句、打探的 2 句理由都寫「他」；英文照舊依性別（him／her）。v1.1.0 寫的「視窗裡的句子照性別寫他／她」繁中部分不再成立。
+- **修正：繁中幾句不該假設對方比較年輕的說法**：爭座位當事人那兩塊的「晚輩」改「不當家的人」；請教消息老將那兩塊的「年輕人」拿掉（英文 `the young` 同改），跟整句的句尾一致。另拿掉「{SLIGHTED}當眾，要…」中間多的逗號。
+- 舊戰役可以直接繼續玩，設定檔不必動。
+
 ## v1.1.0
 
 - **修正：英文字串**：紀事的傳話次數改寫 `hand(s)`（1 手時不再是複數）、兩條開發者工具字串補上句間空格、`apologise` 統一成美式拼法，三句 NPC 台詞的英文措辭修正（中文不變）。

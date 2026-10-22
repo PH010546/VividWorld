@@ -141,9 +141,11 @@ first part is used. A part may be empty (`{PRISONER:|а}`), and may not contain 
 - `FOCUS` is the person a reaction line is about; it only works in those lines.
 
 A mistyped marker (one part only, or a name that is not a role in that sentence) is logged as a
-warning naming the string key, and the first part is shown. The shipped English and Traditional
-Chinese tables use `{NAME:…|…}` only in the probe replies (`SOURCE`) and in the window where a
-situation plays out in front of the player (`VividWorld_Presence_…`); a test keeps the rest that way.
+warning naming the string key, and the first part is shown. The shipped English table uses
+`{NAME:…|…}` only in the probe replies (`SOURCE`) and in the window where a situation plays out in
+front of the player (`VividWorld_Presence_…`); a test keeps the rest that way. The shipped
+Traditional Chinese table does not tell genders apart at all: Chinese 他 covers everyone, so its
+`_F` pronoun keys read the same as `_M` and it writes 他 where English has a gender marker.
 In that window `NAME` can be any role of the situation, even one the sentence does not name
 (`{STUDENT:he|she}` in a line that only names `{VETERAN}`). The ten fixed lines of the
 dialogue menu (the two questions the player asks and the NPC's short replies) can use it too, but

@@ -10,6 +10,14 @@ Every release states three things:
 
 ## Unreleased
 
+## v1.1.1
+
+- **Fix: English rumor lines no longer hard-code man/his for someone who may be a woman**: the three lines about a prisoner let go without a ransom (`the man he had defeated` becomes `the foe he had defeated`; the fallback piece used when only the reason is left becomes `someone … had defeated was let go` and no longer mentions the ransom, matching the bystander sentences), and the seat-dispute clan leader's own closing line (`a man who doesn't even head his own` becomes `someone … their own`).
+- **Fix: other hard-coded genders in English**: the veteran's jibe `some men` becomes `some people`; `a drunk man's words` becomes `words spoken in drink`; the captor's closing line `A man keeps his word` becomes `I keep my word`; the single retainer who struck first in the brawl rumors goes from `the man`/`him` to `the retainer`/`them` (plural `men` for troops stays). Developer-tool labels, event type names (`A veteran shared all they knew`, `A lord shielded their own after a brawl`), the settings hint and the start-up notice use they/their instead of he/his.
+- **Changed: Traditional Chinese always uses 他**: it no longer switches to 她 by gender. The female pronoun cells now match the male ones, and the reaction lines, the seven outcome lines of the situation window and the two probe reasons all read 他; English still follows gender (him/her). What v1.1.0 said about the window writing 他/她 by gender no longer holds for Chinese.
+- **Fix: a few Chinese lines no longer assume the other person is younger**: 晚輩 in the two seat-dispute pieces becomes 不當家的人; 年輕人 is dropped from the two veteran pieces of the advice rumors (English `the young` likewise), matching the whole-sentence closing lines. A stray comma in 「{SLIGHTED}當眾，要…」 is removed.
+- Existing campaigns can simply be continued; no config changes needed.
+
 ## v1.1.0
 
 - **Fix: English strings**: the chronicle hop count now reads `hand(s)` (no plural for a single hand), two developer-tool lines get the missing space between sentences, `apologise` is spelled the US way like the rest, and three NPC lines are reworded (Chinese unchanged).

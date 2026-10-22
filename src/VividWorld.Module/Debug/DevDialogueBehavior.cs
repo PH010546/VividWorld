@@ -334,22 +334,22 @@ namespace VividWorld.Debug
                 Consequence_EventRoster,
                 DevDialoguePriority);
 
-            // 4. (dev) His ledger of grudges
+            // 4. (dev) Their ledger of grudges
             starter.AddPlayerLine(
                 "vividworld_dev_grudge_ledger",
                 TokenDevPerson,
                 TokenDevResultPerson,
-                "{=VividWorld_Dev_GrudgeLedger}(dev) His ledger of grudges",
+                "{=VividWorld_Dev_GrudgeLedger}(dev) Their ledger of grudges",
                 Condition_AlwaysAvailable,
                 Consequence_GrudgeLedger,
                 DevDialoguePriority);
 
-            // 5. (dev) What the rumors he heard changed
+            // 5. (dev) What the rumors they heard changed
             starter.AddPlayerLine(
                 "vividworld_dev_opinion_shifts",
                 TokenDevPerson,
                 TokenDevResultPerson,
-                "{=VividWorld_Dev_OpinionShifts}(dev) What the rumors he heard changed",
+                "{=VividWorld_Dev_OpinionShifts}(dev) What the rumors they heard changed",
                 Condition_AlwaysAvailable,
                 Consequence_OpinionShifts,
                 DevDialoguePriority);
@@ -374,32 +374,32 @@ namespace VividWorld.Debug
                 Consequence_AiPushPreview,
                 DevDialoguePriority);
 
-            // 8. (dev) What would he add to each rumor he knows?
+            // 8. (dev) What would they add to each rumor they know?
             starter.AddPlayerLine(
                 "vividworld_dev_feelings",
                 TokenDevPerson,
                 TokenDevResultPerson,
-                "{=VividWorld_Dev_Feelings}(dev) What would he add to each rumor he knows?",
+                "{=VividWorld_Dev_Feelings}(dev) What would they add to each rumor they know?",
                 Condition_AlwaysAvailable,
                 Consequence_Feelings,
                 DevDialoguePriority);
 
-            // 8b. (dev) Who would he tell the scandals he knows?
+            // 8b. (dev) Who would they tell the scandals they know?
             starter.AddPlayerLine(
                 "vividworld_dev_shameful_news",
                 TokenDevPerson,
                 TokenDevResultPerson,
-                "{=VividWorld_Dev_ShamefulNews}(dev) Who would he tell the scandals he knows?",
+                "{=VividWorld_Dev_ShamefulNews}(dev) Who would they tell the scandals they know?",
                 Condition_AlwaysAvailable,
                 Consequence_ShamefulNews,
                 DevDialoguePriority);
 
-            // 9. (dev) How does he feel about me, per person
+            // 9. (dev) How do they feel about me, per person
             starter.AddPlayerLine(
                 "vividworld_dev_player_relation",
                 TokenDevPerson,
                 TokenDevResultPerson,
-                "{=VividWorld_Dev_PlayerRelation}(dev) His relation with you",
+                "{=VividWorld_Dev_PlayerRelation}(dev) Their relation with you",
                 Condition_AlwaysAvailable,
                 Consequence_PlayerRelation,
                 DevDialoguePriority);
@@ -619,12 +619,12 @@ namespace VividWorld.Debug
                 100,
                 null);
 
-            // 8. (dev) Have him tell me a rumor with feeling
+            // 8. (dev) Have them tell me a rumor with feeling
             starter.AddPlayerLine(
                 "vividworld_dev_tell_with_feeling",
                 TokenDevAct,
                 TokenDevResultAct,
-                "{=VividWorld_Dev_TellWithFeeling}(dev) Have him tell me a rumor with feeling",
+                "{=VividWorld_Dev_TellWithFeeling}(dev) Have them tell me a rumor with feeling",
                 Condition_AllowInjection,
                 Consequence_TellWithFeeling,
                 DevDialoguePriority);
@@ -682,52 +682,52 @@ namespace VividWorld.Debug
                 Consequence_WhoCouldStartMadeUpTalk,
                 DevDialoguePriority);
 
-            // 4. (dev) Make him speak ill of the ruler here
+            // 4. (dev) Make them speak ill of the ruler here
             starter.AddPlayerLine(
                 "vividworld_dev_force_spoke_against_ruler",
                 TokenDevBelief,
                 TokenDevResultBelief,
-                "{=VividWorld_Dev_ForceSpokeAgainstRuler}(dev) Make him speak ill of the ruler here",
+                "{=VividWorld_Dev_ForceSpokeAgainstRuler}(dev) Make them speak ill of the ruler here",
                 Condition_AlwaysAvailable,
                 Consequence_ForceSpokeAgainstRuler,
                 DevDialoguePriority);
 
-            // 5. (dev) Make him refuse a comrade's plea for aid here
+            // 5. (dev) Make them refuse a comrade's plea for aid here
             starter.AddPlayerLine(
                 "vividworld_dev_force_refused_aid",
                 TokenDevBelief,
                 TokenDevResultBelief,
-                "{=VividWorld_Dev_ForceRefusedAid}(dev) Make him refuse a comrade's plea for aid here",
+                "{=VividWorld_Dev_ForceRefusedAid}(dev) Make them refuse a comrade's plea for aid here",
                 Condition_AlwaysAvailable,
                 Consequence_ForceRefusedAid,
                 DevDialoguePriority);
 
-            // 6. (dev) Trigger a rash capture from his latest capture (either side)
+            // 6. (dev) Trigger a rash capture from their latest capture (either side)
             starter.AddPlayerLine(
                 "vividworld_dev_force_rash_capture",
                 TokenDevBelief,
                 TokenDevResultBelief,
-                "{=VividWorld_Dev_ForceRashCapture}(dev) Trigger a rash capture from his latest capture (either side)",
+                "{=VividWorld_Dev_ForceRashCapture}(dev) Trigger a rash capture from their latest capture (either side)",
                 Condition_AlwaysAvailable,
                 Consequence_ForceRashCapture,
                 DevDialoguePriority);
 
-            // 7. (dev) Trigger prisoner mistreatment from his latest capture (either side)
+            // 7. (dev) Trigger prisoner mistreatment from their latest capture (either side)
             starter.AddPlayerLine(
                 "vividworld_dev_force_mistreated_prisoner",
                 TokenDevBelief,
                 TokenDevResultBelief,
-                "{=VividWorld_Dev_ForceMistreatedPrisoner}(dev) Trigger prisoner mistreatment from his latest capture (either side)",
+                "{=VividWorld_Dev_ForceMistreatedPrisoner}(dev) Trigger prisoner mistreatment from their latest capture (either side)",
                 Condition_AlwaysAvailable,
                 Consequence_ForceMistreatedPrisoner,
                 DevDialoguePriority);
 
-            // 8. (dev) Make him the poisoner of the latest old-age death
+            // 8. (dev) Make them the poisoner of the latest old-age death
             starter.AddPlayerLine(
                 "vividworld_dev_force_poisoned",
                 TokenDevBelief,
                 TokenDevResultBelief,
-                "{=VividWorld_Dev_ForcePoisoned}(dev) Make him the poisoner of the latest old-age death",
+                "{=VividWorld_Dev_ForcePoisoned}(dev) Make them the poisoner of the latest old-age death",
                 Condition_AlwaysAvailable,
                 Consequence_ForcePoisoned,
                 DevDialoguePriority);
@@ -757,7 +757,7 @@ namespace VividWorld.Debug
                 "vividworld_dev_force_slander",
                 TokenDevMadeUp,
                 TokenDevResultMadeUp,
-                "{=VividWorld_Dev_ForceSlander}(dev) Make him slander someone he holds a grudge against here",
+                "{=VividWorld_Dev_ForceSlander}(dev) Make them slander someone they hold a grudge against here",
                 Condition_AlwaysAvailable,
                 Consequence_ForceSlander,
                 DevDialoguePriority);
@@ -766,7 +766,7 @@ namespace VividWorld.Debug
                 "vividworld_dev_force_rivalry_slander",
                 TokenDevMadeUp,
                 TokenDevResultMadeUp,
-                "{=VividWorld_Dev_ForceRivalrySlander}(dev) Make him slander a rival clan leader here",
+                "{=VividWorld_Dev_ForceRivalrySlander}(dev) Make them slander a rival clan leader here",
                 Condition_AlwaysAvailable,
                 Consequence_ForceRivalrySlander,
                 DevDialoguePriority);
@@ -775,7 +775,7 @@ namespace VividWorld.Debug
                 "vividworld_dev_force_praise_kin",
                 TokenDevMadeUp,
                 TokenDevResultMadeUp,
-                "{=VividWorld_Dev_ForcePraiseKin}(dev) Make him invent praise for his own kin here",
+                "{=VividWorld_Dev_ForcePraiseKin}(dev) Make them invent praise for their own kin here",
                 Condition_AlwaysAvailable,
                 Consequence_ForcePraiseKin,
                 DevDialoguePriority);
@@ -793,7 +793,7 @@ namespace VividWorld.Debug
                 "vividworld_dev_talk_reaches_accused",
                 TokenDevMadeUp,
                 TokenDevResultMadeUp,
-                "{=VividWorld_Dev_TalkReachesAccused}(dev) Pass the latest made-up talk he knows to the people involved, and make them step forward",
+                "{=VividWorld_Dev_TalkReachesAccused}(dev) Pass the latest made-up talk they know to the people involved, and make them step forward",
                 Condition_AlwaysAvailable,
                 Consequence_TalkReachesAccused,
                 DevDialoguePriority);
@@ -802,17 +802,17 @@ namespace VividWorld.Debug
                 "vividworld_dev_response_reaches_listeners",
                 TokenDevMadeUp,
                 TokenDevResultMadeUp,
-                "{=VividWorld_Dev_ResponseReachesListeners}(dev) The answered made-up talk he knows: make everyone who still believes it hear the latest response and stop believing it",
+                "{=VividWorld_Dev_ResponseReachesListeners}(dev) The answered made-up talk they know: make everyone who still believes it hear the latest response and stop believing it",
                 Condition_AlwaysAvailable,
                 Consequence_ResponseReachesListeners,
                 DevDialoguePriority);
 
-            // 7. Tell me the latest made-up talk he knows that I haven't heard, along with every response to it
+            // 7. Tell me the latest made-up talk they know that I haven't heard, along with every response to it
             starter.AddPlayerLine(
                 "vividworld_dev_tell_madeup_talk",
                 TokenDevMadeUp,
                 TokenDevResultMadeUp,
-                "{=VividWorld_Dev_TellMeMadeUpTalk}(dev) Tell me the latest made-up talk he knows that I haven't heard, along with every response to it",
+                "{=VividWorld_Dev_TellMeMadeUpTalk}(dev) Tell me the latest made-up talk they know that I haven't heard, along with every response to it",
                 Condition_AlwaysAvailable,
                 Consequence_TellMadeUpTalkAndResponses,
                 DevDialoguePriority);
@@ -821,7 +821,7 @@ namespace VividWorld.Debug
                 "vividworld_dev_probe_preview",
                 TokenDevMadeUp,
                 TokenDevResultMadeUp,
-                "{=VividWorld_Dev_ProbePreview}(dev) Ask preview: how many times he has been asked today, and how he would answer each entry in your chronicle",
+                "{=VividWorld_Dev_ProbePreview}(dev) Ask preview: how many times they have been asked today, and how they would answer each entry in your chronicle",
                 Condition_AlwaysAvailable,
                 Consequence_ProbePreview,
                 DevDialoguePriority);

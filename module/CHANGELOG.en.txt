@@ -1,5 +1,11 @@
 Vivid World changelog
 
+v1.1.1
+Fixed: a few English rumor lines spoke of a lord as a man even when she is a woman.
+Fixed: the Chinese text now uses the same pronoun for everyone instead of switching by gender in some lines only.
+Fixed: a few Chinese rumor lines assumed the other person was younger.
+Existing campaigns can be continued as they are; no settings need to be changed.
+
 v1.1.0
 Fixed: some wording in the English text.
 New: "Situations happen in front of you". While in a town or castle you will now and then see something happen between lords with your own eyes, and sometimes it is your turn to decide; your choice changes how others feel about you and word of it gets around. You can turn it off in the settings.
