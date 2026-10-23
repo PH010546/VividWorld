@@ -10,6 +10,11 @@
 
 ## 尚未發佈
 
+## v1.1.2
+
+- **修正：審字找到的五句**：英文酒館替人說話的結果句第二次改用 him／her（`{LISTENER:him|her|them}`），讓功的結果句改成 `The toast is meant for … who hands the credit to … instead`，不再同一句叫兩次名字；聽說有人下令處決、敵視的感想英文從 `calls that noble?` 改成 `What kind of noble is …?`，跟中文「還算什麼貴族」同義；丟了面子、親近的第二句英文補上跟誰喝（`have a drink with {him}`）；繁中「咽不下」改「嚥不下」，跟其他兩句同樣的話一致。
+- 舊戰役可以直接繼續玩，設定檔不必動。
+
 ## v1.1.1
 
 - **修正：英文傳聞句子不再把可能是女性的人寫死成 man／his**：沒要贖金就放人的三句（`the man he had defeated` 改 `the foe he had defeated`，只剩原因那一塊的備用句改成 `someone … had defeated was let go`、不再提贖金，跟旁人整句一樣）、爭座位族長自己的句尾（`a man who doesn't even head his own` 改 `someone … their own`）。

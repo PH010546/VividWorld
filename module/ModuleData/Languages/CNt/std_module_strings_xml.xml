@@ -1274,7 +1274,7 @@
     <string id="VividWorld_Feeling_Released_Hostile_2" text="別以為放了人，之前的事就一筆勾銷了。" />
     <string id="VividWorld_Feeling_Released_Sore_1" text="這件事上{ADDRESS}沒什麼可挑的，別的事另說。" />
     <string id="VividWorld_Feeling_Released_Owe_1" text="{ADDRESS}我是不喜歡，可{he}做事還算照規矩，這回放人是這樣，當初幫我也是這樣。" />
-    <string id="VividWorld_Feeling_LostFace_Close_1" text="這口氣換作是我也咽不下，{ADDRESS}受委屈了。" />
+    <string id="VividWorld_Feeling_LostFace_Close_1" text="這口氣換作是我也嚥不下，{ADDRESS}受委屈了。" />
     <string id="VividWorld_Feeling_LostFace_Close_2" text="{ADDRESS}臉上怕是掛不住，改天我得去陪著喝兩杯。" />
     <string id="VividWorld_Feeling_LostFace_Neutral_1" text="場面上的事，今天你丟臉，明天我丟臉，過幾天也就沒人記得了。" />
     <string id="VividWorld_Feeling_LostFace_Neutral_2" text="丟了這回面子，{ADDRESS}往後說話就沒那麼有分量了。" />

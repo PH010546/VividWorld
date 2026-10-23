@@ -1223,7 +1223,7 @@
     <string id="VividWorld_Feeling_Executor_Close_2" text="I trust {ADDRESS}, and I won&apos;t second-guess this." />
     <string id="VividWorld_Feeling_Executor_Neutral_1" text="Blood on one&apos;s hands makes the road ahead a hard one." />
     <string id="VividWorld_Feeling_Executor_Neutral_2" text="That&apos;s a feud that won&apos;t be easily settled." />
-    <string id="VividWorld_Feeling_Executor_Hostile_1" text="Doing that to someone who could not fight back — and {ADDRESS} calls that noble?" />
+    <string id="VividWorld_Feeling_Executor_Hostile_1" text="Doing that to someone who could not fight back. What kind of noble is {ADDRESS}?" />
     <string id="VividWorld_Feeling_Executor_Hostile_2" text="I always knew {ADDRESS} was ruthless. Who would dare fall into such hands now?" />
     <string id="VividWorld_Feeling_Executor_Sore_1" text="{ADDRESS} has made who knows how many enemies with this, and I truly worry. To be honest, I&apos;ve felt that ruthless streak myself — I just never thought it would go as far as taking a life." />
     <string id="VividWorld_Feeling_Executor_Sore_2" text="I&apos;d like to speak up for {ADDRESS}; there must have been some reason for this. But I&apos;ve been on the wrong end of that temper myself, so I can&apos;t say it with much conviction." />
@@ -1275,7 +1275,7 @@
     <string id="VividWorld_Feeling_Released_Sore_1" text="There&apos;s nothing to fault {ADDRESS} for here. Other matters are another story." />
     <string id="VividWorld_Feeling_Released_Owe_1" text="I don&apos;t like {ADDRESS}, but {he} does go by the rules — in letting this prisoner go, and back when {he} helped me too." />
     <string id="VividWorld_Feeling_LostFace_Close_1" text="I couldn&apos;t have swallowed that either. {ADDRESS} was badly wronged." />
-    <string id="VividWorld_Feeling_LostFace_Close_2" text="{ADDRESS} must be smarting. I&apos;ll go share a drink one of these days." />
+    <string id="VividWorld_Feeling_LostFace_Close_2" text="{ADDRESS} must be smarting. I&apos;ll go and have a drink with {him} one of these days." />
     <string id="VividWorld_Feeling_LostFace_Neutral_1" text="Today one loses face, tomorrow another; in a few days no one will remember." />
     <string id="VividWorld_Feeling_LostFace_Neutral_2" text="After losing face like that, {ADDRESS}&apos;s word won&apos;t carry as much weight." />
     <string id="VividWorld_Feeling_LostFace_Hostile_1" text="Good that {ADDRESS} got taken down a peg — always so full of airs." />
@@ -1729,14 +1729,14 @@
     <string id="VividWorld_Presence_Outcome_advice_sought_teach_freely" text="{VETERAN} tells the whole story of how that battle was won, holding nothing back, not even the mistakes." />
     <string id="VividWorld_Presence_Outcome_advice_sought_brush_off" text="{VETERAN} offers a few things everyone already knows and, before the cup is empty, changes the subject." />
     <string id="VividWorld_Presence_Outcome_advice_sought_mock" text="{VETERAN} makes a joke of the question in front of the whole hall, saying some people should first learn to sit still. As {STUDENT} leaves the hall, people are still laughing." />
-    <string id="VividWorld_Presence_Outcome_tavern_words_good_word" text="Someone at the table makes fun of {LISTENER}, and {SPEAKER} speaks up for {LISTENER}, adding that it is not the wine talking." />
+    <string id="VividWorld_Presence_Outcome_tavern_words_good_word" text="Someone at the table makes fun of {LISTENER}, and {SPEAKER} speaks up for {LISTENER:him|her|them}, adding that it is not the wine talking." />
     <string id="VividWorld_Presence_Outcome_tavern_words_boast" text="{SPEAKER} starts telling of past battles, and the tale grows taller with every cup; the table only smiles." />
     <string id="VividWorld_Presence_Outcome_tavern_words_sour_words" text="With the wine loosening the tongue, {SPEAKER} says something to {LISTENER}, and {LISTENER}&apos;s face changes at once." />
     <string id="VividWorld_Presence_Outcome_market_brawl_hand_over" text="In front of the whole street, {PATRON} hands the retainer who struck first over to {AGGRIEVED}, and apologizes as well." />
     <string id="VividWorld_Presence_Outcome_market_brawl_shield_own" text="{PATRON} refuses to hand anyone over: a house deals with its own men, and it is no one else&apos;s business." />
     <string id="VividWorld_Presence_Outcome_market_brawl_counter_accuse" text="{PATRON} not only refuses to hand anyone over, but says before everyone that the men of {AGGRIEVED} struck first, and that {AGGRIEVED} owes an answer. The two houses stand there, neither giving way." />
     <string id="VividWorld_Presence_Outcome_victory_credit_claim_aloud" text="{CLAIMANT} is first on {CLAIMANT:his|her|their} feet, claims the credit for that battle, and says {RIVAL} only arrived once the enemy line had already broken." />
-    <string id="VividWorld_Presence_Outcome_victory_credit_defer" text="The toast was meant for {CLAIMANT}, but {CLAIMANT} gives the credit to {RIVAL}." />
+    <string id="VividWorld_Presence_Outcome_victory_credit_defer" text="The toast is meant for {CLAIMANT}, who hands the credit to {RIVAL} instead." />
     <string id="VividWorld_Presence_Outcome_victory_credit_let_the_host_judge" text="Neither will give way, so in the end they ask {HOST} to decide. {HOST} gives the credit to {RIVAL}." />
     <string id="VividWorld_Presence_Outcome_hunt_wager_take_the_wager" text="{CHALLENGED} accepts on the spot, and half the hall puts money on it too." />
     <string id="VividWorld_Presence_Outcome_hunt_wager_refuse_and_jest" text="{CHALLENGED} turns it down and makes a joke of it; the hall laughs for a good while." />

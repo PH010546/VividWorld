@@ -10,6 +10,11 @@ Every release states three things:
 
 ## Unreleased
 
+## v1.1.2
+
+- **Fix: five lines from a wording review**: the outcome line where someone speaks up at the tavern uses him/her the second time (`{LISTENER:him|her|them}`), and the credit-deferring outcome becomes `The toast is meant for … who hands the credit to … instead`, so neither names the same person twice; the hostile reaction to an execution goes from `calls that noble?` to `What kind of noble is …?`, matching the Chinese; the close reaction to someone losing face now says who the drink is with (`have a drink with {him}`); in Traditional Chinese 咽不下 becomes 嚥不下, as in the two other lines with the same phrase.
+- Existing campaigns can simply be continued; no config changes needed.
+
 ## v1.1.1
 
 - **Fix: English rumor lines no longer hard-code man/his for someone who may be a woman**: the three lines about a prisoner let go without a ransom (`the man he had defeated` becomes `the foe he had defeated`; the fallback piece used when only the reason is left becomes `someone … had defeated was let go` and no longer mentions the ransom, matching the bystander sentences), and the seat-dispute clan leader's own closing line (`a man who doesn't even head his own` becomes `someone … their own`).
