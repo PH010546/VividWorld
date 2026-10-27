@@ -21,7 +21,8 @@
 
     用法：
         .\tools\nexus-upload.ps1              # 只看計畫
-        .\tools\nexus-upload.ps1 -Send        # 真的上傳（只准在主分支、沒有未提交的改動時）
+        .\tools\nexus-upload.ps1 -Send        # 真的上傳（只准切在定版標籤、沒有未提交的改動時）
+    平常由 tools\release-tag.ps1 -Tag v<版本> -Step Upload 在那個標籤的工作副本裡叫它。
 #>
 [CmdletBinding()]
 param(
@@ -67,9 +68,21 @@ function Get-ChangelogSection([string]$path, [string]$ver) {
     if ($body.Count -eq 0) { Write-Error "$path 的 '$ver' 底下是空的" }
     return ($body -join "`n")
 }
-# Nexus 上暫時只放英文；中文那份照樣隨發行包出貨
-$changelogs = [ordered]@{
-    'English' = Get-ChangelogSection (Join-Path $repoRoot 'module\CHANGELOG.en.txt') $version
+function ConvertTo-VersionNumber([string]$v) {
+    if ($v -notmatch '^v?(\d+)\.(\d+)\.(\d+)$') { return $null }
+    return [version]::new([int]$Matches[1], [int]$Matches[2], [int]$Matches[3])
+}
+# 從上一個已上傳的版本之後、到這一版為止，更新紀錄裡每一節都要追加：
+# 定版之後沒推、直接推了更新的那一版時，跳過的那幾版內容不會從 Nexus 的更新紀錄上消失。
+# 回傳由舊到新的版本字串（照檔案裡的寫法，帶 v）
+function Get-ChangelogVersionsSince([string]$path, [string]$after, [string]$upTo) {
+    $low = ConvertTo-VersionNumber $after
+    $high = ConvertTo-VersionNumber $upTo
+    $found = foreach ($line in [IO.File]::ReadAllLines($path, [Text.Encoding]::UTF8)) {
+        $n = ConvertTo-VersionNumber $line.Trim()
+        if ($n -and $n -le $high -and (-not $low -or $n -gt $low)) { $line.Trim() }
+    }
+    return @($found | Sort-Object { ConvertTo-VersionNumber $_ })
 }
 
 # ── API 金鑰 ─────────────────────────────────────────────────────────
@@ -122,6 +135,18 @@ if (-not $previous) { Write-Error "檔案 '$($target.name)' 底下沒有任何�
 $versionName = if ($RenameTo) { $RenameTo } else { $previous.name }
 $nexusVersion = if ($previous.version -match '^v') { $version } else { $version.TrimStart('v') }
 if ($previous.version -eq $nexusVersion) { Write-Error "Nexus 上一版已經是 $nexusVersion —— 版本號沒有加" }
+if ((ConvertTo-VersionNumber $previous.version) -and (ConvertTo-VersionNumber $previous.version) -gt (ConvertTo-VersionNumber $version)) {
+    Write-Error "Nexus 上一版是 $($previous.version)，比這一版 $version 新：不推比 Nexus 上還舊的版本"
+}
+
+# Nexus 上暫時只放英文；中文那份照樣隨發行包出貨。每一版一筆，由舊到新追加
+$enChangelog = Join-Path $repoRoot 'module\CHANGELOG.en.txt'
+$changelogs = [ordered]@{}
+foreach ($v in (Get-ChangelogVersionsSince $enChangelog $previous.version $version)) {
+    $label = if ($previous.version -match '^v') { $v } else { $v.TrimStart('v') }
+    $changelogs[$label] = Get-ChangelogSection $enChangelog $v
+}
+if ($changelogs.Count -eq 0) { Write-Error "$enChangelog 裡找不到 $version 這一節" }
 
 $md5Bytes = [Security.Cryptography.MD5]::Create().ComputeHash([IO.File]::ReadAllBytes($zip.FullName))
 $md5Hex = -join ($md5Bytes | ForEach-Object { $_.ToString('x2') })
@@ -134,7 +159,7 @@ Write-Host "上一版：$($previous.version)  名稱 '$($previous.name)'  類別
 if ($RenameTo) { Write-Host "改名：模組檔案 '$($target.name)' → '$RenameTo'" }
 Write-Host "新版本：$nexusVersion  名稱 '$versionName'  類別 main  mod manager 預設下載=是  更新模組版本號=是  上一版不封存（留成舊版）"
 foreach ($k in $changelogs.Keys) {
-    Write-Host "`n追加更新紀錄（$k，版本 $nexusVersion）：" -ForegroundColor Cyan
+    Write-Host "`n追加更新紀錄（English，版本 $k）：" -ForegroundColor Cyan
     Write-Host $changelogs[$k]
 }
 
@@ -197,8 +222,8 @@ Write-Host "新版本已建立：檔案 $($created.file.name)（$($created.file.
 
 # ── 7. 追加更新紀錄 ──────────────────────────────────────────────────
 foreach ($k in $changelogs.Keys) {
-    $null = Invoke-Nexus 'POST' "/mods/$($mod.id)/changelogs" @{ version = $nexusVersion; changelog = $changelogs[$k] }
-    Write-Host "更新紀錄已追加：$k" -ForegroundColor Green
+    $null = Invoke-Nexus 'POST' "/mods/$($mod.id)/changelogs" @{ version = $k; changelog = $changelogs[$k] }
+    Write-Host "更新紀錄已追加：English，版本 $k" -ForegroundColor Green
 }
 
 # ── 8. 讀回來核對 ────────────────────────────────────────────────────

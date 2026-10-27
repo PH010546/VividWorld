@@ -16,14 +16,14 @@ param(
     [string]$GameFolder = 'C:\Game\Steam\steamapps\common\Mount & Blade II Bannerlord',
     [string]$OutDir,
     [switch]$SkipBuild,
-    # 試打包用：略過「只准在主分支、沒有未提交改動」的檢查。要搭配 -OutDir，不准寫進預設的 dist\
+    # 試打包用：略過「只准切在定版標籤、沒有未提交改動」的檢查。要搭配 -OutDir，不准寫進預設的 dist\
     [switch]$SkipReleaseCheck
 )
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
 
-# ── 0. 只准從主分支、乾淨的工作資料夾打包 ───────────────────────────
+# ── 0. 只准從定版標籤、乾淨的工作資料夾打包 ───────────────────────────
 if ($SkipReleaseCheck) {
     if (-not $OutDir) { Write-Error '-SkipReleaseCheck 必須搭配 -OutDir：試打包不准寫進預設的 dist\，免得蓋掉正式的發行包' }
     Write-Warning '略過發佈檢查（-SkipReleaseCheck）：這一份不是正式發行包'

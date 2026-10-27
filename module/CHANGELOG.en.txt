@@ -1,5 +1,9 @@
 Vivid World changelog
 
+v1.2.1
+Fixed: when it was your turn to decide in "Situations happen in front of you", your choice did not change how others feel about you.
+Existing campaigns can be continued as they are; no settings need to be changed.
+
 v1.2.0
 Changed: with Calradia Remembers 2.7.9 or later, NPCs you chat with through AI can bring up more of the news they remember.
 Existing campaigns can be continued as they are; no settings need to be changed.

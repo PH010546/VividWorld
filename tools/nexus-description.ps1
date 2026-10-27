@@ -15,7 +15,7 @@
 
     用法：
         .\tools\nexus-description.ps1          # 只比對
-        .\tools\nexus-description.ps1 -Send    # 真的送（只准在主分支、沒有未提交的改動時）
+        .\tools\nexus-description.ps1 -Send    # 真的送（只准切在定版標籤、沒有未提交的改動時）
 #>
 [CmdletBinding()]
 param(

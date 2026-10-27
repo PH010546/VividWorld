@@ -10,6 +10,11 @@ Every release states three things:
 
 ## Unreleased
 
+## v1.2.1
+
+- **Fixed: choosing an approach in a situation in front of you did not change how the others feel about you**: since v1.1.0 (the release that introduced it), the "relation ↑/↓" column in that window (others toward you) never reached the game, whatever the settings and other mods. It is now applied to that person's own relation with you, using the numbers for the approach; the approaches that can draw in a whole clan (refusing to hand over your man, or turning the accusation around, in the market brawl) follow the existing rule for whether the clan leader is drawn in. Your own feelings toward others are still not recorded. Earlier choices are not made up for. The log no longer shows `grudge skipped … main_hero: main_hero is the player`; it shows `grudge … -> … main_hero: requested … (base before -> after)` instead.
+- Existing campaigns can simply be continued; no config changes needed.
+
 ## v1.2.0
 
 - **Changed: with Calradia Remembers 2.7.9 or later, the news an NPC remembers reaches the AI through `heard_now.txt`**: that file sits ahead of CR's output rules, so longer news no longer weakens CR's own rules the way it could in `post_history_instructions.txt`, and the limit goes from 500 to 1000 characters (lean prompts stay at 300). Each piece of news appears in only one of the two files: 2.7.7–2.7.8 keep using `post_history_instructions.txt` (500/300), older versions still get memories added, and an unreadable CR version is treated as 2.7.9 or later. How news is picked, the opening line and the language are unchanged; memories already added to CR are left alone. The `AI live news for …` log line now names the variable it served, and the one that stands aside prints `empty (given through the other file)`.

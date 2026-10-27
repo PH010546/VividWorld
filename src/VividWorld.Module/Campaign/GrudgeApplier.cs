@@ -112,72 +112,32 @@ namespace VividWorld.Campaign
                     continue;
                 }
 
-                // 2. FromHeroId / AboutHeroId 任一為空、兩者相同、或任一是 _playerHeroId => 跳過並印原因
-                if (string.IsNullOrEmpty(req.FromHeroId) || string.IsNullOrEmpty(req.AboutHeroId))
+                // 2. 檢查是否跳過：未綁定、同一人、出發者為玩家 => 跳過並記錄原因
+                var skipDecision = GrudgeSkipRule.Evaluate(
+                    req.Source,
+                    req.FromHeroId,
+                    req.AboutHeroId,
+                    req.FromRole,
+                    req.ToRole,
+                    playerHeroId,
+                    evt.EventId);
+
+                if (skipDecision.ShouldSkip)
                 {
                     if (req.Source == GrudgeSource.Rumor)
                     {
                         OpinionSkippedThisSession++;
-                        string unboundRole = string.IsNullOrEmpty(req.FromHeroId) ? req.FromRole : req.ToRole;
-                        ModLog.Info(GrudgeLogFormatter.FormatOpinionSkipped(
-                            req.FromHeroId, req.ToRole, evt.EventId,
-                            $"role '{unboundRole}' is unbound"));
                     }
                     else
                     {
                         SkippedThisSession++;
-                        string unboundRole = string.IsNullOrEmpty(req.FromHeroId) ? req.FromRole : req.ToRole;
-                        ModLog.Info(GrudgeLogFormatter.FormatSkippedUnboundRole(
-                            req.FromRole, req.FromHeroId, req.ToRole, req.AboutHeroId, unboundRole));
+                    }
+
+                    if (!string.IsNullOrEmpty(skipDecision.LogMessage))
+                    {
+                        ModLog.Info(skipDecision.LogMessage!);
                     }
                     continue;
-                }
-
-                if (string.Equals(req.FromHeroId, req.AboutHeroId, StringComparison.Ordinal))
-                {
-                    if (req.Source == GrudgeSource.Rumor)
-                    {
-                        OpinionSkippedThisSession++;
-                        ModLog.Info(GrudgeLogFormatter.FormatOpinionSkipped(
-                            req.FromHeroId, req.ToRole, evt.EventId,
-                            "target is the observer self"));
-                    }
-                    else
-                    {
-                        SkippedThisSession++;
-                        ModLog.Info($"grudge skipped {req.FromRole} {req.FromHeroId} -> {req.ToRole} {req.AboutHeroId}: from and about are the same hero");
-                    }
-                    continue;
-                }
-
-                if (!string.IsNullOrEmpty(playerHeroId) && string.Equals(req.FromHeroId, playerHeroId, StringComparison.Ordinal))
-                {
-                    if (req.Source == GrudgeSource.Rumor)
-                    {
-                        OpinionSkippedThisSession++;
-                        ModLog.Info(GrudgeLogFormatter.FormatOpinionSkipped(
-                            req.FromHeroId, req.ToRole, evt.EventId,
-                            "observer is the player"));
-                    }
-                    else
-                    {
-                        SkippedThisSession++;
-                        ModLog.Info(GrudgeLogFormatter.FormatSkippedPlayer(
-                            req.FromRole, req.FromHeroId, req.ToRole, req.AboutHeroId, req.FromHeroId));
-                    }
-                    continue;
-                }
-
-                if (!string.IsNullOrEmpty(playerHeroId) && string.Equals(req.AboutHeroId, playerHeroId, StringComparison.Ordinal))
-                {
-                    if (req.Source == GrudgeSource.Situation)
-                    {
-                        SkippedThisSession++;
-                        ModLog.Info(GrudgeLogFormatter.FormatSkippedPlayer(
-                            req.FromRole, req.FromHeroId, req.ToRole, req.AboutHeroId, req.AboutHeroId));
-                        continue;
-                    }
-                    // req.Source == GrudgeSource.Rumor 時允許玩家為 AboutHeroId
                 }
 
                 // 3. 知情者查找支援 hop > 0
