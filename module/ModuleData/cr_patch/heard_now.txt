@@ -1,0 +1,2 @@
+!# VividWorld: what this character currently knows of recent happenings, rebuilt every reply.
+{{vividworld_heard_now}}

@@ -205,6 +205,7 @@ foreach ($required in @('SubModule.xml',
                         'ModuleData\Languages\std_module_strings_xml.xml',
                         'ModuleData\Languages\CNt\std_module_strings_xml.xml',
                         'ModuleData\cr_patch\post_history_instructions.txt',
+                        'ModuleData\cr_patch\heard_now.txt',
                         'GUI\Prefabs\VividWorldChronicle.xml',
                         'GUI\Brushes\VividWorldChronicle.xml')) {
     if (-not (Test-Path (Join-Path $stageRoot $required))) { $problems += "缺少 $required" }

@@ -166,5 +166,115 @@ namespace VividWorld.Core.Tests.Ai
             Assert.Single(result.ExcludedItems);
             Assert.Equal("evt_2", result.ExcludedItems[0].EventId);
         }
+
+        [Fact]
+        public void Build_NewVariable_StandardUses1000Limit()
+        {
+            // HeardNow standard limit = 1000.
+            // item1: 600 chars
+            // item2: 350 chars -> 600 + 1 + 350 = 951 <= 1000 (included)
+            // item3: 60 chars -> 951 + 1 + 60 = 1012 > 1000 (excluded)
+            string text1 = new string('A', 600 - "- [heard, today] ".Length);
+            string text2 = new string('B', 350 - "- [heard, today] ".Length);
+            string text3 = new string('C', 60 - "- [heard, today] ".Length);
+
+            var items = new List<AiLiveNewsItem>
+            {
+                new AiLiveNewsItem("evt_1", AiMemoryKind.Hearsay, 0, text1),
+                new AiLiveNewsItem("evt_2", AiMemoryKind.Hearsay, 0, text2),
+                new AiLiveNewsItem("evt_3", AiMemoryKind.Hearsay, 0, text3)
+            };
+
+            var result = AiLiveNewsBlock.BuildForVariable(AiLiveNewsBlock.HeardNowVariableName, "John", lean: false, items);
+
+            Assert.Equal(1000, result.MaxChars);
+            Assert.Equal(new[] { "evt_1", "evt_2" }, result.IncludedEventIds);
+            Assert.Single(result.ExcludedItems);
+            Assert.Equal("evt_3", result.ExcludedItems[0].EventId);
+        }
+
+        [Fact]
+        public void Build_NewVariable_LeanUses300Limit()
+        {
+            // HeardNow lean limit = 300.
+            // item1: 200 chars
+            // item2: 120 chars -> 200 + 1 + 120 = 321 > 300 (excluded)
+            string text1 = new string('A', 200 - "- [heard, today] ".Length);
+            string text2 = new string('B', 120 - "- [heard, today] ".Length);
+
+            var items = new List<AiLiveNewsItem>
+            {
+                new AiLiveNewsItem("evt_1", AiMemoryKind.Hearsay, 0, text1),
+                new AiLiveNewsItem("evt_2", AiMemoryKind.Hearsay, 0, text2)
+            };
+
+            var result = AiLiveNewsBlock.BuildForVariable(AiLiveNewsBlock.HeardNowVariableName, "John", lean: true, items);
+
+            Assert.Equal(300, result.MaxChars);
+            Assert.Single(result.IncludedEventIds);
+            Assert.Equal("evt_1", result.IncludedEventIds[0]);
+            Assert.Single(result.ExcludedItems);
+            Assert.Equal("evt_2", result.ExcludedItems[0].EventId);
+        }
+
+        [Fact]
+        public void Build_OldVariable_StandardUses500Limit()
+        {
+            // Old variable standard limit = 500.
+            // item1: 300 chars
+            // item2: 150 chars -> 300 + 1 + 150 = 451 <= 500 (included)
+            // item3: 60 chars -> 451 + 1 + 60 = 512 > 500 (excluded)
+            string text1 = new string('A', 300 - "- [heard, today] ".Length);
+            string text2 = new string('B', 150 - "- [heard, today] ".Length);
+            string text3 = new string('C', 60 - "- [heard, today] ".Length);
+
+            var items = new List<AiLiveNewsItem>
+            {
+                new AiLiveNewsItem("evt_1", AiMemoryKind.Hearsay, 0, text1),
+                new AiLiveNewsItem("evt_2", AiMemoryKind.Hearsay, 0, text2),
+                new AiLiveNewsItem("evt_3", AiMemoryKind.Hearsay, 0, text3)
+            };
+
+            var result = AiLiveNewsBlock.BuildForVariable(AiLiveNewsBlock.VariableName, "John", lean: false, items);
+
+            Assert.Equal(500, result.MaxChars);
+            Assert.Equal(new[] { "evt_1", "evt_2" }, result.IncludedEventIds);
+            Assert.Single(result.ExcludedItems);
+            Assert.Equal("evt_3", result.ExcludedItems[0].EventId);
+        }
+
+        [Fact]
+        public void Build_OldVariable_LeanUses300Limit()
+        {
+            // Old variable lean limit = 300.
+            // item1: 200 chars
+            // item2: 120 chars -> 200 + 1 + 120 = 321 > 300 (excluded)
+            string text1 = new string('A', 200 - "- [heard, today] ".Length);
+            string text2 = new string('B', 120 - "- [heard, today] ".Length);
+
+            var items = new List<AiLiveNewsItem>
+            {
+                new AiLiveNewsItem("evt_1", AiMemoryKind.Hearsay, 0, text1),
+                new AiLiveNewsItem("evt_2", AiMemoryKind.Hearsay, 0, text2)
+            };
+
+            var result = AiLiveNewsBlock.BuildForVariable(AiLiveNewsBlock.VariableName, "John", lean: true, items);
+
+            Assert.Equal(300, result.MaxChars);
+            Assert.Single(result.IncludedEventIds);
+            Assert.Equal("evt_1", result.IncludedEventIds[0]);
+            Assert.Single(result.ExcludedItems);
+            Assert.Equal("evt_2", result.ExcludedItems[0].EventId);
+        }
+
+        [Fact]
+        public void BuildHeardNow_StandardAndLeanLimits()
+        {
+            var resultStandard = AiLiveNewsBlock.BuildHeardNow("John", lean: false, new List<AiLiveNewsItem>());
+            Assert.Equal(1000, resultStandard.MaxChars);
+
+            var resultLean = AiLiveNewsBlock.BuildHeardNow("John", lean: true, new List<AiLiveNewsItem>());
+            Assert.Equal(300, resultLean.MaxChars);
+        }
     }
 }

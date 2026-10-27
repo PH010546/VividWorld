@@ -1,5 +1,9 @@
 Vivid World changelog
 
+v1.2.0
+Changed: with Calradia Remembers 2.7.9 or later, NPCs you chat with through AI can bring up more of the news they remember.
+Existing campaigns can be continued as they are; no settings need to be changed.
+
 v1.1.2
 Fixed: NPC lines.
 Existing campaigns can be continued as they are; no settings need to be changed.

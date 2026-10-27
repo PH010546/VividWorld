@@ -1,5 +1,9 @@
 Vivid World 更新紀錄
 
+v1.2.0
+Changed: 搭配 Calradia Remembers 2.7.9 以上時，用 AI 跟 NPC 聊天，他能帶進更多自己記得的消息。
+舊戰役可以直接繼續玩，設定不用改。
+
 v1.1.2
 修正：NPC 台詞。
 舊戰役可以直接繼續玩，設定不用改。

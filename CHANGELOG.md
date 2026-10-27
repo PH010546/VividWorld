@@ -10,6 +10,11 @@
 
 ## 尚未發佈
 
+## v1.2.0
+
+- **Changed: Calradia Remembers 2.7.9 以上，NPC 記得的消息改從 `heard_now.txt` 交給 AI**：這個檔排在 CR 的輸出規則之前，不會像原本的 `post_history_instructions.txt` 那樣在消息變長時削弱 CR 自己的規則，所以上限從 500 字元放寬到 1000（精簡提示照舊 300）。同一則消息只會出現在其中一個檔：2.7.7～2.7.8 照舊走 `post_history_instructions.txt`（500／300），更舊的照舊加記憶；讀不到 CR 版本時當 2.7.9 以上。挑消息的規則、開頭語、語言都不變；已經加進 CR 的舊記憶不清。日誌的 `AI live news for …` 那一行多印走的是哪個變數，被讓掉的那個印 `empty (given through the other file)`。
+- 舊戰役可以直接繼續玩，設定檔不必動。
+
 ## v1.1.2
 
 - **修正：審字找到的五句**：英文酒館替人說話的結果句第二次改用 him／her（`{LISTENER:him|her|them}`），讓功的結果句改成 `The toast is meant for … who hands the credit to … instead`，不再同一句叫兩次名字；聽說有人下令處決、敵視的感想英文從 `calls that noble?` 改成 `What kind of noble is …?`，跟中文「還算什麼貴族」同義；丟了面子、親近的第二句英文補上跟誰喝（`have a drink with {him}`）；繁中「咽不下」改「嚥不下」，跟其他兩句同樣的話一致。

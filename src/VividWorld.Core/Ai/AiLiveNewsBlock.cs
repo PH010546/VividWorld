@@ -57,8 +57,13 @@ namespace VividWorld.Core.Ai
     public static class AiLiveNewsBlock
     {
         public const string VariableName = "vividworld_news";
+        public const string HeardNowVariableName = "vividworld_heard_now";
+
         public const int MaxChars = 500;
         public const int LeanMaxChars = 300;
+
+        public const int HeardNowMaxChars = 1000;
+        public const int HeardNowLeanMaxChars = 300;
 
         public const string HeaderStandardTemplate = "What {0} knows right now about recent happenings in Calradia. This is current: where an older memory disagrees, go by this.";
         public const string HeaderLeanTemplate = "{0} knows right now (current, overrides older memories):";
@@ -95,9 +100,34 @@ namespace VividWorld.Core.Ai
             return $"- [{tag}, {time}] {item.Text}";
         }
 
+        public static int GetMaxChars(string? variableName, bool lean)
+        {
+            if (string.Equals(variableName, HeardNowVariableName, StringComparison.OrdinalIgnoreCase))
+            {
+                return lean ? HeardNowLeanMaxChars : HeardNowMaxChars;
+            }
+
+            return lean ? LeanMaxChars : MaxChars;
+        }
+
+        public static AiLiveNewsBlockResult BuildForVariable(string? variableName, string npcName, bool lean, IReadOnlyList<AiLiveNewsItem> items)
+        {
+            return Build(npcName, lean, items, GetMaxChars(variableName, lean));
+        }
+
+        public static AiLiveNewsBlockResult BuildHeardNow(string npcName, bool lean, IReadOnlyList<AiLiveNewsItem> items)
+        {
+            return Build(npcName, lean, items, lean ? HeardNowLeanMaxChars : HeardNowMaxChars);
+        }
+
         public static AiLiveNewsBlockResult Build(string npcName, bool lean, IReadOnlyList<AiLiveNewsItem> items)
         {
-            int limit = lean ? LeanMaxChars : MaxChars;
+            return Build(npcName, lean, items, lean ? LeanMaxChars : MaxChars);
+        }
+
+        public static AiLiveNewsBlockResult Build(string npcName, bool lean, IReadOnlyList<AiLiveNewsItem> items, int maxChars)
+        {
+            int limit = maxChars;
             var includedEventIds = new List<string>();
             var excludedItems = new List<AiLiveNewsExcludedItem>();
 

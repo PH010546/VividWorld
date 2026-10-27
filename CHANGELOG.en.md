@@ -10,6 +10,11 @@ Every release states three things:
 
 ## Unreleased
 
+## v1.2.0
+
+- **Changed: with Calradia Remembers 2.7.9 or later, the news an NPC remembers reaches the AI through `heard_now.txt`**: that file sits ahead of CR's output rules, so longer news no longer weakens CR's own rules the way it could in `post_history_instructions.txt`, and the limit goes from 500 to 1000 characters (lean prompts stay at 300). Each piece of news appears in only one of the two files: 2.7.7–2.7.8 keep using `post_history_instructions.txt` (500/300), older versions still get memories added, and an unreadable CR version is treated as 2.7.9 or later. How news is picked, the opening line and the language are unchanged; memories already added to CR are left alone. The `AI live news for …` log line now names the variable it served, and the one that stands aside prints `empty (given through the other file)`.
+- Existing campaigns can simply be continued; no config changes needed.
+
 ## v1.1.2
 
 - **Fix: five lines from a wording review**: the outcome line where someone speaks up at the tavern uses him/her the second time (`{LISTENER:him|her|them}`), and the credit-deferring outcome becomes `The toast is meant for … who hands the credit to … instead`, so neither names the same person twice; the hostile reaction to an execution goes from `calls that noble?` to `What kind of noble is …?`, matching the Chinese; the close reaction to someone losing face now says who the drink is with (`have a drink with {him}`); in Traditional Chinese 咽不下 becomes 嚥不下, as in the two other lines with the same phrase.

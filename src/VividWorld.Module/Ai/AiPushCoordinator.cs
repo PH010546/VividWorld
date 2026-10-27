@@ -146,6 +146,8 @@ namespace VividWorld.Ai
         private static readonly HashSet<string> _subscribedTargets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private static readonly HashSet<string> _liveRegisteredTargets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private static readonly HashSet<string> _liveNewsTargets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        // 沒裝 CR 時留空：開發者預覽照舊變數的上限算，ImmersiveAI 那邊實際就是那個上限
+        private static string? _crActiveVariable;
         private static bool _livePromptVariablesRegistered;
 
         // 清單要完整交給推送規劃，先扣「已推過的」再取上限；先截前幾筆的話，推久了前面都推過，後面的永遠輪不到
@@ -210,7 +212,7 @@ namespace VividWorld.Ai
                         state.IsLive = _liveNewsTargets.Contains(desc.TargetId);
                         if (state.IsLive)
                         {
-                            ModLog.Info($"AI target '{desc.TargetId}': live prompt variable '{{{{{AiLiveNewsBlock.VariableName}}}}}' registered; adding memories is off for this target.");
+                            ModLog.Info($"AI target '{desc.TargetId}': live prompt variables registered; adding memories is off for this target.");
                         }
 
                         _bindings[desc.TargetId] = state;
@@ -261,6 +263,7 @@ namespace VividWorld.Ai
                         continue;
                     }
 
+                    bool isCr = string.Equals(desc.TargetId, "CalradiaRemembers", StringComparison.OrdinalIgnoreCase);
                     try
                     {
                         Type? promptType = asm.GetType(desc.LivePromptTypeName);
@@ -284,8 +287,9 @@ namespace VividWorld.Ai
                             continue;
                         }
 
-                        bool isCr = string.Equals(desc.TargetId, "CalradiaRemembers", StringComparison.OrdinalIgnoreCase);
                         bool isLiveNews = true;
+                        bool isHeardNow = true;
+                        string? activeVar = null;
                         TaleWorlds.Library.ApplicationVersion? crVersion = null;
 
                         if (isCr)
@@ -297,26 +301,49 @@ namespace VividWorld.Ai
                                 {
                                     crVersion = modInfo.Version;
                                     isLiveNews = CrLiveVersionGate.IsLiveVersion(crVersion.Value.Major, crVersion.Value.Minor, crVersion.Value.Revision);
+                                    isHeardNow = CrLiveVersionGate.IsHeardNowVersion(crVersion.Value.Major, crVersion.Value.Minor, crVersion.Value.Revision);
+                                    activeVar = CrLiveVersionGate.ResolveActiveVariable(crVersion.Value.Major, crVersion.Value.Minor, crVersion.Value.Revision);
                                 }
                                 else
                                 {
-                                    ModLog.Warn($"AI target '{desc.TargetId}': unable to read Calradia Remembers module version; assuming v2.7.7 or newer and enabling live news.");
+                                    isLiveNews = true;
+                                    isHeardNow = true;
+                                    activeVar = AiLiveNewsBlock.HeardNowVariableName;
+                                    ModLog.Warn($"AI target '{desc.TargetId}': unable to read Calradia Remembers module version; assuming v2.7.9 or newer and enabling live news.");
                                 }
                             }
                             catch (Exception ex)
                             {
-                                ModLog.Warn($"AI target '{desc.TargetId}': unable to read Calradia Remembers module version ({ex.Message}); assuming v2.7.7 or newer and enabling live news.");
+                                isLiveNews = true;
+                                isHeardNow = true;
+                                activeVar = AiLiveNewsBlock.HeardNowVariableName;
+                                ModLog.Warn($"AI target '{desc.TargetId}': unable to read Calradia Remembers module version ({ex.Message}); assuming v2.7.9 or newer and enabling live news.");
                             }
+
+                            _crActiveVariable = activeVar;
                         }
 
                         Type funcType = registerMethod.GetParameters()[1].ParameterType;
                         Type tFacts = funcType.GetGenericArguments()[0];
 
-                        MethodInfo openProvider = typeof(AiPushCoordinator).GetMethod(nameof(ProvideLiveNews), BindingFlags.NonPublic | BindingFlags.Static)!;
-                        MethodInfo closedProvider = openProvider.MakeGenericMethod(tFacts);
-                        Delegate providerDelegate = Delegate.CreateDelegate(funcType, closedProvider);
+                        MethodInfo openNews = typeof(AiPushCoordinator).GetMethod(nameof(ProvideNewsVariable), BindingFlags.NonPublic | BindingFlags.Static)!;
+                        MethodInfo closedNews = openNews.MakeGenericMethod(tFacts);
+                        Delegate newsDelegate = Delegate.CreateDelegate(funcType, closedNews);
 
-                        registerMethod.Invoke(null, new object[] { AiLiveNewsBlock.VariableName, providerDelegate });
+                        if (isCr)
+                        {
+                            MethodInfo openHeardNow = typeof(AiPushCoordinator).GetMethod(nameof(ProvideHeardNowVariable), BindingFlags.NonPublic | BindingFlags.Static)!;
+                            MethodInfo closedHeardNow = openHeardNow.MakeGenericMethod(tFacts);
+                            Delegate heardNowDelegate = Delegate.CreateDelegate(funcType, closedHeardNow);
+
+                            registerMethod.Invoke(null, new object[] { AiLiveNewsBlock.VariableName, newsDelegate });
+                            registerMethod.Invoke(null, new object[] { AiLiveNewsBlock.HeardNowVariableName, heardNowDelegate });
+                        }
+                        else
+                        {
+                            registerMethod.Invoke(null, new object[] { AiLiveNewsBlock.VariableName, newsDelegate });
+                        }
+
                         _liveRegisteredTargets.Add(desc.TargetId);
                         if (isLiveNews)
                         {
@@ -325,21 +352,22 @@ namespace VividWorld.Ai
 
                         if (isCr)
                         {
+                            string fileUsed = isHeardNow ? "heard_now.txt" : "post_history_instructions.txt";
                             if (crVersion != null)
                             {
                                 var v = crVersion.Value;
                                 if (isLiveNews)
                                 {
-                                    ModLog.Info($"AI target '{desc.TargetId}': live prompt variable '{{{{{AiLiveNewsBlock.VariableName}}}}}' registered before the main menu (Calradia Remembers v{v.Major}.{v.Minor}.{v.Revision}: news is given live, memories are not added; it returns an empty string while Vivid World or AI integration is off).");
+                                    ModLog.Info($"AI target '{desc.TargetId}': live prompt variables '{{{{{AiLiveNewsBlock.VariableName}}}}}' and '{{{{{AiLiveNewsBlock.HeardNowVariableName}}}}}' registered before the main menu (Calradia Remembers v{v.Major}.{v.Minor}.{v.Revision}: news is given live through {fileUsed}, memories are not added; it returns an empty string while Vivid World or AI integration is off).");
                                 }
                                 else
                                 {
-                                    ModLog.Info($"AI target '{desc.TargetId}': live prompt variable '{{{{{AiLiveNewsBlock.VariableName}}}}}' registered before the main menu (Calradia Remembers v{v.Major}.{v.Minor}.{v.Revision}: older than v2.7.7, the variable stays empty and memories are added as before).");
+                                    ModLog.Info($"AI target '{desc.TargetId}': live prompt variables '{{{{{AiLiveNewsBlock.VariableName}}}}}' and '{{{{{AiLiveNewsBlock.HeardNowVariableName}}}}}' registered before the main menu (Calradia Remembers v{v.Major}.{v.Minor}.{v.Revision}: older than v2.7.7, variables stay empty and memories are added as before).");
                                 }
                             }
                             else
                             {
-                                ModLog.Info($"AI target '{desc.TargetId}': live prompt variable '{{{{{AiLiveNewsBlock.VariableName}}}}}' registered before the main menu (Calradia Remembers: news is given live, memories are not added; it returns an empty string while Vivid World or AI integration is off).");
+                                ModLog.Info($"AI target '{desc.TargetId}': live prompt variables '{{{{{AiLiveNewsBlock.VariableName}}}}}' and '{{{{{AiLiveNewsBlock.HeardNowVariableName}}}}}' registered before the main menu (Calradia Remembers: news is given live through heard_now.txt, memories are not added; it returns an empty string while Vivid World or AI integration is off).");
                             }
                         }
                         else
@@ -349,7 +377,14 @@ namespace VividWorld.Ai
                     }
                     catch (Exception ex)
                     {
-                        ModLog.Warn($"AI target '{desc.TargetId}': registering live prompt variable '{{{{{AiLiveNewsBlock.VariableName}}}}}' failed ({ex.Message}); CR prompts will show the literal token and memories will be added instead.");
+                        if (isCr)
+                        {
+                            ModLog.Warn($"AI target '{desc.TargetId}': registering live prompt variables failed ({ex.Message}); CR prompts will show literal tokens and memories will be added instead.");
+                        }
+                        else
+                        {
+                            ModLog.Warn($"AI target '{desc.TargetId}': registering live prompt variable '{{{{{AiLiveNewsBlock.VariableName}}}}}' failed ({ex.Message}); prompts will show literal tokens and memories will be added instead.");
+                        }
                     }
                 }
             }
@@ -678,7 +713,17 @@ namespace VividWorld.Ai
             }
         }
 
-        private static string ProvideLiveNews<TFacts>(TFacts facts)
+        private static string ProvideNewsVariable<TFacts>(TFacts facts)
+        {
+            return ProvideLiveNews(facts, AiLiveNewsBlock.VariableName);
+        }
+
+        private static string ProvideHeardNowVariable<TFacts>(TFacts facts)
+        {
+            return ProvideLiveNews(facts, AiLiveNewsBlock.HeardNowVariableName);
+        }
+
+        private static string ProvideLiveNews<TFacts>(TFacts facts, string variableName)
         {
             var sw = Stopwatch.StartNew();
             if (facts == null) return string.Empty;
@@ -708,14 +753,22 @@ namespace VividWorld.Ai
             if (string.IsNullOrEmpty(npcId)) return string.Empty;
 
             bool isCrLive;
+            string? crActiveVar;
             lock (_lock)
             {
                 isCrLive = _liveNewsTargets.Contains("CalradiaRemembers");
+                crActiveVar = _crActiveVariable;
             }
 
             if (!isCrLive)
             {
-                ModLog.Info($"AI live news for '{npcId}' (lean={lean.ToString().ToLowerInvariant()}): empty (Calradia Remembers older than v2.7.7; memories are added instead).");
+                ModLog.Info($"AI live news for '{npcId}' [{variableName}] (lean={lean.ToString().ToLowerInvariant()}): empty (Calradia Remembers older than v2.7.7; memories are added instead).");
+                return string.Empty;
+            }
+
+            if (!string.Equals(variableName, crActiveVar, StringComparison.OrdinalIgnoreCase))
+            {
+                ModLog.Info($"AI live news for '{npcId}' [{variableName}] (lean={lean.ToString().ToLowerInvariant()}): empty (given through the other file).");
                 return string.Empty;
             }
 
@@ -730,13 +783,13 @@ namespace VividWorld.Ai
 
             if (cfg == null || !cfg.Enabled || !cfg.Ai.Enabled)
             {
-                ModLog.Info($"AI live news for '{npcId}' (lean={lean.ToString().ToLowerInvariant()}): empty (AI integration or mod disabled in config).");
+                ModLog.Info($"AI live news for '{npcId}' [{variableName}] (lean={lean.ToString().ToLowerInvariant()}): empty (AI integration or mod disabled in config).");
                 return string.Empty;
             }
 
             if (store == null || TaleWorlds.CampaignSystem.Campaign.Current == null)
             {
-                ModLog.Info($"AI live news for '{npcId}' (lean={lean.ToString().ToLowerInvariant()}): empty (no active campaign or store).");
+                ModLog.Info($"AI live news for '{npcId}' [{variableName}] (lean={lean.ToString().ToLowerInvariant()}): empty (no active campaign or store).");
                 return string.Empty;
             }
 
@@ -745,21 +798,23 @@ namespace VividWorld.Ai
                 Hero? hero = Hero.Find(npcId);
                 if (hero == null)
                 {
-                    ModLog.Info($"AI live news for '{npcId}' (lean={lean.ToString().ToLowerInvariant()}): empty (hero not found).");
+                    ModLog.Info($"AI live news for '{npcId}' [{variableName}] (lean={lean.ToString().ToLowerInvariant()}): empty (hero not found).");
                     return string.Empty;
                 }
 
                 string? rejectReason = EligibilityLabel.GetRejectionReason(hero, store.Traits);
                 if (rejectReason != null)
                 {
-                    ModLog.Info($"AI live news for '{npcId}' (lean={lean.ToString().ToLowerInvariant()}): empty (hero ineligible: {rejectReason}).");
+                    ModLog.Info($"AI live news for '{npcId}' [{variableName}] (lean={lean.ToString().ToLowerInvariant()}): empty (hero ineligible: {rejectReason}).");
                     return string.Empty;
                 }
 
                 double currentDay = CampaignTime.Now.ToDays;
+                int maxCharLimit = AiLiveNewsBlock.GetMaxChars(variableName, lean);
+
                 if (!ExtractRecallNewsItems(hero, currentDay, cfg, store, out var recallResult, out var renderedItems) || renderedItems.Count == 0)
                 {
-                    ModLog.Info($"AI live news for '{npcId}' (lean={lean.ToString().ToLowerInvariant()}): 0 candidates, 0 given, 0 excluded, 0 chars of {(lean ? AiLiveNewsBlock.LeanMaxChars : AiLiveNewsBlock.MaxChars)}, elapsed {sw.Elapsed.TotalMilliseconds:F1}ms.");
+                    ModLog.Info($"AI live news for '{npcId}' [{variableName}] (lean={lean.ToString().ToLowerInvariant()}): 0 candidates, 0 given, 0 excluded, 0 chars of {maxCharLimit}, elapsed {sw.Elapsed.TotalMilliseconds:F1}ms.");
                     return string.Empty;
                 }
 
@@ -770,7 +825,7 @@ namespace VividWorld.Ai
                 }
 
                 string heroName = hero.Name?.ToString() ?? hero.StringId;
-                var blockResult = AiLiveNewsBlock.Build(heroName, lean, liveItems);
+                var blockResult = AiLiveNewsBlock.BuildForVariable(variableName, heroName, lean, liveItems);
 
                 int givenCount = blockResult.IncludedEventIds.Count;
                 int excludedByLimitCount = blockResult.ExcludedItems.Count;
@@ -788,8 +843,9 @@ namespace VividWorld.Ai
 
                 var sb = new System.Text.StringBuilder();
                 sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
-                    "AI live news for '{0}' (lean={1}): {2} candidates, {3} given, {4} excluded, {5} chars of {6}, elapsed {7:F1}ms.",
+                    "AI live news for '{0}' [{1}] (lean={2}): {3} candidates, {4} given, {5} excluded, {6} chars of {7}, elapsed {8:F1}ms.",
                     hero.StringId,
+                    variableName,
                     lean.ToString().ToLowerInvariant(),
                     recallResult.CandidateCount,
                     givenCount,
@@ -835,7 +891,7 @@ namespace VividWorld.Ai
             }
             catch (Exception ex)
             {
-                ModLog.Error($"AI live news for '{npcId}' failed", ex);
+                ModLog.Error($"AI live news for '{npcId}' [{variableName}] failed", ex);
                 return string.Empty;
             }
         }
@@ -868,8 +924,8 @@ namespace VividWorld.Ai
             }
 
             string heroName = hero.Name?.ToString() ?? hero.StringId;
-            var standardBlock = AiLiveNewsBlock.Build(heroName, lean: false, liveItems);
-            var leanBlock = AiLiveNewsBlock.Build(heroName, lean: true, liveItems);
+            var standardBlock = AiLiveNewsBlock.BuildForVariable(_crActiveVariable, heroName, lean: false, liveItems);
+            var leanBlock = AiLiveNewsBlock.BuildForVariable(_crActiveVariable, heroName, lean: true, liveItems);
 
             var targetPreviews = new List<AiTargetPreviewData>(_targets.Count);
 
