@@ -131,6 +131,13 @@ $previous = $versions | Where-Object { $_.category -notin @('archived', 'removed
 if (-not $previous) { $previous = $versions | Select-Object -Last 1 }
 if (-not $previous) { Write-Error "檔案 '$($target.name)' 底下沒有任何版本，這支腳本只處理「在既有檔案下加新版本」" }
 
+# 只動第三段的修正版：上一版封存，玩家不必再下載有問題的那一版；其他情況上一版留成舊版
+$prevNum = ConvertTo-VersionNumber $previous.version
+$newNum = ConvertTo-VersionNumber $version
+$archivePrevious = [bool]($prevNum -and $newNum -and $prevNum.Major -eq $newNum.Major -and $prevNum.Minor -eq $newNum.Minor)
+$previousFate = if ($archivePrevious) { '上一版封存（只動第三段的修正版）' } else { '上一版不封存（留成舊版）' }
+$expectedPreviousCategory = if ($archivePrevious) { 'archived' } else { 'old_version' }
+
 # 版本字串照上一版的寫法：上一版帶 v 就帶 v
 $versionName = if ($RenameTo) { $RenameTo } else { $previous.name }
 $nexusVersion = if ($previous.version -match '^v') { $version } else { $version.TrimStart('v') }
@@ -157,7 +164,7 @@ Write-Host "上傳：$($zip.Name)（$($zip.Length) bytes，md5 $md5Hex）"
 Write-Host "加在檔案：$($target.name)（id $($target.id)）"
 Write-Host "上一版：$($previous.version)  名稱 '$($previous.name)'  類別 $($previous.category)  上傳於 $($previous.uploaded_at)"
 if ($RenameTo) { Write-Host "改名：模組檔案 '$($target.name)' → '$RenameTo'" }
-Write-Host "新版本：$nexusVersion  名稱 '$versionName'  類別 main  mod manager 預設下載=是  更新模組版本號=是  上一版不封存（留成舊版）"
+Write-Host "新版本：$nexusVersion  名稱 '$versionName'  類別 main  mod manager 預設下載=是  更新模組版本號=是  $previousFate"
 foreach ($k in $changelogs.Keys) {
     Write-Host "`n追加更新紀錄（English，版本 $k）：" -ForegroundColor Cyan
     Write-Host $changelogs[$k]
@@ -214,8 +221,8 @@ $created = Invoke-Nexus 'POST' "/mod-files/$($target.id)/versions" @{
     # 「mod manager 的預設下載」建版本之後就沒有端點能改，只能在這裡設：一律給新上傳的這一版
     primary_mod_manager_download = $true
     update_mod_version    = $true
-    # 上一版不封存，留成舊版；封存了沒有端點能改回來
-    archive_existing_file = $false
+    # 封存只能在這裡指定，建版本之後沒有端點能改類別
+    archive_existing_file = $archivePrevious
     previous_version_id   = $previous.id
 }
 Write-Host "新版本已建立：檔案 $($created.file.name)（$($created.file.game_scoped_id)），版本 id $($created.version.id)" -ForegroundColor Green
@@ -233,6 +240,6 @@ foreach ($v in $after) { Write-Host ("  {0,-10} {1,-12} 預設下載={2}" -f $v.
 $newV = $after | Where-Object { $_.version -eq $nexusVersion } | Select-Object -Last 1
 $oldV = $after | Where-Object { $_.id -eq $previous.id }
 if (-not $newV -or $newV.category -ne 'main' -or -not $newV.is_primary) { Write-Warning "新版本 $nexusVersion 不是「main＋預設下載」，要到網站上手動改" }
-if ($oldV -and $oldV.category -ne 'old_version') { Write-Warning "上一版 $($previous.version) 的分類是 '$($oldV.category)'，不是 old_version，要到網站上手動改" }
+if ($oldV -and $oldV.category -ne $expectedPreviousCategory) { Write-Warning "上一版 $($previous.version) 的分類是 '$($oldV.category)'，不是 $expectedPreviousCategory，要到網站上手動改" }
 
 Write-Host "`n完成：https://www.nexusmods.com/$GameDomain/mods/$($ModId)?tab=files" -ForegroundColor Green

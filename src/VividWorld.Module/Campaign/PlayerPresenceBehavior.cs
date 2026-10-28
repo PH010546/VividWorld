@@ -310,6 +310,8 @@ namespace VividWorld.Campaign
                     ExcludeSecretOnlyBranches = pick.Role == PlayerPresenceRole.Bystander
                 });
 
+            PlayerRelationNotifier.NotifyAll(run.PlayerRelationNotices, _heroLookup);
+
             if (!run.Started || run.SelectedBranchId == null)
             {
                 ModLog.Info($"PlayerPresence: {pick.Template.Id} did not run ({run.AbortReason ?? "unknown"}) - nothing shown.");
@@ -481,6 +483,8 @@ namespace VividWorld.Campaign
                     _config,
                     _heroLookup,
                     presence: new PlayerPresenceRunOptions { PlayerHeroId = playerId, ChosenBranch = chosen.Branch });
+
+                PlayerRelationNotifier.NotifyAll(run.PlayerRelationNotices, _heroLookup);
 
                 ApplyPlayerEffects(pick.Template, chosen.Branch, hasKingdom, sameKingdom);
                 RecordChronicle(run.EventIds, day);

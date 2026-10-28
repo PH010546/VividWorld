@@ -498,15 +498,35 @@ namespace VividWorld.Campaign
                 // 只看那一筆自己的 LedgerOnly：設定後來改成只記帳時，當初真的寫進原生的那幾筆仍要寫回
                 if (!ri.LedgerOnly && heroLookup != null)
                 {
-                    var heroA = heroLookup.Get(knower.HeroId);
-                    var heroB = heroLookup.Get(ri.AboutHeroId);
-                    if (heroA != null && heroB != null)
+                    var pair = EffectiveGrudgePairRule.ResolveRetractionPair(knower.HeroId, ri.AboutHeroId, ri.NativePair);
+                    var heroA = heroLookup.Get(pair.Hero1);
+                    var heroB = heroLookup.Get(pair.Hero2);
+                    if (heroA == null || heroB == null)
                     {
-                        int before = heroA.GetBaseHeroRelation(heroB);
-                        int reverseDelta = -(int)Math.Round((double)ri.Delta, MidpointRounding.AwayFromZero);
-                        heroA.SetPersonalRelation(heroB, before + reverseDelta);
-                        int after = heroA.GetBaseHeroRelation(heroB);
-                        ModLog.Info($"Retracted native relation: {knower.HeroId} toward {ri.AboutHeroId} reversed by {reverseDelta} (original delta {ri.Delta:+0.##;-0.##;0}): before {before}, after {after} on {xEvent.EventId}");
+                        string missingId = heroA == null ? pair.Hero1 : pair.Hero2;
+                        ModLog.Info($"Retracted native relation skipped {knower.HeroId} toward {ri.AboutHeroId}: hero {missingId} not found on {xEvent.EventId}");
+                    }
+                    else
+                    {
+                        int beforeRelation = heroA.GetBaseHeroRelation(heroB);
+                        int retractedDelta = -(int)Math.Round((double)ri.Delta, MidpointRounding.AwayFromZero);
+                        heroA.SetPersonalRelation(heroB, beforeRelation + retractedDelta);
+                        int afterRelation = heroA.GetBaseHeroRelation(heroB);
+
+                        bool pairDiffers = !string.Equals(pair.Hero1, knower.HeroId, StringComparison.Ordinal) ||
+                                           !string.Equals(pair.Hero2, ri.AboutHeroId, StringComparison.Ordinal);
+
+                        if (pairDiffers)
+                        {
+                            ModLog.Info(GrudgeLogFormatter.FormatRetractedNativeOnRecordedPair(
+                                knower.HeroId, ri.AboutHeroId, retractedDelta, (double)ri.Delta, beforeRelation, afterRelation, xEvent.EventId,
+                                pair.Hero1, pair.Hero2));
+                        }
+                        else
+                        {
+                            ModLog.Info(GrudgeLogFormatter.FormatRetractedNative(
+                                knower.HeroId, ri.AboutHeroId, retractedDelta, (double)ri.Delta, beforeRelation, afterRelation, xEvent.EventId));
+                        }
                     }
                 }
 

@@ -11,6 +11,18 @@ namespace VividWorld.Core.Grudges
     public static class GrudgeLogFormatter
     {
         // 1. Application lines
+        public static string FormatAppliedNativeOnEffectivePair(
+            string fromRole, string fromHeroId,
+            string toRole, string toHeroId,
+            double requested, int nativeDelta,
+            int before, int after,
+            string effectiveHero1, string effectiveHero2)
+        {
+            return string.Format(CultureInfo.InvariantCulture,
+                "{0} on effective pair {1} <-> {2} (per-person relations with the player are off)",
+                FormatAppliedNative(fromRole, fromHeroId, toRole, toHeroId, requested, nativeDelta, before, after),
+                effectiveHero1, effectiveHero2);
+        }
         public static string FormatAppliedNative(
             string fromRole, string fromHeroId,
             string toRole, string toHeroId,
@@ -112,6 +124,14 @@ namespace VividWorld.Core.Grudges
             return string.Format(CultureInfo.InvariantCulture,
                 "escalation {0} -> {1}: not escalated - {2}",
                 fromHeroId, toHeroId, reason);
+        }
+
+        public static string FormatEscalationNotEscalatedEffectivePair(
+            string fromHeroId, string toHeroId)
+        {
+            return FormatEscalationNotEscalated(
+                fromHeroId, toHeroId,
+                "per-person relations with the player are off, the grudge already landed on the pair the game shows");
         }
 
         // 3. Replay lines
@@ -316,6 +336,25 @@ namespace VividWorld.Core.Grudges
                 traitMultiplier, traitPart, relationMultiplier, receiverPart);
         }
 
+        public static string FormatOpinionAppliedNativeOnEffectivePair(
+            string observer, string aboutHeroId, string aboutRole, string eventId,
+            double amount, int hop, double hopConfidence, bool isWitness, double multiplier,
+            double fullAmount, double alreadyApplied, double requested,
+            int nativeBefore, int nativeAfter, int nativeDelta,
+            string effectiveHero1, string effectiveHero2,
+            string reactionSuffix = "")
+        {
+            return string.Format(CultureInfo.InvariantCulture,
+                "{0} on effective pair {1} <-> {2} (per-person relations with the player are off)",
+                FormatOpinionAppliedNative(
+                    observer, aboutHeroId, aboutRole, eventId,
+                    amount, hop, hopConfidence, isWitness, multiplier,
+                    fullAmount, alreadyApplied, requested,
+                    nativeBefore, nativeAfter, nativeDelta,
+                    reactionSuffix),
+                effectiveHero1, effectiveHero2);
+        }
+
         public static string FormatOpinionAppliedNative(
             string observer, string aboutHeroId, string aboutRole, string eventId,
             double amount, int hop, double hopConfidence, bool isWitness, double multiplier,
@@ -407,6 +446,30 @@ namespace VividWorld.Core.Grudges
                 hearerId, eventId);
         }
 
+        public static string FormatRetractedNative(
+            string knowerHeroId, string aboutHeroId,
+            int reverseDelta, double originalDelta,
+            int before, int after,
+            string eventId)
+        {
+            return string.Format(CultureInfo.InvariantCulture,
+                "Retracted native relation: {0} toward {1} reversed by {2} (original delta {3:+0.##;-0.##;0}): before {4}, after {5} on {6}",
+                knowerHeroId, aboutHeroId, reverseDelta, originalDelta, before, after, eventId);
+        }
+
+        public static string FormatRetractedNativeOnRecordedPair(
+            string knowerHeroId, string aboutHeroId,
+            int reverseDelta, double originalDelta,
+            int before, int after,
+            string eventId,
+            string recordedHero1, string recordedHero2)
+        {
+            return string.Format(CultureInfo.InvariantCulture,
+                "{0} on recorded pair {1} <-> {2}",
+                FormatRetractedNative(knowerHeroId, aboutHeroId, reverseDelta, originalDelta, before, after, eventId),
+                recordedHero1, recordedHero2);
+        }
+
         public static string FormatOpinionsDisabled(int hearerCount)
         {
             return string.Format(CultureInfo.InvariantCulture,
@@ -432,6 +495,27 @@ namespace VividWorld.Core.Grudges
                     string.Join(", ", nonRefundReasons));
             }
             return ", refunded today 0";
+        }
+
+        public static string FormatPlayerRelationNoticeSkipped(string otherHeroId, string reason)
+        {
+            return string.Format(CultureInfo.InvariantCulture,
+                "relation notice skipped for {0}: {1}",
+                otherHeroId, reason);
+        }
+
+        public static string FormatPlayerRelationNoticeShown(string kind, string otherHeroId, string originalFromHeroId, int delta, int value)
+        {
+            return string.Format(CultureInfo.InvariantCulture,
+                "relation notice shown ({0}): other {1}, original from {2}, delta {3:+0;-0;0}, value {4}",
+                kind, otherHeroId, originalFromHeroId, delta, value);
+        }
+
+        public static string FormatPlayerRelationNoticeClanFallback(string heroId, string reason)
+        {
+            return string.Format(CultureInfo.InvariantCulture,
+                "relation notice clan line fallback for {0}: {1}",
+                heroId, reason);
         }
     }
 }

@@ -25,6 +25,7 @@ namespace VividWorld.Campaign
         public List<string> EventIds { get; set; } = new();
         public List<IngestResult> IngestResults { get; set; } = new();
         public string? AbortReason { get; set; }
+        public List<PlayerRelationNotice> PlayerRelationNotices { get; set; } = new();
     }
 
     internal sealed class SituationEvaluation
@@ -792,7 +793,7 @@ namespace VividWorld.Campaign
 
                 foreach (var tuple in groupedByEvt.Values)
                 {
-                    GrudgeApplier.Apply(tuple.Evt, tuple.Reqs, day, eventStore, heroLookup, traitLookup ?? eventStore.Traits, config);
+                    GrudgeApplier.Apply(tuple.Evt, tuple.Reqs, day, eventStore, heroLookup, traitLookup ?? eventStore.Traits, config, result.PlayerRelationNotices);
                 }
             }
 

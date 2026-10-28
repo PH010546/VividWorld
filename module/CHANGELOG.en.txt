@@ -1,5 +1,13 @@
 Vivid World changelog
 
+v1.2.3
+Fixed: when it was your turn to decide in "Situations happen in front of you", changes in how others feel about you did not bring up the game's usual relation notification.
+Existing campaigns can be continued as they are; no settings need to be changed.
+
+v1.2.2
+Fixed: with "Personal relations" turned off, changes in how others feel about you from events, and the opinion an NPC forms of you on hearing a rumor, were not reflected in the relation shown in the encyclopedia.
+Existing campaigns can be continued as they are; no settings need to be changed.
+
 v1.2.1
 Fixed: when it was your turn to decide in "Situations happen in front of you", your choice did not change how others feel about you.
 Existing campaigns can be continued as they are; no settings need to be changed.

@@ -10,6 +10,16 @@
 
 ## 尚未發佈
 
+## v1.2.3
+
+- **Fixed: 以身入局對玩家的好感增減，不跳原版的好感通知**：VW 直接寫原版的好感數字（`SetPersonalRelation`），不經過 `ChangeRelationAction`，原版的通知只在後者裡跳。現在來源是情境、對象是玩家、真的寫進原版數字而且實際變動不是 0 的每一筆，寫完之後用 `MBInformationManager.AddQuickInformation` 跳原版樣式的快訊，提示音 `event:/ui/notification/relation`，字串用原版的：實際寫到的就是原本那位 ⇒ `str_your_relation_increased/decreased_with_notable`（人名）；被換成族長那一格（例如關掉 `relation.personalWithPlayer`）⇒ `str_your_relation_increased/decreased_with_clan`（家族名）。牽連家族那一筆照同一條規則。`MAGNITUDE` 是寫入前後的差，`VALUE` 是實際寫到的那位 `GetRelation(Hero.MainHero)`。只記帳的、碰到上下限沒變的、來源是傳聞的不跳。好感寫到哪一格、寫多少都不變，仍是直接寫入。日誌多 `relation notice shown (person|clan): …`，沒跳的印 `relation notice skipped for …: <原因>`。
+- 舊戰役可以直接繼續玩，設定檔不必動。
+
+## v1.2.2
+
+- **Fixed: 關掉「個人好感度」時，事件裡別人對你的好感沒有反映在百科的數字上**：開關關著時，百科顯示的是同一家族共用的那個數字（族長對你），但以身入局裡別人對你的增減，以及 NPC 聽到你的傳聞後對你的看法，都寫在那位本人身上，對方不是族長時百科上的數字不會動。現在開關關著時改寫進百科顯示的那個數字（只裝 VW 時是他族長對你）；這一筆不再另外牽連家族，免得同一件事在族長那裡扣兩次。傳聞被證明是假的、要還回去時，照當初實際寫到的那一對還。關著期間寫在族長身上的，重新打開開關後仍留在族長身上。開關開著時、NPC 之間的好感都照舊；以前寫在本人身上的不搬。日誌的 `grudge …` 那一行在這種情況多印 `on effective pair … (per-person relations with the player are off)`，牽連家族那一行印 `not escalated - per-person relations with the player are off …`。
+- 舊戰役可以直接繼續玩，設定檔不必動。
+
 ## v1.2.1
 
 - **修正：以身入局選了做法之後，對方對你的好感沒有動**：從 v1.1.0（以身入局第一次出現的版本）起，視窗裡標「好感↑／↓」的那一欄（別人對你）一筆都沒寫進遊戲，不分設定、不分有沒有裝別的模組。現在照做法表的數字寫進那位本人對你的好感；會牽連家族的做法（手下鬥毆的「不交人」「反咬一口」）照原本的規則判斷要不要牽連到族長。你對別人的照舊不記。以前選過的不補。日誌不再出現 `grudge skipped … main_hero: main_hero is the player`，改成 `grudge … -> … main_hero: requested … (base 前 -> 後)`。

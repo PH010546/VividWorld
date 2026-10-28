@@ -6,6 +6,7 @@ using VividWorld.Core.Config;
 using VividWorld.Core.Events;
 using VividWorld.Core.Grudges;
 using VividWorld.Core.Rumors;
+using GameCampaign = TaleWorlds.CampaignSystem.Campaign;
 
 namespace VividWorld.Campaign
 {
@@ -69,7 +70,8 @@ namespace VividWorld.Campaign
             WorldEventStore eventStore,
             HeroLookup heroLookup,
             IHeroTraitLookup traitLookup,
-            VividWorldConfig config)
+            VividWorldConfig config,
+            List<PlayerRelationNotice>? playerRelationNotices = null)
         {
             if (evt == null || requests == null || requests.Count == 0 || eventStore == null) return;
 
@@ -168,6 +170,9 @@ namespace VividWorld.Campaign
                 }
 
                 // 4. 個人那一筆
+                var targetDecision = EffectiveGrudgePairRule.Evaluate(
+                    SubModule.PersonalWithPlayerEnabled, req.Source, req.AboutHeroId, playerHeroId);
+
                 int delta = 0;
                 List<string>? nativePair = null;
                 int before = 0;
@@ -175,6 +180,8 @@ namespace VividWorld.Campaign
 
                 var heroA = heroLookup.Get(req.FromHeroId);
                 var heroB = heroLookup.Get(req.AboutHeroId);
+                Hero? targetA = null;
+                Hero? targetB = null;
 
                 if (req.LedgerOnly)
                 {
@@ -218,33 +225,111 @@ namespace VividWorld.Campaign
                         continue;
                     }
 
-                    before = heroA.GetBaseHeroRelation(heroB);
+                    targetA = heroA;
+                    targetB = heroB;
+                    bool isEffectivePair = false;
+
+                    if (targetDecision.UseEffectivePair)
+                    {
+                        var diplomacyModel = GameCampaign.Current?.Models?.DiplomacyModel;
+                        if (diplomacyModel != null)
+                        {
+                            diplomacyModel.GetHeroesForEffectiveRelation(heroA, heroB, out Hero e1, out Hero e2);
+                            if (e1 != null && e2 != null)
+                            {
+                                targetA = e1;
+                                targetB = e2;
+                                isEffectivePair = true;
+                            }
+                            else
+                            {
+                                string nullHero = e1 == null ? (e2 == null ? "both e1 and e2" : "e1") : "e2";
+                                ModLog.Info($"grudge {req.FromRole} {req.FromHeroId} -> {req.ToRole} {req.AboutHeroId}: effective hero {nullHero} was null, falling back to direct pair");
+                            }
+                        }
+                        else
+                        {
+                            ModLog.Info($"grudge {req.FromRole} {req.FromHeroId} -> {req.ToRole} {req.AboutHeroId}: DiplomacyModel was null, falling back to direct pair");
+                        }
+                    }
+
+                    before = targetA.GetBaseHeroRelation(targetB);
                     // 規格 §6.7.4 的三行形狀，不自己夾取：SetPersonalRelation 內部就會夾到
                     // DiplomacyModel 的 Min/MaxRelationLimit（帳本 D-03），而那個上限是執行期讀出來的。
                     // 寫死 ±100 會在別的模組把上限調高時，把本來就高於 100 的好感度反而拉低。
-                    heroA.SetPersonalRelation(heroB, before + (int)Math.Round(req.Requested, MidpointRounding.AwayFromZero));
-                    after = heroA.GetBaseHeroRelation(heroB);
+                    targetA.SetPersonalRelation(targetB, before + (int)Math.Round(req.Requested, MidpointRounding.AwayFromZero));
+                    after = targetA.GetBaseHeroRelation(targetB);
                     delta = after - before;
-                    nativePair = new List<string> { req.FromHeroId, req.AboutHeroId };
+                    nativePair = new List<string> { targetA.StringId, targetB.StringId };
+
+                    bool pairDiffersFromDirect = !string.Equals(targetA.StringId, req.FromHeroId, StringComparison.Ordinal) ||
+                                                 !string.Equals(targetB.StringId, req.AboutHeroId, StringComparison.Ordinal);
 
                     if (req.Source == GrudgeSource.Rumor)
                     {
                         OpinionAppliedThisSession++;
-                        ModLog.Info(GrudgeLogFormatter.FormatOpinionAppliedNative(
-                            req.FromHeroId, req.AboutHeroId, req.ToRole, evt.EventId,
-                            req.TemplateAmount, req.ObserverHop, req.HopConfidence, req.ObserverIsParticipant, req.WitnessMultiplier,
-                            req.FullAmount, req.AlreadyApplied, req.Requested,
-                            before, after, delta,
-                            GrudgeLogFormatter.FormatReactionSuffix(
-                                req.TraitMultiplier, req.TraitName, req.TraitLevel,
-                                req.RelationMultiplier, req.RelationReason, req.ReceiverHeroId)));
+                        if (isEffectivePair && pairDiffersFromDirect)
+                        {
+                            ModLog.Info(GrudgeLogFormatter.FormatOpinionAppliedNativeOnEffectivePair(
+                                req.FromHeroId, req.AboutHeroId, req.ToRole, evt.EventId,
+                                req.TemplateAmount, req.ObserverHop, req.HopConfidence, req.ObserverIsParticipant, req.WitnessMultiplier,
+                                req.FullAmount, req.AlreadyApplied, req.Requested,
+                                before, after, delta,
+                                targetA.StringId, targetB.StringId,
+                                GrudgeLogFormatter.FormatReactionSuffix(
+                                    req.TraitMultiplier, req.TraitName, req.TraitLevel,
+                                    req.RelationMultiplier, req.RelationReason, req.ReceiverHeroId)));
+                        }
+                        else
+                        {
+                            ModLog.Info(GrudgeLogFormatter.FormatOpinionAppliedNative(
+                                req.FromHeroId, req.AboutHeroId, req.ToRole, evt.EventId,
+                                req.TemplateAmount, req.ObserverHop, req.HopConfidence, req.ObserverIsParticipant, req.WitnessMultiplier,
+                                req.FullAmount, req.AlreadyApplied, req.Requested,
+                                before, after, delta,
+                                GrudgeLogFormatter.FormatReactionSuffix(
+                                    req.TraitMultiplier, req.TraitName, req.TraitLevel,
+                                    req.RelationMultiplier, req.RelationReason, req.ReceiverHeroId)));
+                        }
                     }
                     else
                     {
                         AppliedThisSession++;
-                        ModLog.Info(GrudgeLogFormatter.FormatAppliedNative(
-                            req.FromRole, req.FromHeroId, req.ToRole, req.AboutHeroId, req.Requested, delta, before, after));
+                        if (isEffectivePair && pairDiffersFromDirect)
+                        {
+                            ModLog.Info(GrudgeLogFormatter.FormatAppliedNativeOnEffectivePair(
+                                req.FromRole, req.FromHeroId, req.ToRole, req.AboutHeroId, req.Requested, delta, before, after,
+                                targetA.StringId, targetB.StringId));
+                        }
+                        else
+                        {
+                            ModLog.Info(GrudgeLogFormatter.FormatAppliedNative(
+                                req.FromRole, req.FromHeroId, req.ToRole, req.AboutHeroId, req.Requested, delta, before, after));
+                        }
                     }
+                }
+
+                string personalTargetAId = req.LedgerOnly ? req.FromHeroId : (targetA?.StringId ?? req.FromHeroId);
+                string personalTargetBId = req.LedgerOnly ? req.AboutHeroId : (targetB?.StringId ?? req.AboutHeroId);
+
+                var personalNotice = PlayerRelationNoticeRule.Evaluate(
+                    req.Source,
+                    req.LedgerOnly,
+                    personalTargetAId,
+                    personalTargetBId,
+                    req.FromHeroId,
+                    req.AboutHeroId,
+                    playerHeroId,
+                    delta);
+
+                if (personalNotice.ShouldNotify)
+                {
+                    playerRelationNotices?.Add(personalNotice);
+                }
+                else if (!string.IsNullOrEmpty(personalNotice.SkipReason) &&
+                         personalNotice.SkipReason != PlayerRelationNoticeRule.ReasonNotAboutPlayer)
+                {
+                    ModLog.Info(GrudgeLogFormatter.FormatPlayerRelationNoticeSkipped(personalNotice.OtherHeroId, personalNotice.SkipReason!));
                 }
 
                 knowerEntry.RelationImpacts ??= new List<RelationImpact>();
@@ -281,6 +366,13 @@ namespace VividWorld.Campaign
                 {
                     continue;
                 }
+
+                if (!targetDecision.ShouldEvaluateClanEscalation)
+                {
+                    ModLog.Info(GrudgeLogFormatter.FormatEscalationNotEscalatedEffectivePair(req.FromHeroId, req.AboutHeroId));
+                    continue;
+                }
+
                 var facts = GrudgeFactsReader.Read(heroA, heroB);
                 var personalEntries = index.Between(req.FromHeroId, req.AboutHeroId, GrudgeScope.Personal);
                 var traitProfile = traitLookup.Of(req.FromHeroId);
@@ -349,6 +441,26 @@ namespace VividWorld.Campaign
                             EscalatedFrom = $"{req.FromHeroId}|{req.AboutHeroId}",
                             SourceFactId = req.SourceFactId
                         });
+
+                        var clanNotice = PlayerRelationNoticeRule.Evaluate(
+                            req.Source,
+                            req.LedgerOnly,
+                            leaderA,
+                            leaderB,
+                            req.FromHeroId,
+                            req.AboutHeroId,
+                            playerHeroId,
+                            clanDelta);
+
+                        if (clanNotice.ShouldNotify)
+                        {
+                            playerRelationNotices?.Add(clanNotice);
+                        }
+                        else if (!string.IsNullOrEmpty(clanNotice.SkipReason) &&
+                                 clanNotice.SkipReason != PlayerRelationNoticeRule.ReasonNotAboutPlayer)
+                        {
+                            ModLog.Info(GrudgeLogFormatter.FormatPlayerRelationNoticeSkipped(clanNotice.OtherHeroId, clanNotice.SkipReason!));
+                        }
 
                         index.Note(new GrudgeEntry
                         {
