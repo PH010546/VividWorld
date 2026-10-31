@@ -20,7 +20,8 @@ namespace VividWorld.Core.Rumors
         AtMaxHop,
         LeakNotSpread,
         WontTellOwn,
-        RetiredType
+        RetiredType,
+        NoSpread
     }
 
     public static class TellerEligibility
@@ -61,11 +62,33 @@ namespace VividWorld.Core.Rumors
             Func<string, VividWorld.Core.Catalog.EventTemplate?>? getTemplate,
             out string? exclusionDetail)
         {
+            return Check(evt, heroId, day, maxHop, playerHeroId, cfg, traits, getTemplate, null, out exclusionDetail);
+        }
+
+        /// <param name="isNoSpreadSituation">回傳這個情境代號的情境是不是 noSpread；null 表示沒有情境目錄，當作沒有不往外傳的情境。</param>
+        public static TellReason Check(
+            WorldEvent evt,
+            string heroId,
+            double day,
+            int maxHop,
+            string playerHeroId,
+            VividWorldConfig cfg,
+            IHeroTraitLookup traits,
+            Func<string, VividWorld.Core.Catalog.EventTemplate?>? getTemplate,
+            Func<string, bool>? isNoSpreadSituation,
+            out string? exclusionDetail)
+        {
             exclusionDetail = null;
 
             if (evt == null || !evt.IsVisibleToRumorSystem)
             {
                 return TellReason.NotVisible;
+            }
+
+            // 情境標了 noSpread：它產生的事件在 NPC 之間不傳話（隊伍裡的人產生時就都知道，所以實際效果是隊伍外的人聽不到）。
+            if (isNoSpreadSituation != null && !string.IsNullOrEmpty(evt.SituationId) && isNoSpreadSituation(evt.SituationId!))
+            {
+                return TellReason.NoSpread;
             }
 
             // 日期比今天晚 ⇒ 來自一條被抹掉的時間線，今天不該有人講得出來（規格 §2.2.1）。
@@ -152,6 +175,7 @@ namespace VividWorld.Core.Rumors
             TellReason.LeakNotSpread => "leak not spread (only leaker can tell)",
             TellReason.WontTellOwn => "won't tell own",
             TellReason.RetiredType => "retired type",
+            TellReason.NoSpread => "no spread (the situation is not passed on between NPCs)",
             _ => reason.ToString()
         };
     }

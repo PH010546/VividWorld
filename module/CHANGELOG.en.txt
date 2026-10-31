@@ -1,5 +1,9 @@
 Vivid World changelog
 
+v1.3.0
+New: "Companion events". Now and then the companions you have hired quarrel, save each other on the battlefield or teach each other something, and sometimes it is your turn to settle it as their employer; how you handle it changes how they feel about you. You can turn it off in the settings.
+Existing campaigns can be continued as they are; no settings need to be changed.
+
 v1.2.3
 Fixed: when it was your turn to decide in "Situations happen in front of you", changes in how others feel about you did not bring up the game's usual relation notification.
 Existing campaigns can be continued as they are; no settings need to be changed.

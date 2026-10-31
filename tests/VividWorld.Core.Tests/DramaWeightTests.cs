@@ -435,7 +435,27 @@ namespace VividWorld.Core.Tests
                 ["talk_not_so_advice_given_freely"] = 3,
                 ["talk_not_so_brawl_man_handed_over"] = 4,
                 ["talk_not_so_seat_dispute_yielded"] = 3,
-                ["talk_not_so_tavern_good_word"] = 3
+                ["talk_not_so_tavern_good_word"] = 3,
+                ["wanderer_battle_credit_yielded"] = 2,
+                ["wanderer_battle_credit_disputed"] = 3,
+                ["wanderer_battle_credit_to_claimant"] = 2,
+                ["wanderer_battle_credit_to_rival"] = 2,
+                ["wanderer_battle_credit_both"] = 1,
+                ["wanderer_battle_credit_rebuked"] = 2,
+                ["wanderer_battle_rescued"] = 4,
+                ["wanderer_party_role_backed_down"] = 1,
+                ["wanderer_party_role_bad_blood"] = 2,
+                ["wanderer_party_role_keep_incumbent"] = 1,
+                ["wanderer_party_role_swapped"] = 3,
+                ["wanderer_party_role_contested"] = 2,
+                ["wanderer_campfire_jab_laughed_off"] = 1,
+                ["wanderer_campfire_jab_brawled"] = 3,
+                ["wanderer_campfire_jab_cold_shoulder"] = 1,
+                ["wanderer_campfire_jab_punished"] = 2,
+                ["wanderer_campfire_jab_both_rebuked"] = 2,
+                ["wanderer_teaching_completed"] = 1,
+                ["wanderer_teaching_encouraged"] = 1,
+                ["wanderer_teaching_joined"] = 1
             };
             Assert.Equal(expected.Count, catalog.Templates.Count);
             foreach (var kv in expected)

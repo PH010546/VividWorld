@@ -57,7 +57,15 @@ namespace VividWorld.Core.Diagnostics
                 ["spouse_b"] = new("Ira", "伊拉", female: true),
                 ["mother"] = new("Ira", "伊拉", female: true),
                 ["child"] = new("Rolan", "羅蘭"),
-                ["onlooker"] = new("Garios", "加里奧斯")
+                ["onlooker"] = new("Garios", "加里奧斯"),
+                ["rescued"] = new("Ergeon", "埃爾貢"),
+                ["incumbent"] = new("Pol", "波爾"),
+                ["mocker"] = new("Pol", "波爾"),
+                ["mocked"] = new("Ergeon", "埃爾貢"),
+                ["teacher"] = new("Pol", "波爾"),
+                ["learner"] = new("Ergeon", "埃爾貢"),
+                ["employer"] = new("Derthert", "德瑟特"),
+                ["winner"] = new("Pol", "波爾")
             };
 
         // 個別消息裡同一個角色名指的人不同（例：宴會擺在誰家、難產過世的是誰）
@@ -351,6 +359,26 @@ namespace VividWorld.Core.Diagnostics
                         {
                             val = "sample:bandits";
                         }
+                        else if (val.IndexOf("ROLE", StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            val = "sample:role";
+                        }
+                        else if (val.IndexOf("CULTURE", StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            val = "sample:culture";
+                        }
+                        else if (val.IndexOf("SKILL", StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            val = "sample:skill_name";
+                        }
+                        else if (val.IndexOf("TOPIC", StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            val = "sample:jab_topic";
+                        }
+                        else if (val.IndexOf("SAYING", StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            val = "sample:jab_saying";
+                        }
                         vars[kvp.Key] = val;
                     }
                 }
@@ -393,6 +421,12 @@ namespace VividWorld.Core.Diagnostics
                     }
                     if (string.Equals(prefix, "sample", StringComparison.OrdinalIgnoreCase))
                     {
+                        if (string.Equals(payload, "bandits", StringComparison.OrdinalIgnoreCase)) return isEnglish ? "bandits" : "山賊";
+                        if (string.Equals(payload, "role", StringComparison.OrdinalIgnoreCase)) return isEnglish ? "scout" : "斥候";
+                        if (string.Equals(payload, "culture", StringComparison.OrdinalIgnoreCase)) return isEnglish ? "Sturgian" : "斯特吉亞";
+                        if (string.Equals(payload, "skill_name", StringComparison.OrdinalIgnoreCase)) return isEnglish ? "Medicine" : "醫術";
+                        if (string.Equals(payload, "jab_topic", StringComparison.OrdinalIgnoreCase)) return isEnglish ? "Sturgian folk" : "斯特吉亞人";
+                        if (string.Equals(payload, "jab_saying", StringComparison.OrdinalIgnoreCase)) return isEnglish ? "saying they can do nothing but drink and freeze" : "說他們除了喝酒、挨凍什麼都不會";
                         return isEnglish ? "bandits" : "山賊";
                     }
                     if (string.Equals(prefix, "key", StringComparison.OrdinalIgnoreCase))

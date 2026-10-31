@@ -271,6 +271,7 @@ namespace VividWorld.Mcm
                 case "situations.grudgesEnabled": return s.GrudgesEnabled;
                 case "situations.clanEscalationThreshold": return s.ClanEscalationThreshold;
                 case "situations.playerPresence.enabled": return s.PlayerPresenceEnabled;
+                case "situations.wandererEvents.enabled": return s.WandererEventsEnabled;
                 case "events.sources.heroKilled": return s.SourceHeroKilled;
                 case "events.sources.heroPrisonerTaken": return s.SourceHeroPrisonerTaken;
                 case "events.sources.heroPrisonerReleased": return s.SourceHeroPrisonerReleased;
@@ -348,6 +349,7 @@ namespace VividWorld.Mcm
             PushKey("situations.grudgesEnabled", () => s.GrudgesEnabled = live.Situations.GrudgesEnabled);
             PushKey("situations.clanEscalationThreshold", () => s.ClanEscalationThreshold = live.Situations.ClanEscalationThreshold);
             PushKey("situations.playerPresence.enabled", () => s.PlayerPresenceEnabled = live.Situations.PlayerPresence.Enabled);
+            PushKey("situations.wandererEvents.enabled", () => s.WandererEventsEnabled = live.Situations.WandererEvents.Enabled);
             PushKey("events.sources.heroKilled", () => s.SourceHeroKilled = live.Events.Sources.HeroKilled);
             PushKey("events.sources.heroPrisonerTaken", () => s.SourceHeroPrisonerTaken = live.Events.Sources.HeroPrisonerTaken);
             PushKey("events.sources.heroPrisonerReleased", () => s.SourceHeroPrisonerReleased = live.Events.Sources.HeroPrisonerReleased);
@@ -480,6 +482,7 @@ namespace VividWorld.Mcm
                 s.GrudgesEnabled,
                 s.ClanEscalationThreshold,
                 s.PlayerPresenceEnabled,
+                s.WandererEventsEnabled,
                 s.SourceHeroKilled,
                 s.SourceHeroPrisonerTaken,
                 s.SourceHeroPrisonerReleased,
@@ -515,6 +518,7 @@ namespace VividWorld.Mcm
                 live.Situations.GrudgesEnabled,
                 live.Situations.ClanEscalationThreshold,
                 live.Situations.PlayerPresence.Enabled,
+                live.Situations.WandererEvents.Enabled,
                 live.Events.Sources.HeroKilled,
                 live.Events.Sources.HeroPrisonerTaken,
                 live.Events.Sources.HeroPrisonerReleased,

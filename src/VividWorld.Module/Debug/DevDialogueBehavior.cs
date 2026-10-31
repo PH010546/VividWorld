@@ -71,6 +71,10 @@ namespace VividWorld.Debug
         private const string TokenDevPresence = "vividworld_dev_presence";
         private const string TokenDevResultPresence = "vividworld_dev_result_presence";
 
+        private const string TokenDevWandererPrompt = "vividworld_dev_wanderer_prompt";
+        private const string TokenDevWanderer = "vividworld_dev_wanderer";
+        private const string TokenDevResultWanderer = "vividworld_dev_result_wanderer";
+
         private readonly VividWorldConfig _config;
         private readonly WorldEventStore _eventStore;
         private readonly GameWorldChannel _channel;
@@ -273,6 +277,25 @@ namespace VividWorld.Debug
                 "vividworld_dev_presence_prompt_line",
                 TokenDevPresencePrompt,
                 TokenDevPresence,
+                "{=!}...",
+                null,
+                null,
+                100,
+                null);
+
+            starter.AddPlayerLine(
+                "vividworld_dev_menu_wanderer",
+                TokenDevCategories,
+                TokenDevWandererPrompt,
+                "{=VividWorld_Dev_Menu_Wanderer}(dev) Wanderer events",
+                Condition_AlwaysAvailable,
+                null,
+                DevDialoguePriority);
+
+            starter.AddDialogLine(
+                "vividworld_dev_wanderer_prompt_line",
+                TokenDevWandererPrompt,
+                TokenDevWanderer,
                 "{=!}...",
                 null,
                 null,
@@ -885,7 +908,57 @@ namespace VividWorld.Debug
                 100,
                 null);
 
-            ModLog.Info("Registered 42 developer dialogue lines in 6 categories (person: 9, world: 8, act: 9, belief: 8, made-up talk: 4, player presence: 2) behind main menu entry.");
+            // ── Category 7: Wanderer events (3 tools) ──
+            // 1. (dev) Wanderer event status
+            starter.AddPlayerLine(
+                "vividworld_dev_wanderer_status",
+                TokenDevWanderer,
+                TokenDevResultWanderer,
+                "{=VividWorld_Dev_WandererStatus}(dev) Wanderer event status",
+                Condition_AlwaysAvailable,
+                Consequence_WandererStatus,
+                DevDialoguePriority);
+
+            // 2. (dev) Wanderer event: roll now
+            starter.AddPlayerLine(
+                "vividworld_dev_wanderer_force",
+                TokenDevWanderer,
+                TokenDevResultWanderer,
+                "{=VividWorld_Dev_WandererForce}(dev) Wanderer event: roll now",
+                Condition_AlwaysAvailable,
+                Consequence_WandererForce,
+                DevDialoguePriority);
+
+            starter.AddPlayerLine(
+                "vividworld_dev_back_wanderer",
+                TokenDevWanderer,
+                TokenDevCategoriesPrompt,
+                "{=VividWorld_Dev_Menu_Back}(dev) Back",
+                null,
+                null,
+                DevDialoguePriority);
+
+            // 3. (dev) Wanderer event: open complaint now
+            starter.AddPlayerLine(
+                "vividworld_dev_wanderer_complaint",
+                TokenDevWanderer,
+                TokenDevResultWanderer,
+                "{=VividWorld_Dev_WandererComplaint}(dev) Wanderer event: open complaint now",
+                Condition_AlwaysAvailable,
+                Consequence_WandererComplaint,
+                DevDialoguePriority);
+
+            starter.AddDialogLine(
+                "vividworld_dev_result_wanderer_line",
+                TokenDevResultWanderer,
+                TokenDevWanderer,
+                "{=!}{VIVIDWORLD_DEV_RESULT}",
+                null,
+                null,
+                100,
+                null);
+
+            ModLog.Info("Registered 43 developer dialogue lines in 7 categories (person: 9, world: 8, act: 9, belief: 8, made-up talk: 4, player presence: 2, wanderer events: 3) behind main menu entry.");
         }
 
         private static void SetResult(string line)
@@ -1171,6 +1244,164 @@ namespace VividWorld.Debug
             catch (Exception ex)
             {
                 ModLog.Error("[DevDialogue] PresenceForce roll failed", ex);
+            }
+            finally
+            {
+                ModLog.Flush();
+            }
+        }
+
+        private void Consequence_WandererStatus()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var behavior = WandererEventBehavior.Current;
+                if (behavior == null)
+                {
+                    Finish("(dev) Wanderer events behavior is not running.");
+                    return;
+                }
+
+                string report = behavior.FormatDevStatus();
+                ModLog.Info(report);
+                Finish("(dev) Wanderer event status dumped to log.txt");
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev wanderer status failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_WandererComplaint()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var behavior = WandererEventBehavior.Current;
+                if (behavior == null)
+                {
+                    Finish("(dev) Wanderer events behavior is not running.");
+                    return;
+                }
+
+                string report = behavior.ForceOpenComplaint();
+                ModLog.Info(report);
+                Finish(report);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev wanderer complaint failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_WandererForce()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var behavior = WandererEventBehavior.Current;
+                if (behavior == null)
+                {
+                    Finish("(dev) Wanderer events behavior is not running.");
+                    return;
+                }
+
+                var elements = new List<InquiryElement>
+                {
+                    new InquiryElement("daily|seen", "(dev) Any daily event (Seen)", new EmptyImageIdentifier(), true, string.Empty),
+                    new InquiryElement("daily|unseen", "(dev) Any daily event (Unseen)", new EmptyImageIdentifier(), true, string.Empty),
+                    new InquiryElement("battle|seen", "(dev) Any battle event (Seen)", new EmptyImageIdentifier(), true, string.Empty),
+                    new InquiryElement("wanderer_party_role|seen", "(dev) Party Role: Rivalry (Seen)", new EmptyImageIdentifier(), true, string.Empty),
+                    new InquiryElement("wanderer_party_role|unseen", "(dev) Party Role: Rivalry (Unseen)", new EmptyImageIdentifier(), true, string.Empty),
+                    new InquiryElement("wanderer_campfire_jab|seen", "(dev) Campfire Jab: Insult (Seen)", new EmptyImageIdentifier(), true, string.Empty),
+                    new InquiryElement("wanderer_campfire_jab|unseen", "(dev) Campfire Jab: Insult (Unseen)", new EmptyImageIdentifier(), true, string.Empty),
+                    new InquiryElement("wanderer_teaching|seen", "(dev) Teach Skill (Seen)", new EmptyImageIdentifier(), true, string.Empty),
+                    new InquiryElement("wanderer_teaching|unseen", "(dev) Teach Skill (Unseen)", new EmptyImageIdentifier(), true, string.Empty),
+                    new InquiryElement("wanderer_battle_credit|battle", "(dev) Battle: Disputed Credit", new EmptyImageIdentifier(), true, string.Empty),
+                    new InquiryElement("wanderer_battle_rescue|battle", "(dev) Battle: Rescue Gratitude", new EmptyImageIdentifier(), true, string.Empty)
+                };
+
+                MBInformationManager.ShowMultiSelectionInquiry(
+                    new MultiSelectionInquiryData(
+                        "(dev) Roll Wanderer Event",
+                        "(dev) Pick a wanderer situation and visibility. Cooldowns and chances are ignored.",
+                        elements,
+                        true,
+                        1,
+                        1,
+                        "(dev) Roll",
+                        "(dev) Cancel",
+                        picked => OnWandererForcePicked(picked),
+                        _ => ModLog.Info("[DevDialogue] WandererForce cancelled."),
+                        string.Empty,
+                        false),
+                    true,
+                    false);
+
+                Finish("(dev) Pick one in the window; the outcome pops up, the reasons are in log.txt.");
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("[DevDialogue] WandererForce failed", ex);
+                Finish("(dev) Failed - see log.txt.");
+            }
+        }
+
+        private static void OnWandererForcePicked(List<InquiryElement> picked)
+        {
+            try
+            {
+                var behavior = WandererEventBehavior.Current;
+                string? token = picked != null && picked.Count > 0 ? picked[0].Identifier?.ToString() : null;
+                if (behavior == null || token == null)
+                {
+                    ModLog.Info("[DevDialogue] WandererForce: nothing picked or behavior is not running.");
+                    return;
+                }
+
+                string? situationId = null;
+                bool? unseen = null;
+                bool isBattle = false;
+
+                if (token == "daily|seen")
+                {
+                    situationId = null;
+                    unseen = false;
+                    isBattle = false;
+                }
+                else if (token == "daily|unseen")
+                {
+                    situationId = null;
+                    unseen = true;
+                    isBattle = false;
+                }
+                else if (token == "battle|seen")
+                {
+                    situationId = null;
+                    unseen = false;
+                    isBattle = true;
+                }
+                else
+                {
+                    var parts = token.Split('|');
+                    situationId = parts[0];
+                    if (parts.Length > 1)
+                    {
+                        if (parts[1] == "seen") unseen = false;
+                        else if (parts[1] == "unseen") unseen = true;
+                        else if (parts[1] == "battle") isBattle = true;
+                    }
+                }
+
+                string result = behavior.ForceRoll(situationId, unseen, isBattle);
+                ModLog.Info($"[DevDialogue] WandererForce result: {result}");
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("[DevDialogue] WandererForce on picked failed", ex);
             }
             finally
             {

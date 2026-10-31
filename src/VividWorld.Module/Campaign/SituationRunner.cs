@@ -53,6 +53,11 @@ namespace VividWorld.Campaign
 
         /// <summary>玩家旁觀：只產生祕密事件的做法不參加擲骰（有人在旁邊看著就不是祕密）。</summary>
         public bool ExcludeSecretOnlyBranches;
+        public IReadOnlyList<string>? InitialKnowerHeroIds;
+        public bool Unseen;
+        public IReadOnlyDictionary<string, string>? CustomBindings;
+        public bool PlaceNear;
+        public List<SituationGrudgeDef>? ExtraGrudges;
     }
 
     internal static class SituationRunner
@@ -518,6 +523,10 @@ namespace VividWorld.Campaign
                     {
                         bindings[placeholder] = settlementId;
                     }
+                    else if (presence?.CustomBindings != null && presence.CustomBindings.TryGetValue(target, out var customVal))
+                    {
+                        bindings[placeholder] = customVal ?? string.Empty;
+                    }
                     else if (boundHeroIds.TryGetValue(target, out var hId) && !string.IsNullOrEmpty(hId))
                     {
                         bindings[placeholder] = hId!;
@@ -605,9 +614,33 @@ namespace VividWorld.Campaign
                 // Set SituationId on the submission (spec §3.1)
                 submission.SituationId = template.Id;
 
+                if (presence?.InitialKnowerHeroIds != null && presence.InitialKnowerHeroIds.Count > 0)
+                {
+                    submission.AutoResolveWitnesses = false;
+                    foreach (var hId in presence.InitialKnowerHeroIds)
+                    {
+                        if (!string.IsNullOrEmpty(hId) && !submission.InitialKnowerHeroIds.Contains(hId))
+                        {
+                            submission.InitialKnowerHeroIds.Add(hId);
+                        }
+                    }
+                }
+
+                if (presence?.PlaceNear == true)
+                {
+                    foreach (var f in submission.Facts)
+                    {
+                        if (f.Vars != null && f.Vars.ContainsKey("PRE") && f.Vars.ContainsKey("POST"))
+                        {
+                            f.Vars["PRE"] = "key:VividWorld_Place_Near";
+                            f.Vars["POST"] = "key:VividWorld_Place_NearPost";
+                        }
+                    }
+                }
+
                 // 玩家在場：公開的事玩家親眼看到，算第一手知情者。祕密的事照祕密的規則，
-                // 只有那則事件指名的知情角色知道（玩家擔任其中一個就已經是了）
-                if (presence != null && !string.IsNullOrEmpty(presence.PlayerHeroId)
+                // 只有那則事件指名的知情角色知道（玩家擔任其中一個就已經是了）。若 unseen 則玩家不加入。
+                if (presence != null && !presence.Unseen && !string.IsNullOrEmpty(presence.PlayerHeroId)
                     && !submission.InitialKnowerHeroIds.Contains(presence.PlayerHeroId))
                 {
                     if (eventTemplate.Origin == EventOrigin.Public)
@@ -724,10 +757,16 @@ namespace VividWorld.Campaign
                 }
 
                 IEnumerable<SituationGrudgeDef> grudgeDefs = selectedBranch.Grudges;
+                if (presence?.ExtraGrudges != null && presence.ExtraGrudges.Count > 0)
+                {
+                    var combined = new List<SituationGrudgeDef>(grudgeDefs);
+                    combined.AddRange(presence.ExtraGrudges);
+                    grudgeDefs = combined;
+                }
                 if (presence != null)
                 {
                     // 玩家怎麼看別人由玩家自己決定：從玩家出發的恩怨不記，對玩家的照記
-                    var playerFilter = PlayerGrudgeFilter.Filter(selectedBranch.Grudges, boundHeroIds, presence.PlayerHeroId);
+                    var playerFilter = PlayerGrudgeFilter.Filter(grudgeDefs.ToList(), boundHeroIds, presence.PlayerHeroId);
                     ModLog.Info(PlayerPresenceLogFormatter.FormatGrudgeFilter(template.Id, selectedBranch.Id, playerFilter));
                     grudgeDefs = playerFilter.Kept;
                 }

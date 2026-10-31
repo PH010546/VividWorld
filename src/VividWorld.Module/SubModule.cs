@@ -130,13 +130,14 @@ namespace VividWorld
             var realEvents = new RealEventSourceBehavior(config);  // MS2: 真事件掛鉤
             var situationScan = new SituationScanBehavior(config); // SE3: 每日情境掃描
             var playerPresence = new PlayerPresenceBehavior(config); // 情境在玩家面前發生
+            var wandererEvents = new WandererEventBehavior(config);
             EventCatalogStore.Load(config);
             SituationCatalogStore.Load(config);
             FeelingCatalogStore.Load();
             SituationRunner.ResetSessionCounters();
             GrudgeApplier.ResetSessionCounters();
             SituationScanBehavior.ResetSessionState();
-            _activeBehavior = new RumorCampaignBehavior(config, dialogs, producer, realEvents, situationScan, playerPresence);
+            _activeBehavior = new RumorCampaignBehavior(config, dialogs, producer, realEvents, situationScan, playerPresence, wandererEvents);
 
             starter.AddBehavior(_activeBehavior);
             starter.AddBehavior(dialogs);
@@ -144,10 +145,11 @@ namespace VividWorld
             starter.AddBehavior(realEvents);
             starter.AddBehavior(situationScan);
             starter.AddBehavior(playerPresence);
+            starter.AddBehavior(wandererEvents);
 
             AiPushCoordinator.Initialize(config);
 
-            ModLog.Info("Registered 6 campaign behaviors on the game starter.");
+            ModLog.Info("Registered 7 campaign behaviors on the game starter.");
             ModLog.Flush();
         }
 

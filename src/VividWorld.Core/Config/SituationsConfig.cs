@@ -38,6 +38,37 @@ namespace VividWorld.Core.Config
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
     }
 
+    /// <summary>流浪者事件（戰後與平常兩類，玩家不在場時也會發生）的數值。只有 enabled 進 MCM 選單，其餘照 config.json 調。</summary>
+    public sealed class WandererEventsConfig
+    {
+        /// <summary>整個流浪者事件的開關；關掉就不擲、不跳視窗、不動任何數值。</summary>
+        public bool Enabled { get; set; } = true;
+
+        /// <summary>戰後那類每次擲的機率，0～1。</summary>
+        public double BattleChance { get; set; } = 0.3;
+
+        /// <summary>平常那類每天擲的機率，0～1。</summary>
+        public double DailyChance { get; set; } = 0.1;
+
+        /// <summary>戰後那類發生一次之後幾天內不再擲。</summary>
+        public int BattleCooldownDays { get; set; } = 10;
+
+        /// <summary>平常那類發生一次之後幾天內不再擲。</summary>
+        public int DailyCooldownDays { get; set; } = 10;
+
+        /// <summary>任兩件流浪者事件之間至少隔幾天。</summary>
+        public int MinGapDays { get; set; } = 3;
+
+        /// <summary>平常那類擲中之後是私下發生的比例，0～1。</summary>
+        public double UnseenShare { get; set; } = 0.5;
+
+        /// <summary>換人之後幾天內換回原來的人算數（換回去不算一次新的換人）。</summary>
+        public int RoleRevertDays { get; set; } = 30;
+
+        [JsonExtensionData]
+        public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
+    }
+
     public sealed class SituationsConfig
     {
         public string CatalogFile { get; set; } = "vividworld_situations.json";
@@ -68,6 +99,8 @@ namespace VividWorld.Core.Config
         public SituationContestConfig Contest { get; set; } = new();
 
         public PlayerPresenceConfig PlayerPresence { get; set; } = new();
+
+        public WandererEventsConfig WandererEvents { get; set; } = new();
 
         [JsonExtensionData]
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();

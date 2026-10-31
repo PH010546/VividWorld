@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using VividWorld.Core.Catalog;
@@ -16,6 +17,12 @@ namespace VividWorld.Campaign
             new(Array.Empty<EventTemplate>(), Array.Empty<CatalogIssue>(), 0);
 
         public static string ActiveFilePath { get; private set; } = string.Empty;
+
+        // 講述者每次挑話題都會查，所以載入目錄時先整理成一份代號清單
+        private static HashSet<string> _noSpreadIds = new(StringComparer.Ordinal);
+
+        public static bool IsNoSpread(string situationId) =>
+            !string.IsNullOrEmpty(situationId) && _noSpreadIds.Contains(situationId);
         public static string ActiveEventFilePath { get; private set; } = string.Empty;
 
         public static void Load(VividWorldConfig config)
@@ -57,6 +64,10 @@ namespace VividWorld.Campaign
                     int errorCount = Catalog.Issues.Count(i => i.IsError);
                     int warnCount = Catalog.Issues.Count(i => !i.IsError);
                     ModLog.Info($"Situation catalog: loaded {Catalog.Situations.Count} situation(s) from {sitPath}, skipped {Catalog.SkippedCount}, {errorCount} error(s) {warnCount} warning(s).");
+                    foreach (var line in WandererCatalogLogFormatter.FormatTemplates(Catalog))
+                    {
+                        ModLog.Info("Situation catalog: " + line);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -64,6 +75,10 @@ namespace VividWorld.Campaign
                     Catalog = new SituationCatalog(Array.Empty<SituationTemplate>(), Array.Empty<SituationIssue>(), 0);
                 }
             }
+
+            _noSpreadIds = new HashSet<string>(
+                Catalog.Situations.Where(t => t != null && t.NoSpread).Select(t => t.Id),
+                StringComparer.Ordinal);
 
             // 2. Load situation events catalog
             string? eventFileName = config.Situations.EventCatalogFile;

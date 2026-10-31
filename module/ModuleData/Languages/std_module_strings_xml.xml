@@ -436,6 +436,8 @@
     <string id="VividWorld_MCM_ClanEscalationThresholdHint" text="Accumulated grudge intensity required before personal hostility escalates into an inter-clan feud." />
     <string id="VividWorld_MCM_PlayerPresenceEnabled" text="Situations happen in front of you" />
     <string id="VividWorld_MCM_PlayerPresenceEnabledHint" text="Now and then, while you are in a town or castle, a situation between lords plays out in front of you, or you are the one who must decide. Turn off to stop these windows and the changes your choices make." />
+    <string id="VividWorld_MCM_WandererEventsEnabled" text="Companion events" />
+    <string id="VividWorld_MCM_WandererEventsEnabledHint" text="Now and then, after a battle or around camp, two of your companions quarrel, help each other or teach each other something, and you may step in. Turn off to stop these events, their windows and the changes they make." />
 
     <!-- Group 6: Event Sources -->
     <string id="VividWorld_MCM_SourceHeroKilled" text="Hero deaths" />
@@ -1668,6 +1670,10 @@
     <string id="VividWorld_MCM_ProbesPerHeroPerDayHint" text="How many times a day the same person will let you ask them about something. This is counted separately from the news they share with you each day." />
     <string id="VividWorld_Dev_ProbePreview" text="(dev) Ask preview: how many times they have been asked today, and how they would answer each entry in your chronicle" />
     <string id="VividWorld_Dev_Menu_Presence" text="(dev) Situations in front of me" />
+    <string id="VividWorld_Dev_Menu_Wanderer" text="(dev) Wanderer events" />
+    <string id="VividWorld_Dev_WandererStatus" text="(dev) Wanderer event status" />
+    <string id="VividWorld_Dev_WandererForce" text="(dev) Wanderer event: roll now" />
+    <string id="VividWorld_Dev_WandererComplaint" text="(dev) Wanderer event: open complaint now" />
     <string id="VividWorld_Dev_PresenceStatus" text="(dev) Cooldown and the last roll" />
     <string id="VividWorld_Dev_PresenceForce" text="(dev) Make a situation happen in front of me now" />
     <string id="VividWorld_Dev_PresenceForce_Title" text="(dev) Make a situation happen in front of me" />
@@ -1754,8 +1760,43 @@
     <string id="VividWorld_Presence_Option_market_brawl_shield_own" text="Your men, your business: hand no one over" />
     <string id="VividWorld_Presence_Option_market_brawl_counter_accuse" text="Say it was the men of {AGGRIEVED} who struck first" />
     <string id="VividWorld_Presence_Option_market_brawl_hush_it_up" text="Agree with {AGGRIEVED} that neither house will speak of it again" />
+    <!-- Wanderer events: player presence scenes, options and outcomes -->
+    <string id="VividWorld_Presence_Scene_wanderer_battle_rescue_Bystander" text="In the thick of the fight, {RESCUED} goes down, and an enemy blade is already swinging toward {RESCUED:him|her|them}. {RESCUER} charges straight into it, hauls {RESCUED} out of the melee, and only then turns back to the fight." />
+    <string id="VividWorld_Presence_Scene_wanderer_battle_credit_Decider" text="{CLAIMANT} has loudly claimed the kill on the enemy leader as {CLAIMANT:his|her|their} own, and {RIVAL} shouts back that it was {RIVAL:his|her|their} blow that did it. The two are nearly at each other&apos;s throats, and everyone nearby is waiting for you to settle it." />
+    <string id="VividWorld_Presence_Scene_wanderer_party_role_Decider" text="{CHALLENGER} tells the whole camp that {INCUMBENT} has held this post long enough and should make way. {INCUMBENT} answers that the post is {INCUMBENT:his|her|their} and no one else&apos;s. The two stand face to face, and everyone is waiting for you to settle it." />
+    <string id="VividWorld_Presence_Scene_wanderer_party_role_Decider_Role" text="{CHALLENGER} tells the whole camp that {INCUMBENT} has held the post of {ROLE} long enough and should make way. {INCUMBENT} answers that the post is {INCUMBENT:his|her|their} and no one else&apos;s. The two stand face to face, and everyone is waiting for you to settle it." />
+    <string id="VividWorld_Presence_Scene_wanderer_campfire_jab_Decider" text="By the campfire, {MOCKER} has made a crude joke about where {MOCKED} comes from. {MOCKED} is glaring back, one hand on the hilt, and the men around the fire have gone quiet, all waiting to see what you will do." />
+    <string id="VividWorld_Presence_Scene_wanderer_teaching_Decider" text="During a lull in camp, you see {TEACHER} patiently sharing techniques with {LEARNER}, who is listening with keen attention. Seeing you approach, they pause and wait to hear what you have to say." />
+    <string id="VividWorld_Presence_Option_wanderer_battle_credit_stand_aside" text="Stay out of it and let them argue" />
+    <string id="VividWorld_Presence_Option_wanderer_battle_credit_judge_claimant" text="Award the credit to {CLAIMANT}" />
+    <string id="VividWorld_Presence_Option_wanderer_battle_credit_judge_rival" text="Award the credit to {RIVAL}" />
+    <string id="VividWorld_Presence_Option_wanderer_battle_credit_judge_both" text="Give both equal credit for the feat" />
+    <string id="VividWorld_Presence_Option_wanderer_battle_credit_rebuke" text="Rebuke both of them and forbid the quarrel" />
+    <string id="VividWorld_Presence_Option_wanderer_party_role_stand_aside" text="Stay out of it and let them argue" />
+    <string id="VividWorld_Presence_Option_wanderer_party_role_keep_incumbent" text="Keep {INCUMBENT} in the role" />
+    <string id="VividWorld_Presence_Option_wanderer_party_role_keep_incumbent_Role" text="Keep {INCUMBENT} as {ROLE}" />
+    <string id="VividWorld_Presence_Option_wanderer_party_role_swap_role" text="Give the post to {CHALLENGER}" />
+    <string id="VividWorld_Presence_Option_wanderer_party_role_swap_role_Role" text="Give the post of {ROLE} to {CHALLENGER}" />
+    <string id="VividWorld_Presence_Option_wanderer_party_role_contest" text="Have the two of them compete for the post" />
+    <string id="VividWorld_Presence_Option_wanderer_campfire_jab_stand_aside" text="Say nothing and let it play out" />
+    <string id="VividWorld_Presence_Option_wanderer_campfire_jab_punish_mocker" text="Punish {MOCKER} for the taunt" />
+    <string id="VividWorld_Presence_Option_wanderer_campfire_jab_rebuke_both" text="Reprimand them both for making a scene" />
+    <string id="VividWorld_Presence_Option_wanderer_teaching_stand_aside" text="Just watch from the side" />
+    <string id="VividWorld_Presence_Option_wanderer_teaching_encourage" text="Commend their efforts and urge them on" />
+    <string id="VividWorld_Presence_Option_wanderer_teaching_join_learning" text="Step forward and join in the lesson" />
+    <string id="VividWorld_Presence_Outcome_wanderer_battle_credit_yield" text="{RIVAL} relents and yields the credit to {CLAIMANT}, letting the matter drop." />
+    <string id="VividWorld_Presence_Outcome_wanderer_battle_credit_dispute" text="The two of them keep at it until the fire burns low, and in the end both storm off to their own tents without a word." />
+    <string id="VividWorld_Presence_Outcome_wanderer_party_role_back_down" text="{CHALLENGER} swallows the words and says nothing more, and {INCUMBENT} keeps the post as before." />
+    <string id="VividWorld_Presence_Outcome_wanderer_party_role_back_down_Role" text="{CHALLENGER} swallows the words and says nothing more, and {INCUMBENT} keeps the post of {ROLE} as before." />
+    <string id="VividWorld_Presence_Outcome_wanderer_party_role_bad_blood" text="Neither will give ground, and from that night on {CHALLENGER} and {INCUMBENT} hardly exchange a civil word. The whole camp can see it." />
+    <string id="VividWorld_Presence_Outcome_wanderer_campfire_jab_laugh_off" text="{MOCKED} laughs the jab off and passes {MOCKER} a cup, and the fire goes back to its usual talk." />
+    <string id="VividWorld_Presence_Outcome_wanderer_campfire_jab_brawl" text="The jab goes too far, and the two are on their feet with fists flying before anyone can stop them. By the time the others pull them apart, the whole fire has gone silent." />
+    <string id="VividWorld_Presence_Outcome_wanderer_campfire_jab_cold_shoulder" text="{MOCKED} says nothing more, but from then on {MOCKED} gives {MOCKER} the cold shoulder at every fire." />
+    <string id="VividWorld_Presence_Outcome_wanderer_teaching_completed" text="{TEACHER} sees {LEARNER} through the lesson with real patience, and by the end {LEARNER} has the basics down and thanks {TEACHER} before turning in." />
     <string id="VividWorld_Presence_Ack" text="I see." />
     <string id="VividWorld_Presence_Confirm" text="Done" />
+    <string id="VividWorld_Presence_Dir_StandAside" text="Let them settle it among themselves" />
+    <string id="VividWorld_Presence_StandAside_Outcome" text="You stay out of it, and they settle the matter between themselves." />
     <string id="VividWorld_Presence_Dir_None" text="No lasting effect" />
     <string id="VividWorld_Presence_Dir_Separator" text=", " />
     <string id="VividWorld_Presence_Dir_Affection_Up" text="Relation with {NAME} ↑" />
@@ -1776,5 +1817,281 @@
     <string id="VividWorld_Presence_Dir_Generosity_Down" text="Generosity ↓" />
     <string id="VividWorld_Presence_Dir_Calculating_Up" text="Calculating ↑" />
     <string id="VividWorld_Presence_Dir_Calculating_Down" text="Calculating ↓" />
-  </strings>
+    <!-- Wanderer events: headlines and named headlines -->
+    <string id="VividWorld_EventType_wanderer_battle_credit_yielded" text="A dispute over battle credit was yielded" />
+    <string id="VividWorld_EventType_wanderer_battle_credit_disputed" text="A bitter quarrel erupted over battle credit" />
+    <string id="VividWorld_EventType_wanderer_battle_credit_to_claimant" text="Battle credit was granted to the claimant" />
+    <string id="VividWorld_EventType_wanderer_battle_credit_to_rival" text="Battle credit was granted to the rival" />
+    <string id="VividWorld_EventType_wanderer_battle_credit_both" text="Both warriors were commended for their valor" />
+    <string id="VividWorld_EventType_wanderer_battle_credit_rebuked" text="Both warriors were rebuked for squabbling" />
+    <string id="VividWorld_EventType_wanderer_battle_rescued" text="A wounded comrade was rescued on the battlefield" />
+    <string id="VividWorld_EventType_wanderer_party_role_backed_down" text="A challenger backed down from a party role" />
+    <string id="VividWorld_EventType_wanderer_party_role_bad_blood" text="Bitter rivalry flared over a party role" />
+    <string id="VividWorld_EventType_wanderer_party_role_keep_incumbent" text="The incumbent was retained in the party role" />
+    <string id="VividWorld_EventType_wanderer_party_role_swapped" text="A party role was reassigned to a new holder" />
+    <string id="VividWorld_EventType_wanderer_party_role_contested" text="Two companions contested for a party role" />
+    <string id="VividWorld_EventType_wanderer_campfire_jab_laughed_off" text="A campfire joke was laughed off" />
+    <string id="VividWorld_EventType_wanderer_campfire_jab_brawled" text="A campfire taunt led to a brawl" />
+    <string id="VividWorld_EventType_wanderer_campfire_jab_cold_shoulder" text="A campfire insult led to a cold silence" />
+    <string id="VividWorld_EventType_wanderer_campfire_jab_punished" text="A troublemaker was punished for campfire mockery" />
+    <string id="VividWorld_EventType_wanderer_campfire_jab_both_rebuked" text="Both companions were rebuked for campfire quarreling" />
+    <string id="VividWorld_EventType_wanderer_teaching_completed" text="A companion shared their craft" />
+    <string id="VividWorld_EventType_wanderer_teaching_encouraged" text="Training between companions was encouraged" />
+    <string id="VividWorld_EventType_wanderer_teaching_joined" text="The employer joined in the training" />
+    <string id="VividWorld_EventTypeNamed_wanderer_battle_credit_yielded" text="{RIVAL} yielded the battle credit to {CLAIMANT}" />
+    <string id="VividWorld_EventTypeNamed_wanderer_battle_credit_disputed" text="{CLAIMANT} and {RIVAL} quarreled over battle credit" />
+    <string id="VividWorld_EventTypeNamed_wanderer_battle_credit_to_claimant" text="{EMPLOYER} gave the battle credit to {CLAIMANT}" />
+    <string id="VividWorld_EventTypeNamed_wanderer_battle_credit_to_rival" text="{EMPLOYER} gave the battle credit to {RIVAL}" />
+    <string id="VividWorld_EventTypeNamed_wanderer_battle_credit_both" text="{EMPLOYER} commended {CLAIMANT} and {RIVAL}" />
+    <string id="VividWorld_EventTypeNamed_wanderer_battle_credit_rebuked" text="{EMPLOYER} rebuked {CLAIMANT} and {RIVAL}" />
+    <string id="VividWorld_EventTypeNamed_wanderer_battle_rescued" text="{RESCUER} rescued {RESCUED} in battle" />
+    <string id="VividWorld_EventTypeNamed_wanderer_party_role_backed_down" text="{CHALLENGER} backed down from {INCUMBENT}" />
+    <string id="VividWorld_EventTypeNamed_wanderer_party_role_bad_blood" text="{CHALLENGER} and {INCUMBENT} fell out over a party role" />
+    <string id="VividWorld_EventTypeNamed_wanderer_party_role_keep_incumbent" text="{EMPLOYER} kept {INCUMBENT} in the post" />
+    <string id="VividWorld_EventTypeNamed_wanderer_party_role_swapped" text="{EMPLOYER} replaced {INCUMBENT} with {CHALLENGER}" />
+    <string id="VividWorld_EventTypeNamed_wanderer_party_role_contested" text="{EMPLOYER} had {INCUMBENT} and {CHALLENGER} contest the post" />
+    <string id="VividWorld_EventTypeNamed_wanderer_campfire_jab_laughed_off" text="{MOCKER} teased {MOCKED} by the campfire" />
+    <string id="VividWorld_EventTypeNamed_wanderer_campfire_jab_brawled" text="{MOCKER} mocked {MOCKED} into a brawl" />
+    <string id="VividWorld_EventTypeNamed_wanderer_campfire_jab_cold_shoulder" text="{MOCKED} gave {MOCKER} the cold shoulder" />
+    <string id="VividWorld_EventTypeNamed_wanderer_campfire_jab_punished" text="{EMPLOYER} disciplined {MOCKER}" />
+    <string id="VividWorld_EventTypeNamed_wanderer_campfire_jab_both_rebuked" text="{EMPLOYER} rebuked {MOCKER} and {MOCKED}" />
+    <string id="VividWorld_EventTypeNamed_wanderer_teaching_completed" text="{TEACHER} taught {LEARNER} a craft" />
+    <string id="VividWorld_EventTypeNamed_wanderer_teaching_encouraged" text="{EMPLOYER} encouraged {TEACHER} and {LEARNER}" />
+    <string id="VividWorld_EventTypeNamed_wanderer_teaching_joined" text="{EMPLOYER} joined {LEARNER} in training under {TEACHER}" />
+    <!-- Wanderer events: place and campfire-jab helper phrases (filled at runtime) -->
+    <string id="VividWorld_Place_In" text="in " />
+    <string id="VividWorld_Place_Near" text="near " />
+    <string id="VividWorld_Place_NearPost" text="" />
+    <string id="VividWorld_Place_None" text="" />
+    <string id="VividWorld_CampfireJab_FolkSuffix" text=" folk" />
+    <string id="VividWorld_CampfireJab_SameTopic" text="{HIS} past blunders" />
+    <string id="VividWorld_CampfireJab_SameSaying" text="saying something out of line" />
+    <string id="VividWorld_CampfireJab_Saying_Empire" text="saying they can never agree on an emperor, with three fools squabbling over one throne" />
+    <string id="VividWorld_CampfireJab_Saying_Sturgia" text="saying they know nothing of the world beyond drinking and shivering in the snow" />
+    <string id="VividWorld_CampfireJab_Saying_Aserai" text="saying they are desert peddlers who would haggle over anything" />
+    <string id="VividWorld_CampfireJab_Saying_Vlandia" text="saying their ancestors were mercenaries hired by the Empire who turned coat and seized the land" />
+    <string id="VividWorld_CampfireJab_Saying_Khuzait" text="saying they grow up on horses and can barely manage a stride once on foot" />
+    <string id="VividWorld_CampfireJab_Saying_Battania" text="saying they hide in the deep woods and have never laid eyes on a proper city" />
+    <!-- Wanderer events: fact fragments -->
+    <string id="VividWorld_Fact_WandererBattleCreditYielded_Who" text="{RIVAL} yielded the battle credit to {CLAIMANT}" />
+    <string id="VividWorld_Fact_WandererBattleCreditYielded_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererBattleCreditDisputed_Who" text="{CLAIMANT} and {RIVAL} argued bitterly over who struck down the enemy leader" />
+    <string id="VividWorld_Fact_WandererBattleCreditDisputed_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererBattleCreditToClaimant_Who" text="{EMPLOYER} ruled the credit belonged to {CLAIMANT}, not {RIVAL}" />
+    <string id="VividWorld_Fact_WandererBattleCreditToClaimant_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererBattleCreditToRival_Who" text="{EMPLOYER} ruled the credit belonged to {RIVAL}, not {CLAIMANT}" />
+    <string id="VividWorld_Fact_WandererBattleCreditToRival_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererBattleCreditBoth_Who" text="{EMPLOYER} praised both {CLAIMANT} and {RIVAL} for their valor" />
+    <string id="VividWorld_Fact_WandererBattleCreditBoth_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererBattleCreditRebuked_Who" text="{EMPLOYER} rebuked both {CLAIMANT} and {RIVAL} for squabbling over the credit" />
+    <string id="VividWorld_Fact_WandererBattleCreditRebuked_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererBattleRescued_Who" text="{RESCUER} dragged the wounded {RESCUED} out of the fight" />
+    <string id="VividWorld_Fact_WandererBattleRescued_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererPartyRoleBackedDown_Who" text="{CHALLENGER} gave up challenging {INCUMBENT} for the post" />
+    <string id="VividWorld_Fact_WandererPartyRoleBackedDown_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererPartyRoleBackedDown_Role" text="over the post of {ROLE_ID}" />
+    <string id="VividWorld_Fact_WandererPartyRoleBadBlood_Who" text="{CHALLENGER} and {INCUMBENT} fell out bitterly over the post" />
+    <string id="VividWorld_Fact_WandererPartyRoleBadBlood_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererPartyRoleBadBlood_Role" text="over the post of {ROLE_ID}" />
+    <string id="VividWorld_Fact_WandererPartyRoleKeepIncumbent_Who" text="{EMPLOYER} kept {INCUMBENT} in the post despite {CHALLENGER}&apos;s ambition" />
+    <string id="VividWorld_Fact_WandererPartyRoleKeepIncumbent_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererPartyRoleKeepIncumbent_Role" text="as {ROLE_ID}" />
+    <string id="VividWorld_Fact_WandererPartyRoleSwapped_Who" text="{EMPLOYER} replaced {INCUMBENT} with {CHALLENGER}" />
+    <string id="VividWorld_Fact_WandererPartyRoleSwapped_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererPartyRoleSwapped_Role" text="as the new {ROLE_ID}" />
+    <string id="VividWorld_Fact_WandererPartyRoleContested_Who" text="{EMPLOYER} had {INCUMBENT} and {CHALLENGER} contest for the post" />
+    <string id="VividWorld_Fact_WandererPartyRoleContested_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererPartyRoleContested_Role" text="for the post of {ROLE_ID}" />
+    <string id="VividWorld_Fact_WandererPartyRoleContested_Winner" text="and {WINNER} won the trial" />
+    <string id="VividWorld_Fact_WandererCampfireJabLaughedOff_Who" text="{MOCKER} teased {MOCKED} by the campfire and {MOCKED} laughed it off" />
+    <string id="VividWorld_Fact_WandererCampfireJabLaughedOff_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererCampfireJabLaughedOff_Culture" text="making jokes about {TOPIC}, {SAYING}" />
+    <string id="VividWorld_Fact_WandererCampfireJabBrawled_Who" text="{MOCKER} mocked {MOCKED} around the campfire until blows were exchanged" />
+    <string id="VividWorld_Fact_WandererCampfireJabBrawled_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererCampfireJabBrawled_Culture" text="making jokes about {TOPIC}, {SAYING}" />
+    <string id="VividWorld_Fact_WandererCampfireJabColdShoulder_Who" text="{MOCKED} gave {MOCKER} the cold shoulder after a biting taunt" />
+    <string id="VividWorld_Fact_WandererCampfireJabColdShoulder_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererCampfireJabColdShoulder_Culture" text="making jokes about {TOPIC}, {SAYING}" />
+    <string id="VividWorld_Fact_WandererCampfireJabPunished_Who" text="{EMPLOYER} disciplined {MOCKER} for the taunt against {MOCKED}" />
+    <string id="VividWorld_Fact_WandererCampfireJabPunished_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererCampfireJabPunished_Culture" text="making jokes about {TOPIC}, {SAYING}" />
+    <string id="VividWorld_Fact_WandererCampfireJabBothRebuked_Who" text="{EMPLOYER} reprimanded both {MOCKER} and {MOCKED} for quarreling at the fire" />
+    <string id="VividWorld_Fact_WandererCampfireJabBothRebuked_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererCampfireJabBothRebuked_Culture" text="making jokes about {TOPIC}, {SAYING}" />
+    <string id="VividWorld_Fact_WandererTeachingCompleted_Who" text="{TEACHER} took time to teach {LEARNER} the craft" />
+    <string id="VividWorld_Fact_WandererTeachingCompleted_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererTeachingCompleted_Skill" text="passing on mastery of {SKILL_NAME}" />
+    <string id="VividWorld_Fact_WandererTeachingEncouraged_Who" text="{EMPLOYER} encouraged {TEACHER} and {LEARNER} to keep training" />
+    <string id="VividWorld_Fact_WandererTeachingEncouraged_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererTeachingEncouraged_Skill" text="in the art of {SKILL_NAME}" />
+    <string id="VividWorld_Fact_WandererTeachingJoined_Who" text="{EMPLOYER} joined {LEARNER} in learning from {TEACHER}" />
+    <string id="VividWorld_Fact_WandererTeachingJoined_Where" text="in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererTeachingJoined_Skill" text="studying {SKILL_NAME} together" />
+    <!-- Wanderer events: whole sentences -->
+    <string id="VividWorld_Sentence_WandererBattleCreditYielded_Who" text="after the battle, {RIVAL} yielded credit for striking down the enemy leader to {CLAIMANT}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditYielded_Who_Where" text="after the battle {PRE}{SETTLEMENT}{POST}, {RIVAL} yielded credit for striking down the enemy leader to {CLAIMANT}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditYielded_Who_Where_Self_CLAIMANT" text="after the battle {PRE}{SETTLEMENT}{POST}, {RIVAL} yielded credit for striking down the enemy leader to me" />
+    <string id="VividWorld_Sentence_WandererBattleCreditYielded_Who_Where_Self_RIVAL" text="after the battle {PRE}{SETTLEMENT}{POST}, I yielded credit for striking down the enemy leader to {CLAIMANT}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditDisputed_Who" text="{CLAIMANT} and {RIVAL} argued bitterly over who struck down the enemy leader" />
+    <string id="VividWorld_Sentence_WandererBattleCreditDisputed_Who_Where" text="{CLAIMANT} and {RIVAL} argued bitterly over who struck down the enemy leader {PRE}{SETTLEMENT}{POST}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditDisputed_Who_Where_Self_CLAIMANT" text="I argued bitterly with {RIVAL} over who struck down the enemy leader {PRE}{SETTLEMENT}{POST}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditDisputed_Who_Where_Self_RIVAL" text="{CLAIMANT} and I argued bitterly over who struck down the enemy leader {PRE}{SETTLEMENT}{POST}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditToClaimant_Who" text="when {CLAIMANT} and {RIVAL} contested who felled the enemy leader after the battle, {EMPLOYER} awarded the credit to {CLAIMANT}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditToClaimant_Who_Where" text="when {CLAIMANT} and {RIVAL} contested who felled the enemy leader after the battle {PRE}{SETTLEMENT}{POST}, {EMPLOYER} awarded the credit to {CLAIMANT}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditToClaimant_Who_Where_Self_CLAIMANT" text="when {RIVAL} and I contested who felled the enemy leader after the battle {PRE}{SETTLEMENT}{POST}, {EMPLOYER} awarded the credit to me" />
+    <string id="VividWorld_Sentence_WandererBattleCreditToClaimant_Who_Where_Self_RIVAL" text="when {CLAIMANT} and I contested who felled the enemy leader after the battle {PRE}{SETTLEMENT}{POST}, {EMPLOYER} awarded the credit to {CLAIMANT}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditToRival_Who" text="when {CLAIMANT} and {RIVAL} contested who felled the enemy leader after the battle, {EMPLOYER} awarded the credit to {RIVAL}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditToRival_Who_Where" text="when {CLAIMANT} and {RIVAL} contested who felled the enemy leader after the battle {PRE}{SETTLEMENT}{POST}, {EMPLOYER} awarded the credit to {RIVAL}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditToRival_Who_Where_Self_CLAIMANT" text="when {RIVAL} and I contested who felled the enemy leader after the battle {PRE}{SETTLEMENT}{POST}, {EMPLOYER} awarded the credit to {RIVAL}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditToRival_Who_Where_Self_RIVAL" text="when {CLAIMANT} and I contested who felled the enemy leader after the battle {PRE}{SETTLEMENT}{POST}, {EMPLOYER} awarded the credit to me" />
+    <string id="VividWorld_Sentence_WandererBattleCreditBoth_Who" text="after the fighting, {CLAIMANT} and {RIVAL} argued over who felled the leader, but {EMPLOYER} ruled that both deserved equal credit" />
+    <string id="VividWorld_Sentence_WandererBattleCreditBoth_Who_Where" text="after the fighting {PRE}{SETTLEMENT}{POST}, {CLAIMANT} and {RIVAL} argued over who felled the leader, but {EMPLOYER} ruled that both deserved equal credit" />
+    <string id="VividWorld_Sentence_WandererBattleCreditBoth_Who_Where_Self_CLAIMANT" text="after the fighting {PRE}{SETTLEMENT}{POST}, {RIVAL} and I argued over who felled the leader, but {EMPLOYER} ruled that we both deserved equal credit" />
+    <string id="VividWorld_Sentence_WandererBattleCreditBoth_Who_Where_Self_RIVAL" text="after the fighting {PRE}{SETTLEMENT}{POST}, {CLAIMANT} and I argued over who felled the leader, but {EMPLOYER} ruled that we both deserved equal credit" />
+    <string id="VividWorld_Sentence_WandererBattleCreditRebuked_Who" text="right after the clash, {CLAIMANT} and {RIVAL} began squabbling over the enemy leader, only to be sharply rebuked by {EMPLOYER}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditRebuked_Who_Where" text="right after the clash {PRE}{SETTLEMENT}{POST}, {CLAIMANT} and {RIVAL} began squabbling over the enemy leader, only to be sharply rebuked by {EMPLOYER}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditRebuked_Who_Where_Self_CLAIMANT" text="right after the clash {PRE}{SETTLEMENT}{POST}, {RIVAL} and I began squabbling over the enemy leader, only to be sharply rebuked by {EMPLOYER}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditRebuked_Who_Where_Self_RIVAL" text="right after the clash {PRE}{SETTLEMENT}{POST}, {CLAIMANT} and I began squabbling over the enemy leader, only to be sharply rebuked by {EMPLOYER}" />
+    <string id="VividWorld_Sentence_WandererBattleRescued_Who" text="in that fierce fighting, {RESCUED} was struck down wounded, and {RESCUER} braved the field to drag {RESCUED.him} to safety" />
+    <string id="VividWorld_Sentence_WandererBattleRescued_Who_Where" text="in that fierce fighting {PRE}{SETTLEMENT}{POST}, {RESCUED} was struck down wounded, and {RESCUER} braved the field to drag {RESCUED.him} to safety" />
+    <string id="VividWorld_Sentence_WandererBattleRescued_Who_Where_Self_RESCUED" text="in that fierce fighting {PRE}{SETTLEMENT}{POST}, I was struck down wounded, and {RESCUER} braved the field to drag me to safety" />
+    <string id="VividWorld_Sentence_WandererBattleRescued_Who_Where_Self_RESCUER" text="in that fierce fighting {PRE}{SETTLEMENT}{POST}, {RESCUED} was struck down wounded, and I braved the field to drag {RESCUED.him} to safety" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBackedDown_Who" text="{CHALLENGER} gave up challenging {INCUMBENT} for the post" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBackedDown_Who_Where" text="{CHALLENGER} gave up challenging {INCUMBENT} for the post {PRE}{SETTLEMENT}{POST}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBackedDown_Who_Where_Role" text="{CHALLENGER} gave up challenging {INCUMBENT} over the post of {ROLE_ID} {PRE}{SETTLEMENT}{POST}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBackedDown_Who_Where_Role_Self_CHALLENGER" text="I gave up challenging {INCUMBENT} over the post of {ROLE_ID} {PRE}{SETTLEMENT}{POST}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBackedDown_Who_Where_Role_Self_INCUMBENT" text="{CHALLENGER} gave up challenging me over the post of {ROLE_ID} {PRE}{SETTLEMENT}{POST}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBackedDown_Who_Where_Self_CHALLENGER" text="I gave up challenging {INCUMBENT} for the post {PRE}{SETTLEMENT}{POST}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBackedDown_Who_Where_Self_INCUMBENT" text="{CHALLENGER} gave up challenging me for the post {PRE}{SETTLEMENT}{POST}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBadBlood_Who" text="{CHALLENGER} and {INCUMBENT} fell out bitterly over the post" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBadBlood_Who_Where" text="{CHALLENGER} and {INCUMBENT} fell out bitterly over the post {PRE}{SETTLEMENT}{POST}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBadBlood_Who_Where_Role" text="{CHALLENGER} and {INCUMBENT} fell out bitterly over the post of {ROLE_ID} {PRE}{SETTLEMENT}{POST}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBadBlood_Who_Where_Role_Self_CHALLENGER" text="I fell out bitterly with {INCUMBENT} over the post of {ROLE_ID} {PRE}{SETTLEMENT}{POST}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBadBlood_Who_Where_Role_Self_INCUMBENT" text="{CHALLENGER} and I fell out bitterly over the post of {ROLE_ID} {PRE}{SETTLEMENT}{POST}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBadBlood_Who_Where_Self_CHALLENGER" text="I fell out bitterly with {INCUMBENT} over the post {PRE}{SETTLEMENT}{POST}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBadBlood_Who_Where_Self_INCUMBENT" text="{CHALLENGER} and I fell out bitterly over the post {PRE}{SETTLEMENT}{POST}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleKeepIncumbent_Who" text="{CHALLENGER} pressed to replace {INCUMBENT} in the post, but {EMPLOYER} chose to leave {INCUMBENT} in the role" />
+    <string id="VividWorld_Sentence_WandererPartyRoleKeepIncumbent_Who_Where" text="while {PRE}{SETTLEMENT}{POST}, {CHALLENGER} pressed to replace {INCUMBENT} in the post, but {EMPLOYER} chose to leave {INCUMBENT} in the role" />
+    <string id="VividWorld_Sentence_WandererPartyRoleKeepIncumbent_Who_Where_Role" text="while {PRE}{SETTLEMENT}{POST}, {CHALLENGER} pressed to replace {INCUMBENT} as {ROLE_ID}, but {EMPLOYER} chose to leave {INCUMBENT} in the role" />
+    <string id="VividWorld_Sentence_WandererPartyRoleKeepIncumbent_Who_Where_Role_Self_CHALLENGER" text="while {PRE}{SETTLEMENT}{POST}, I pressed to replace {INCUMBENT} as {ROLE_ID}, but {EMPLOYER} chose to leave {INCUMBENT} in the role" />
+    <string id="VividWorld_Sentence_WandererPartyRoleKeepIncumbent_Who_Where_Role_Self_INCUMBENT" text="while {PRE}{SETTLEMENT}{POST}, {CHALLENGER} pressed to replace me as {ROLE_ID}, but {EMPLOYER} chose to leave me in the role" />
+    <string id="VividWorld_Sentence_WandererPartyRoleKeepIncumbent_Who_Where_Self_CHALLENGER" text="while {PRE}{SETTLEMENT}{POST}, I pressed to replace {INCUMBENT} in the post, but {EMPLOYER} chose to leave {INCUMBENT} in the role" />
+    <string id="VividWorld_Sentence_WandererPartyRoleKeepIncumbent_Who_Where_Self_INCUMBENT" text="while {PRE}{SETTLEMENT}{POST}, {CHALLENGER} pressed to replace me in the post, but {EMPLOYER} chose to leave me in the role" />
+    <string id="VividWorld_Sentence_WandererPartyRoleSwapped_Who" text="{CHALLENGER} asked to replace {INCUMBENT} in the post, and {EMPLOYER} agreed, handing the duties over to {CHALLENGER}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleSwapped_Who_Where" text="while {PRE}{SETTLEMENT}{POST}, {CHALLENGER} asked to replace {INCUMBENT} in the post, and {EMPLOYER} agreed, handing the duties over to {CHALLENGER}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleSwapped_Who_Where_Role" text="while {PRE}{SETTLEMENT}{POST}, {CHALLENGER} asked to replace {INCUMBENT} as {ROLE_ID}, and {EMPLOYER} agreed, handing the duties over to {CHALLENGER}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleSwapped_Who_Where_Role_Self_CHALLENGER" text="while {PRE}{SETTLEMENT}{POST}, I asked to replace {INCUMBENT} as {ROLE_ID}, and {EMPLOYER} agreed, handing the duties over to me" />
+    <string id="VividWorld_Sentence_WandererPartyRoleSwapped_Who_Where_Role_Self_INCUMBENT" text="while {PRE}{SETTLEMENT}{POST}, {CHALLENGER} asked to replace me as {ROLE_ID}, and {EMPLOYER} agreed, handing the duties over to {CHALLENGER}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleSwapped_Who_Where_Self_CHALLENGER" text="while {PRE}{SETTLEMENT}{POST}, I asked to replace {INCUMBENT} in the post, and {EMPLOYER} agreed, handing the duties over to me" />
+    <string id="VividWorld_Sentence_WandererPartyRoleSwapped_Who_Where_Self_INCUMBENT" text="while {PRE}{SETTLEMENT}{POST}, {CHALLENGER} asked to replace me in the post, and {EMPLOYER} agreed, handing the duties over to {CHALLENGER}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleContested_Who" text="{CHALLENGER} and {INCUMBENT} vied for the post, and after {EMPLOYER} ordered a contest of skill, one of them came out on top" />
+    <string id="VividWorld_Sentence_WandererPartyRoleContested_Who_Where" text="while {PRE}{SETTLEMENT}{POST}, {CHALLENGER} and {INCUMBENT} vied for the post, and after {EMPLOYER} ordered a contest of skill, one of them came out on top" />
+    <string id="VividWorld_Sentence_WandererPartyRoleContested_Who_Where_Role_Winner" text="while {PRE}{SETTLEMENT}{POST}, {CHALLENGER} and {INCUMBENT} vied for the post of {ROLE_ID}, and after {EMPLOYER} ordered a contest of skill, {WINNER} came out on top" />
+    <string id="VividWorld_Sentence_WandererPartyRoleContested_Who_Where_Role_Winner_Self_CHALLENGER" text="while {PRE}{SETTLEMENT}{POST}, {INCUMBENT} and I vied for the post of {ROLE_ID}, and after {EMPLOYER} ordered a contest of skill, {WINNER} came out on top" />
+    <string id="VividWorld_Sentence_WandererPartyRoleContested_Who_Where_Role_Winner_Self_INCUMBENT" text="while {PRE}{SETTLEMENT}{POST}, {CHALLENGER} and I vied for the post of {ROLE_ID}, and after {EMPLOYER} ordered a contest of skill, {WINNER} came out on top" />
+    <string id="VividWorld_Sentence_WandererPartyRoleContested_Who_Where_Self_CHALLENGER" text="while {PRE}{SETTLEMENT}{POST}, {INCUMBENT} and I vied for the post, and after {EMPLOYER} ordered a contest of skill, one of us came out on top" />
+    <string id="VividWorld_Sentence_WandererPartyRoleContested_Who_Where_Self_INCUMBENT" text="while {PRE}{SETTLEMENT}{POST}, {CHALLENGER} and I vied for the post, and after {EMPLOYER} ordered a contest of skill, one of us came out on top" />
+    <string id="VividWorld_Sentence_WandererCampfireJabLaughedOff_Who" text="{MOCKER} teased {MOCKED} by the campfire and {MOCKED} laughed it off" />
+    <string id="VividWorld_Sentence_WandererCampfireJabLaughedOff_Who_Where" text="{MOCKER} teased {MOCKED} by the campfire and {MOCKED} laughed it off {PRE}{SETTLEMENT}{POST}" />
+    <string id="VividWorld_Sentence_WandererCampfireJabLaughedOff_Who_Where_Culture" text="{MOCKER} teased {MOCKED} by the campfire, making jokes about {TOPIC}, {SAYING}, and {MOCKED} laughed it off {PRE}{SETTLEMENT}{POST}" />
+    <string id="VividWorld_Sentence_WandererCampfireJabLaughedOff_Who_Where_Culture_Self_MOCKED" text="{MOCKER} teased me by the campfire, making jokes about {TOPIC}, {SAYING}, and I laughed it off {PRE}{SETTLEMENT}{POST}" />
+    <string id="VividWorld_Sentence_WandererCampfireJabLaughedOff_Who_Where_Culture_Self_MOCKER" text="I teased {MOCKED} by the campfire, making jokes about {TOPIC}, {SAYING}, and {MOCKED} laughed it off {PRE}{SETTLEMENT}{POST}" />
+    <string id="VividWorld_Sentence_WandererCampfireJabLaughedOff_Who_Where_Self_MOCKED" text="{MOCKER} teased me by the campfire and I laughed it off {PRE}{SETTLEMENT}{POST}" />
+    <string id="VividWorld_Sentence_WandererCampfireJabLaughedOff_Who_Where_Self_MOCKER" text="I teased {MOCKED} by the campfire and {MOCKED} laughed it off {PRE}{SETTLEMENT}{POST}" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBrawled_Who" text="by the campfire, {MOCKER} mocked {MOCKED} with cutting words, infuriating {MOCKED.him} until the two came to blows right there in the dirt" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBrawled_Who_Where" text="by the campfire {PRE}{SETTLEMENT}{POST}, {MOCKER} mocked {MOCKED} with cutting words, infuriating {MOCKED.him} until the two came to blows right there in the dirt" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBrawled_Who_Where_Culture" text="by the campfire {PRE}{SETTLEMENT}{POST}, {MOCKER} mocked {TOPIC}, {SAYING}, infuriating {MOCKED} until the two came to blows right there in the dirt" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBrawled_Who_Where_Culture_Self_MOCKED" text="by the campfire {PRE}{SETTLEMENT}{POST}, {MOCKER} mocked {TOPIC}, {SAYING}, infuriating me until the two of us came to blows right there in the dirt" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBrawled_Who_Where_Culture_Self_MOCKER" text="by the campfire {PRE}{SETTLEMENT}{POST}, I mocked {TOPIC}, {SAYING}, infuriating {MOCKED} until the two of us came to blows right there in the dirt" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBrawled_Who_Where_Self_MOCKED" text="by the campfire {PRE}{SETTLEMENT}{POST}, {MOCKER} mocked me with cutting words, infuriating me until the two of us came to blows right there in the dirt" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBrawled_Who_Where_Self_MOCKER" text="by the campfire {PRE}{SETTLEMENT}{POST}, I mocked {MOCKED} with cutting words, infuriating {MOCKED.him} until the two of us came to blows right there in the dirt" />
+    <string id="VividWorld_Sentence_WandererCampfireJabColdShoulder_Who" text="by the campfire, {MOCKER} took sharp jabs at {MOCKED}, and {MOCKED} stalked off in silence, refusing to speak to {MOCKER.him} since" />
+    <string id="VividWorld_Sentence_WandererCampfireJabColdShoulder_Who_Where" text="by the campfire {PRE}{SETTLEMENT}{POST}, {MOCKER} took sharp jabs at {MOCKED}, and {MOCKED} stalked off in silence, refusing to speak to {MOCKER.him} since" />
+    <string id="VividWorld_Sentence_WandererCampfireJabColdShoulder_Who_Where_Culture" text="by the campfire {PRE}{SETTLEMENT}{POST}, {MOCKER} took jabs at {TOPIC}, {SAYING}, and {MOCKED} stalked off in silence, refusing to speak to {MOCKER.him} since" />
+    <string id="VividWorld_Sentence_WandererCampfireJabColdShoulder_Who_Where_Culture_Self_MOCKED" text="by the campfire {PRE}{SETTLEMENT}{POST}, {MOCKER} took jabs at {TOPIC}, {SAYING}, and I stalked off in silence, refusing to speak to {MOCKER.him} since" />
+    <string id="VividWorld_Sentence_WandererCampfireJabColdShoulder_Who_Where_Culture_Self_MOCKER" text="by the campfire {PRE}{SETTLEMENT}{POST}, I took jabs at {TOPIC}, {SAYING}, and {MOCKED} stalked off in silence, refusing to speak to me since" />
+    <string id="VividWorld_Sentence_WandererCampfireJabColdShoulder_Who_Where_Self_MOCKED" text="by the campfire {PRE}{SETTLEMENT}{POST}, {MOCKER} took sharp jabs at me, and I stalked off in silence, refusing to speak to {MOCKER.him} since" />
+    <string id="VividWorld_Sentence_WandererCampfireJabColdShoulder_Who_Where_Self_MOCKER" text="by the campfire {PRE}{SETTLEMENT}{POST}, I took sharp jabs at {MOCKED}, and {MOCKED} stalked off in silence, refusing to speak to me since" />
+    <string id="VividWorld_Sentence_WandererCampfireJabPunished_Who" text="by the campfire, {MOCKER} made sport of {MOCKED}, until {EMPLOYER} intervened, chastised {MOCKER} for provoking trouble, and handed down a punishment" />
+    <string id="VividWorld_Sentence_WandererCampfireJabPunished_Who_Where" text="by the campfire {PRE}{SETTLEMENT}{POST}, {MOCKER} made sport of {MOCKED}, until {EMPLOYER} intervened, chastised {MOCKER} for provoking trouble, and handed down a punishment" />
+    <string id="VividWorld_Sentence_WandererCampfireJabPunished_Who_Where_Culture" text="by the campfire {PRE}{SETTLEMENT}{POST}, {MOCKER} made sport of {TOPIC}, {SAYING}, until {EMPLOYER} intervened, chastised {MOCKER} for provoking trouble, and handed down a punishment" />
+    <string id="VividWorld_Sentence_WandererCampfireJabPunished_Who_Where_Culture_Self_MOCKED" text="by the campfire {PRE}{SETTLEMENT}{POST}, {MOCKER} made sport of {TOPIC}, {SAYING}, until {EMPLOYER} intervened, chastised {MOCKER} for provoking trouble, and handed down a punishment" />
+    <string id="VividWorld_Sentence_WandererCampfireJabPunished_Who_Where_Culture_Self_MOCKER" text="by the campfire {PRE}{SETTLEMENT}{POST}, I made sport of {TOPIC}, {SAYING}, until {EMPLOYER} intervened, chastised me for provoking trouble, and handed down a punishment" />
+    <string id="VividWorld_Sentence_WandererCampfireJabPunished_Who_Where_Self_MOCKED" text="by the campfire {PRE}{SETTLEMENT}{POST}, {MOCKER} made sport of me, until {EMPLOYER} intervened, chastised {MOCKER} for provoking trouble, and handed down a punishment" />
+    <string id="VividWorld_Sentence_WandererCampfireJabPunished_Who_Where_Self_MOCKER" text="by the campfire {PRE}{SETTLEMENT}{POST}, I made sport of {MOCKED}, until {EMPLOYER} intervened, chastised me for provoking trouble, and handed down a punishment" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBothRebuked_Who" text="by the campfire, {MOCKER} poked fun at {MOCKED}, and when a bitter quarrel broke out, {EMPLOYER} sternly reprimanded them both" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBothRebuked_Who_Where" text="by the campfire {PRE}{SETTLEMENT}{POST}, {MOCKER} poked fun at {MOCKED}, and when a bitter quarrel broke out, {EMPLOYER} sternly reprimanded them both" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBothRebuked_Who_Where_Culture" text="by the campfire {PRE}{SETTLEMENT}{POST}, {MOCKER} poked fun at {TOPIC}, {SAYING}, and when a bitter quarrel broke out, {EMPLOYER} sternly reprimanded them both" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBothRebuked_Who_Where_Culture_Self_MOCKED" text="by the campfire {PRE}{SETTLEMENT}{POST}, {MOCKER} poked fun at {TOPIC}, {SAYING}, and when a bitter quarrel broke out between us, {EMPLOYER} sternly reprimanded us both" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBothRebuked_Who_Where_Culture_Self_MOCKER" text="by the campfire {PRE}{SETTLEMENT}{POST}, I poked fun at {TOPIC}, {SAYING}, and when a bitter quarrel broke out between us, {EMPLOYER} sternly reprimanded us both" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBothRebuked_Who_Where_Self_MOCKED" text="by the campfire {PRE}{SETTLEMENT}{POST}, {MOCKER} poked fun at me, and when a bitter quarrel broke out between us, {EMPLOYER} sternly reprimanded us both" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBothRebuked_Who_Where_Self_MOCKER" text="by the campfire {PRE}{SETTLEMENT}{POST}, I poked fun at {MOCKED}, and when a bitter quarrel broke out between us, {EMPLOYER} sternly reprimanded us both" />
+    <string id="VividWorld_Sentence_WandererTeachingCompleted_Who" text="while resting, {TEACHER} took the time to instruct {LEARNER} in the craft, passing on valuable lessons" />
+    <string id="VividWorld_Sentence_WandererTeachingCompleted_Who_Where" text="while resting {PRE}{SETTLEMENT}{POST}, {TEACHER} took the time to instruct {LEARNER} in the craft, passing on valuable lessons" />
+    <string id="VividWorld_Sentence_WandererTeachingCompleted_Who_Where_Self_LEARNER" text="while resting {PRE}{SETTLEMENT}{POST}, {TEACHER} took the time to instruct me in the craft, passing on valuable lessons" />
+    <string id="VividWorld_Sentence_WandererTeachingCompleted_Who_Where_Self_TEACHER" text="while resting {PRE}{SETTLEMENT}{POST}, I took the time to instruct {LEARNER} in the craft, passing on valuable lessons" />
+    <string id="VividWorld_Sentence_WandererTeachingCompleted_Who_Where_Skill" text="while resting {PRE}{SETTLEMENT}{POST}, {TEACHER} took the time to instruct {LEARNER} in {SKILL_NAME}, passing on valuable lessons" />
+    <string id="VividWorld_Sentence_WandererTeachingCompleted_Who_Where_Skill_Self_LEARNER" text="while resting {PRE}{SETTLEMENT}{POST}, {TEACHER} took the time to instruct me in {SKILL_NAME}, passing on valuable lessons" />
+    <string id="VividWorld_Sentence_WandererTeachingCompleted_Who_Where_Skill_Self_TEACHER" text="while resting {PRE}{SETTLEMENT}{POST}, I took the time to instruct {LEARNER} in {SKILL_NAME}, passing on valuable lessons" />
+    <string id="VividWorld_Sentence_WandererTeachingEncouraged_Who" text="while resting, {TEACHER} was instructing {LEARNER} in the craft, and {EMPLOYER} offered warm praise, encouraging them to keep honing their skills together" />
+    <string id="VividWorld_Sentence_WandererTeachingEncouraged_Who_Where" text="while resting {PRE}{SETTLEMENT}{POST}, {TEACHER} was instructing {LEARNER} in the craft, and {EMPLOYER} offered warm praise, encouraging them to keep honing their skills together" />
+    <string id="VividWorld_Sentence_WandererTeachingEncouraged_Who_Where_Self_LEARNER" text="while resting {PRE}{SETTLEMENT}{POST}, {TEACHER} was instructing me in the craft, and {EMPLOYER} offered warm praise, encouraging us to keep honing our skills together" />
+    <string id="VividWorld_Sentence_WandererTeachingEncouraged_Who_Where_Self_TEACHER" text="while resting {PRE}{SETTLEMENT}{POST}, I was instructing {LEARNER} in the craft, and {EMPLOYER} offered warm praise, encouraging us to keep honing our skills together" />
+    <string id="VividWorld_Sentence_WandererTeachingEncouraged_Who_Where_Skill" text="while resting {PRE}{SETTLEMENT}{POST}, {TEACHER} was instructing {LEARNER} in {SKILL_NAME}, and {EMPLOYER} offered warm praise, encouraging them to keep honing their skills together" />
+    <string id="VividWorld_Sentence_WandererTeachingEncouraged_Who_Where_Skill_Self_LEARNER" text="while resting {PRE}{SETTLEMENT}{POST}, {TEACHER} was instructing me in {SKILL_NAME}, and {EMPLOYER} offered warm praise, encouraging us to keep honing our skills together" />
+    <string id="VividWorld_Sentence_WandererTeachingEncouraged_Who_Where_Skill_Self_TEACHER" text="while resting {PRE}{SETTLEMENT}{POST}, I was instructing {LEARNER} in {SKILL_NAME}, and {EMPLOYER} offered warm praise, encouraging us to keep honing our skills together" />
+    <string id="VividWorld_Sentence_WandererTeachingJoined_Who" text="while resting, {TEACHER} was coaching {LEARNER} in the craft, and even {EMPLOYER} stepped in to learn alongside them" />
+    <string id="VividWorld_Sentence_WandererTeachingJoined_Who_Where" text="while resting {PRE}{SETTLEMENT}{POST}, {TEACHER} was coaching {LEARNER} in the craft, and even {EMPLOYER} stepped in to learn alongside them" />
+    <string id="VividWorld_Sentence_WandererTeachingJoined_Who_Where_Self_LEARNER" text="while resting {PRE}{SETTLEMENT}{POST}, {TEACHER} was coaching me in the craft, and even {EMPLOYER} stepped in to learn alongside us" />
+    <string id="VividWorld_Sentence_WandererTeachingJoined_Who_Where_Self_TEACHER" text="while resting {PRE}{SETTLEMENT}{POST}, I was coaching {LEARNER} in the craft, and even {EMPLOYER} stepped in to learn alongside us" />
+    <string id="VividWorld_Sentence_WandererTeachingJoined_Who_Where_Skill" text="while resting {PRE}{SETTLEMENT}{POST}, {TEACHER} was coaching {LEARNER} in {SKILL_NAME}, and even {EMPLOYER} stepped in to learn alongside them" />
+    <string id="VividWorld_Sentence_WandererTeachingJoined_Who_Where_Skill_Self_LEARNER" text="while resting {PRE}{SETTLEMENT}{POST}, {TEACHER} was coaching me in {SKILL_NAME}, and even {EMPLOYER} stepped in to learn alongside us" />
+    <string id="VividWorld_Sentence_WandererTeachingJoined_Who_Where_Skill_Self_TEACHER" text="while resting {PRE}{SETTLEMENT}{POST}, I was coaching {LEARNER} in {SKILL_NAME}, and even {EMPLOYER} stepped in to learn alongside us" />
+    <!-- Wanderer events: self feelings -->
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditYielded_CLAIMANT" text="It was decent of {RIVAL} to step aside. I won&apos;t forget that" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditYielded_RIVAL" text="We march under the same banner. No sense squabbling like dogs over a single kill" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditDisputed_CLAIMANT" text="My blade struck first. There&apos;s no reason under the sun the credit should go to {RIVAL.him}" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditDisputed_RIVAL" text="If I hadn&apos;t broken that guard first, {CLAIMANT.he} would never have landed the strike" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditToClaimant_CLAIMANT" text="The captain sees true. Justice was done" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditToClaimant_RIVAL" text="The captain made the call and I have to take it, but that doesn&apos;t mean I agree" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditToRival_CLAIMANT" text="I fought hard for that kill and got pushed aside. It leaves a bitter taste" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditToRival_RIVAL" text="I&apos;m glad the captain saw what really happened. A soldier&apos;s sweat shouldn&apos;t be overlooked" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditBoth_CLAIMANT" text="Sharing the credit is fair enough. Keeps bad blood out of the ranks" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditBoth_RIVAL" text="A fair compromise. Neither of us walks away empty-handed" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditRebuked_CLAIMANT" text="Being scolded like a recruit was not what I expected" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditRebuked_RIVAL" text="Getting dressed down in front of the whole company was hard to stomach" />
+    <string id="VividWorld_SelfFeeling_WandererBattleRescued_RESCUED" text="I owe {RESCUER.him} my life for that day" />
+    <string id="VividWorld_SelfFeeling_WandererBattleRescued_RESCUER" text="I couldn&apos;t just leave a comrade behind" />
+    <string id="VividWorld_SelfFeeling_WandererPartyRoleBackedDown_CHALLENGER" text="Now was not the time to push the matter" />
+    <string id="VividWorld_SelfFeeling_WandererPartyRoleBackedDown_INCUMBENT" text="I earned this post through honest sweat. {CHALLENGER} can&apos;t just take it for the asking" />
+    <string id="VividWorld_SelfFeeling_WandererPartyRoleBadBlood_CHALLENGER" text="That post should have been mine, and everyone knows it" />
+    <string id="VividWorld_SelfFeeling_WandererPartyRoleBadBlood_INCUMBENT" text="I will not forget this insolence" />
+    <string id="VividWorld_SelfFeeling_WandererPartyRoleKeepIncumbent_CHALLENGER" text="The captain made the decision, so I&apos;ll hold my tongue, but I know I could do better" />
+    <string id="VividWorld_SelfFeeling_WandererPartyRoleKeepIncumbent_INCUMBENT" text="The captain placed trust in me, and I intend to keep running things properly" />
+    <string id="VividWorld_SelfFeeling_WandererPartyRoleSwapped_CHALLENGER" text="Now that the captain has given me the post, I won&apos;t let the company down" />
+    <string id="VividWorld_SelfFeeling_WandererPartyRoleSwapped_INCUMBENT" text="After all my hard work for this company, being cast aside like that cuts deep" />
+    <string id="VividWorld_SelfFeeling_WandererPartyRoleContested_CHALLENGER" text="We tested each other openly. The better one takes the post, and that&apos;s all there is to it" />
+    <string id="VividWorld_SelfFeeling_WandererPartyRoleContested_INCUMBENT" text="Proving skill out in the open was the right way. No complaints either way" />
+    <string id="VividWorld_SelfFeeling_WandererCampfireJabLaughedOff_MOCKED" text="Just campfire banter. If you lose your head over a joke, you&apos;ve already lost" />
+    <string id="VividWorld_SelfFeeling_WandererCampfireJabLaughedOff_MOCKER" text="{MOCKED} took it with good grace. Can&apos;t fault someone who knows how to take a joke" />
+    <string id="VividWorld_SelfFeeling_WandererCampfireJabBrawled_MOCKED" text="I won&apos;t forgive being shamed in front of everyone" />
+    <string id="VividWorld_SelfFeeling_WandererCampfireJabBrawled_MOCKER" text="{MOCKED} had it coming, and I won&apos;t take it back" />
+    <string id="VividWorld_SelfFeeling_WandererCampfireJabColdShoulder_MOCKED" text="I won&apos;t say a word to someone who mocked me like that" />
+    <string id="VividWorld_SelfFeeling_WandererCampfireJabColdShoulder_MOCKER" text="I said what needed saying, and {MOCKED.he} can sulk for all I care" />
+    <string id="VividWorld_SelfFeeling_WandererCampfireJabPunished_MOCKED" text="I&apos;m glad someone stood up for me" />
+    <string id="VividWorld_SelfFeeling_WandererCampfireJabPunished_MOCKER" text="I was in the wrong, and everyone saw it" />
+    <string id="VividWorld_SelfFeeling_WandererCampfireJabBothRebuked_MOCKED" text="It was {MOCKER} who started the whole mess, yet I get dragged into the mud alongside {MOCKER.him}. Rotten luck" />
+    <string id="VividWorld_SelfFeeling_WandererCampfireJabBothRebuked_MOCKER" text="Being scolded in front of everyone stung more than the taunt did" />
+    <string id="VividWorld_SelfFeeling_WandererTeachingCompleted_LEARNER" text="I won&apos;t forget that {TEACHER} took the time to teach me" />
+    <string id="VividWorld_SelfFeeling_WandererTeachingCompleted_TEACHER" text="I&apos;m glad to have passed it on" />
+    <string id="VividWorld_SelfFeeling_WandererTeachingEncouraged_LEARNER" text="With the captain urging us on, I&apos;ve got every reason to make this skill second nature" />
+    <string id="VividWorld_SelfFeeling_WandererTeachingEncouraged_TEACHER" text="It is good to see someone still want to learn" />
+    <string id="VividWorld_SelfFeeling_WandererTeachingJoined_LEARNER" text="Seeing the captain step right in to train alongside us really put wind in our sails" />
+    <string id="VividWorld_SelfFeeling_WandererTeachingJoined_TEACHER" text="I&apos;m a little embarrassed to have someone learn at my side" />
+    <string id="VividWorld_RoleComplaint_Line" text="You put me in as {ROLE} only to take it back days later. Are you toying with me?" />
+    <string id="VividWorld_RoleComplaint_Reply" text="Company assignments change with our needs. Keep your mind on your duties." />
+    <string id="VividWorld_RoleComplaint_Message" text="{HERO} is aggrieved over being removed as {ROLE} (Relation: {BEFORE} -> {AFTER})" />
+    <string id="VividWorld_WandererSkillXp_Companion" text="{LEARNER} learned {SKILL_NAME} from {TEACHER}: +{XP} experience" />
+    <string id="VividWorld_WandererSkillXp_Player" text="You learned {SKILL_NAME} from {TEACHER}: +{XP} experience" />
+</strings>
 </base>

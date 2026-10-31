@@ -111,6 +111,28 @@ namespace VividWorld.Core.Tests
         }
 
         [Fact]
+        public void Offer_Retell_PlayerWitnessedIt_TellerWitnessedIt_NotRetoldEvenWithRicherRetell()
+        {
+            // 玩家親眼看到（手數 0），講的人也是第一手（手數 0）：講的人能給的細節不會比玩家多，
+            // 所以即使 AllowRicherRetell 開著，也不該選它。
+            var cfg = new VividWorldConfig();
+            cfg.Dialogue.AllowRicherRetell = true;
+            var (selector, _, _) = CreateSelector(customConfig: cfg);
+            var evt = CreateSampleEvent("evt_witnessed_by_both");
+            evt.KnownBy.Add(new KnownByEntry { HeroId = "teller_witness", Hop = 0 });
+            evt.KnownBy.Add(new KnownByEntry { HeroId = "player", Hop = 0, KnownFactIds = new List<string> { "f_who", "f_where", "f_what" } });
+
+            var profile = new HeroSocialProfile { HeroId = "teller_witness", RelationWithPlayer = 20 };
+            var candidates = new List<RumorCandidate>
+            {
+                new() { Event = evt, TellerHop = 0, PlayerExistingHop = 0 }
+            };
+
+            var offer = selector.SelectOnAsk(profile, candidates, day: 15.0);
+            Assert.Null(offer);
+        }
+
+        [Fact]
         public void Offer_Retell_RequiresNewFactIds()
         {
             var (selector, _, _) = CreateSelector();

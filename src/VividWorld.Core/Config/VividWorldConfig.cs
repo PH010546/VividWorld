@@ -598,6 +598,16 @@ namespace VividWorld.Core.Config
             Situations.PlayerPresence.Chance = ClampTracked("situations.playerPresence.chance", Situations.PlayerPresence.Chance, 0.0, 1.0, notices);
             Situations.PlayerPresence.CooldownDays = ClampInt("situations.playerPresence.cooldownDays", Situations.PlayerPresence.CooldownDays, 0, 365, notices);
 
+            // Situations: WandererEvents
+            Situations.WandererEvents ??= new WandererEventsConfig();
+            Situations.WandererEvents.BattleChance = ClampTracked("situations.wandererEvents.battleChance", Situations.WandererEvents.BattleChance, 0.0, 1.0, notices);
+            Situations.WandererEvents.DailyChance = ClampTracked("situations.wandererEvents.dailyChance", Situations.WandererEvents.DailyChance, 0.0, 1.0, notices);
+            Situations.WandererEvents.BattleCooldownDays = ClampInt("situations.wandererEvents.battleCooldownDays", Situations.WandererEvents.BattleCooldownDays, 0, 365, notices);
+            Situations.WandererEvents.DailyCooldownDays = ClampInt("situations.wandererEvents.dailyCooldownDays", Situations.WandererEvents.DailyCooldownDays, 0, 365, notices);
+            Situations.WandererEvents.MinGapDays = ClampInt("situations.wandererEvents.minGapDays", Situations.WandererEvents.MinGapDays, 0, 365, notices);
+            Situations.WandererEvents.UnseenShare = ClampTracked("situations.wandererEvents.unseenShare", Situations.WandererEvents.UnseenShare, 0.0, 1.0, notices);
+            Situations.WandererEvents.RoleRevertDays = ClampInt("situations.wandererEvents.roleRevertDays", Situations.WandererEvents.RoleRevertDays, 0, 365, notices);
+
             // Situations: GrudgeDecay
             Situations.GrudgeDecay ??= new GrudgeDecayConfig();
             Situations.GrudgeDecay.Personal ??= new GrudgeBandConfig { Band = 10.0, DaysPerPoint = 3.0 };

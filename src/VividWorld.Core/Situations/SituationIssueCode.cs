@@ -54,6 +54,9 @@ namespace VividWorld.Core.Situations
         InvalidMadeUpTalk,
         InvalidGrudgeWeight,
         InvalidPlayerBlock,
-        InvalidPlayerEffects
+        InvalidPlayerEffects,
+        InvalidSituationField,
+        InvalidWandererTemplate,
+        InvalidNewEffect
     }
 }

@@ -224,5 +224,93 @@ namespace VividWorld.Core.Tests
                 }
             }
         }
+
+        [Fact]
+        public void StringTables_WandererPartyRole_RoleVariants_ExistAndContainRolePlaceholder()
+        {
+            string repoRoot = FindRepoRoot();
+            string enPath = Path.Combine(repoRoot, "module", "ModuleData", "Languages", "std_module_strings_xml.xml");
+            string cntPath = Path.Combine(repoRoot, "module", "ModuleData", "Languages", "CNt", "std_module_strings_xml.xml");
+
+            var roleSpecificKeys = new[]
+            {
+                "VividWorld_Presence_Scene_wanderer_party_role_Decider_Role",
+                "VividWorld_Presence_Option_wanderer_party_role_keep_incumbent_Role",
+                "VividWorld_Presence_Option_wanderer_party_role_swap_role_Role",
+                "VividWorld_Presence_Outcome_wanderer_party_role_back_down_Role"
+            };
+
+            var nonRoleKeys = new[]
+            {
+                "VividWorld_Presence_Option_wanderer_party_role_contest_Role",
+                "VividWorld_Presence_Option_wanderer_party_role_stand_aside_Role",
+                "VividWorld_Presence_Outcome_wanderer_party_role_bad_blood_Role"
+            };
+
+            foreach (string path in new[] { enPath, cntPath })
+            {
+                Assert.True(File.Exists(path), $"String file not found: {path}");
+                var doc = XDocument.Load(path);
+                var dict = (doc.Root?.Element("strings")?.Elements("string") ?? Enumerable.Empty<XElement>())
+                    .ToDictionary(
+                        e => e.Attribute("id")?.Value ?? string.Empty,
+                        e => e.Attribute("text")?.Value ?? string.Empty,
+                        StringComparer.Ordinal);
+
+                foreach (string key in roleSpecificKeys)
+                {
+                    Assert.True(dict.ContainsKey(key), $"Missing role-specific key '{key}' in {Path.GetFileName(path)}");
+                    Assert.Contains("{ROLE}", dict[key]);
+                }
+
+                foreach (string key in nonRoleKeys)
+                {
+                    Assert.False(dict.ContainsKey(key), $"Unexpected key '{key}' found in {Path.GetFileName(path)}");
+                }
+            }
+        }
+
+        [Fact]
+        public void ApplyGenderSelectTokens_WithRoleVariantScene_PreservesRolePlaceholderAndResolvesGender()
+        {
+            string repoRoot = FindRepoRoot();
+            string enPath = Path.Combine(repoRoot, "module", "ModuleData", "Languages", "std_module_strings_xml.xml");
+            var doc = XDocument.Load(enPath);
+            var dict = (doc.Root?.Element("strings")?.Elements("string") ?? Enumerable.Empty<XElement>())
+                .ToDictionary(
+                    e => e.Attribute("id")?.Value ?? string.Empty,
+                    e => e.Attribute("text")?.Value ?? string.Empty,
+                    StringComparer.Ordinal);
+
+            const string sceneKey = "VividWorld_Presence_Scene_wanderer_party_role_Decider_Role";
+            Assert.True(dict.ContainsKey(sceneKey));
+            string rawTemplate = dict[sceneKey].Replace("&apos;", "'");
+
+            var vars = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["CHALLENGER"] = "hero:wanderer_challenger",
+                ["INCUMBENT"] = "hero:wanderer_incumbent"
+            };
+
+            var isFemale = new Func<string, bool?>(id => id switch
+            {
+                "wanderer_challenger" => true,
+                "wanderer_incumbent" => false,
+                _ => null
+            });
+
+            string processed = RumorTextAssembler.ApplyGenderSelectTokens(
+                rawTemplate,
+                null, null, null,
+                isFemale,
+                vars,
+                null,
+                sceneKey);
+
+            Assert.Contains("{ROLE}", processed);
+            Assert.Contains("{CHALLENGER}", processed);
+            Assert.Contains("{INCUMBENT}", processed);
+            Assert.Contains("post is his and no one else's", processed);
+        }
     }
 }

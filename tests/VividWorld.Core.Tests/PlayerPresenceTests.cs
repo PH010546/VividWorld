@@ -790,7 +790,12 @@ namespace VividWorld.Core.Tests
                 ["market_brawl"] = (true, "patron", null),
                 ["victory_credit"] = (true, null, null),
                 ["hunt_wager"] = (true, null, null),
-                ["spoke_against_ruler"] = (false, null, "listener")
+                ["spoke_against_ruler"] = (false, null, "listener"),
+                ["wanderer_battle_credit"] = (false, null, null),
+                ["wanderer_battle_rescue"] = (true, null, null),
+                ["wanderer_party_role"] = (false, null, null),
+                ["wanderer_campfire_jab"] = (false, null, null),
+                ["wanderer_teaching"] = (false, null, null)
             };
 
             foreach (var s in catalog.Situations)
@@ -808,6 +813,8 @@ namespace VividWorld.Core.Tests
                 bool isBrawl = s.Id == "market_brawl";
                 Assert.Equal(isBrawl ? new[] { "sameKingdom" } : null, s.Player.SkipConditionsWhenPlayer?.ToArray());
                 Assert.Equal(isBrawl, s.Player.InfluenceOnlySameKingdom);
+                // 流浪者事件發生在玩家自己的隊伍裡，不論玩家有沒有出面，隊伍士氣都會動，所以不套用這條
+                if (s.Trigger.StartsWith("wanderer", StringComparison.Ordinal)) continue;
                 if (e.Decider == null) Assert.All(s.Branches, b => Assert.Null(b.PlayerEffects));
                 else Assert.All(s.Branches, b => Assert.NotNull(b.PlayerEffects));
             }

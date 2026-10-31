@@ -16,7 +16,8 @@
       8. GET  /mod-files/{id}/versions             讀回來，印出每一版的分類與誰是預設下載
     任何一步失敗就停，把伺服器回的原文印出來；之後那一版改由人手動上傳。
 
-    API 金鑰從 -ApiKeyFile 讀（預設 使用者資料夾\.vividworld\nexus-apikey.txt），
+    API 金鑰：有環境變數 NEXUS_API_KEY 就用它（GitHub Actions 從 Secrets 給），
+    否則從 -ApiKeyFile 讀（預設 使用者資料夾\.vividworld\nexus-apikey.txt），
     不接受命令列參數、不印出來、不寫進任何檔案。
 
     用法：
@@ -86,8 +87,13 @@ function Get-ChangelogVersionsSince([string]$path, [string]$after, [string]$upTo
 }
 
 # ── API 金鑰 ─────────────────────────────────────────────────────────
-if (-not (Test-Path $ApiKeyFile)) { Write-Error "找不到 API 金鑰檔 $ApiKeyFile（Nexus 網站 設定 → API Keys 產生的個人金鑰，整串貼進去存檔）" }
-$apiKey = ([IO.File]::ReadAllText($ApiKeyFile)).Trim()
+# GitHub Actions 從 Secrets 給環境變數 NEXUS_API_KEY；本機讀金鑰檔
+if ($env:NEXUS_API_KEY) {
+    $apiKey = $env:NEXUS_API_KEY.Trim()
+} else {
+    if (-not (Test-Path $ApiKeyFile)) { Write-Error "找不到 API 金鑰檔 $ApiKeyFile（Nexus 網站 設定 → API Keys 產生的個人金鑰，整串貼進去存檔）" }
+    $apiKey = ([IO.File]::ReadAllText($ApiKeyFile)).Trim()
+}
 if (-not $apiKey) { Write-Error "API 金鑰檔 $ApiKeyFile 是空的" }
 
 $http = New-Object System.Net.Http.HttpClient

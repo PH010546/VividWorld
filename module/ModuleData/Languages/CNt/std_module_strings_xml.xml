@@ -436,6 +436,8 @@
     <string id="VividWorld_MCM_ClanEscalationThresholdHint" text="個人敵意升級為家族世仇所需的累積恩怨強度門檻。" />
     <string id="VividWorld_MCM_PlayerPresenceEnabled" text="啟用「以身入局」" />
     <string id="VividWorld_MCM_PlayerPresenceEnabledHint" text="待在城鎮或城堡時，偶爾會有領主之間的事在你面前發生，有時要由你來決定怎麼做。關掉之後不再跳出這種視窗。" />
+    <string id="VividWorld_MCM_WandererEventsEnabled" text="啟用「同伴事件」" />
+    <string id="VividWorld_MCM_WandererEventsEnabledHint" text="打完仗或在營地裡，隊伍裡的同伴偶爾會起爭執、互相救命或互相傳授本事，有時要由你決定要不要出面。關掉之後不再發生這些事、不再跳視窗，也不會有它們帶來的變化。" />
 
     <!-- Group 6: 消息來源 -->
     <string id="VividWorld_MCM_SourceHeroKilled" text="英雄死亡事件" />
@@ -1668,6 +1670,10 @@
     <string id="VividWorld_MCM_ProbesPerHeroPerDayHint" text="同一位 NPC 一天最多讓你探聽幾次，跟他每天分享給你的消息分開算。" />
     <string id="VividWorld_Dev_ProbePreview" text="(dev) 打探預覽：他今天被問過幾次、你紀事裡每一件他會怎麼答" />
     <string id="VividWorld_Dev_Menu_Presence" text="(dev) 在你面前發生的事" />
+    <string id="VividWorld_Dev_Menu_Wanderer" text="(dev) 流浪者事件" />
+    <string id="VividWorld_Dev_WandererStatus" text="(dev) 流浪者事件狀態" />
+    <string id="VividWorld_Dev_WandererForce" text="(dev) 流浪者事件：現在擲" />
+    <string id="VividWorld_Dev_WandererComplaint" text="(dev) 流浪者事件：現在開抱怨" />
     <string id="VividWorld_Dev_PresenceStatus" text="(dev) 冷卻與上一次擲骰" />
     <string id="VividWorld_Dev_PresenceForce" text="(dev) 現在讓一件事在我面前發生" />
     <string id="VividWorld_Dev_PresenceForce_Title" text="(dev) 讓一件事在我面前發生" />
@@ -1754,8 +1760,43 @@
     <string id="VividWorld_Presence_Option_market_brawl_shield_own" text="自家的人自家管，不交人" />
     <string id="VividWorld_Presence_Option_market_brawl_counter_accuse" text="反說是{AGGRIEVED}的人先動的手" />
     <string id="VividWorld_Presence_Option_market_brawl_hush_it_up" text="跟{AGGRIEVED}講好，兩家都不再提這件事" />
+    <!-- Wanderer events: player presence scenes, options and outcomes -->
+    <string id="VividWorld_Presence_Scene_wanderer_battle_rescue_Bystander" text="混戰裡，{RESCUED}一個踉蹌倒了下去，眼看一把敵人的刀就要砍到他身上。{RESCUER}不顧一切衝了過去，把{RESCUED}從亂陣裡硬拖了出來，之後才又回頭去打。" />
+    <string id="VividWorld_Presence_Scene_wanderer_battle_credit_Decider" text="{CLAIMANT}當眾嚷著，說對方帶頭的那個人是他親手砍倒的；{RIVAL}大聲反駁，說那一刀是他砍的。兩人幾乎要扭打起來，周圍的人都在等你開口。" />
+    <string id="VividWorld_Presence_Scene_wanderer_party_role_Decider" text="{CHALLENGER}當著全營的人說，{INCUMBENT}坐這個位子已經夠久了，該讓出來。{INCUMBENT}卻說，這個位子是他的，輪不到別人來講。兩人對面站著，全營的人都在等你拿主意。" />
+    <string id="VividWorld_Presence_Scene_wanderer_party_role_Decider_Role" text="{CHALLENGER}當著全營的人說，{INCUMBENT}坐{ROLE}這個位子已經夠久了，該讓出來。{INCUMBENT}卻說，這個位子是他的，輪不到別人來講。兩人對面站著，全營的人都在等你拿主意。" />
+    <string id="VividWorld_Presence_Scene_wanderer_campfire_jab_Decider" text="火堆邊，{MOCKER}拿{MOCKED}的家鄉開了句過火的玩笑。{MOCKED}瞪著{MOCKER}，一隻手已經按在刀柄上。圍在火邊的人都安靜了下來，等你怎麼處置。" />
+    <string id="VividWorld_Presence_Scene_wanderer_teaching_Decider" text="休息時，你看到{TEACHER}正在營地一角耐心地指點{LEARNER}，{LEARNER}也聽得專注。兩人見你走近，停下了動作，等著聽你的吩咐。" />
+    <string id="VividWorld_Presence_Option_wanderer_battle_credit_stand_aside" text="不插手，讓他們自己爭" />
+    <string id="VividWorld_Presence_Option_wanderer_battle_credit_judge_claimant" text="判定首功歸{CLAIMANT}" />
+    <string id="VividWorld_Presence_Option_wanderer_battle_credit_judge_rival" text="判定首功歸{RIVAL}" />
+    <string id="VividWorld_Presence_Option_wanderer_battle_credit_judge_both" text="兩人各記一功，平分賞賜" />
+    <string id="VividWorld_Presence_Option_wanderer_battle_credit_rebuke" text="斥責兩人，不准再爭" />
+    <string id="VividWorld_Presence_Option_wanderer_party_role_stand_aside" text="不插手，讓他們自己爭" />
+    <string id="VividWorld_Presence_Option_wanderer_party_role_keep_incumbent" text="維持原樣，繼續由{INCUMBENT}擔任" />
+    <string id="VividWorld_Presence_Option_wanderer_party_role_keep_incumbent_Role" text="維持原樣，繼續由{INCUMBENT}擔任{ROLE}" />
+    <string id="VividWorld_Presence_Option_wanderer_party_role_swap_role" text="把這個位子交給{CHALLENGER}" />
+    <string id="VividWorld_Presence_Option_wanderer_party_role_swap_role_Role" text="把{ROLE}的位子交給{CHALLENGER}" />
+    <string id="VividWorld_Presence_Option_wanderer_party_role_contest" text="讓兩人比一比，誰行誰來" />
+    <string id="VividWorld_Presence_Option_wanderer_campfire_jab_stand_aside" text="不管，由著他們去" />
+    <string id="VividWorld_Presence_Option_wanderer_campfire_jab_punish_mocker" text="罰{MOCKER}，怪他先挑事" />
+    <string id="VividWorld_Presence_Option_wanderer_campfire_jab_rebuke_both" text="各打五十大板，訓斥兩人不准胡鬧" />
+    <string id="VividWorld_Presence_Option_wanderer_teaching_stand_aside" text="在旁邊看就好" />
+    <string id="VividWorld_Presence_Option_wanderer_teaching_encourage" text="稱許他們的做法，鼓勵他們繼續" />
+    <string id="VividWorld_Presence_Option_wanderer_teaching_join_learning" text="自己也湊上前去跟著學" />
+    <string id="VividWorld_Presence_Outcome_wanderer_battle_credit_yield" text="{RIVAL}主動退讓了一步，把砍倒敵首的功勞讓給了{CLAIMANT}，沒再爭下去。" />
+    <string id="VividWorld_Presence_Outcome_wanderer_battle_credit_dispute" text="兩人你一句我一句，一直吵到火都快熄了，最後各自甩手回了帳篷，誰也不肯讓。" />
+    <string id="VividWorld_Presence_Outcome_wanderer_party_role_back_down" text="{CHALLENGER}把話吞了回去，什麼也沒再說，{INCUMBENT}照舊管著這個位子。" />
+    <string id="VividWorld_Presence_Outcome_wanderer_party_role_back_down_Role" text="{CHALLENGER}把話吞了回去，什麼也沒再說，{INCUMBENT}照舊管著{ROLE}的位子。" />
+    <string id="VividWorld_Presence_Outcome_wanderer_party_role_bad_blood" text="兩人都不肯讓步，從那晚起幾乎不再好好說一句話，整個營地都看得出來。" />
+    <string id="VividWorld_Presence_Outcome_wanderer_campfire_jab_laugh_off" text="{MOCKED}一笑置之，還把酒杯遞給{MOCKER}，火堆旁又恢復了原來的閒聊。" />
+    <string id="VividWorld_Presence_Outcome_wanderer_campfire_jab_brawl" text="這句話說得太過了，兩人當場就動起手來。等旁人把他們拉開，整個火堆都靜了下來。" />
+    <string id="VividWorld_Presence_Outcome_wanderer_campfire_jab_cold_shoulder" text="{MOCKED}什麼也沒說，只是從那晚起，每回圍著火堆，都不再搭理{MOCKER}。" />
+    <string id="VividWorld_Presence_Outcome_wanderer_teaching_completed" text="{TEACHER}很有耐心，一直教到{LEARNER}摸出了門道，{LEARNER}收工前還向{TEACHER}道了謝。" />
     <string id="VividWorld_Presence_Ack" text="知道了" />
     <string id="VividWorld_Presence_Confirm" text="完成" />
+    <string id="VividWorld_Presence_Dir_StandAside" text="讓他們自己收場" />
+    <string id="VividWorld_Presence_StandAside_Outcome" text="你沒有出面，他們自己把事情收了。" />
     <string id="VividWorld_Presence_Dir_None" text="沒有後續影響" />
     <string id="VividWorld_Presence_Dir_Separator" text="、" />
     <string id="VividWorld_Presence_Dir_Affection_Up" text="與{NAME}好感↑" />
@@ -1776,5 +1817,281 @@
     <string id="VividWorld_Presence_Dir_Generosity_Down" text="仗義↓" />
     <string id="VividWorld_Presence_Dir_Calculating_Up" text="理性↑" />
     <string id="VividWorld_Presence_Dir_Calculating_Down" text="理性↓" />
-  </strings>
+    <!-- Wanderer events: headlines and named headlines -->
+    <string id="VividWorld_EventType_wanderer_battle_credit_yielded" text="戰功之爭已經讓了出去" />
+    <string id="VividWorld_EventType_wanderer_battle_credit_disputed" text="為了戰功吵得臉紅脖子粗" />
+    <string id="VividWorld_EventType_wanderer_battle_credit_to_claimant" text="戰功判給了爭功的那一方" />
+    <string id="VividWorld_EventType_wanderer_battle_credit_to_rival" text="戰功判給了另一方" />
+    <string id="VividWorld_EventType_wanderer_battle_credit_both" text="兩人都因勇猛受了誇獎" />
+    <string id="VividWorld_EventType_wanderer_battle_credit_rebuked" text="兩人為了戰功被斥責" />
+    <string id="VividWorld_EventType_wanderer_battle_rescued" text="戰場上救出了受傷的同伴" />
+    <string id="VividWorld_EventType_wanderer_party_role_backed_down" text="挑戰職位的人打了退堂鼓" />
+    <string id="VividWorld_EventType_wanderer_party_role_bad_blood" text="為了一個職位結下了梁子" />
+    <string id="VividWorld_EventType_wanderer_party_role_keep_incumbent" text="現任的人仍留在職位上" />
+    <string id="VividWorld_EventType_wanderer_party_role_swapped" text="職位換了人" />
+    <string id="VividWorld_EventType_wanderer_party_role_contested" text="兩人比試爭一個職位" />
+    <string id="VividWorld_EventType_wanderer_campfire_jab_laughed_off" text="營火邊的玩笑一笑置之" />
+    <string id="VividWorld_EventType_wanderer_campfire_jab_brawled" text="營火邊的一句話引發了鬥毆" />
+    <string id="VividWorld_EventType_wanderer_campfire_jab_cold_shoulder" text="營火邊的一句話讓兩人冷戰" />
+    <string id="VividWorld_EventType_wanderer_campfire_jab_punished" text="有人因營火邊的玩笑受罰" />
+    <string id="VividWorld_EventType_wanderer_campfire_jab_both_rebuked" text="營火邊吵架的兩人都受了斥責" />
+    <string id="VividWorld_EventType_wanderer_teaching_completed" text="同伴傾囊相授自己的本事" />
+    <string id="VividWorld_EventType_wanderer_teaching_encouraged" text="有人鼓勵同伴繼續練下去" />
+    <string id="VividWorld_EventType_wanderer_teaching_joined" text="雇主也加入了學習" />
+    <string id="VividWorld_EventTypeNamed_wanderer_battle_credit_yielded" text="{RIVAL}把戰功讓給了{CLAIMANT}" />
+    <string id="VividWorld_EventTypeNamed_wanderer_battle_credit_disputed" text="{CLAIMANT}和{RIVAL}為了戰功吵了起來" />
+    <string id="VividWorld_EventTypeNamed_wanderer_battle_credit_to_claimant" text="{EMPLOYER}把戰功判給了{CLAIMANT}" />
+    <string id="VividWorld_EventTypeNamed_wanderer_battle_credit_to_rival" text="{EMPLOYER}把戰功判給了{RIVAL}" />
+    <string id="VividWorld_EventTypeNamed_wanderer_battle_credit_both" text="{EMPLOYER}誇獎了{CLAIMANT}和{RIVAL}" />
+    <string id="VividWorld_EventTypeNamed_wanderer_battle_credit_rebuked" text="{EMPLOYER}斥責了{CLAIMANT}和{RIVAL}" />
+    <string id="VividWorld_EventTypeNamed_wanderer_battle_rescued" text="{RESCUER}在戰場上救了{RESCUED}" />
+    <string id="VividWorld_EventTypeNamed_wanderer_party_role_backed_down" text="{CHALLENGER}放棄了跟{INCUMBENT}爭職位" />
+    <string id="VividWorld_EventTypeNamed_wanderer_party_role_bad_blood" text="{CHALLENGER}和{INCUMBENT}為職位結了怨" />
+    <string id="VividWorld_EventTypeNamed_wanderer_party_role_keep_incumbent" text="{EMPLOYER}讓{INCUMBENT}留任" />
+    <string id="VividWorld_EventTypeNamed_wanderer_party_role_swapped" text="{EMPLOYER}把{INCUMBENT}換成了{CHALLENGER}" />
+    <string id="VividWorld_EventTypeNamed_wanderer_party_role_contested" text="{EMPLOYER}讓{INCUMBENT}和{CHALLENGER}比試職位" />
+    <string id="VividWorld_EventTypeNamed_wanderer_campfire_jab_laughed_off" text="{MOCKER}在營火邊取笑{MOCKED}" />
+    <string id="VividWorld_EventTypeNamed_wanderer_campfire_jab_brawled" text="{MOCKER}挖苦{MOCKED}，引發了鬥毆" />
+    <string id="VividWorld_EventTypeNamed_wanderer_campfire_jab_cold_shoulder" text="{MOCKED}對{MOCKER}冷眼相待" />
+    <string id="VividWorld_EventTypeNamed_wanderer_campfire_jab_punished" text="{EMPLOYER}處罰了{MOCKER}" />
+    <string id="VividWorld_EventTypeNamed_wanderer_campfire_jab_both_rebuked" text="{EMPLOYER}斥責了{MOCKER}和{MOCKED}" />
+    <string id="VividWorld_EventTypeNamed_wanderer_teaching_completed" text="{TEACHER}教了{LEARNER}一手本事" />
+    <string id="VividWorld_EventTypeNamed_wanderer_teaching_encouraged" text="{EMPLOYER}鼓勵{TEACHER}和{LEARNER}" />
+    <string id="VividWorld_EventTypeNamed_wanderer_teaching_joined" text="{EMPLOYER}跟{LEARNER}一起跟{TEACHER}學" />
+    <!-- Wanderer events: place and campfire-jab helper phrases (filled at runtime) -->
+    <string id="VividWorld_Place_In" text="在" />
+    <string id="VividWorld_Place_Near" text="在" />
+    <string id="VividWorld_Place_NearPost" text="附近" />
+    <string id="VividWorld_Place_None" text="" />
+    <string id="VividWorld_CampfireJab_FolkSuffix" text="人" />
+    <string id="VividWorld_CampfireJab_SameTopic" text="過去的糗事" />
+    <string id="VividWorld_CampfireJab_SameSaying" text="說了句過火的話" />
+    <string id="VividWorld_CampfireJab_Saying_Empire" text="說他們連誰才是皇帝都吵不明白，三個人搶一張椅子" />
+    <string id="VividWorld_CampfireJab_Saying_Sturgia" text="說他們除了喝酒跟挨凍，別的什麼本事都沒有" />
+    <string id="VividWorld_CampfireJab_Saying_Aserai" text="說他們是沙漠裡的商販，連自己的祖宗都能拿來討價還價" />
+    <string id="VividWorld_CampfireJab_Saying_Vlandia" text="說他們的祖先不過是帝國花錢雇來的傭兵，後來翻臉霸佔了地盤" />
+    <string id="VividWorld_CampfireJab_Saying_Khuzait" text="說他們全在馬背上長大，一下了馬連路都走不穩" />
+    <string id="VividWorld_CampfireJab_Saying_Battania" text="說他們成天躲在林子裡，一輩子沒見過一座像樣的城" />
+    <!-- Wanderer events: fact fragments -->
+    <string id="VividWorld_Fact_WandererBattleCreditYielded_Who" text="{RIVAL}把戰功讓給了{CLAIMANT}" />
+    <string id="VividWorld_Fact_WandererBattleCreditYielded_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererBattleCreditDisputed_Who" text="{CLAIMANT}和{RIVAL}為了誰先砍倒對方帶頭的吵得不可開交" />
+    <string id="VividWorld_Fact_WandererBattleCreditDisputed_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererBattleCreditToClaimant_Who" text="{EMPLOYER}判定戰功是{CLAIMANT}的，不是{RIVAL}的" />
+    <string id="VividWorld_Fact_WandererBattleCreditToClaimant_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererBattleCreditToRival_Who" text="{EMPLOYER}判定戰功是{RIVAL}的，不是{CLAIMANT}的" />
+    <string id="VividWorld_Fact_WandererBattleCreditToRival_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererBattleCreditBoth_Who" text="{EMPLOYER}誇獎{CLAIMANT}和{RIVAL}在陣上的勇猛" />
+    <string id="VividWorld_Fact_WandererBattleCreditBoth_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererBattleCreditRebuked_Who" text="{EMPLOYER}把{CLAIMANT}和{RIVAL}都斥責了一頓，說他們為了一點功勞爭個不停" />
+    <string id="VividWorld_Fact_WandererBattleCreditRebuked_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererBattleRescued_Who" text="{RESCUER}把受傷的{RESCUED}從亂陣裡拖了出來" />
+    <string id="VividWorld_Fact_WandererBattleRescued_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererPartyRoleBackedDown_Who" text="{CHALLENGER}放棄了跟{INCUMBENT}爭這個位子" />
+    <string id="VividWorld_Fact_WandererPartyRoleBackedDown_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererPartyRoleBackedDown_Role" text="爭{ROLE_ID}的位子" />
+    <string id="VividWorld_Fact_WandererPartyRoleBadBlood_Who" text="{CHALLENGER}和{INCUMBENT}為了一個位子鬧得很僵" />
+    <string id="VividWorld_Fact_WandererPartyRoleBadBlood_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererPartyRoleBadBlood_Role" text="為了{ROLE_ID}的位子" />
+    <string id="VividWorld_Fact_WandererPartyRoleKeepIncumbent_Who" text="{EMPLOYER}仍讓{INCUMBENT}留任，不理會{CHALLENGER}的野心" />
+    <string id="VividWorld_Fact_WandererPartyRoleKeepIncumbent_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererPartyRoleKeepIncumbent_Role" text="繼續當{ROLE_ID}" />
+    <string id="VividWorld_Fact_WandererPartyRoleSwapped_Who" text="{EMPLOYER}把{INCUMBENT}換成了{CHALLENGER}" />
+    <string id="VividWorld_Fact_WandererPartyRoleSwapped_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererPartyRoleSwapped_Role" text="換成新的{ROLE_ID}" />
+    <string id="VividWorld_Fact_WandererPartyRoleContested_Who" text="{EMPLOYER}讓{INCUMBENT}和{CHALLENGER}比一場，爭這個位子" />
+    <string id="VividWorld_Fact_WandererPartyRoleContested_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererPartyRoleContested_Role" text="爭{ROLE_ID}的位子" />
+    <string id="VividWorld_Fact_WandererPartyRoleContested_Winner" text="最後是{WINNER}贏了" />
+    <string id="VividWorld_Fact_WandererCampfireJabLaughedOff_Who" text="{MOCKER}在營火邊取笑{MOCKED}，{MOCKED}一笑置之" />
+    <string id="VividWorld_Fact_WandererCampfireJabLaughedOff_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererCampfireJabLaughedOff_Culture" text="拿{TOPIC}開玩笑，{SAYING}" />
+    <string id="VividWorld_Fact_WandererCampfireJabBrawled_Who" text="{MOCKER}在營火邊挖苦{MOCKED}，最後動了手" />
+    <string id="VividWorld_Fact_WandererCampfireJabBrawled_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererCampfireJabBrawled_Culture" text="拿{TOPIC}開玩笑，{SAYING}" />
+    <string id="VividWorld_Fact_WandererCampfireJabColdShoulder_Who" text="{MOCKER}拿話刺了{MOCKED}一句，{MOCKED}之後就對{MOCKER}冷眼相待" />
+    <string id="VividWorld_Fact_WandererCampfireJabColdShoulder_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererCampfireJabColdShoulder_Culture" text="拿{TOPIC}開玩笑，{SAYING}" />
+    <string id="VividWorld_Fact_WandererCampfireJabPunished_Who" text="{EMPLOYER}處罰了{MOCKER}，因為他挑頭笑話{MOCKED}" />
+    <string id="VividWorld_Fact_WandererCampfireJabPunished_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererCampfireJabPunished_Culture" text="拿{TOPIC}開玩笑，{SAYING}" />
+    <string id="VividWorld_Fact_WandererCampfireJabBothRebuked_Who" text="{EMPLOYER}把{MOCKER}和{MOCKED}都斥責了一頓，說他們在火堆邊吵個沒完" />
+    <string id="VividWorld_Fact_WandererCampfireJabBothRebuked_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererCampfireJabBothRebuked_Culture" text="拿{TOPIC}開玩笑，{SAYING}" />
+    <string id="VividWorld_Fact_WandererTeachingCompleted_Who" text="{TEACHER}抽空教{LEARNER}本事" />
+    <string id="VividWorld_Fact_WandererTeachingCompleted_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererTeachingCompleted_Skill" text="把{SKILL_NAME}的功夫傳了下去" />
+    <string id="VividWorld_Fact_WandererTeachingEncouraged_Who" text="{EMPLOYER}鼓勵{TEACHER}和{LEARNER}繼續練下去" />
+    <string id="VividWorld_Fact_WandererTeachingEncouraged_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererTeachingEncouraged_Skill" text="練{SKILL_NAME}" />
+    <string id="VividWorld_Fact_WandererTeachingJoined_Who" text="{EMPLOYER}跟{LEARNER}一起跟{TEACHER}學本事" />
+    <string id="VividWorld_Fact_WandererTeachingJoined_Where" text="在{SETTLEMENT}" />
+    <string id="VividWorld_Fact_WandererTeachingJoined_Skill" text="一起學{SKILL_NAME}" />
+    <!-- Wanderer events: whole sentences -->
+    <string id="VividWorld_Sentence_WandererBattleCreditYielded_Who" text="打完仗後，{RIVAL}把砍倒對方帶頭的功勞讓給了{CLAIMANT}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditYielded_Who_Where" text="{PRE}{SETTLEMENT}{POST}打完仗後，{RIVAL}把砍倒對方帶頭的功勞讓給了{CLAIMANT}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditYielded_Who_Where_Self_CLAIMANT" text="{PRE}{SETTLEMENT}{POST}打完仗後，{RIVAL}把砍倒對方帶頭的功勞讓給了我" />
+    <string id="VividWorld_Sentence_WandererBattleCreditYielded_Who_Where_Self_RIVAL" text="{PRE}{SETTLEMENT}{POST}打完仗後，我把砍倒對方帶頭的功勞讓給了{CLAIMANT}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditDisputed_Who" text="{CLAIMANT}和{RIVAL}為了誰先砍倒對方帶頭的吵得不可開交" />
+    <string id="VividWorld_Sentence_WandererBattleCreditDisputed_Who_Where" text="{PRE}{SETTLEMENT}{POST}，{CLAIMANT}和{RIVAL}為了誰先砍倒對方帶頭的吵得不可開交" />
+    <string id="VividWorld_Sentence_WandererBattleCreditDisputed_Who_Where_Self_CLAIMANT" text="{PRE}{SETTLEMENT}{POST}，我和{RIVAL}為了誰先砍倒對方帶頭的吵得不可開交" />
+    <string id="VividWorld_Sentence_WandererBattleCreditDisputed_Who_Where_Self_RIVAL" text="{PRE}{SETTLEMENT}{POST}，{CLAIMANT}和我為了誰先砍倒對方帶頭的吵得不可開交" />
+    <string id="VividWorld_Sentence_WandererBattleCreditToClaimant_Who" text="打完仗後，{CLAIMANT}和{RIVAL}爭著誰砍倒了對方帶頭的，{EMPLOYER}出面把首功記給了{CLAIMANT}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditToClaimant_Who_Where" text="{PRE}{SETTLEMENT}{POST}打完仗後，{CLAIMANT}和{RIVAL}爭著誰砍倒了對方帶頭的，{EMPLOYER}出面把首功記給了{CLAIMANT}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditToClaimant_Who_Where_Self_CLAIMANT" text="{PRE}{SETTLEMENT}{POST}打完仗後，我和{RIVAL}爭著誰砍倒了對方帶頭的，{EMPLOYER}出面把首功記給了我" />
+    <string id="VividWorld_Sentence_WandererBattleCreditToClaimant_Who_Where_Self_RIVAL" text="{PRE}{SETTLEMENT}{POST}打完仗後，{CLAIMANT}和我爭著誰砍倒了對方帶頭的，{EMPLOYER}出面把首功記給了{CLAIMANT}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditToRival_Who" text="打完仗後，{CLAIMANT}和{RIVAL}爭著誰砍倒了對方帶頭的，{EMPLOYER}出面把首功記給了{RIVAL}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditToRival_Who_Where" text="{PRE}{SETTLEMENT}{POST}打完仗後，{CLAIMANT}和{RIVAL}爭著誰砍倒了對方帶頭的，{EMPLOYER}出面把首功記給了{RIVAL}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditToRival_Who_Where_Self_CLAIMANT" text="{PRE}{SETTLEMENT}{POST}打完仗後，我和{RIVAL}爭著誰砍倒了對方帶頭的，{EMPLOYER}出面把首功記給了{RIVAL}" />
+    <string id="VividWorld_Sentence_WandererBattleCreditToRival_Who_Where_Self_RIVAL" text="{PRE}{SETTLEMENT}{POST}打完仗後，{CLAIMANT}和我爭著誰砍倒了對方帶頭的，{EMPLOYER}出面把首功記給了我" />
+    <string id="VividWorld_Sentence_WandererBattleCreditBoth_Who" text="打完那一仗，{CLAIMANT}和{RIVAL}為戰功爭執不休，{EMPLOYER}裁決給兩人都各記一功" />
+    <string id="VividWorld_Sentence_WandererBattleCreditBoth_Who_Where" text="{PRE}{SETTLEMENT}{POST}打完那一仗，{CLAIMANT}和{RIVAL}為戰功爭執不休，{EMPLOYER}裁決給兩人都各記一功" />
+    <string id="VividWorld_Sentence_WandererBattleCreditBoth_Who_Where_Self_CLAIMANT" text="{PRE}{SETTLEMENT}{POST}打完那一仗，我和{RIVAL}為戰功爭執不休，{EMPLOYER}裁決給兩人都各記一功" />
+    <string id="VividWorld_Sentence_WandererBattleCreditBoth_Who_Where_Self_RIVAL" text="{PRE}{SETTLEMENT}{POST}打完那一仗，{CLAIMANT}和我為戰功爭執不休，{EMPLOYER}裁決給兩人都各記一功" />
+    <string id="VividWorld_Sentence_WandererBattleCreditRebuked_Who" text="那一仗剛打完，{CLAIMANT}和{RIVAL}就為誰砍倒敵首爭了起來，被{EMPLOYER}當場嚴詞斥責了一頓" />
+    <string id="VividWorld_Sentence_WandererBattleCreditRebuked_Who_Where" text="{PRE}{SETTLEMENT}{POST}那一仗剛打完，{CLAIMANT}和{RIVAL}就為誰砍倒敵首爭了起來，被{EMPLOYER}當場嚴詞斥責了一頓" />
+    <string id="VividWorld_Sentence_WandererBattleCreditRebuked_Who_Where_Self_CLAIMANT" text="{PRE}{SETTLEMENT}{POST}那一仗剛打完，我和{RIVAL}就為誰砍倒敵首爭了起來，被{EMPLOYER}當場嚴詞斥責了一頓" />
+    <string id="VividWorld_Sentence_WandererBattleCreditRebuked_Who_Where_Self_RIVAL" text="{PRE}{SETTLEMENT}{POST}那一仗剛打完，{CLAIMANT}和我就為誰砍倒敵首爭了起來，被{EMPLOYER}當場嚴詞斥責了一頓" />
+    <string id="VividWorld_Sentence_WandererBattleRescued_Who" text="那一仗打得很兇，{RESCUED}受傷倒地，是{RESCUER}冒險把他從戰場上拖了出來" />
+    <string id="VividWorld_Sentence_WandererBattleRescued_Who_Where" text="{PRE}{SETTLEMENT}{POST}那一仗打得很兇，{RESCUED}受傷倒地，是{RESCUER}冒險把他從戰場上拖了出來" />
+    <string id="VividWorld_Sentence_WandererBattleRescued_Who_Where_Self_RESCUED" text="{PRE}{SETTLEMENT}{POST}那一仗打得很兇，我受傷倒地，是{RESCUER}冒險把我從戰場上拖了出來" />
+    <string id="VividWorld_Sentence_WandererBattleRescued_Who_Where_Self_RESCUER" text="{PRE}{SETTLEMENT}{POST}那一仗打得很兇，{RESCUED}受傷倒地，是我冒險把他從戰場上拖了出來" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBackedDown_Who" text="{CHALLENGER}放棄了跟{INCUMBENT}爭這個位子" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBackedDown_Who_Where" text="{PRE}{SETTLEMENT}{POST}，{CHALLENGER}放棄了跟{INCUMBENT}爭這個位子" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBackedDown_Who_Where_Role" text="{PRE}{SETTLEMENT}{POST}，{CHALLENGER}放棄了跟{INCUMBENT}爭{ROLE_ID}的位子" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBackedDown_Who_Where_Role_Self_CHALLENGER" text="{PRE}{SETTLEMENT}{POST}，我放棄了跟{INCUMBENT}爭{ROLE_ID}的位子" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBackedDown_Who_Where_Role_Self_INCUMBENT" text="{PRE}{SETTLEMENT}{POST}，{CHALLENGER}放棄了跟我爭{ROLE_ID}的位子" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBackedDown_Who_Where_Self_CHALLENGER" text="{PRE}{SETTLEMENT}{POST}，我放棄了跟{INCUMBENT}爭這個位子" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBackedDown_Who_Where_Self_INCUMBENT" text="{PRE}{SETTLEMENT}{POST}，{CHALLENGER}放棄了跟我爭這個位子" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBadBlood_Who" text="{CHALLENGER}和{INCUMBENT}為了一個位子鬧得很僵" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBadBlood_Who_Where" text="{PRE}{SETTLEMENT}{POST}，{CHALLENGER}和{INCUMBENT}為了一個位子鬧得很僵" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBadBlood_Who_Where_Role" text="{PRE}{SETTLEMENT}{POST}，{CHALLENGER}和{INCUMBENT}為了{ROLE_ID}的位子鬧得很僵" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBadBlood_Who_Where_Role_Self_CHALLENGER" text="{PRE}{SETTLEMENT}{POST}，我和{INCUMBENT}為了{ROLE_ID}的位子鬧得很僵" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBadBlood_Who_Where_Role_Self_INCUMBENT" text="{PRE}{SETTLEMENT}{POST}，{CHALLENGER}和我為了{ROLE_ID}的位子鬧得很僵" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBadBlood_Who_Where_Self_CHALLENGER" text="{PRE}{SETTLEMENT}{POST}，我和{INCUMBENT}為了一個位子鬧得很僵" />
+    <string id="VividWorld_Sentence_WandererPartyRoleBadBlood_Who_Where_Self_INCUMBENT" text="{PRE}{SETTLEMENT}{POST}，{CHALLENGER}和我為了一個位子鬧得很僵" />
+    <string id="VividWorld_Sentence_WandererPartyRoleKeepIncumbent_Who" text="{CHALLENGER}要求頂替{INCUMBENT}的位子，{EMPLOYER}決定維持原樣不換人" />
+    <string id="VividWorld_Sentence_WandererPartyRoleKeepIncumbent_Who_Where" text="{PRE}{SETTLEMENT}{POST}的時候，{CHALLENGER}要求頂替{INCUMBENT}的位子，{EMPLOYER}決定維持原樣不換人" />
+    <string id="VividWorld_Sentence_WandererPartyRoleKeepIncumbent_Who_Where_Role" text="{PRE}{SETTLEMENT}{POST}的時候，{CHALLENGER}要求替換{INCUMBENT}的{ROLE_ID}職位，{EMPLOYER}決定維持原樣不換人" />
+    <string id="VividWorld_Sentence_WandererPartyRoleKeepIncumbent_Who_Where_Role_Self_CHALLENGER" text="{PRE}{SETTLEMENT}{POST}的時候，我要求替換{INCUMBENT}的{ROLE_ID}職位，{EMPLOYER}決定維持原樣不換人" />
+    <string id="VividWorld_Sentence_WandererPartyRoleKeepIncumbent_Who_Where_Role_Self_INCUMBENT" text="{PRE}{SETTLEMENT}{POST}的時候，{CHALLENGER}要求替換我的{ROLE_ID}職位，{EMPLOYER}決定維持原樣不換人" />
+    <string id="VividWorld_Sentence_WandererPartyRoleKeepIncumbent_Who_Where_Self_CHALLENGER" text="{PRE}{SETTLEMENT}{POST}的時候，我要求頂替{INCUMBENT}的位子，{EMPLOYER}決定維持原樣不換人" />
+    <string id="VividWorld_Sentence_WandererPartyRoleKeepIncumbent_Who_Where_Self_INCUMBENT" text="{PRE}{SETTLEMENT}{POST}的時候，{CHALLENGER}要求頂替我的位子，{EMPLOYER}決定維持原樣不換人" />
+    <string id="VividWorld_Sentence_WandererPartyRoleSwapped_Who" text="{CHALLENGER}向{EMPLOYER}請求換下{INCUMBENT}，{EMPLOYER}同意了，把這個位子交給了{CHALLENGER}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleSwapped_Who_Where" text="{PRE}{SETTLEMENT}{POST}的時候，{CHALLENGER}向{EMPLOYER}請求換下{INCUMBENT}，{EMPLOYER}同意了，把這個位子交給了{CHALLENGER}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleSwapped_Who_Where_Role" text="{PRE}{SETTLEMENT}{POST}的時候，{CHALLENGER}向{EMPLOYER}請求換下{INCUMBENT}，{EMPLOYER}同意了，把{ROLE_ID}交給了{CHALLENGER}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleSwapped_Who_Where_Role_Self_CHALLENGER" text="{PRE}{SETTLEMENT}{POST}的時候，我向{EMPLOYER}請求換下{INCUMBENT}，{EMPLOYER}同意了，把{ROLE_ID}交給了我" />
+    <string id="VividWorld_Sentence_WandererPartyRoleSwapped_Who_Where_Role_Self_INCUMBENT" text="{PRE}{SETTLEMENT}{POST}的時候，{CHALLENGER}向{EMPLOYER}請求換下我，{EMPLOYER}同意了，把{ROLE_ID}交給了{CHALLENGER}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleSwapped_Who_Where_Self_CHALLENGER" text="{PRE}{SETTLEMENT}{POST}的時候，我向{EMPLOYER}請求換下{INCUMBENT}，{EMPLOYER}同意了，把這個位子交給了我" />
+    <string id="VividWorld_Sentence_WandererPartyRoleSwapped_Who_Where_Self_INCUMBENT" text="{PRE}{SETTLEMENT}{POST}的時候，{CHALLENGER}向{EMPLOYER}請求換下我，{EMPLOYER}同意了，把這個位子交給了{CHALLENGER}" />
+    <string id="VividWorld_Sentence_WandererPartyRoleContested_Who" text="{CHALLENGER}和{INCUMBENT}爭奪這個位子，{EMPLOYER}叫兩人當場比試，最後分出了勝負" />
+    <string id="VividWorld_Sentence_WandererPartyRoleContested_Who_Where" text="{PRE}{SETTLEMENT}{POST}的時候，{CHALLENGER}和{INCUMBENT}爭奪這個位子，{EMPLOYER}叫兩人當場比試，最後分出了勝負" />
+    <string id="VividWorld_Sentence_WandererPartyRoleContested_Who_Where_Role_Winner" text="{PRE}{SETTLEMENT}{POST}的時候，{CHALLENGER}和{INCUMBENT}爭奪{ROLE_ID}的位子，{EMPLOYER}叫兩人當場比試，最後由{WINNER}贏得了職位" />
+    <string id="VividWorld_Sentence_WandererPartyRoleContested_Who_Where_Role_Winner_Self_CHALLENGER" text="{PRE}{SETTLEMENT}{POST}的時候，我和{INCUMBENT}爭奪{ROLE_ID}的位子，{EMPLOYER}叫我們當場比試，最後由{WINNER}贏得了職位" />
+    <string id="VividWorld_Sentence_WandererPartyRoleContested_Who_Where_Role_Winner_Self_INCUMBENT" text="{PRE}{SETTLEMENT}{POST}的時候，{CHALLENGER}和我爭奪{ROLE_ID}的位子，{EMPLOYER}叫我們當場比試，最後由{WINNER}贏得了職位" />
+    <string id="VividWorld_Sentence_WandererPartyRoleContested_Who_Where_Self_CHALLENGER" text="{PRE}{SETTLEMENT}{POST}的時候，我和{INCUMBENT}爭奪這個位子，{EMPLOYER}叫我們當場比試，最後分出了勝負" />
+    <string id="VividWorld_Sentence_WandererPartyRoleContested_Who_Where_Self_INCUMBENT" text="{PRE}{SETTLEMENT}{POST}的時候，{CHALLENGER}和我爭奪這個位子，{EMPLOYER}叫我們當場比試，最後分出了勝負" />
+    <string id="VividWorld_Sentence_WandererCampfireJabLaughedOff_Who" text="{MOCKER}在營火邊取笑{MOCKED}，{MOCKED}一笑置之" />
+    <string id="VividWorld_Sentence_WandererCampfireJabLaughedOff_Who_Where" text="{PRE}{SETTLEMENT}{POST}，{MOCKER}在營火邊取笑{MOCKED}，{MOCKED}一笑置之" />
+    <string id="VividWorld_Sentence_WandererCampfireJabLaughedOff_Who_Where_Culture" text="{PRE}{SETTLEMENT}{POST}，{MOCKER}在營火邊拿{TOPIC}開玩笑，{SAYING}，{MOCKED}一笑置之" />
+    <string id="VividWorld_Sentence_WandererCampfireJabLaughedOff_Who_Where_Culture_Self_MOCKED" text="{PRE}{SETTLEMENT}{POST}，{MOCKER}在營火邊拿{TOPIC}開玩笑，{SAYING}，我一笑置之" />
+    <string id="VividWorld_Sentence_WandererCampfireJabLaughedOff_Who_Where_Culture_Self_MOCKER" text="{PRE}{SETTLEMENT}{POST}，我在營火邊拿{TOPIC}開玩笑，{SAYING}，{MOCKED}一笑置之" />
+    <string id="VividWorld_Sentence_WandererCampfireJabLaughedOff_Who_Where_Self_MOCKED" text="{PRE}{SETTLEMENT}{POST}，{MOCKER}在營火邊取笑我，我一笑置之" />
+    <string id="VividWorld_Sentence_WandererCampfireJabLaughedOff_Who_Where_Self_MOCKER" text="{PRE}{SETTLEMENT}{POST}，我在營火邊取笑{MOCKED}，{MOCKED}一笑置之" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBrawled_Who" text="圍著營火時，{MOCKER}拿話挖苦{MOCKED}，惹得{MOCKED}大怒，兩人當場扭打成一團" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBrawled_Who_Where" text="{PRE}{SETTLEMENT}{POST}圍著營火時，{MOCKER}拿話挖苦{MOCKED}，惹得{MOCKED}大怒，兩人當場扭打成一團" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBrawled_Who_Where_Culture" text="{PRE}{SETTLEMENT}{POST}圍著營火時，{MOCKER}拿{TOPIC}開玩笑，{SAYING}，惹得{MOCKED}大怒，兩人當場扭打成一團" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBrawled_Who_Where_Culture_Self_MOCKED" text="{PRE}{SETTLEMENT}{POST}圍著營火時，{MOCKER}拿{TOPIC}開玩笑，{SAYING}，惹得我大怒，我們當場扭打成一團" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBrawled_Who_Where_Culture_Self_MOCKER" text="{PRE}{SETTLEMENT}{POST}圍著營火時，我拿{TOPIC}開玩笑，{SAYING}，惹得{MOCKED}大怒，我們當場扭打成一團" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBrawled_Who_Where_Self_MOCKED" text="{PRE}{SETTLEMENT}{POST}圍著營火時，{MOCKER}拿話挖苦我，惹得我大怒，我們當場扭打成一團" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBrawled_Who_Where_Self_MOCKER" text="{PRE}{SETTLEMENT}{POST}圍著營火時，我拿話挖苦{MOCKED}，惹得{MOCKED}大怒，我們當場扭打成一團" />
+    <string id="VividWorld_Sentence_WandererCampfireJabColdShoulder_Who" text="圍著營火時，{MOCKER}拿話挖苦{MOCKED}，{MOCKED}當場黑了臉起身離開，兩人自此冷戰" />
+    <string id="VividWorld_Sentence_WandererCampfireJabColdShoulder_Who_Where" text="{PRE}{SETTLEMENT}{POST}圍著營火時，{MOCKER}拿話挖苦{MOCKED}，{MOCKED}當場黑了臉起身離開，兩人自此冷戰" />
+    <string id="VividWorld_Sentence_WandererCampfireJabColdShoulder_Who_Where_Culture" text="{PRE}{SETTLEMENT}{POST}圍著營火時，{MOCKER}拿{TOPIC}開玩笑，{SAYING}，{MOCKED}當場黑了臉起身離開，兩人自此冷戰" />
+    <string id="VividWorld_Sentence_WandererCampfireJabColdShoulder_Who_Where_Culture_Self_MOCKED" text="{PRE}{SETTLEMENT}{POST}圍著營火時，{MOCKER}拿{TOPIC}開玩笑，{SAYING}，我當場黑了臉起身離開，自此不再理他" />
+    <string id="VividWorld_Sentence_WandererCampfireJabColdShoulder_Who_Where_Culture_Self_MOCKER" text="{PRE}{SETTLEMENT}{POST}圍著營火時，我拿{TOPIC}開玩笑，{SAYING}，{MOCKED}當場黑了臉起身離開，自此不再理我" />
+    <string id="VividWorld_Sentence_WandererCampfireJabColdShoulder_Who_Where_Self_MOCKED" text="{PRE}{SETTLEMENT}{POST}圍著營火時，{MOCKER}拿話挖苦我，我當場黑了臉起身離開，自此不再理他" />
+    <string id="VividWorld_Sentence_WandererCampfireJabColdShoulder_Who_Where_Self_MOCKER" text="{PRE}{SETTLEMENT}{POST}圍著營火時，我拿話挖苦{MOCKED}，{MOCKED}當場黑了臉起身離開，自此不再理我" />
+    <string id="VividWorld_Sentence_WandererCampfireJabPunished_Who" text="圍著營火時，{MOCKER}拿話挖苦{MOCKED}，{EMPLOYER}出面訓斥了挑事的{MOCKER}並罰了他" />
+    <string id="VividWorld_Sentence_WandererCampfireJabPunished_Who_Where" text="{PRE}{SETTLEMENT}{POST}圍著營火時，{MOCKER}拿話挖苦{MOCKED}，{EMPLOYER}出面訓斥了挑事的{MOCKER}並罰了他" />
+    <string id="VividWorld_Sentence_WandererCampfireJabPunished_Who_Where_Culture" text="{PRE}{SETTLEMENT}{POST}圍著營火時，{MOCKER}拿{TOPIC}開玩笑，{SAYING}，{EMPLOYER}出面訓斥了挑事的{MOCKER}並罰了他" />
+    <string id="VividWorld_Sentence_WandererCampfireJabPunished_Who_Where_Culture_Self_MOCKED" text="{PRE}{SETTLEMENT}{POST}圍著營火時，{MOCKER}拿{TOPIC}開玩笑，{SAYING}，{EMPLOYER}出面訓斥了挑事的{MOCKER}並罰了他" />
+    <string id="VividWorld_Sentence_WandererCampfireJabPunished_Who_Where_Culture_Self_MOCKER" text="{PRE}{SETTLEMENT}{POST}圍著營火時，我拿{TOPIC}開玩笑，{SAYING}，{EMPLOYER}出面訓斥我挑事，並罰了我" />
+    <string id="VividWorld_Sentence_WandererCampfireJabPunished_Who_Where_Self_MOCKED" text="{PRE}{SETTLEMENT}{POST}圍著營火時，{MOCKER}拿話挖苦我，{EMPLOYER}出面訓斥了挑事的{MOCKER}並罰了他" />
+    <string id="VividWorld_Sentence_WandererCampfireJabPunished_Who_Where_Self_MOCKER" text="{PRE}{SETTLEMENT}{POST}圍著營火時，我拿話挖苦{MOCKED}，{EMPLOYER}出面訓斥我挑事，並罰了我" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBothRebuked_Who" text="圍著營火時，{MOCKER}拿話挖苦{MOCKED}，兩人鬧得不可開交，被{EMPLOYER}各斥責了一頓才停下" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBothRebuked_Who_Where" text="{PRE}{SETTLEMENT}{POST}圍著營火時，{MOCKER}拿話挖苦{MOCKED}，兩人鬧得不可開交，被{EMPLOYER}各斥責了一頓才停下" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBothRebuked_Who_Where_Culture" text="{PRE}{SETTLEMENT}{POST}圍著營火時，{MOCKER}拿{TOPIC}開玩笑，{SAYING}，兩人鬧得不可開交，被{EMPLOYER}各斥責了一頓才停下" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBothRebuked_Who_Where_Culture_Self_MOCKED" text="{PRE}{SETTLEMENT}{POST}圍著營火時，{MOCKER}拿{TOPIC}開玩笑，{SAYING}，我們鬧得不可開交，被{EMPLOYER}各斥責了一頓才停下" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBothRebuked_Who_Where_Culture_Self_MOCKER" text="{PRE}{SETTLEMENT}{POST}圍著營火時，我拿{TOPIC}開玩笑，{SAYING}，我們鬧得不可開交，被{EMPLOYER}各斥責了一頓才停下" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBothRebuked_Who_Where_Self_MOCKED" text="{PRE}{SETTLEMENT}{POST}圍著營火時，{MOCKER}拿話挖苦我，我們鬧得不可開交，被{EMPLOYER}各斥責了一頓才停下" />
+    <string id="VividWorld_Sentence_WandererCampfireJabBothRebuked_Who_Where_Self_MOCKER" text="{PRE}{SETTLEMENT}{POST}圍著營火時，我拿話挖苦{MOCKED}，我們鬧得不可開交，被{EMPLOYER}各斥責了一頓才停下" />
+    <string id="VividWorld_Sentence_WandererTeachingCompleted_Who" text="歇息的時候，{TEACHER}主動向{LEARNER}傳授自己的本事，指點得十分詳細" />
+    <string id="VividWorld_Sentence_WandererTeachingCompleted_Who_Where" text="{PRE}{SETTLEMENT}{POST}歇息的時候，{TEACHER}主動向{LEARNER}傳授自己的本事，指點得十分詳細" />
+    <string id="VividWorld_Sentence_WandererTeachingCompleted_Who_Where_Self_LEARNER" text="{PRE}{SETTLEMENT}{POST}歇息的時候，{TEACHER}主動向我傳授他的本事，指點得十分詳細" />
+    <string id="VividWorld_Sentence_WandererTeachingCompleted_Who_Where_Self_TEACHER" text="{PRE}{SETTLEMENT}{POST}歇息的時候，我主動向{LEARNER}傳授自己的本事，指點得十分詳細" />
+    <string id="VividWorld_Sentence_WandererTeachingCompleted_Who_Where_Skill" text="{PRE}{SETTLEMENT}{POST}歇息的時候，{TEACHER}主動向{LEARNER}傳授自己的{SKILL_NAME}心得，指點得十分詳細" />
+    <string id="VividWorld_Sentence_WandererTeachingCompleted_Who_Where_Skill_Self_LEARNER" text="{PRE}{SETTLEMENT}{POST}歇息的時候，{TEACHER}主動向我傳授他的{SKILL_NAME}心得，指點得十分詳細" />
+    <string id="VividWorld_Sentence_WandererTeachingCompleted_Who_Where_Skill_Self_TEACHER" text="{PRE}{SETTLEMENT}{POST}歇息的時候，我主動向{LEARNER}傳授自己的{SKILL_NAME}心得，指點得十分詳細" />
+    <string id="VividWorld_Sentence_WandererTeachingEncouraged_Who" text="歇息的時候，{TEACHER}向{LEARNER}傳授本事，{EMPLOYER}在一旁出言鼓勵，要他們多切磋長進" />
+    <string id="VividWorld_Sentence_WandererTeachingEncouraged_Who_Where" text="{PRE}{SETTLEMENT}{POST}歇息的時候，{TEACHER}向{LEARNER}傳授本事，{EMPLOYER}在一旁出言鼓勵，要他們多切磋長進" />
+    <string id="VividWorld_Sentence_WandererTeachingEncouraged_Who_Where_Self_LEARNER" text="{PRE}{SETTLEMENT}{POST}歇息的時候，{TEACHER}向我傳授本事，{EMPLOYER}在一旁出言鼓勵，要我們多切磋長進" />
+    <string id="VividWorld_Sentence_WandererTeachingEncouraged_Who_Where_Self_TEACHER" text="{PRE}{SETTLEMENT}{POST}歇息的時候，我向{LEARNER}傳授本事，{EMPLOYER}在一旁出言鼓勵，要我們多切磋長進" />
+    <string id="VividWorld_Sentence_WandererTeachingEncouraged_Who_Where_Skill" text="{PRE}{SETTLEMENT}{POST}歇息的時候，{TEACHER}向{LEARNER}傳授{SKILL_NAME}，{EMPLOYER}在一旁出言鼓勵，要他們多切磋長進" />
+    <string id="VividWorld_Sentence_WandererTeachingEncouraged_Who_Where_Skill_Self_LEARNER" text="{PRE}{SETTLEMENT}{POST}歇息的時候，{TEACHER}向我傳授{SKILL_NAME}，{EMPLOYER}在一旁出言鼓勵，要我們多切磋長進" />
+    <string id="VividWorld_Sentence_WandererTeachingEncouraged_Who_Where_Skill_Self_TEACHER" text="{PRE}{SETTLEMENT}{POST}歇息的時候，我向{LEARNER}傳授{SKILL_NAME}，{EMPLOYER}在一旁出言鼓勵，要我們多切磋長進" />
+    <string id="VividWorld_Sentence_WandererTeachingJoined_Who" text="歇息的時候，{TEACHER}在教{LEARNER}練習本事，連{EMPLOYER}也跟著湊過去一起學" />
+    <string id="VividWorld_Sentence_WandererTeachingJoined_Who_Where" text="{PRE}{SETTLEMENT}{POST}歇息的時候，{TEACHER}在教{LEARNER}練習本事，連{EMPLOYER}也跟著湊過去一起學" />
+    <string id="VividWorld_Sentence_WandererTeachingJoined_Who_Where_Self_LEARNER" text="{PRE}{SETTLEMENT}{POST}歇息的時候，{TEACHER}在教我練習本事，連{EMPLOYER}也跟著湊過去一起學" />
+    <string id="VividWorld_Sentence_WandererTeachingJoined_Who_Where_Self_TEACHER" text="{PRE}{SETTLEMENT}{POST}歇息的時候，我在教{LEARNER}練習本事，連{EMPLOYER}也跟著湊過去一起學" />
+    <string id="VividWorld_Sentence_WandererTeachingJoined_Who_Where_Skill" text="{PRE}{SETTLEMENT}{POST}歇息的時候，{TEACHER}在教{LEARNER}練習{SKILL_NAME}，連{EMPLOYER}也跟著湊過去一起學" />
+    <string id="VividWorld_Sentence_WandererTeachingJoined_Who_Where_Skill_Self_LEARNER" text="{PRE}{SETTLEMENT}{POST}歇息的時候，{TEACHER}在教我練習{SKILL_NAME}，連{EMPLOYER}也跟著湊過去一起學" />
+    <string id="VividWorld_Sentence_WandererTeachingJoined_Who_Where_Skill_Self_TEACHER" text="{PRE}{SETTLEMENT}{POST}歇息的時候，我在教{LEARNER}練習{SKILL_NAME}，連{EMPLOYER}也跟著湊過去一起學" />
+    <!-- Wanderer events: self feelings -->
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditYielded_CLAIMANT" text="他肯把這份功勞讓給我，這份人情我記下了" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditYielded_RIVAL" text="都是同一個隊裡的兄弟，犯不著為這點小事爭得面紅耳赤" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditDisputed_CLAIMANT" text="那一刀明明是我先砍中的，憑什麼算在他頭上" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditDisputed_RIVAL" text="要不是我先破了他的盾，他哪有機會補上那一刀" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditToClaimant_CLAIMANT" text="隊長處事公道，眼睛亮得很" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditToClaimant_RIVAL" text="隊長既然這麼判，我也只能認了，但心裡總歸是不服氣的" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditToRival_CLAIMANT" text="我出了那麼大的力，最後卻便宜了他，實在讓人嚥不下這口氣" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditToRival_RIVAL" text="還好隊長看在眼裡，沒讓賣命的人白白受委屈" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditBoth_CLAIMANT" text="各記一功也好，省得傷了同伴之間的和氣" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditBoth_RIVAL" text="這樣平分挺公道，誰也不吃虧" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditRebuked_CLAIMANT" text="被當成新兵一樣罵，是我沒想到的" />
+    <string id="VividWorld_SelfFeeling_WandererBattleCreditRebuked_RIVAL" text="當著那麼多弟兄被訓斥一通，臉上真是掛不住" />
+    <string id="VividWorld_SelfFeeling_WandererBattleRescued_RESCUED" text="那天要不是他，我就死在那裡了" />
+    <string id="VividWorld_SelfFeeling_WandererBattleRescued_RESCUER" text="同伴倒在那裡，我不能就這樣丟下他" />
+    <string id="VividWorld_SelfFeeling_WandererPartyRoleBackedDown_CHALLENGER" text="現在不是爭這個的時候" />
+    <string id="VividWorld_SelfFeeling_WandererPartyRoleBackedDown_INCUMBENT" text="這職位是我踏踏實實幹出來的，哪是{CHALLENGER}說要就能要的" />
+    <string id="VividWorld_SelfFeeling_WandererPartyRoleBadBlood_CHALLENGER" text="那個位子本該是我的，大家心裡都清楚" />
+    <string id="VividWorld_SelfFeeling_WandererPartyRoleBadBlood_INCUMBENT" text="這份無禮我不會忘" />
+    <string id="VividWorld_SelfFeeling_WandererPartyRoleKeepIncumbent_CHALLENGER" text="隊長既然開了口，我就不多說了，但我自認不會比他差" />
+    <string id="VividWorld_SelfFeeling_WandererPartyRoleKeepIncumbent_INCUMBENT" text="隊長信得過我，我自然會把這差事辦得妥妥帖帖" />
+    <string id="VividWorld_SelfFeeling_WandererPartyRoleSwapped_CHALLENGER" text="既然隊長把重任交給我，我就絕不會辜負這份信任" />
+    <string id="VividWorld_SelfFeeling_WandererPartyRoleSwapped_INCUMBENT" text="我為隊裡盡心盡力這麼久，說換就換，實在讓人寒心" />
+    <string id="VividWorld_SelfFeeling_WandererPartyRoleContested_CHALLENGER" text="真刀真槍比過一場，誰有本事誰上，輸贏都沒話好說" />
+    <string id="VividWorld_SelfFeeling_WandererPartyRoleContested_INCUMBENT" text="當著大家的面比試本事，贏的光彩，輸了也認" />
+    <string id="VividWorld_SelfFeeling_WandererCampfireJabLaughedOff_MOCKED" text="營火邊幾句玩笑話而已，當真就輸了" />
+    <string id="VividWorld_SelfFeeling_WandererCampfireJabLaughedOff_MOCKER" text="{MOCKED}這人脾氣倒是不錯，挺開得起玩笑的" />
+    <string id="VividWorld_SelfFeeling_WandererCampfireJabBrawled_MOCKED" text="當著大家的面被人這樣羞辱，我嚥不下這口氣" />
+    <string id="VividWorld_SelfFeeling_WandererCampfireJabBrawled_MOCKER" text="是他先惹我的，這話我不收回" />
+    <string id="VividWorld_SelfFeeling_WandererCampfireJabColdShoulder_MOCKED" text="這種拿我開玩笑的人，我懶得再跟他說一句話" />
+    <string id="VividWorld_SelfFeeling_WandererCampfireJabColdShoulder_MOCKER" text="該說的我說了，他愛擺臉色就擺吧" />
+    <string id="VividWorld_SelfFeeling_WandererCampfireJabPunished_MOCKED" text="有人替我說話，我心裡舒坦" />
+    <string id="VividWorld_SelfFeeling_WandererCampfireJabPunished_MOCKER" text="我錯了，大家都看在眼裡" />
+    <string id="VividWorld_SelfFeeling_WandererCampfireJabBothRebuked_MOCKED" text="明明是他先挑的事，我卻跟著一起挨罵，真是倒楣" />
+    <string id="VividWorld_SelfFeeling_WandererCampfireJabBothRebuked_MOCKER" text="當眾被罵，比一句玩笑更難受" />
+    <string id="VividWorld_SelfFeeling_WandererTeachingCompleted_LEARNER" text="他肯花時間教我，這份情我記著" />
+    <string id="VividWorld_SelfFeeling_WandererTeachingCompleted_TEACHER" text="能把這手藝傳下去，我心裡高興" />
+    <string id="VividWorld_SelfFeeling_WandererTeachingEncouraged_LEARNER" text="隊長在一旁給我們鼓勁，我自然更得好好把這身本事練扎實" />
+    <string id="VividWorld_SelfFeeling_WandererTeachingEncouraged_TEACHER" text="還有人肯學，看了很欣慰" />
+    <string id="VividWorld_SelfFeeling_WandererTeachingJoined_LEARNER" text="連隊長都跟著我們一起練，這勁頭一下子就提上來了" />
+    <string id="VividWorld_SelfFeeling_WandererTeachingJoined_TEACHER" text="讓人家跟著我學，我倒有點不好意思" />
+    <string id="VividWorld_RoleComplaint_Line" text="你前幾天才讓我當{ROLE}，轉頭又把我換了回去，這是拿我尋開心嗎？" />
+    <string id="VividWorld_RoleComplaint_Reply" text="隊裡的安排隨時會因時局變動，先把手頭的事做好。" />
+    <string id="VividWorld_RoleComplaint_Message" text="{HERO}因被解除{ROLE}職務心生不滿（好感 {BEFORE} → {AFTER}）" />
+    <string id="VividWorld_WandererSkillXp_Companion" text="{LEARNER}跟著{TEACHER}學{SKILL_NAME}，經驗 +{XP}" />
+    <string id="VividWorld_WandererSkillXp_Player" text="你跟著{TEACHER}學{SKILL_NAME}，經驗 +{XP}" />
+</strings>
 </base>

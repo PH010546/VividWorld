@@ -8,7 +8,8 @@
             列出每個定版標籤：commit、日期、Nexus 上有沒有這一版（讀 Nexus API，查不到就寫查不到）
 
         .\tools\release-tag.ps1 -Create
-            在 master 或 fix/ 分支上（修正版）、沒有未提交的改動時，照 SubModule.xml 的版本打標籤並 push。
+            在 fix/ 分支上（修正版）、沒有未提交的改動時，照 SubModule.xml 的版本打標籤並 push。
+            master 上的功能版不在這裡定版，用 toolselease-queue.ps1 -Add 排隊、週五由 GitHub Actions 推
             先檢查版本號沒有被用過、三份更新紀錄（CHANGELOG.md、module\CHANGELOG.txt、.en.txt）都有這一版
 
         .\tools\release-tag.ps1 -Tag v1.3.0 -Step Package
@@ -105,7 +106,8 @@ if ($PSCmdlet.ParameterSetName -eq 'List') {
 # ── 定版 ─────────────────────────────────────────────────────────────
 if ($PSCmdlet.ParameterSetName -eq 'Create') {
     $branch = (Invoke-Git rev-parse --abbrev-ref HEAD).Trim()
-    if ($branch -ne 'master' -and -not $branch.StartsWith('fix/')) { Write-Error "定版只在 master 或 fix/ 分支（修正版）上打，現在在 '$branch'。" }
+    # 功能版從 master 定版成排隊的 release/ 分支（toolselease-queue.ps1 -Add），這裡只打修正版的標籤
+    if (-not $branch.StartsWith('fix/')) { Write-Error "這裡只替 fix/ 分支上的修正版打標籤，現在在 '$branch'。master 上的功能版用 toolselease-queue.ps1 -Add 排隊。" }
     $dirty = @(& git -C $repoRoot status --porcelain)
     if ($dirty.Count -gt 0) { Write-Error "有 $($dirty.Count) 項沒提交的改動，先 commit 再定版：`n  $(($dirty | Select-Object -First 10) -join "`n  ")" }
 

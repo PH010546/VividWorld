@@ -84,7 +84,7 @@ namespace VividWorld.Core.Situations
                         foreach (var kvp in bEvent.Bind)
                         {
                             string target = kvp.Value?.Trim() ?? string.Empty;
-                            if (!string.Equals(target, "@settlement", StringComparison.Ordinal) &&
+                            if (!target.StartsWith("@", StringComparison.Ordinal) &&
                                 !situation.Roles.ContainsKey(target))
                             {
                                 issues.Add(new SituationIssue
@@ -129,6 +129,14 @@ namespace VividWorld.Core.Situations
                             var grudge = branch.Grudges[gIdx];
                             if (string.IsNullOrEmpty(grudge.From)) continue;
 
+                            if (branch.StandAside)
+                            {
+                                if (situation.Roles.ContainsKey(grudge.From))
+                                {
+                                    continue;
+                                }
+                            }
+
                             bool isHop0Knower = false;
 
                             foreach (var bEvent in branch.Events)
@@ -138,7 +146,10 @@ namespace VividWorld.Core.Situations
 
                                 foreach (var bindKvp in bEvent.Bind)
                                 {
-                                    if (string.Equals(bindKvp.Value?.Trim(), grudge.From, StringComparison.Ordinal))
+                                    bool roleMatches = string.Equals(bindKvp.Value?.Trim(), grudge.From, StringComparison.Ordinal)
+                                        || (string.Equals(grudge.From, "@loser", StringComparison.Ordinal) && branch.Contest != null &&
+                                            (string.Equals(bindKvp.Value?.Trim(), branch.Contest.A, StringComparison.Ordinal) || string.Equals(bindKvp.Value?.Trim(), branch.Contest.B, StringComparison.Ordinal)));
+                                    if (roleMatches)
                                     {
                                         string ph = bindKvp.Key.Trim().Trim('{', '}');
                                         if (eventTemplate.Roles != null)

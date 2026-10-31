@@ -64,7 +64,16 @@ namespace VividWorld.Campaign
             ["victory_credit_defer"] = "The toast is meant for {CLAIMANT}, who hands the credit to {RIVAL} instead.",
             ["victory_credit_let_the_host_judge"] = "Neither will give way, so in the end they ask {HOST} to decide. {HOST} gives the credit to {RIVAL}.",
             ["hunt_wager_take_the_wager"] = "{CHALLENGED} accepts on the spot, and half the hall puts money on it too.",
-            ["hunt_wager_refuse_and_jest"] = "{CHALLENGED} turns it down and makes a joke of it; the hall laughs for a good while."
+            ["hunt_wager_refuse_and_jest"] = "{CHALLENGED} turns it down and makes a joke of it; the hall laughs for a good while.",
+            ["wanderer_battle_credit_yield"] = "{RIVAL} relents and yields the credit to {CLAIMANT}, letting the matter drop.",
+            ["wanderer_battle_credit_dispute"] = "The two of them keep at it until the fire burns low, and in the end both storm off to their own tents without a word.",
+            ["wanderer_party_role_back_down"] = "{CHALLENGER} swallows the words and says nothing more, and {INCUMBENT} keeps the post as before.",
+            ["wanderer_party_role_back_down_Role"] = "{CHALLENGER} swallows the words and says nothing more, and {INCUMBENT} keeps the post of {ROLE} as before.",
+            ["wanderer_party_role_bad_blood"] = "Neither will give ground, and from that night on {CHALLENGER} and {INCUMBENT} hardly exchange a civil word. The whole camp can see it.",
+            ["wanderer_campfire_jab_laugh_off"] = "{MOCKED} laughs the jab off and passes {MOCKER} a cup, and the fire goes back to its usual talk.",
+            ["wanderer_campfire_jab_brawl"] = "The jab goes too far, and the two are on their feet with fists flying before anyone can stop them. By the time the others pull them apart, the whole fire has gone silent.",
+            ["wanderer_campfire_jab_cold_shoulder"] = "{MOCKED} says nothing more, but from then on {MOCKED} gives {MOCKER} the cold shoulder at every fire.",
+            ["wanderer_teaching_completed"] = "{TEACHER} sees {LEARNER} through the lesson with real patience, and by the end {LEARNER} has the basics down and thanks {TEACHER} before turning in.",
         };
 
         private static readonly Dictionary<string, string> TraitNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -93,37 +102,87 @@ namespace VividWorld.Campaign
             return t.ToString();
         }
 
-        internal static string Scene(string situationId, PlayerPresenceRole role, IReadOnlyDictionary<string, string?> boundHeroIds)
+        internal static string Scene(
+            string situationId,
+            PlayerPresenceRole role,
+            IReadOnlyDictionary<string, string?> boundHeroIds,
+            IReadOnlyDictionary<string, string>? directTextVars = null)
         {
             string keySuffix = $"{situationId}_{RoleToken(role)}";
-            string fullKey = "VividWorld_Presence_Scene_" + keySuffix;
-            SceneFallbacks.TryGetValue(keySuffix, out var fallback);
-            return FallbackTextRenderer.RenderRoleTemplate(fullKey, fallback ?? keySuffix, boundHeroIds);
+            bool hasRole = directTextVars != null && directTextVars.TryGetValue("ROLE", out var roleVal) && !string.IsNullOrEmpty(roleVal);
+            string roleKeySuffix = keySuffix + "_Role";
+            string roleFullKey = "VividWorld_Presence_Scene_" + roleKeySuffix;
+
+            string effectiveSuffix = (hasRole && (SceneFallbacks.ContainsKey(roleKeySuffix) || EnglishStringTableStore.Instance.Get(roleFullKey) != null))
+                ? roleKeySuffix
+                : keySuffix;
+
+            string fullKey = "VividWorld_Presence_Scene_" + effectiveSuffix;
+            SceneFallbacks.TryGetValue(effectiveSuffix, out var fallback);
+            return FallbackTextRenderer.RenderRoleTemplate(fullKey, fallback ?? effectiveSuffix, boundHeroIds, directTextVars);
         }
 
-        internal static string Option(string situationId, string branchId, IReadOnlyDictionary<string, string?> boundHeroIds)
+        internal static string Option(
+            string situationId,
+            string branchId,
+            IReadOnlyDictionary<string, string?> boundHeroIds,
+            IReadOnlyDictionary<string, string>? directTextVars = null)
         {
             string keySuffix = $"{situationId}_{branchId}";
-            string fullKey = "VividWorld_Presence_Option_" + keySuffix;
-            OptionFallbacks.TryGetValue(keySuffix, out var fallback);
-            return FallbackTextRenderer.RenderRoleTemplate(fullKey, fallback ?? branchId, boundHeroIds);
+            bool hasRole = directTextVars != null && directTextVars.TryGetValue("ROLE", out var roleVal) && !string.IsNullOrEmpty(roleVal);
+            string roleKeySuffix = keySuffix + "_Role";
+            string roleFullKey = "VividWorld_Presence_Option_" + roleKeySuffix;
+
+            string effectiveSuffix = (hasRole && (OptionFallbacks.ContainsKey(roleKeySuffix) || EnglishStringTableStore.Instance.Get(roleFullKey) != null))
+                ? roleKeySuffix
+                : keySuffix;
+
+            string fullKey = "VividWorld_Presence_Option_" + effectiveSuffix;
+            OptionFallbacks.TryGetValue(effectiveSuffix, out var fallback);
+            return FallbackTextRenderer.RenderRoleTemplate(fullKey, fallback ?? branchId, boundHeroIds, directTextVars);
         }
 
-        internal static string? Outcome(string situationId, string branchId, IReadOnlyDictionary<string, string?> boundHeroIds)
+        internal static string? Outcome(
+            string situationId,
+            string branchId,
+            IReadOnlyDictionary<string, string?> boundHeroIds,
+            IReadOnlyDictionary<string, string>? directTextVars = null)
         {
             string keySuffix = $"{situationId}_{branchId}";
-            if (!OutcomeFallbacks.TryGetValue(keySuffix, out var fallback))
+            bool hasRole = directTextVars != null && directTextVars.TryGetValue("ROLE", out var roleVal) && !string.IsNullOrEmpty(roleVal);
+            string roleKeySuffix = keySuffix + "_Role";
+
+            string effectiveSuffix = (hasRole && OutcomeFallbacks.ContainsKey(roleKeySuffix))
+                ? roleKeySuffix
+                : keySuffix;
+
+            if (!OutcomeFallbacks.TryGetValue(effectiveSuffix, out var fallback))
             {
                 return null;
             }
 
-            string fullKey = "VividWorld_Presence_Outcome_" + keySuffix;
-            return FallbackTextRenderer.RenderRoleTemplate(fullKey, fallback, boundHeroIds);
+            string fullKey = "VividWorld_Presence_Outcome_" + effectiveSuffix;
+            return FallbackTextRenderer.RenderRoleTemplate(fullKey, fallback, boundHeroIds, directTextVars);
         }
 
         internal static string Ack() => TextWithEnglishFallback("VividWorld_Presence_Ack", "I see.");
 
         internal static string Confirm() => TextWithEnglishFallback("VividWorld_Presence_Confirm", "Done");
+
+        /// <summary>不插手那一列代價的固定一句（「看他們自己怎麼收場」），後面接這個做法對玩家的影響（沒有就只有這一句）。</summary>
+        internal static string StandAsideCost(IReadOnlyList<PlayerChoiceDirection>? directions)
+        {
+            string fixedText = TextWithEnglishFallback("VividWorld_Presence_Dir_StandAside", "Leave them to settle it themselves");
+            if (directions == null || directions.Count == 0)
+            {
+                return fixedText;
+            }
+
+            return fixedText + TextWithEnglishFallback("VividWorld_Presence_Dir_Separator", ", ") + Directions(directions);
+        }
+
+        /// <summary>不插手擲出的那一列沒有結果句、也沒有玩家聽到的事實時的收場句。</summary>
+        internal static string StandAsideOutcomeFallback() => TextWithEnglishFallback("VividWorld_Presence_StandAside_Outcome", "They settle the matter among themselves.");
 
         /// <summary>代價方向組成一句：「卡拉多格不滿、聲望↑、影響力↓、勇猛↑」。</summary>
         internal static string Directions(IReadOnlyList<PlayerChoiceDirection> directions)

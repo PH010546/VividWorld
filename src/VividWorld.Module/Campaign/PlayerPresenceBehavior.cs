@@ -566,7 +566,7 @@ namespace VividWorld.Campaign
             }
         }
 
-        private static TraitObject? TraitOf(string name)
+        internal static TraitObject? TraitOf(string name)
         {
             switch (name)
             {

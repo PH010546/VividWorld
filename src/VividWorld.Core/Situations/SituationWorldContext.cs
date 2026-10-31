@@ -18,5 +18,12 @@ namespace VividWorld.Core.Situations
         public int NativeGrudgeLine { get; set; } = -20;
         public string? PlayerHeroId { get; set; }
         public Config.VividWorldConfig? Config { get; set; }
+
+        public Func<string, bool>? IsPartyRoleHolder { get; set; }
+        public Func<string, string, bool>? HasTeachableSkill { get; set; }
+        public Func<string, string, string, bool>? IsSkillBelow { get; set; }
+        public Func<string, bool>? FoughtInBattle { get; set; }
+        public Func<string, bool>? WoundedInBattle { get; set; }
+        public Func<bool>? BattleWon { get; set; }
     }
 }

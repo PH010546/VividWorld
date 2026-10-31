@@ -1,6 +1,7 @@
 ﻿#Requires -Version 5.1
 <#
-    發佈前的檢查：只准在「切在一個定版標籤上、沒有未提交的改動」的工作資料夾裡打包、出口、上傳。
+    發佈前的檢查：只准在「切在一個定版標籤上（或排隊版本 release/<版本> 分支最新的 commit 上）、
+    沒有未提交的改動」的工作資料夾裡打包、出口、上傳。
     開發與測試都在 master 上進行，master 不保證隨時能發；能發的是定版時打的標籤 v<版本>
     （tools\release-tag.ps1 -Create 打的）。發版時由 release-tag.ps1 在暫存資料夾開一份那個標籤的
     工作副本，在那裡跑打包與出口，master 的進度不受影響。
@@ -23,17 +24,30 @@ function Assert-ReleaseTree {
     } finally {
         $ErrorActionPreference = $prevPref
     }
-    if ($LASTEXITCODE -ne 0 -or -not $tag) {
-        $where = (& git -C $RepoRoot rev-parse --abbrev-ref HEAD 2>$null)
-        Write-Error ("目前在 '$where'，不是切在定版標籤上。master 不保證能發；" +
-            "要發哪一版用 tools\release-tag.ps1 -Tag v<版本> 從那個標籤打包、出口、上傳。")
-    }
-    $tag = $tag.Trim()
-
     [xml]$subModule = Get-Content (Join-Path $RepoRoot 'module\SubModule.xml') -Raw -Encoding UTF8
     $version = $subModule.Module.Version.value
-    if ($tag -ne $version) {
-        Write-Error "標籤 '$tag' 跟 SubModule.xml 的版本 '$version' 對不上：定版時版本號沒有改到，或標籤打錯 commit。"
+
+    if ($LASTEXITCODE -ne 0 -or -not $tag) {
+        # 還沒打標籤的排隊版本（tools\release-queue.ps1）：要切在 release/<版本> 分支最新的 commit 上
+        $head = (& git -C $RepoRoot rev-parse HEAD 2>$null)
+        $queued = $null
+        foreach ($ref in @("refs/remotes/origin/release/$version", "refs/heads/release/$version")) {
+            $prevPref = $ErrorActionPreference
+            $ErrorActionPreference = 'Continue'
+            try { $tip = (& git -C $RepoRoot rev-parse --verify --quiet $ref 2>$null) } finally { $ErrorActionPreference = $prevPref }
+            if ($tip -and $tip.Trim() -eq "$head".Trim()) { $queued = $ref; break }
+        }
+        if (-not $queued) {
+            $where = (& git -C $RepoRoot rev-parse --abbrev-ref HEAD 2>$null)
+            Write-Error ("目前在 '$where'，不是切在定版標籤上，也不是排隊版本 release/$version 最新的 commit。master 不保證能發；" +
+                "要發哪一版用 tools\release-tag.ps1 -Tag v<版本> 或 tools\release-queue.ps1 從那個標籤或分支打包、出口、上傳。")
+        }
+        $tag = "$version（排隊中，$queued）"
+    } else {
+        $tag = $tag.Trim()
+        if ($tag -ne $version) {
+            Write-Error "標籤 '$tag' 跟 SubModule.xml 的版本 '$version' 對不上：定版時版本號沒有改到，或標籤打錯 commit。"
+        }
     }
 
     $dirty = @(& git -C $RepoRoot status --porcelain)

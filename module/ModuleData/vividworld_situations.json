@@ -1309,6 +1309,873 @@
           "events": []
         }
       ]
-    }
-  ]
+    },
+        {
+          "id": "wanderer_battle_credit",
+          "trigger": "wandererBattle",
+          "weight": 3,
+          "decider": "rival",
+          "noSpread": true,
+          "player": {
+            "judge": true,
+            "judgeRole": "employer"
+          },
+          "roles": {
+            "claimant": {},
+            "rival": {},
+            "employer": {
+              "player": true
+            }
+          },
+          "conditions": [
+            {
+              "type": "battleWon"
+            },
+            {
+              "type": "foughtInBattle",
+              "roles": [
+                "claimant",
+                "rival"
+              ]
+            }
+          ],
+          "branches": [
+            {
+              "id": "stand_aside",
+              "base": 1,
+              "judge": true,
+              "standAside": true,
+              "events": []
+            },
+            {
+              "id": "yield",
+              "base": 1,
+              "traits": {
+                "generosity": 0.5,
+                "honor": 0.5
+              },
+              "playerEffects": {
+                "morale": 1
+              },
+              "grudges": [
+                {
+                  "from": "claimant",
+                  "to": "rival",
+                  "amount": 4
+                }
+              ],
+              "events": [
+                {
+                  "type": "wanderer_battle_credit_yielded",
+                  "bind": {
+                    "{CLAIMANT}": "claimant",
+                    "{RIVAL}": "rival",
+                    "{SETTLEMENT}": "@settlement"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "dispute",
+              "base": 1,
+              "traits": {
+                "valor": 0.5,
+                "honor": -0.5
+              },
+              "playerEffects": {
+                "morale": -2
+              },
+              "grudges": [
+                {
+                  "from": "claimant",
+                  "to": "rival",
+                  "amount": -5
+                },
+                {
+                  "from": "rival",
+                  "to": "claimant",
+                  "amount": -5
+                }
+              ],
+              "events": [
+                {
+                  "type": "wanderer_battle_credit_disputed",
+                  "bind": {
+                    "{CLAIMANT}": "claimant",
+                    "{RIVAL}": "rival",
+                    "{SETTLEMENT}": "@settlement"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "judge_claimant",
+              "base": 1,
+              "judge": true,
+              "playerEffects": {
+                "morale": -1
+              },
+              "grudges": [
+                {
+                  "from": "rival",
+                  "to": "claimant",
+                  "amount": -3
+                },
+                {
+                  "from": "claimant",
+                  "to": "employer",
+                  "amount": 5
+                },
+                {
+                  "from": "rival",
+                  "to": "employer",
+                  "amount": -5
+                }
+              ],
+              "events": [
+                {
+                  "type": "wanderer_battle_credit_to_claimant",
+                  "bind": {
+                    "{CLAIMANT}": "claimant",
+                    "{RIVAL}": "rival",
+                    "{EMPLOYER}": "employer",
+                    "{SETTLEMENT}": "@settlement"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "judge_rival",
+              "base": 1,
+              "judge": true,
+              "playerEffects": {
+                "morale": -1
+              },
+              "grudges": [
+                {
+                  "from": "claimant",
+                  "to": "rival",
+                  "amount": -3
+                },
+                {
+                  "from": "rival",
+                  "to": "employer",
+                  "amount": 5
+                },
+                {
+                  "from": "claimant",
+                  "to": "employer",
+                  "amount": -5
+                }
+              ],
+              "events": [
+                {
+                  "type": "wanderer_battle_credit_to_rival",
+                  "bind": {
+                    "{CLAIMANT}": "claimant",
+                    "{RIVAL}": "rival",
+                    "{EMPLOYER}": "employer",
+                    "{SETTLEMENT}": "@settlement"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "judge_both",
+              "base": 1,
+              "judge": true,
+              "playerEffects": {
+                "morale": 2,
+                "traits": {
+                  "generosity": 50
+                }
+              },
+              "grudges": [
+                {
+                  "from": "claimant",
+                  "to": "employer",
+                  "amount": 2
+                },
+                {
+                  "from": "rival",
+                  "to": "employer",
+                  "amount": 2
+                }
+              ],
+              "events": [
+                {
+                  "type": "wanderer_battle_credit_both",
+                  "bind": {
+                    "{CLAIMANT}": "claimant",
+                    "{RIVAL}": "rival",
+                    "{EMPLOYER}": "employer",
+                    "{SETTLEMENT}": "@settlement"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "rebuke",
+              "base": 1,
+              "judge": true,
+              "playerEffects": {
+                "morale": 0,
+                "traits": {
+                  "calculating": 50
+                }
+              },
+              "grudges": [
+                {
+                  "from": "claimant",
+                  "to": "employer",
+                  "amount": -3
+                },
+                {
+                  "from": "rival",
+                  "to": "employer",
+                  "amount": -3
+                }
+              ],
+              "events": [
+                {
+                  "type": "wanderer_battle_credit_rebuked",
+                  "bind": {
+                    "{CLAIMANT}": "claimant",
+                    "{RIVAL}": "rival",
+                    "{EMPLOYER}": "employer",
+                    "{SETTLEMENT}": "@settlement"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "wanderer_battle_rescue",
+          "trigger": "wandererBattle",
+          "weight": 3,
+          "decider": "rescuer",
+          "player": {
+            "bystander": true
+          },
+          "roles": {
+            "rescuer": {},
+            "rescued": {}
+          },
+          "conditions": [
+            {
+              "type": "foughtInBattle",
+              "roles": [
+                "rescuer",
+                "rescued"
+              ]
+            },
+            {
+              "type": "woundedInBattle",
+              "role": "rescued"
+            }
+          ],
+          "branches": [
+            {
+              "id": "rescue",
+              "base": 1,
+              "traits": {
+                "mercy": 0.5,
+                "valor": 0.5
+              },
+              "playerEffects": {
+                "morale": 2
+              },
+              "grudges": [
+                {
+                  "from": "rescued",
+                  "to": "rescuer",
+                  "amount": 8
+                }
+              ],
+              "events": [
+                {
+                  "type": "wanderer_battle_rescued",
+                  "bind": {
+                    "{RESCUER}": "rescuer",
+                    "{RESCUED}": "rescued",
+                    "{SETTLEMENT}": "@settlement"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "wanderer_party_role",
+          "trigger": "wandererDaily",
+          "weight": 3,
+          "decider": "challenger",
+          "noSpread": true,
+          "player": {
+            "judge": true,
+            "judgeRole": "employer"
+          },
+          "roles": {
+            "incumbent": {},
+            "challenger": {},
+            "employer": {
+              "player": true
+            }
+          },
+          "conditions": [
+            {
+              "type": "partyRoleHolder",
+              "role": "incumbent"
+            }
+          ],
+          "branches": [
+            {
+              "id": "stand_aside",
+              "base": 1,
+              "judge": true,
+              "standAside": true,
+              "events": []
+            },
+            {
+              "id": "back_down",
+              "base": 1,
+              "traits": {
+                "calculating": 0.5,
+                "valor": -0.5
+              },
+              "playerEffects": {
+                "morale": 0
+              },
+              "grudges": [
+                {
+                  "from": "challenger",
+                  "to": "incumbent",
+                  "amount": -2
+                }
+              ],
+              "events": [
+                {
+                  "type": "wanderer_party_role_backed_down",
+                  "bind": {
+                    "{INCUMBENT}": "incumbent",
+                    "{ROLE_ID}": "@role",
+                    "{WINNER}": "@winner",
+                    "{CHALLENGER}": "challenger",
+                    "{SETTLEMENT}": "@settlement"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "bad_blood",
+              "base": 1,
+              "traits": {
+                "valor": 0.5,
+                "calculating": -0.5
+              },
+              "playerEffects": {
+                "morale": -2
+              },
+              "grudges": [
+                {
+                  "from": "challenger",
+                  "to": "incumbent",
+                  "amount": -5
+                },
+                {
+                  "from": "incumbent",
+                  "to": "challenger",
+                  "amount": -5
+                }
+              ],
+              "events": [
+                {
+                  "type": "wanderer_party_role_bad_blood",
+                  "bind": {
+                    "{INCUMBENT}": "incumbent",
+                    "{ROLE_ID}": "@role",
+                    "{WINNER}": "@winner",
+                    "{CHALLENGER}": "challenger",
+                    "{SETTLEMENT}": "@settlement"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "keep_incumbent",
+              "base": 1,
+              "judge": true,
+              "playerEffects": {
+                "morale": 1
+              },
+              "grudges": [
+                {
+                  "from": "incumbent",
+                  "to": "employer",
+                  "amount": 3
+                },
+                {
+                  "from": "challenger",
+                  "to": "employer",
+                  "amount": -4
+                }
+              ],
+              "events": [
+                {
+                  "type": "wanderer_party_role_keep_incumbent",
+                  "bind": {
+                    "{INCUMBENT}": "incumbent",
+                    "{ROLE_ID}": "@role",
+                    "{WINNER}": "@winner",
+                    "{CHALLENGER}": "challenger",
+                    "{EMPLOYER}": "employer",
+                    "{SETTLEMENT}": "@settlement"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "swap_role",
+              "base": 1,
+              "judge": true,
+              "playerEffects": {
+                "morale": -1
+              },
+              "grudges": [
+                {
+                  "from": "incumbent",
+                  "to": "challenger",
+                  "amount": -4
+                },
+                {
+                  "from": "challenger",
+                  "to": "employer",
+                  "amount": 5
+                },
+                {
+                  "from": "incumbent",
+                  "to": "employer",
+                  "amount": -6
+                }
+              ],
+              "partyRoleChange": {
+                "to": "challenger"
+              },
+              "events": [
+                {
+                  "type": "wanderer_party_role_swapped",
+                  "bind": {
+                    "{INCUMBENT}": "incumbent",
+                    "{ROLE_ID}": "@role",
+                    "{WINNER}": "@winner",
+                    "{CHALLENGER}": "challenger",
+                    "{EMPLOYER}": "employer",
+                    "{SETTLEMENT}": "@settlement"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "contest",
+              "base": 1,
+              "judge": true,
+              "playerEffects": {
+                "morale": 2,
+                "traits": {
+                  "calculating": 50
+                }
+              },
+              "contest": {
+                "a": "incumbent",
+                "b": "challenger",
+                "skill": "@disputedRoleSkill",
+                "randomMax": 60,
+                "winnerTakesRole": true
+              },
+              "grudges": [
+                {
+                  "from": "@loser",
+                  "to": "@winner",
+                  "amount": -2
+                }
+              ],
+              "events": [
+                {
+                  "type": "wanderer_party_role_contested",
+                  "bind": {
+                    "{INCUMBENT}": "incumbent",
+                    "{ROLE_ID}": "@role",
+                    "{WINNER}": "@winner",
+                    "{CHALLENGER}": "challenger",
+                    "{EMPLOYER}": "employer",
+                    "{SETTLEMENT}": "@settlement"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "wanderer_campfire_jab",
+          "trigger": "wandererDaily",
+          "weight": 3,
+          "decider": "mocked",
+          "noSpread": true,
+          "player": {
+            "judge": true,
+            "judgeRole": "employer"
+          },
+          "roles": {
+            "mocker": {},
+            "mocked": {},
+            "employer": {
+              "player": true
+            }
+          },
+          "conditions": [],
+          "branches": [
+            {
+              "id": "stand_aside",
+              "base": 1,
+              "judge": true,
+              "standAside": true,
+              "grudges": [
+                {
+                  "from": "mocked",
+                  "to": "employer",
+                  "amount": -3
+                }
+              ],
+              "events": []
+            },
+            {
+              "id": "laugh_off",
+              "base": 1,
+              "traits": {
+                "mercy": 0.5,
+                "calculating": 0.5
+              },
+              "playerEffects": {
+                "morale": 1
+              },
+              "grudges": [
+                {
+                  "from": "mocked",
+                  "to": "mocker",
+                  "amount": -1
+                }
+              ],
+              "events": [
+                {
+                  "type": "wanderer_campfire_jab_laughed_off",
+                  "bind": {
+                    "{MOCKER}": "mocker",
+                    "{MOCKED}": "mocked",
+                    "{SETTLEMENT}": "@settlement",
+                    "{TOPIC}": "@jab_topic",
+                    "{SAYING}": "@jab_saying"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "brawl",
+              "base": 1,
+              "traits": {
+                "valor": 0.5,
+                "mercy": -0.5
+              },
+              "playerEffects": {
+                "morale": -3
+              },
+              "grudges": [
+                {
+                  "from": "mocked",
+                  "to": "mocker",
+                  "amount": -6
+                },
+                {
+                  "from": "mocker",
+                  "to": "mocked",
+                  "amount": -6
+                }
+              ],
+              "events": [
+                {
+                  "type": "wanderer_campfire_jab_brawled",
+                  "bind": {
+                    "{MOCKER}": "mocker",
+                    "{MOCKED}": "mocked",
+                    "{SETTLEMENT}": "@settlement",
+                    "{TOPIC}": "@jab_topic",
+                    "{SAYING}": "@jab_saying"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "cold_shoulder",
+              "base": 1,
+              "traits": {
+                "calculating": 0.5,
+                "generosity": -0.5
+              },
+              "playerEffects": {
+                "morale": -1
+              },
+              "grudges": [
+                {
+                  "from": "mocked",
+                  "to": "mocker",
+                  "amount": -4
+                }
+              ],
+              "events": [
+                {
+                  "type": "wanderer_campfire_jab_cold_shoulder",
+                  "bind": {
+                    "{MOCKER}": "mocker",
+                    "{MOCKED}": "mocked",
+                    "{SETTLEMENT}": "@settlement",
+                    "{TOPIC}": "@jab_topic",
+                    "{SAYING}": "@jab_saying"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "punish_mocker",
+              "base": 1,
+              "judge": true,
+              "playerEffects": {
+                "morale": 2,
+                "traits": {
+                  "honor": 50
+                }
+              },
+              "grudges": [
+                {
+                  "from": "mocked",
+                  "to": "employer",
+                  "amount": 4
+                },
+                {
+                  "from": "mocker",
+                  "to": "employer",
+                  "amount": -4
+                }
+              ],
+              "events": [
+                {
+                  "type": "wanderer_campfire_jab_punished",
+                  "bind": {
+                    "{MOCKER}": "mocker",
+                    "{MOCKED}": "mocked",
+                    "{EMPLOYER}": "employer",
+                    "{SETTLEMENT}": "@settlement",
+                    "{TOPIC}": "@jab_topic",
+                    "{SAYING}": "@jab_saying"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "rebuke_both",
+              "base": 1,
+              "judge": true,
+              "playerEffects": {
+                "morale": -1,
+                "traits": {
+                  "calculating": 50
+                }
+              },
+              "grudges": [
+                {
+                  "from": "mocked",
+                  "to": "employer",
+                  "amount": -2
+                },
+                {
+                  "from": "mocker",
+                  "to": "employer",
+                  "amount": -2
+                }
+              ],
+              "events": [
+                {
+                  "type": "wanderer_campfire_jab_both_rebuked",
+                  "bind": {
+                    "{MOCKER}": "mocker",
+                    "{MOCKED}": "mocked",
+                    "{EMPLOYER}": "employer",
+                    "{SETTLEMENT}": "@settlement",
+                    "{TOPIC}": "@jab_topic",
+                    "{SAYING}": "@jab_saying"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "wanderer_teaching",
+          "trigger": "wandererDaily",
+          "weight": 3,
+          "decider": "learner",
+          "noSpread": true,
+          "player": {
+            "judge": true,
+            "judgeRole": "employer"
+          },
+          "roles": {
+            "teacher": {},
+            "learner": {},
+            "employer": {
+              "player": true
+            }
+          },
+          "conditions": [
+            {
+              "type": "teachableSkill",
+              "teacher": "teacher",
+              "learner": "learner"
+            }
+          ],
+          "branches": [
+            {
+              "id": "stand_aside",
+              "base": 1,
+              "judge": true,
+              "standAside": true,
+              "events": []
+            },
+            {
+              "id": "completed",
+              "base": 1,
+              "playerEffects": {
+                "morale": 1
+              },
+              "grudges": [
+                {
+                  "from": "learner",
+                  "to": "teacher",
+                  "amount": 4
+                }
+              ],
+              "skillXp": [
+                {
+                  "role": "learner",
+                  "skill": "@taught",
+                  "amount": 100
+                }
+              ],
+              "events": [
+                {
+                  "type": "wanderer_teaching_completed",
+                  "bind": {
+                    "{TEACHER}": "teacher",
+                    "{SKILL_NAME}": "@skill",
+                    "{LEARNER}": "learner",
+                    "{SETTLEMENT}": "@settlement"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "encourage",
+              "base": 1,
+              "judge": true,
+              "playerEffects": {
+                "morale": 1,
+                "traits": {
+                  "generosity": 50
+                }
+              },
+              "grudges": [
+                {
+                  "from": "learner",
+                  "to": "teacher",
+                  "amount": 4
+                }
+              ],
+              "skillXp": [
+                {
+                  "role": "learner",
+                  "skill": "@taught",
+                  "amount": 100
+                }
+              ],
+              "events": [
+                {
+                  "type": "wanderer_teaching_encouraged",
+                  "bind": {
+                    "{TEACHER}": "teacher",
+                    "{SKILL_NAME}": "@skill",
+                    "{LEARNER}": "learner",
+                    "{EMPLOYER}": "employer",
+                    "{SETTLEMENT}": "@settlement"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "join_learning",
+              "base": 1,
+              "judge": true,
+              "preconditions": [
+                {
+                  "type": "skillBelow",
+                  "a": "employer",
+                  "b": "teacher",
+                  "skill": "@taught"
+                }
+              ],
+              "playerEffects": {
+                "morale": 1
+              },
+              "grudges": [
+                {
+                  "from": "learner",
+                  "to": "teacher",
+                  "amount": 4
+                },
+                {
+                  "from": "learner",
+                  "to": "employer",
+                  "amount": 2
+                },
+                {
+                  "from": "teacher",
+                  "to": "employer",
+                  "amount": 2
+                }
+              ],
+              "skillXp": [
+                {
+                  "role": "learner",
+                  "skill": "@taught",
+                  "amount": 100
+                },
+                {
+                  "role": "employer",
+                  "skill": "@taught",
+                  "amount": 50
+                }
+              ],
+              "events": [
+                {
+                  "type": "wanderer_teaching_joined",
+                  "bind": {
+                    "{TEACHER}": "teacher",
+                    "{SKILL_NAME}": "@skill",
+                    "{LEARNER}": "learner",
+                    "{EMPLOYER}": "employer",
+                    "{SETTLEMENT}": "@settlement"
+                  }
+                }
+              ]
+            }
+          ]
+        }  ]
 }

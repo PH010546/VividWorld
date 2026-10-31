@@ -96,6 +96,30 @@ namespace VividWorld.Core.Situations
                     result = EvaluateKnowsEventAbout(condition, factsByRole, context);
                     break;
 
+                case "partyroleholder":
+                    result = EvaluatePartyRoleHolder(condition, factsByRole, context);
+                    break;
+
+                case "teachableskill":
+                    result = EvaluateTeachableSkill(condition, factsByRole, context);
+                    break;
+
+                case "skillbelow":
+                    result = EvaluateSkillBelow(condition, factsByRole, context);
+                    break;
+
+                case "foughtinbattle":
+                    result = EvaluateFoughtInBattle(condition, factsByRole, context);
+                    break;
+
+                case "woundedinbattle":
+                    result = EvaluateWoundedInBattle(condition, factsByRole, context);
+                    break;
+
+                case "battlewon":
+                    result = EvaluateBattleWon(condition, context);
+                    break;
+
                 default:
                     result = new ConditionEvaluationResult
                     {
@@ -145,6 +169,25 @@ namespace VividWorld.Core.Situations
 
                 case "knowseventabout":
                     return $"{type}({condition.Role ?? "role"}->{condition.About ?? "about"})";
+
+                case "partyroleholder":
+                    return $"{type}({condition.Role ?? "role"})";
+
+                case "teachableskill":
+                    return $"{type}({condition.Teacher ?? "teacher"}->{condition.Learner ?? "learner"})";
+
+                case "skillbelow":
+                    return $"{type}({condition.A ?? "a"}<{condition.B ?? "b"}.{condition.Skill ?? "skill"})";
+
+                case "foughtinbattle":
+                    string foughtRoles = condition.Roles != null ? string.Join(",", condition.Roles) : string.Empty;
+                    return $"{type}({foughtRoles})";
+
+                case "woundedinbattle":
+                    return $"{type}({condition.Role ?? "role"})";
+
+                case "battlewon":
+                    return type;
 
                 default:
                     return type;
@@ -748,6 +791,162 @@ namespace VividWorld.Core.Situations
             {
                 Ok = remembers,
                 Detail = detail
+            };
+        }
+
+        private static ConditionEvaluationResult EvaluatePartyRoleHolder(
+            SituationConditionDef cond,
+            IReadOnlyDictionary<string, SituationRoleFacts> factsByRole,
+            SituationWorldContext? context)
+        {
+            string role = cond.Role ?? "role";
+            if (!factsByRole.TryGetValue(role, out var facts) || string.IsNullOrEmpty(facts.HeroId))
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = $"role '{role}' unbound" };
+            }
+
+            if (context?.IsPartyRoleHolder == null)
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = "missing context: party role lookup unavailable" };
+            }
+
+            bool ok = context.IsPartyRoleHolder(facts.HeroId);
+            return new ConditionEvaluationResult
+            {
+                Ok = ok,
+                Detail = ok ? $"partyRoleHolder({role}) ok" : $"partyRoleHolder({role}) failed (hero {facts.HeroId} does not hold a party role)"
+            };
+        }
+
+        private static ConditionEvaluationResult EvaluateTeachableSkill(
+            SituationConditionDef cond,
+            IReadOnlyDictionary<string, SituationRoleFacts> factsByRole,
+            SituationWorldContext? context)
+        {
+            string teacherRole = cond.Teacher ?? "teacher";
+            string learnerRole = cond.Learner ?? "learner";
+
+            if (!factsByRole.TryGetValue(teacherRole, out var fTeacher) || string.IsNullOrEmpty(fTeacher.HeroId))
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = $"role '{teacherRole}' unbound" };
+            }
+            if (!factsByRole.TryGetValue(learnerRole, out var fLearner) || string.IsNullOrEmpty(fLearner.HeroId))
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = $"role '{learnerRole}' unbound" };
+            }
+
+            if (context?.HasTeachableSkill == null)
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = "missing context: teachable skill lookup unavailable" };
+            }
+
+            bool ok = context.HasTeachableSkill(fTeacher.HeroId, fLearner.HeroId);
+            return new ConditionEvaluationResult
+            {
+                Ok = ok,
+                Detail = ok ? $"teachableSkill({teacherRole}->{learnerRole}) ok" : $"teachableSkill({teacherRole}->{learnerRole}) failed"
+            };
+        }
+
+        private static ConditionEvaluationResult EvaluateSkillBelow(
+            SituationConditionDef cond,
+            IReadOnlyDictionary<string, SituationRoleFacts> factsByRole,
+            SituationWorldContext? context)
+        {
+            string aRole = cond.A ?? "a";
+            string bRole = cond.B ?? "b";
+            string skill = cond.Skill ?? string.Empty;
+
+            if (!factsByRole.TryGetValue(aRole, out var fA) || string.IsNullOrEmpty(fA.HeroId))
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = $"role '{aRole}' unbound" };
+            }
+            if (!factsByRole.TryGetValue(bRole, out var fB) || string.IsNullOrEmpty(fB.HeroId))
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = $"role '{bRole}' unbound" };
+            }
+
+            if (context?.IsSkillBelow == null)
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = "missing context: skill comparison unavailable" };
+            }
+
+            bool ok = context.IsSkillBelow(fA.HeroId, fB.HeroId, skill);
+            return new ConditionEvaluationResult
+            {
+                Ok = ok,
+                Detail = ok ? $"skillBelow({aRole}<{bRole}.{skill}) ok" : $"skillBelow({aRole}<{bRole}.{skill}) failed"
+            };
+        }
+
+        private static ConditionEvaluationResult EvaluateFoughtInBattle(
+            SituationConditionDef cond,
+            IReadOnlyDictionary<string, SituationRoleFacts> factsByRole,
+            SituationWorldContext? context)
+        {
+            if (cond.Roles == null || cond.Roles.Count == 0)
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = "foughtInBattle requires roles" };
+            }
+
+            if (context?.FoughtInBattle == null)
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = "missing context: battle participants lookup unavailable" };
+            }
+
+            foreach (var r in cond.Roles)
+            {
+                if (!factsByRole.TryGetValue(r, out var f) || string.IsNullOrEmpty(f.HeroId))
+                {
+                    return new ConditionEvaluationResult { Ok = false, Detail = $"role '{r}' unbound" };
+                }
+                if (!context.FoughtInBattle(f.HeroId))
+                {
+                    return new ConditionEvaluationResult { Ok = false, Detail = $"foughtInBattle failed: {r} ({f.HeroId}) did not fight in battle" };
+                }
+            }
+
+            return new ConditionEvaluationResult { Ok = true, Detail = "foughtInBattle ok" };
+        }
+
+        private static ConditionEvaluationResult EvaluateWoundedInBattle(
+            SituationConditionDef cond,
+            IReadOnlyDictionary<string, SituationRoleFacts> factsByRole,
+            SituationWorldContext? context)
+        {
+            string role = cond.Role ?? "role";
+            if (!factsByRole.TryGetValue(role, out var f) || string.IsNullOrEmpty(f.HeroId))
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = $"role '{role}' unbound" };
+            }
+
+            if (context?.WoundedInBattle == null)
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = "missing context: battle wounded lookup unavailable" };
+            }
+
+            bool ok = context.WoundedInBattle(f.HeroId);
+            return new ConditionEvaluationResult
+            {
+                Ok = ok,
+                Detail = ok ? $"woundedInBattle({role}) ok" : $"woundedInBattle({role}) failed: {role} ({f.HeroId}) was not wounded in battle"
+            };
+        }
+
+        private static ConditionEvaluationResult EvaluateBattleWon(
+            SituationConditionDef cond,
+            SituationWorldContext? context)
+        {
+            if (context?.BattleWon == null)
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = "missing context: battle won lookup unavailable" };
+            }
+
+            bool ok = context.BattleWon();
+            return new ConditionEvaluationResult
+            {
+                Ok = ok,
+                Detail = ok ? "battleWon ok" : "battleWon failed (battle was not won by player side)"
             };
         }
 

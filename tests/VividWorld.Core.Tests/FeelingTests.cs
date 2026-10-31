@@ -864,7 +864,7 @@ namespace VividWorld.Core.Tests
                 }
                 Assert.All(template.Feelings!.Keys, k => Assert.True(template.Roles.ContainsKey(k), $"{template.Type}: feelings names undeclared role '{k}'"));
             }
-            Assert.Equal(56, seen);
+            Assert.Equal(76, seen);
         }
 
         [Theory]

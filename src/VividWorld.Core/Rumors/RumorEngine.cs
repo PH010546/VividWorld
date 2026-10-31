@@ -66,6 +66,9 @@ namespace VividWorld.Core.Rumors
         public long CampaignSeed => _campaignSeed;
         public Func<string, VividWorld.Core.Catalog.EventTemplate?>? TemplateProvider => _getTemplate;
 
+        /// <summary>回傳某個情境代號是不是 noSpread 的查詢；null 表示沒有情境目錄，講述者輪不排除任何情境。</summary>
+        public Func<string, bool>? IsNoSpreadSituation { get; set; }
+
         public int MaxHopFor(WorldEvent evt)
         {
             if (evt == null) return 0;
@@ -145,7 +148,7 @@ namespace VividWorld.Core.Rumors
             int maxHop = MaxHopFor(evt);
 
             var candidates = evt.KnownBy
-                .Where(k => TellerEligibility.Check(evt, k.HeroId, day, maxHop, _playerHeroId, _config, _traits, _getTemplate) == TellReason.Ok)
+                .Where(k => TellerEligibility.Check(evt, k.HeroId, day, maxHop, _playerHeroId, _config, _traits, _getTemplate, IsNoSpreadSituation, out _) == TellReason.Ok)
                 .ToList();
 
             if (candidates.Count == 0)
@@ -174,7 +177,7 @@ namespace VividWorld.Core.Rumors
                 {
                     if (evt == null) continue;
                     int maxHop = MaxHopFor(evt);
-                    var reason = TellerEligibility.Check(evt, tellerHeroId, day, maxHop, _playerHeroId, _config, _traits, _getTemplate, out string? detail);
+                    var reason = TellerEligibility.Check(evt, tellerHeroId, day, maxHop, _playerHeroId, _config, _traits, _getTemplate, IsNoSpreadSituation, out string? detail);
                     if (reason != TellReason.Ok)
                     {
                         exclusions.Add(new TopicExclusion(evt.EventId, reason, detail));
@@ -227,7 +230,7 @@ namespace VividWorld.Core.Rumors
             }
 
             int maxHop = MaxHopFor(evt);
-            var reason = TellerEligibility.Check(evt, tellerHeroId, day, maxHop, _playerHeroId, _config, _traits, _getTemplate);
+            var reason = TellerEligibility.Check(evt, tellerHeroId, day, maxHop, _playerHeroId, _config, _traits, _getTemplate, IsNoSpreadSituation, out _);
             if (reason != TellReason.Ok)
             {
                 return PropagationOutcome.Nothing;

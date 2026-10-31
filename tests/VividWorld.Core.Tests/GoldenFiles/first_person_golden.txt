@@ -1376,3 +1376,555 @@ CNT: 在SETTLEMENT當眾。
 EN:  And said they had no idea where the talk had come from.
 CNT: 並說不知道這話是從哪裡傳出來的。
 
+[wanderer_battle_credit_yielded | claimant | who]
+EN:  RIVAL yielded the battle credit to me.
+CNT: RIVAL把戰功讓給了我。
+
+[wanderer_battle_credit_yielded | claimant | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_battle_credit_yielded | rival | who]
+EN:  I yielded the battle credit to CLAIMANT.
+CNT: 我把戰功讓給了CLAIMANT。
+
+[wanderer_battle_credit_yielded | rival | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_battle_credit_disputed | claimant | who]
+EN:  I and RIVAL argued bitterly over who struck down the enemy leader.
+CNT: 我和RIVAL為了誰先砍倒對方帶頭的吵得不可開交。
+
+[wanderer_battle_credit_disputed | claimant | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_battle_credit_disputed | rival | who]
+EN:  CLAIMANT and me argued bitterly over who struck down the enemy leader.
+CNT: CLAIMANT和我為了誰先砍倒對方帶頭的吵得不可開交。
+
+[wanderer_battle_credit_disputed | rival | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_battle_credit_to_claimant | claimant | who]
+EN:  EMPLOYER ruled the credit belonged to me, not RIVAL.
+CNT: EMPLOYER判定戰功是我的，不是RIVAL的。
+
+[wanderer_battle_credit_to_claimant | claimant | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_battle_credit_to_claimant | rival | who]
+EN:  EMPLOYER ruled the credit belonged to CLAIMANT, not me.
+CNT: EMPLOYER判定戰功是CLAIMANT的，不是我的。
+
+[wanderer_battle_credit_to_claimant | rival | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_battle_credit_to_claimant | employer | who]
+EN:  I ruled the credit belonged to CLAIMANT, not RIVAL.
+CNT: 我判定戰功是CLAIMANT的，不是RIVAL的。
+
+[wanderer_battle_credit_to_claimant | employer | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_battle_credit_to_rival | claimant | who]
+EN:  EMPLOYER ruled the credit belonged to RIVAL, not me.
+CNT: EMPLOYER判定戰功是RIVAL的，不是我的。
+
+[wanderer_battle_credit_to_rival | claimant | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_battle_credit_to_rival | rival | who]
+EN:  EMPLOYER ruled the credit belonged to me, not CLAIMANT.
+CNT: EMPLOYER判定戰功是我的，不是CLAIMANT的。
+
+[wanderer_battle_credit_to_rival | rival | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_battle_credit_to_rival | employer | who]
+EN:  I ruled the credit belonged to RIVAL, not CLAIMANT.
+CNT: 我判定戰功是RIVAL的，不是CLAIMANT的。
+
+[wanderer_battle_credit_to_rival | employer | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_battle_credit_both | claimant | who]
+EN:  EMPLOYER praised both me and RIVAL for their valor.
+CNT: EMPLOYER誇獎我和RIVAL在陣上的勇猛。
+
+[wanderer_battle_credit_both | claimant | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_battle_credit_both | rival | who]
+EN:  EMPLOYER praised both CLAIMANT and me for their valor.
+CNT: EMPLOYER誇獎CLAIMANT和我在陣上的勇猛。
+
+[wanderer_battle_credit_both | rival | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_battle_credit_both | employer | who]
+EN:  I praised both CLAIMANT and RIVAL for their valor.
+CNT: 我誇獎CLAIMANT和RIVAL在陣上的勇猛。
+
+[wanderer_battle_credit_both | employer | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_battle_credit_rebuked | claimant | who]
+EN:  EMPLOYER rebuked both me and RIVAL for squabbling over the credit.
+CNT: EMPLOYER把我和RIVAL都斥責了一頓，說他們為了一點功勞爭個不停。
+
+[wanderer_battle_credit_rebuked | claimant | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_battle_credit_rebuked | rival | who]
+EN:  EMPLOYER rebuked both CLAIMANT and me for squabbling over the credit.
+CNT: EMPLOYER把CLAIMANT和我都斥責了一頓，說他們為了一點功勞爭個不停。
+
+[wanderer_battle_credit_rebuked | rival | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_battle_credit_rebuked | employer | who]
+EN:  I rebuked both CLAIMANT and RIVAL for squabbling over the credit.
+CNT: 我把CLAIMANT和RIVAL都斥責了一頓，說他們為了一點功勞爭個不停。
+
+[wanderer_battle_credit_rebuked | employer | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_battle_rescued | rescuer | who]
+EN:  I dragged the wounded RESCUED out of the fight.
+CNT: 我把受傷的RESCUED從亂陣裡拖了出來。
+
+[wanderer_battle_rescued | rescuer | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_battle_rescued | rescued | who]
+EN:  RESCUER dragged the wounded me out of the fight.
+CNT: RESCUER把受傷的我從亂陣裡拖了出來。
+
+[wanderer_battle_rescued | rescued | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_party_role_backed_down | incumbent | who]
+EN:  CHALLENGER gave up challenging me for the post.
+CNT: CHALLENGER放棄了跟我爭這個位子。
+
+[wanderer_party_role_backed_down | incumbent | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_party_role_backed_down | incumbent | role]
+EN:  Over the post of ROLE_ID.
+CNT: 爭ROLE_ID的位子。
+
+[wanderer_party_role_backed_down | challenger | who]
+EN:  I gave up challenging INCUMBENT for the post.
+CNT: 我放棄了跟INCUMBENT爭這個位子。
+
+[wanderer_party_role_backed_down | challenger | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_party_role_backed_down | challenger | role]
+EN:  Over the post of ROLE_ID.
+CNT: 爭ROLE_ID的位子。
+
+[wanderer_party_role_bad_blood | incumbent | who]
+EN:  CHALLENGER and me fell out bitterly over the post.
+CNT: CHALLENGER和我為了一個位子鬧得很僵。
+
+[wanderer_party_role_bad_blood | incumbent | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_party_role_bad_blood | incumbent | role]
+EN:  Over the post of ROLE_ID.
+CNT: 為了ROLE_ID的位子。
+
+[wanderer_party_role_bad_blood | challenger | who]
+EN:  I and INCUMBENT fell out bitterly over the post.
+CNT: 我和INCUMBENT為了一個位子鬧得很僵。
+
+[wanderer_party_role_bad_blood | challenger | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_party_role_bad_blood | challenger | role]
+EN:  Over the post of ROLE_ID.
+CNT: 為了ROLE_ID的位子。
+
+[wanderer_party_role_keep_incumbent | incumbent | who]
+EN:  EMPLOYER kept me in the post despite CHALLENGER's ambition.
+CNT: EMPLOYER仍讓我留任，不理會CHALLENGER的野心。
+
+[wanderer_party_role_keep_incumbent | incumbent | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_party_role_keep_incumbent | incumbent | role]
+EN:  As ROLE_ID.
+CNT: 繼續當ROLE_ID。
+
+[wanderer_party_role_keep_incumbent | challenger | who]
+EN:  EMPLOYER kept INCUMBENT in the post despite my ambition.
+CNT: EMPLOYER仍讓INCUMBENT留任，不理會我的野心。
+
+[wanderer_party_role_keep_incumbent | challenger | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_party_role_keep_incumbent | challenger | role]
+EN:  As ROLE_ID.
+CNT: 繼續當ROLE_ID。
+
+[wanderer_party_role_keep_incumbent | employer | who]
+EN:  I kept INCUMBENT in the post despite CHALLENGER's ambition.
+CNT: 我仍讓INCUMBENT留任，不理會CHALLENGER的野心。
+
+[wanderer_party_role_keep_incumbent | employer | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_party_role_keep_incumbent | employer | role]
+EN:  As ROLE_ID.
+CNT: 繼續當ROLE_ID。
+
+[wanderer_party_role_swapped | incumbent | who]
+EN:  EMPLOYER replaced me with CHALLENGER.
+CNT: EMPLOYER把我換成了CHALLENGER。
+
+[wanderer_party_role_swapped | incumbent | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_party_role_swapped | incumbent | role]
+EN:  As the new ROLE_ID.
+CNT: 換成新的ROLE_ID。
+
+[wanderer_party_role_swapped | challenger | who]
+EN:  EMPLOYER replaced INCUMBENT with me.
+CNT: EMPLOYER把INCUMBENT換成了我。
+
+[wanderer_party_role_swapped | challenger | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_party_role_swapped | challenger | role]
+EN:  As the new ROLE_ID.
+CNT: 換成新的ROLE_ID。
+
+[wanderer_party_role_swapped | employer | who]
+EN:  I replaced INCUMBENT with CHALLENGER.
+CNT: 我把INCUMBENT換成了CHALLENGER。
+
+[wanderer_party_role_swapped | employer | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_party_role_swapped | employer | role]
+EN:  As the new ROLE_ID.
+CNT: 換成新的ROLE_ID。
+
+[wanderer_party_role_contested | incumbent | who]
+EN:  EMPLOYER had me and CHALLENGER contest for the post.
+CNT: EMPLOYER讓我和CHALLENGER比一場，爭這個位子。
+
+[wanderer_party_role_contested | incumbent | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_party_role_contested | incumbent | role]
+EN:  For the post of ROLE_ID.
+CNT: 爭ROLE_ID的位子。
+
+[wanderer_party_role_contested | incumbent | winner]
+EN:  And WINNER won the trial.
+CNT: 最後是WINNER贏了。
+
+[wanderer_party_role_contested | challenger | who]
+EN:  EMPLOYER had INCUMBENT and me contest for the post.
+CNT: EMPLOYER讓INCUMBENT和我比一場，爭這個位子。
+
+[wanderer_party_role_contested | challenger | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_party_role_contested | challenger | role]
+EN:  For the post of ROLE_ID.
+CNT: 爭ROLE_ID的位子。
+
+[wanderer_party_role_contested | challenger | winner]
+EN:  And WINNER won the trial.
+CNT: 最後是WINNER贏了。
+
+[wanderer_party_role_contested | employer | who]
+EN:  I had INCUMBENT and CHALLENGER contest for the post.
+CNT: 我讓INCUMBENT和CHALLENGER比一場，爭這個位子。
+
+[wanderer_party_role_contested | employer | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_party_role_contested | employer | role]
+EN:  For the post of ROLE_ID.
+CNT: 爭ROLE_ID的位子。
+
+[wanderer_party_role_contested | employer | winner]
+EN:  And WINNER won the trial.
+CNT: 最後是WINNER贏了。
+
+[wanderer_campfire_jab_laughed_off | mocker | who]
+EN:  I teased MOCKED by the campfire and MOCKED laughed it off.
+CNT: 我在營火邊取笑MOCKED，MOCKED一笑置之。
+
+[wanderer_campfire_jab_laughed_off | mocker | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_campfire_jab_laughed_off | mocker | culture]
+EN:  Making jokes about TOPIC, SAYING.
+CNT: 拿TOPIC開玩笑，SAYING。
+
+[wanderer_campfire_jab_laughed_off | mocked | who]
+EN:  MOCKER teased me by the campfire and me laughed it off.
+CNT: MOCKER在營火邊取笑我，我一笑置之。
+
+[wanderer_campfire_jab_laughed_off | mocked | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_campfire_jab_laughed_off | mocked | culture]
+EN:  Making jokes about TOPIC, SAYING.
+CNT: 拿TOPIC開玩笑，SAYING。
+
+[wanderer_campfire_jab_brawled | mocker | who]
+EN:  I mocked MOCKED around the campfire until blows were exchanged.
+CNT: 我在營火邊挖苦MOCKED，最後動了手。
+
+[wanderer_campfire_jab_brawled | mocker | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_campfire_jab_brawled | mocker | culture]
+EN:  Making jokes about TOPIC, SAYING.
+CNT: 拿TOPIC開玩笑，SAYING。
+
+[wanderer_campfire_jab_brawled | mocked | who]
+EN:  MOCKER mocked me around the campfire until blows were exchanged.
+CNT: MOCKER在營火邊挖苦我，最後動了手。
+
+[wanderer_campfire_jab_brawled | mocked | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_campfire_jab_brawled | mocked | culture]
+EN:  Making jokes about TOPIC, SAYING.
+CNT: 拿TOPIC開玩笑，SAYING。
+
+[wanderer_campfire_jab_cold_shoulder | mocker | who]
+EN:  MOCKED gave me the cold shoulder after a biting taunt.
+CNT: 我拿話刺了MOCKED一句，MOCKED之後就對我冷眼相待。
+
+[wanderer_campfire_jab_cold_shoulder | mocker | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_campfire_jab_cold_shoulder | mocker | culture]
+EN:  Making jokes about TOPIC, SAYING.
+CNT: 拿TOPIC開玩笑，SAYING。
+
+[wanderer_campfire_jab_cold_shoulder | mocked | who]
+EN:  I gave MOCKER the cold shoulder after a biting taunt.
+CNT: MOCKER拿話刺了我一句，我之後就對MOCKER冷眼相待。
+
+[wanderer_campfire_jab_cold_shoulder | mocked | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_campfire_jab_cold_shoulder | mocked | culture]
+EN:  Making jokes about TOPIC, SAYING.
+CNT: 拿TOPIC開玩笑，SAYING。
+
+[wanderer_campfire_jab_punished | mocker | who]
+EN:  EMPLOYER disciplined me for the taunt against MOCKED.
+CNT: EMPLOYER處罰了我，因為他挑頭笑話MOCKED。
+
+[wanderer_campfire_jab_punished | mocker | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_campfire_jab_punished | mocker | culture]
+EN:  Making jokes about TOPIC, SAYING.
+CNT: 拿TOPIC開玩笑，SAYING。
+
+[wanderer_campfire_jab_punished | mocked | who]
+EN:  EMPLOYER disciplined MOCKER for the taunt against me.
+CNT: EMPLOYER處罰了MOCKER，因為他挑頭笑話我。
+
+[wanderer_campfire_jab_punished | mocked | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_campfire_jab_punished | mocked | culture]
+EN:  Making jokes about TOPIC, SAYING.
+CNT: 拿TOPIC開玩笑，SAYING。
+
+[wanderer_campfire_jab_punished | employer | who]
+EN:  I disciplined MOCKER for the taunt against MOCKED.
+CNT: 我處罰了MOCKER，因為他挑頭笑話MOCKED。
+
+[wanderer_campfire_jab_punished | employer | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_campfire_jab_punished | employer | culture]
+EN:  Making jokes about TOPIC, SAYING.
+CNT: 拿TOPIC開玩笑，SAYING。
+
+[wanderer_campfire_jab_both_rebuked | mocker | who]
+EN:  EMPLOYER reprimanded both me and MOCKED for quarreling at the fire.
+CNT: EMPLOYER把我和MOCKED都斥責了一頓，說他們在火堆邊吵個沒完。
+
+[wanderer_campfire_jab_both_rebuked | mocker | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_campfire_jab_both_rebuked | mocker | culture]
+EN:  Making jokes about TOPIC, SAYING.
+CNT: 拿TOPIC開玩笑，SAYING。
+
+[wanderer_campfire_jab_both_rebuked | mocked | who]
+EN:  EMPLOYER reprimanded both MOCKER and me for quarreling at the fire.
+CNT: EMPLOYER把MOCKER和我都斥責了一頓，說他們在火堆邊吵個沒完。
+
+[wanderer_campfire_jab_both_rebuked | mocked | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_campfire_jab_both_rebuked | mocked | culture]
+EN:  Making jokes about TOPIC, SAYING.
+CNT: 拿TOPIC開玩笑，SAYING。
+
+[wanderer_campfire_jab_both_rebuked | employer | who]
+EN:  I reprimanded both MOCKER and MOCKED for quarreling at the fire.
+CNT: 我把MOCKER和MOCKED都斥責了一頓，說他們在火堆邊吵個沒完。
+
+[wanderer_campfire_jab_both_rebuked | employer | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_campfire_jab_both_rebuked | employer | culture]
+EN:  Making jokes about TOPIC, SAYING.
+CNT: 拿TOPIC開玩笑，SAYING。
+
+[wanderer_teaching_completed | teacher | who]
+EN:  I took time to teach LEARNER the craft.
+CNT: 我抽空教LEARNER本事。
+
+[wanderer_teaching_completed | teacher | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_teaching_completed | teacher | skill]
+EN:  Passing on mastery of SKILL_NAME.
+CNT: 把SKILL_NAME的功夫傳了下去。
+
+[wanderer_teaching_completed | learner | who]
+EN:  TEACHER took time to teach me the craft.
+CNT: TEACHER抽空教我本事。
+
+[wanderer_teaching_completed | learner | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_teaching_completed | learner | skill]
+EN:  Passing on mastery of SKILL_NAME.
+CNT: 把SKILL_NAME的功夫傳了下去。
+
+[wanderer_teaching_encouraged | teacher | who]
+EN:  EMPLOYER encouraged me and LEARNER to keep training.
+CNT: EMPLOYER鼓勵我和LEARNER繼續練下去。
+
+[wanderer_teaching_encouraged | teacher | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_teaching_encouraged | teacher | skill]
+EN:  In the art of SKILL_NAME.
+CNT: 練SKILL_NAME。
+
+[wanderer_teaching_encouraged | learner | who]
+EN:  EMPLOYER encouraged TEACHER and me to keep training.
+CNT: EMPLOYER鼓勵TEACHER和我繼續練下去。
+
+[wanderer_teaching_encouraged | learner | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_teaching_encouraged | learner | skill]
+EN:  In the art of SKILL_NAME.
+CNT: 練SKILL_NAME。
+
+[wanderer_teaching_encouraged | employer | who]
+EN:  I encouraged TEACHER and LEARNER to keep training.
+CNT: 我鼓勵TEACHER和LEARNER繼續練下去。
+
+[wanderer_teaching_encouraged | employer | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_teaching_encouraged | employer | skill]
+EN:  In the art of SKILL_NAME.
+CNT: 練SKILL_NAME。
+
+[wanderer_teaching_joined | teacher | who]
+EN:  EMPLOYER joined LEARNER in learning from me.
+CNT: EMPLOYER跟LEARNER一起跟我學本事。
+
+[wanderer_teaching_joined | teacher | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_teaching_joined | teacher | skill]
+EN:  Studying SKILL_NAME together.
+CNT: 一起學SKILL_NAME。
+
+[wanderer_teaching_joined | learner | who]
+EN:  EMPLOYER joined me in learning from TEACHER.
+CNT: EMPLOYER跟我一起跟TEACHER學本事。
+
+[wanderer_teaching_joined | learner | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_teaching_joined | learner | skill]
+EN:  Studying SKILL_NAME together.
+CNT: 一起學SKILL_NAME。
+
+[wanderer_teaching_joined | employer | who]
+EN:  I joined LEARNER in learning from TEACHER.
+CNT: 我跟LEARNER一起跟TEACHER學本事。
+
+[wanderer_teaching_joined | employer | where]
+EN:  In SETTLEMENT.
+CNT: 在SETTLEMENT。
+
+[wanderer_teaching_joined | employer | skill]
+EN:  Studying SKILL_NAME together.
+CNT: 一起學SKILL_NAME。
+

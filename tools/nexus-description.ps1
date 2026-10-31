@@ -11,7 +11,8 @@
       4. 再做一次第 2 步，比對
 
     Nexus 讀回的介紹頁把換行存成 <br />、清單項目補上 [/*]，比對前換回來、去掉每行頭尾空白。
-    API 金鑰從 -ApiKeyFile 讀，不接受命令列參數、不印出來。
+    API 金鑰：有環境變數 NEXUS_API_KEY 就用它（GitHub Actions 從 Secrets 給），否則從 -ApiKeyFile 讀；
+    不接受命令列參數、不印出來。
 
     用法：
         .\tools\nexus-description.ps1          # 只比對
@@ -36,8 +37,13 @@ if ($Send) {
 
 $bbcode = [IO.File]::ReadAllText((Join-Path $repoRoot 'docs\nexus-description.bbcode'), [Text.Encoding]::UTF8).TrimStart([char]0xFEFF)
 
-if (-not (Test-Path $ApiKeyFile)) { Write-Error "找不到 API 金鑰檔 $ApiKeyFile" }
-$apiKey = ([IO.File]::ReadAllText($ApiKeyFile)).Trim()
+# GitHub Actions 從 Secrets 給環境變數 NEXUS_API_KEY；本機讀金鑰檔
+if ($env:NEXUS_API_KEY) {
+    $apiKey = $env:NEXUS_API_KEY.Trim()
+} else {
+    if (-not (Test-Path $ApiKeyFile)) { Write-Error "找不到 API 金鑰檔 $ApiKeyFile" }
+    $apiKey = ([IO.File]::ReadAllText($ApiKeyFile)).Trim()
+}
 $headers = @{ apikey = $apiKey; Accept = 'application/json' }
 
 function Normalize([string]$text) {

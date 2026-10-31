@@ -146,6 +146,11 @@ namespace VividWorld.Mcm
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Situations}Situations", GroupOrder = 5)]
         public bool PlayerPresenceEnabled { get; set; } = true;
 
+        [SettingPropertyBool("{=VividWorld_MCM_WandererEventsEnabled}Companion events", Order = 5, RequireRestart = false,
+            HintText = "{=VividWorld_MCM_WandererEventsEnabledHint}Now and then, after a battle or around camp, two of your companions quarrel, help each other or teach each other something, and you may step in. Turn off to stop these events, their windows and the changes they make.")]
+        [SettingPropertyGroup("{=VividWorld_MCM_Group_Situations}Situations", GroupOrder = 5)]
+        public bool WandererEventsEnabled { get; set; } = true;
+
         // ── Group 6: Event Sources ──────────────────────────────────────────────────
 
         [SettingPropertyBool("{=VividWorld_MCM_SourceHeroKilled}Hero deaths", Order = 0, RequireRestart = false,

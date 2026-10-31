@@ -7,7 +7,7 @@ using VividWorld.Core.Grudges;
 
 namespace VividWorld.Core.Situations
 {
-    public static class SituationCatalogLoader
+    public static partial class SituationCatalogLoader
     {
         private static readonly HashSet<string> ValidConditionTypes = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -23,12 +23,24 @@ namespace VividWorld.Core.Situations
             "hasGrudge",
             "chance",
             "knowsEventAbout",
-            "isLord"
+            "isLord",
+            "partyRoleHolder",
+            "teachableSkill",
+            "skillBelow",
+            "foughtInBattle",
+            "woundedInBattle",
+            "battleWon"
         };
 
         private static readonly HashSet<string> ValidComparisonOps = new(StringComparer.Ordinal)
         {
             ">", ">=", "<", "<=", "==", "!="
+        };
+
+        /// <summary>事件的 bind 可以綁到、要在執行期才填的值（情境的 "@" 名）。流浪者事件用到的都列在這裡，其餘的仍當成角色名檢查。</summary>
+        private static readonly HashSet<string> EventBindRuntimeNames = new(StringComparer.Ordinal)
+        {
+            "@settlement", "@role", "@skill", "@winner", "@jab_topic", "@jab_saying"
         };
 
         private static readonly HashSet<string> ValidSettlementKinds = new(StringComparer.OrdinalIgnoreCase)
@@ -44,28 +56,29 @@ namespace VividWorld.Core.Situations
         private static readonly HashSet<string> KnownSituationKeys = new(StringComparer.OrdinalIgnoreCase)
         {
             "id", "trigger", "decider", "minBranchWeight", "roles", "conditions", "branches", "weight", "devOnly",
-            "maxPerDay", "eventTypes", "bindFromEvent", "enabledBy", "quotaGroup", "player"
+            "maxPerDay", "eventTypes", "bindFromEvent", "enabledBy", "quotaGroup", "player", "noSpread"
         };
 
         private static readonly HashSet<string> KnownRoleKeys = new(StringComparer.OrdinalIgnoreCase)
         {
-            "derived", "optional", "allowDead", "grudgeLine", "nativeGrudgeLine", "anyTraitAtMost"
+            "derived", "optional", "allowDead", "grudgeLine", "nativeGrudgeLine", "anyTraitAtMost", "player"
         };
 
         private static readonly HashSet<string> KnownConditionKeys = new(StringComparer.OrdinalIgnoreCase)
         {
             "type", "roles", "kinds", "a", "b", "role", "value", "op", "days",
-            "trait", "line", "seedRoles", "about", "eventTypes"
+            "trait", "line", "seedRoles", "about", "eventTypes", "teacher", "learner", "skill"
         };
 
         private static readonly HashSet<string> KnownBranchKeys = new(StringComparer.OrdinalIgnoreCase)
         {
-            "id", "base", "traits", "preconditions", "events", "grudges", "madeUpTalk", "grudgeWeight", "playerEffects"
+            "id", "base", "traits", "preconditions", "events", "grudges", "madeUpTalk", "grudgeWeight", "playerEffects",
+            "judge", "standAside", "skillXp", "partyRoleChange", "contest"
         };
 
         private static readonly HashSet<string> KnownPlayerKeys = new(StringComparer.OrdinalIgnoreCase)
         {
-            "bystander", "deciderRole", "listenerRole", "skipConditionsWhenPlayer", "influenceOnlySameKingdom"
+            "bystander", "deciderRole", "listenerRole", "skipConditionsWhenPlayer", "influenceOnlySameKingdom", "judge", "judgeRole"
         };
 
         private static readonly HashSet<string> KnownPlayerEffectsKeys = new(StringComparer.OrdinalIgnoreCase)
@@ -241,7 +254,8 @@ namespace VividWorld.Core.Situations
                 string? rawTrigger = triggerProp?.Value?.Value<string>();
                 string trimmedTrigger = rawTrigger?.Trim() ?? string.Empty;
                 if (string.Equals(trimmedTrigger, "direct", StringComparison.Ordinal) ||
-                    string.Equals(trimmedTrigger, "afterEvent", StringComparison.Ordinal))
+                    string.Equals(trimmedTrigger, "afterEvent", StringComparison.Ordinal) ||
+                    IsWandererTrigger(trimmedTrigger))
                 {
                     trigger = trimmedTrigger;
                 }
@@ -254,7 +268,7 @@ namespace VividWorld.Core.Situations
                         Field = "trigger",
                         Code = SituationIssueCode.BadTrigger,
                         IsError = true,
-                        Detail = $"Situation trigger must be 'direct' or 'afterEvent', got '{rawTrigger}'."
+                        Detail = $"Situation trigger must be 'direct', 'afterEvent', 'wandererBattle' or 'wandererDaily', got '{rawTrigger}'."
                     });
                 }
 
@@ -758,6 +772,29 @@ namespace VividWorld.Core.Situations
                     }
                 }
 
+                // 3b. noSpread (optional, default false): events of this situation are not passed on by NPC talk.
+                bool noSpread = false;
+                var noSpreadProp = sitObj.Property("noSpread", StringComparison.OrdinalIgnoreCase);
+                if (noSpreadProp != null && noSpreadProp.Value.Type != JTokenType.Null)
+                {
+                    if (noSpreadProp.Value.Type == JTokenType.Boolean)
+                    {
+                        noSpread = noSpreadProp.Value.Value<bool>();
+                    }
+                    else
+                    {
+                        situationIssues.Add(new SituationIssue
+                        {
+                            SituationIndex = i,
+                            SituationId = situationId,
+                            Field = "noSpread",
+                            Code = SituationIssueCode.InvalidSituationField,
+                            IsError = true,
+                            Detail = "noSpread must be true or false."
+                        });
+                    }
+                }
+
                 // 3c. devOnly (optional, default false)
                 bool devOnly = false;
                 var devOnlyProp = sitObj.Property("devOnly", StringComparison.OrdinalIgnoreCase);
@@ -1015,6 +1052,28 @@ namespace VividWorld.Core.Situations
                             }
                         }
 
+                        if (rProp.Value is JObject playerRoleObj &&
+                            playerRoleObj.Property("player", StringComparison.OrdinalIgnoreCase) is JProperty playerRoleProp &&
+                            playerRoleProp.Value.Type != JTokenType.Null)
+                        {
+                            if (playerRoleProp.Value.Type == JTokenType.Boolean)
+                            {
+                                rDef.PlayerOnly = playerRoleProp.Value.Value<bool>();
+                            }
+                            else
+                            {
+                                situationIssues.Add(new SituationIssue
+                                {
+                                    SituationIndex = i,
+                                    SituationId = situationId,
+                                    Field = $"roles.{roleName}.player",
+                                    Code = SituationIssueCode.InvalidSituationField,
+                                    IsError = true,
+                                    Detail = $"roles.{roleName}.player must be true or false."
+                                });
+                            }
+                        }
+
                         if (!rDef.IsDerived)
                         {
                             nonDerivedCount++;
@@ -1151,6 +1210,33 @@ namespace VividWorld.Core.Situations
                             Detail = $"decider '{decider}' cannot be a derived role in direct situations."
                         });
                     }
+                }
+
+                // 5b. player-only roles: at most one per situation, and never the decider.
+                var playerOnlyRoles = rolesDict.Where(kv => kv.Value.PlayerOnly).Select(kv => kv.Key).ToList();
+                if (playerOnlyRoles.Count > 1)
+                {
+                    situationIssues.Add(new SituationIssue
+                    {
+                        SituationIndex = i,
+                        SituationId = situationId,
+                        Field = "roles",
+                        Code = SituationIssueCode.InvalidSituationField,
+                        IsError = true,
+                        Detail = $"At most one role may be marked player: true; found {playerOnlyRoles.Count}."
+                    });
+                }
+                if (playerOnlyRoles.Count == 1 && string.Equals(playerOnlyRoles[0], decider, StringComparison.OrdinalIgnoreCase))
+                {
+                    situationIssues.Add(new SituationIssue
+                    {
+                        SituationIndex = i,
+                        SituationId = situationId,
+                        Field = "decider",
+                        Code = SituationIssueCode.InvalidSituationField,
+                        IsError = true,
+                        Detail = $"The player-only role '{decider}' cannot be the decider."
+                    });
                 }
 
                 // 6. conditions
@@ -1500,7 +1586,7 @@ namespace VividWorld.Core.Situations
                                                 Detail = $"Binding for placeholder '{phName}' cannot be empty."
                                             });
                                         }
-                                        else if (!string.Equals(val, "@settlement", StringComparison.Ordinal) && !rolesDict.ContainsKey(val))
+                                        else if (!EventBindRuntimeNames.Contains(val) && !rolesDict.ContainsKey(val))
                                         {
                                             situationIssues.Add(new SituationIssue
                                             {
@@ -1611,7 +1697,7 @@ namespace VividWorld.Core.Situations
                                             Detail = "Grudge 'from' is required."
                                         });
                                     }
-                                    else if (!rolesDict.ContainsKey(gFrom))
+                                    else if (!rolesDict.ContainsKey(gFrom) && !AllowsContestOutcomeRef(gFrom, bObj))
                                     {
                                         situationIssues.Add(new SituationIssue
                                         {
@@ -1637,7 +1723,7 @@ namespace VividWorld.Core.Situations
                                             Detail = "Grudge 'to' is required."
                                         });
                                     }
-                                    else if (!rolesDict.ContainsKey(gTo))
+                                    else if (!rolesDict.ContainsKey(gTo) && !AllowsContestOutcomeRef(gTo, bObj))
                                     {
                                         situationIssues.Add(new SituationIssue
                                         {
@@ -1983,6 +2069,9 @@ namespace VividWorld.Core.Situations
                         var playerEffects = ParsePlayerEffects(bObj, i, situationId, bIdx, situationIssues, ref playerEffectsBad);
                         if (playerEffectsBad) anyPlayerEffectsBad = true;
 
+                        ParseBranchWandererFields(bObj, i, situationId, bIdx, trigger, rolesDict, situationIssues,
+                            out bool bJudge, out bool bStandAside, out var bSkillXp, out var bPartyRoleChange, out var bContest);
+
                         branchesList.Add(new SituationBranchDef
                         {
                             Id = bId,
@@ -1993,7 +2082,12 @@ namespace VividWorld.Core.Situations
                             Grudges = grudgesList,
                             MadeUpTalk = madeUpTalk,
                             GrudgeWeight = grudgeWeight,
-                            PlayerEffects = playerEffects
+                            PlayerEffects = playerEffects,
+                            Judge = bJudge,
+                            StandAside = bStandAside,
+                            SkillXp = bSkillXp,
+                            PartyRoleChange = bPartyRoleChange,
+                            Contest = bContest
                         });
                     }
                 }
@@ -2014,6 +2108,8 @@ namespace VividWorld.Core.Situations
                     playerDef = null;
                 }
 
+                ValidateWandererTemplate(i, situationId, trigger, branchesList, playerDef, conditionsList, situationIssues);
+
                 allIssues.AddRange(situationIssues);
 
                 bool hasErrors = situationIssues.Any(iss => iss.IsError);
@@ -2031,6 +2127,7 @@ namespace VividWorld.Core.Situations
                         MinBranchWeight = minBranchWeight,
                         Weight = weight,
                         DevOnly = devOnly,
+                        NoSpread = noSpread,
                         EnabledBy = enabledBy,
                         MaxPerDayRef = maxPerDayRef,
                         MaxPerDay = maxPerDay,
@@ -2140,6 +2237,8 @@ namespace VividWorld.Core.Situations
             def.InfluenceOnlySameKingdom = ReadBool("influenceOnlySameKingdom") ?? false;
             def.DeciderRole = ReadRole("deciderRole");
             def.ListenerRole = ReadRole("listenerRole");
+            def.Judge = ReadBool("judge") ?? false;
+            CheckPlayerJudge(obj, index, situationId, rolesDict, def, issues, ref bad);
 
             if (def.DeciderRole != null && !string.Equals(def.DeciderRole, decider, StringComparison.OrdinalIgnoreCase))
             {
@@ -2185,7 +2284,7 @@ namespace VividWorld.Core.Situations
 
             if (bad) return null;
 
-            if (!def.Bystander && def.DeciderRole == null && def.ListenerRole == null)
+            if (!def.Bystander && def.DeciderRole == null && def.ListenerRole == null && !def.Judge)
             {
                 issues.Add(PlayerWarning(index, situationId, "player", SituationIssueCode.InvalidPlayerBlock,
                     "player opens no role (bystander false, no deciderRole, no listenerRole)."));
@@ -3083,6 +3182,14 @@ namespace VividWorld.Core.Situations
                     }
                     break;
                 }
+                case "partyroleholder":
+                case "teachableskill":
+                case "skillbelow":
+                case "foughtinbattle":
+                case "woundedinbattle":
+                case "battlewon":
+                    ParseWandererCondition(cType.ToLowerInvariant(), cObj, sitIndex, sitId, fieldPrefix, rolesDict, roleIssueCode, condDef, situationIssues);
+                    break;
             }
 
             return condDef;

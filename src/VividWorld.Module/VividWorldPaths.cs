@@ -36,6 +36,9 @@ namespace VividWorld
         internal static string ProbesFile(string campaignId) =>
             Path.Combine(CampaignDirectory(campaignId), "probes.json");
 
+        internal static string WandererRolesFile(string campaignId) =>
+            Path.Combine(CampaignDirectory(campaignId), "wanderer_roles.json");
+
         internal static string PlayerHeardFile(string campaignId) =>
             Path.Combine(CampaignDirectory(campaignId), "player_heard.json");
 

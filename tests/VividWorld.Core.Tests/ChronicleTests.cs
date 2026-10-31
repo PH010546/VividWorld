@@ -522,10 +522,10 @@ namespace VividWorld.Core.Tests
             var sitEventsArr = JArray.Parse(File.ReadAllText(sitEventsPath));
 
             Assert.Equal(14, eventsArr.Count);
-            Assert.Equal(42, sitEventsArr.Count);
+            Assert.Equal(62, sitEventsArr.Count);
 
             var all = eventsArr.Concat(sitEventsArr).ToList();
-            Assert.Equal(56, all.Count);
+            Assert.Equal(76, all.Count);
 
             foreach (var token in all)
             {
@@ -558,7 +558,7 @@ namespace VividWorld.Core.Tests
             var sitEventsArr = JArray.Parse(File.ReadAllText(sitEventsPath));
 
             var types = eventsArr.Concat(sitEventsArr).Select(t => (string)t["type"]!).ToList();
-            Assert.Equal(56, types.Count);
+            Assert.Equal(76, types.Count);
 
             foreach (var type in types)
             {

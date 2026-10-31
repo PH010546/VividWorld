@@ -19,6 +19,7 @@ using VividWorld.Core.Grudges;
 using VividWorld.Core.Persistence;
 using VividWorld.Core.Presentation;
 using VividWorld.Core.Rumors;
+using VividWorld.Core.Situations;
 using VividWorld.Core.Util;
 using VividWorld.Debug;
 using VividWorld.Dialogue;
@@ -39,6 +40,9 @@ namespace VividWorld.Campaign
         internal WorldEventStore? WorldEventStore => _eventStore;
         internal HeroLookup? HeroLookup => _heroLookup;
         internal PlayerHeardLogStore? PlayerHeardLog { get; private set; }
+
+        /// <summary>流浪者職位交接紀錄（wanderer_roles.json）；OnSessionLaunched 載入，Flush 沖寫。</summary>
+        internal WandererRoleRecordStore? WandererRoles { get; private set; }
         private bool _pendingModeNotice;
         internal bool HasPendingModeNotice => _pendingModeNotice;
         // 空＝這個戰役還沒搬過跟玩家的好感；否則記搬的那一天與結果（Core 的 PersonalRelationSeeding 組與解析）
@@ -73,6 +77,7 @@ namespace VividWorld.Campaign
         private readonly RealEventSourceBehavior? _realEvents;
         private readonly SituationScanBehavior? _situationScan;
         private readonly PlayerPresenceBehavior? _playerPresence;
+        private readonly WandererEventBehavior? _wandererEvents;
 
         internal RumorCampaignBehavior(
             VividWorldConfig config,
@@ -80,7 +85,8 @@ namespace VividWorld.Campaign
             FakeEventProducerBehavior producer,
             RealEventSourceBehavior? realEvents = null,
             SituationScanBehavior? situationScan = null,
-            PlayerPresenceBehavior? playerPresence = null)
+            PlayerPresenceBehavior? playerPresence = null,
+            WandererEventBehavior? wandererEvents = null)
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
@@ -88,6 +94,7 @@ namespace VividWorld.Campaign
             _realEvents = realEvents;
             _situationScan = situationScan;
             _playerPresence = playerPresence;
+            _wandererEvents = wandererEvents;
         }
 
         public override void RegisterEvents()
@@ -249,6 +256,8 @@ namespace VividWorld.Campaign
                     feelingWorld = new GameFeelingWorld(_heroLookup, grudgeIndex);
                     _engine.FeelingWorld = feelingWorld;
                     _engine.Log = ModLogSink.Instance;
+                    // 標了 noSpread 的情境產生的事件，NPC 之間不傳話；查的是目前載入的目錄，重新載入也跟著變
+                    _engine.IsNoSpreadSituation = SituationCatalogStore.IsNoSpread;
                     feelingResolver = new FeelingResolver(_config, FeelingCatalogStore.Catalog, feelingWorld, _traitLookup, EventCatalogStore.TemplateByType, campaignSeed);
 
                     _eventStore = new WorldEventStore(_config, _store, _index, _knownBy, _channel, _traitLookup, playerHeroId, campaignSeed, stamper, grudgeIndex);
@@ -292,6 +301,10 @@ namespace VividWorld.Campaign
                     _launchDay);
                 ModLog.Info(PlayerHeardLogFormatter.FormatLoad(heardLoad.Count, heardLoad.How, heardBackfill));
 
+                WandererRoles = new WandererRoleRecordStore(VividWorldPaths.WandererRolesFile(_campaignId), writer, ModLogSink.Instance);
+                var rolesLoad = WandererRoles.Load();
+                ModLog.Info($"WandererEvents: role records loaded ({rolesLoad.Status}, {WandererRoles.Data.Swaps.Count} swap record(s)).");
+
                 string markerFile = VividWorldPaths.CampaignMarkerFile(_campaignId);
                 if (!writer.Exists(markerFile))
                 {
@@ -312,6 +325,9 @@ namespace VividWorld.Campaign
                     _eventStore.RedeliverPending(_pendingIngestJson);
                     _pendingIngestJson = string.Empty;
                 }
+
+                // 流浪者事件的換回職位抱怨對話（每次開局都掛；開關在行為裡判斷）
+                _wandererEvents?.RegisterComplaintDialogues(starter);
 
                 // §6.1 / §6.2: 開發者工具對話掛載
                 if (_config.Debug.DebugDialogueEnabled)
@@ -374,6 +390,7 @@ namespace VividWorld.Campaign
                     _producer.Initialize(_eventStore, _heroLookup, _traitLookup);
                     _situationScan?.Initialize(_eventStore, _heroLookup, _traitLookup);
                     _playerPresence?.Initialize(_eventStore, _heroLookup, _traitLookup, () => PlayerHeardLog, () => _engine);
+                    _wandererEvents?.Initialize(_eventStore, _heroLookup, _traitLookup, () => PlayerHeardLog, () => _engine, WandererRoles);
                 }
 
                 if (_realEvents != null && _eventStore != null)
@@ -884,6 +901,7 @@ namespace VividWorld.Campaign
                 }
 
                 _dialogs?.SaveListenTally();
+                _wandererEvents?.FlushRoleRecords();
             }
             catch (Exception ex)
             {

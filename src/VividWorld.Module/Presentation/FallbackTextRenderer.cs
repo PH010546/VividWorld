@@ -203,7 +203,8 @@ namespace VividWorld.Presentation
         internal static string RenderRoleTemplate(
             string key,
             string? english,
-            IReadOnlyDictionary<string, string?> boundHeroIds)
+            IReadOnlyDictionary<string, string?> boundHeroIds,
+            IReadOnlyDictionary<string, string>? directTextVars = null)
         {
             string englishTemplate = EnglishStringTableStore.Instance.Get(key) ?? english ?? string.Empty;
             try
@@ -242,22 +243,35 @@ namespace VividWorld.Presentation
                     }
                 }
 
+                if (directTextVars != null)
+                {
+                    foreach (var kv in directTextVars)
+                    {
+                        if (string.IsNullOrEmpty(kv.Key) || kv.Value == null) continue;
+                        t.SetTextVariable(kv.Key.ToUpperInvariant(), kv.Value);
+                    }
+                }
+
                 string result = t.ToString();
                 if (string.IsNullOrWhiteSpace(result))
                 {
                     WarnFixedLineOnce(key, $"Role template '{key}' rendered to empty string - falling back to basic template.");
-                    return FallbackBasic(key, englishTemplate, boundHeroIds);
+                    return FallbackBasic(key, englishTemplate, boundHeroIds, directTextVars);
                 }
                 return result;
             }
             catch (Exception ex)
             {
                 WarnFixedLineOnce(key, $"Role template '{key}' could not be rendered ({ex.GetType().Name}: {ex.Message}) - falling back to basic template.");
-                return FallbackBasic(key, englishTemplate, boundHeroIds);
+                return FallbackBasic(key, englishTemplate, boundHeroIds, directTextVars);
             }
         }
 
-        private static string FallbackBasic(string key, string englishTemplate, IReadOnlyDictionary<string, string?>? boundHeroIds)
+        private static string FallbackBasic(
+            string key,
+            string englishTemplate,
+            IReadOnlyDictionary<string, string?>? boundHeroIds,
+            IReadOnlyDictionary<string, string>? directTextVars = null)
         {
             try
             {
@@ -268,6 +282,14 @@ namespace VividWorld.Presentation
                     {
                         if (string.IsNullOrEmpty(kv.Key) || string.IsNullOrEmpty(kv.Value)) continue;
                         t.SetTextVariable(kv.Key.ToUpperInvariant(), ResolveVar("hero:" + kv.Value, false));
+                    }
+                }
+                if (directTextVars != null)
+                {
+                    foreach (var kv in directTextVars)
+                    {
+                        if (string.IsNullOrEmpty(kv.Key) || kv.Value == null) continue;
+                        t.SetTextVariable(kv.Key.ToUpperInvariant(), kv.Value);
                     }
                 }
                 return t.ToString();

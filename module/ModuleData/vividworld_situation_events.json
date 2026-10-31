@@ -2356,5 +2356,1147 @@
         "fragility": 3
       }
     ]
+  },
+  {
+    "type": "wanderer_battle_credit_yielded",
+    "headline": "A dispute over battle credit was yielded",
+    "origin": "public",
+    "dramaWeight": 2,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "claimant": "{CLAIMANT}",
+      "rival": "{RIVAL}"
+    },
+    "feelings": {
+      "claimant": "cared",
+      "rival": "decent"
+    },
+    "knowingRoles": [
+      "claimant",
+      "rival"
+    ],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WandererBattleCreditYielded_Who",
+        "text": "{RIVAL} yielded the battle credit to {CLAIMANT}",
+        "vars": {
+          "CLAIMANT": "hero:{CLAIMANT}",
+          "RIVAL": "hero:{RIVAL}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WandererBattleCreditYielded_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}",
+          "PRE": "key:VividWorld_Place_In",
+          "POST": "key:VividWorld_Place_None"
+        },
+        "fragility": 2
+      }
+    ]
+  },
+  {
+    "type": "wanderer_battle_credit_disputed",
+    "headline": "A bitter quarrel erupted over battle credit",
+    "origin": "public",
+    "dramaWeight": 3,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "claimant": "{CLAIMANT}",
+      "rival": "{RIVAL}"
+    },
+    "feelings": {
+      "claimant": "brash",
+      "rival": "lost_face"
+    },
+    "knowingRoles": [
+      "claimant",
+      "rival"
+    ],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WandererBattleCreditDisputed_Who",
+        "text": "{CLAIMANT} and {RIVAL} argued bitterly over who struck down the enemy leader",
+        "vars": {
+          "CLAIMANT": "hero:{CLAIMANT}",
+          "RIVAL": "hero:{RIVAL}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WandererBattleCreditDisputed_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}",
+          "PRE": "key:VividWorld_Place_In",
+          "POST": "key:VividWorld_Place_None"
+        },
+        "fragility": 2
+      }
+    ]
+  },
+  {
+    "type": "wanderer_battle_credit_to_claimant",
+    "headline": "Battle credit was granted to the claimant",
+    "origin": "public",
+    "dramaWeight": 2,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "claimant": "{CLAIMANT}",
+      "rival": "{RIVAL}",
+      "employer": "{EMPLOYER}"
+    },
+    "feelings": {
+      "claimant": "cared",
+      "rival": "lost_face",
+      "employer": "decent"
+    },
+    "selfTell": {
+      "employer": "never"
+    },
+    "knowingRoles": [
+      "claimant",
+      "rival",
+      "employer"
+    ],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WandererBattleCreditToClaimant_Who",
+        "text": "{EMPLOYER} ruled the credit belonged to {CLAIMANT}, not {RIVAL}",
+        "vars": {
+          "EMPLOYER": "hero:{EMPLOYER}",
+          "CLAIMANT": "hero:{CLAIMANT}",
+          "RIVAL": "hero:{RIVAL}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WandererBattleCreditToClaimant_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}",
+          "PRE": "key:VividWorld_Place_In",
+          "POST": "key:VividWorld_Place_None"
+        },
+        "fragility": 2
+      }
+    ]
+  },
+  {
+    "type": "wanderer_battle_credit_to_rival",
+    "headline": "Battle credit was granted to the rival",
+    "origin": "public",
+    "dramaWeight": 2,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "claimant": "{CLAIMANT}",
+      "rival": "{RIVAL}",
+      "employer": "{EMPLOYER}"
+    },
+    "feelings": {
+      "claimant": "lost_face",
+      "rival": "cared",
+      "employer": "decent"
+    },
+    "selfTell": {
+      "employer": "never"
+    },
+    "knowingRoles": [
+      "claimant",
+      "rival",
+      "employer"
+    ],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WandererBattleCreditToRival_Who",
+        "text": "{EMPLOYER} ruled the credit belonged to {RIVAL}, not {CLAIMANT}",
+        "vars": {
+          "EMPLOYER": "hero:{EMPLOYER}",
+          "CLAIMANT": "hero:{CLAIMANT}",
+          "RIVAL": "hero:{RIVAL}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WandererBattleCreditToRival_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}",
+          "PRE": "key:VividWorld_Place_In",
+          "POST": "key:VividWorld_Place_None"
+        },
+        "fragility": 2
+      }
+    ]
+  },
+  {
+    "type": "wanderer_battle_credit_both",
+    "headline": "Both warriors were commended for their valor",
+    "origin": "public",
+    "dramaWeight": 1,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "claimant": "{CLAIMANT}",
+      "rival": "{RIVAL}",
+      "employer": "{EMPLOYER}"
+    },
+    "feelings": {
+      "claimant": "cared",
+      "rival": "cared",
+      "employer": "decent"
+    },
+    "selfTell": {
+      "employer": "never"
+    },
+    "knowingRoles": [
+      "claimant",
+      "rival",
+      "employer"
+    ],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WandererBattleCreditBoth_Who",
+        "text": "{EMPLOYER} praised both {CLAIMANT} and {RIVAL} for their valor",
+        "vars": {
+          "EMPLOYER": "hero:{EMPLOYER}",
+          "CLAIMANT": "hero:{CLAIMANT}",
+          "RIVAL": "hero:{RIVAL}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WandererBattleCreditBoth_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}",
+          "PRE": "key:VividWorld_Place_In",
+          "POST": "key:VividWorld_Place_None"
+        },
+        "fragility": 2
+      }
+    ]
+  },
+  {
+    "type": "wanderer_battle_credit_rebuked",
+    "headline": "Both warriors were rebuked for squabbling",
+    "origin": "public",
+    "dramaWeight": 2,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "claimant": "{CLAIMANT}",
+      "rival": "{RIVAL}",
+      "employer": "{EMPLOYER}"
+    },
+    "feelings": {
+      "claimant": "lost_face",
+      "rival": "lost_face",
+      "employer": "decent"
+    },
+    "selfTell": {
+      "employer": "never"
+    },
+    "knowingRoles": [
+      "claimant",
+      "rival",
+      "employer"
+    ],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WandererBattleCreditRebuked_Who",
+        "text": "{EMPLOYER} rebuked both {CLAIMANT} and {RIVAL} for squabbling over the credit",
+        "vars": {
+          "EMPLOYER": "hero:{EMPLOYER}",
+          "CLAIMANT": "hero:{CLAIMANT}",
+          "RIVAL": "hero:{RIVAL}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WandererBattleCreditRebuked_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}",
+          "PRE": "key:VividWorld_Place_In",
+          "POST": "key:VividWorld_Place_None"
+        },
+        "fragility": 2
+      }
+    ]
+  },
+  {
+    "type": "wanderer_battle_rescued",
+    "headline": "A wounded comrade was rescued on the battlefield",
+    "origin": "public",
+    "dramaWeight": 4,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "rescuer": "{RESCUER}",
+      "rescued": "{RESCUED}"
+    },
+    "feelings": {
+      "rescuer": "decent",
+      "rescued": "cared"
+    },
+    "knowingRoles": [
+      "rescuer",
+      "rescued"
+    ],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WandererBattleRescued_Who",
+        "text": "{RESCUER} dragged the wounded {RESCUED} out of the fight",
+        "vars": {
+          "RESCUER": "hero:{RESCUER}",
+          "RESCUED": "hero:{RESCUED}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WandererBattleRescued_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}",
+          "PRE": "key:VividWorld_Place_In",
+          "POST": "key:VividWorld_Place_None"
+        },
+        "fragility": 2
+      }
+    ]
+  },
+  {
+    "type": "wanderer_party_role_backed_down",
+    "headline": "A challenger backed down from a party role",
+    "origin": "public",
+    "dramaWeight": 1,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "incumbent": "{INCUMBENT}",
+      "challenger": "{CHALLENGER}"
+    },
+    "feelings": {
+      "incumbent": "cared",
+      "challenger": "decent"
+    },
+    "knowingRoles": [
+      "incumbent",
+      "challenger"
+    ],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WandererPartyRoleBackedDown_Who",
+        "text": "{CHALLENGER} gave up challenging {INCUMBENT} for the post",
+        "vars": {
+          "CHALLENGER": "hero:{CHALLENGER}",
+          "INCUMBENT": "hero:{INCUMBENT}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WandererPartyRoleBackedDown_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}",
+          "PRE": "key:VividWorld_Place_In",
+          "POST": "key:VividWorld_Place_None"
+        },
+        "fragility": 2
+      },
+      {
+        "id": "role",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_WandererPartyRoleBackedDown_Role",
+        "text": "over the post of {ROLE_ID}",
+        "vars": {
+          "ROLE_ID": "text:{ROLE_ID}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "wanderer_party_role_bad_blood",
+    "headline": "Bitter rivalry flared over a party role",
+    "origin": "public",
+    "dramaWeight": 2,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "incumbent": "{INCUMBENT}",
+      "challenger": "{CHALLENGER}"
+    },
+    "feelings": {
+      "incumbent": "lost_face",
+      "challenger": "brash"
+    },
+    "knowingRoles": [
+      "incumbent",
+      "challenger"
+    ],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WandererPartyRoleBadBlood_Who",
+        "text": "{CHALLENGER} and {INCUMBENT} fell out bitterly over the post",
+        "vars": {
+          "CHALLENGER": "hero:{CHALLENGER}",
+          "INCUMBENT": "hero:{INCUMBENT}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WandererPartyRoleBadBlood_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}",
+          "PRE": "key:VividWorld_Place_In",
+          "POST": "key:VividWorld_Place_None"
+        },
+        "fragility": 2
+      },
+      {
+        "id": "role",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_WandererPartyRoleBadBlood_Role",
+        "text": "over the post of {ROLE_ID}",
+        "vars": {
+          "ROLE_ID": "text:{ROLE_ID}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "wanderer_party_role_keep_incumbent",
+    "headline": "The incumbent was retained in the party role",
+    "origin": "public",
+    "dramaWeight": 1,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "incumbent": "{INCUMBENT}",
+      "challenger": "{CHALLENGER}",
+      "employer": "{EMPLOYER}"
+    },
+    "feelings": {
+      "incumbent": "cared",
+      "challenger": "lost_face",
+      "employer": "decent"
+    },
+    "selfTell": {
+      "employer": "never"
+    },
+    "knowingRoles": [
+      "incumbent",
+      "challenger",
+      "employer"
+    ],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WandererPartyRoleKeepIncumbent_Who",
+        "text": "{EMPLOYER} kept {INCUMBENT} in the post despite {CHALLENGER}'s ambition",
+        "vars": {
+          "EMPLOYER": "hero:{EMPLOYER}",
+          "INCUMBENT": "hero:{INCUMBENT}",
+          "CHALLENGER": "hero:{CHALLENGER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WandererPartyRoleKeepIncumbent_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}",
+          "PRE": "key:VividWorld_Place_In",
+          "POST": "key:VividWorld_Place_None"
+        },
+        "fragility": 2
+      },
+      {
+        "id": "role",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_WandererPartyRoleKeepIncumbent_Role",
+        "text": "as {ROLE_ID}",
+        "vars": {
+          "ROLE_ID": "text:{ROLE_ID}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "wanderer_party_role_swapped",
+    "headline": "A party role was reassigned to a new holder",
+    "origin": "public",
+    "dramaWeight": 3,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "incumbent": "{INCUMBENT}",
+      "challenger": "{CHALLENGER}",
+      "employer": "{EMPLOYER}"
+    },
+    "feelings": {
+      "incumbent": "lost_face",
+      "challenger": "cared",
+      "employer": "decent"
+    },
+    "selfTell": {
+      "employer": "never"
+    },
+    "knowingRoles": [
+      "incumbent",
+      "challenger",
+      "employer"
+    ],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WandererPartyRoleSwapped_Who",
+        "text": "{EMPLOYER} replaced {INCUMBENT} with {CHALLENGER}",
+        "vars": {
+          "EMPLOYER": "hero:{EMPLOYER}",
+          "INCUMBENT": "hero:{INCUMBENT}",
+          "CHALLENGER": "hero:{CHALLENGER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WandererPartyRoleSwapped_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}",
+          "PRE": "key:VividWorld_Place_In",
+          "POST": "key:VividWorld_Place_None"
+        },
+        "fragility": 2
+      },
+      {
+        "id": "role",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_WandererPartyRoleSwapped_Role",
+        "text": "as the new {ROLE_ID}",
+        "vars": {
+          "ROLE_ID": "text:{ROLE_ID}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "wanderer_party_role_contested",
+    "headline": "Two companions contested for a party role",
+    "origin": "public",
+    "dramaWeight": 2,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "incumbent": "{INCUMBENT}",
+      "challenger": "{CHALLENGER}",
+      "employer": "{EMPLOYER}"
+    },
+    "feelings": {
+      "incumbent": "pending",
+      "challenger": "pending",
+      "employer": "decent"
+    },
+    "selfTell": {
+      "employer": "never"
+    },
+    "knowingRoles": [
+      "incumbent",
+      "challenger",
+      "employer"
+    ],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WandererPartyRoleContested_Who",
+        "text": "{EMPLOYER} had {INCUMBENT} and {CHALLENGER} contest for the post",
+        "vars": {
+          "EMPLOYER": "hero:{EMPLOYER}",
+          "INCUMBENT": "hero:{INCUMBENT}",
+          "CHALLENGER": "hero:{CHALLENGER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WandererPartyRoleContested_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}",
+          "PRE": "key:VividWorld_Place_In",
+          "POST": "key:VividWorld_Place_None"
+        },
+        "fragility": 2
+      },
+      {
+        "id": "role",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_WandererPartyRoleContested_Role",
+        "text": "for the post of {ROLE_ID}",
+        "vars": {
+          "ROLE_ID": "text:{ROLE_ID}"
+        },
+        "fragility": 3
+      },
+      {
+        "id": "winner",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_WandererPartyRoleContested_Winner",
+        "text": "and {WINNER} won the trial",
+        "vars": {
+          "WINNER": "hero:{WINNER}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "wanderer_campfire_jab_laughed_off",
+    "headline": "A campfire joke was laughed off",
+    "origin": "public",
+    "dramaWeight": 1,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "mocker": "{MOCKER}",
+      "mocked": "{MOCKED}"
+    },
+    "feelings": {
+      "mocker": "brash",
+      "mocked": "decent"
+    },
+    "knowingRoles": [
+      "mocker",
+      "mocked"
+    ],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WandererCampfireJabLaughedOff_Who",
+        "text": "{MOCKER} teased {MOCKED} by the campfire and {MOCKED} laughed it off",
+        "vars": {
+          "MOCKER": "hero:{MOCKER}",
+          "MOCKED": "hero:{MOCKED}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WandererCampfireJabLaughedOff_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}",
+          "PRE": "key:VividWorld_Place_In",
+          "POST": "key:VividWorld_Place_None"
+        },
+        "fragility": 2
+      },
+      {
+        "id": "culture",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_WandererCampfireJabLaughedOff_Culture",
+        "text": "making jokes about {TOPIC}, {SAYING}",
+        "vars": {
+          "TOPIC": "text:{TOPIC}",
+          "SAYING": "text:{SAYING}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "wanderer_campfire_jab_brawled",
+    "headline": "A campfire taunt led to a brawl",
+    "origin": "public",
+    "dramaWeight": 3,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "mocker": "{MOCKER}",
+      "mocked": "{MOCKED}"
+    },
+    "feelings": {
+      "mocker": "brash",
+      "mocked": "lost_face"
+    },
+    "knowingRoles": [
+      "mocker",
+      "mocked"
+    ],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WandererCampfireJabBrawled_Who",
+        "text": "{MOCKER} mocked {MOCKED} around the campfire until blows were exchanged",
+        "vars": {
+          "MOCKER": "hero:{MOCKER}",
+          "MOCKED": "hero:{MOCKED}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WandererCampfireJabBrawled_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}",
+          "PRE": "key:VividWorld_Place_In",
+          "POST": "key:VividWorld_Place_None"
+        },
+        "fragility": 2
+      },
+      {
+        "id": "culture",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_WandererCampfireJabBrawled_Culture",
+        "text": "making jokes about {TOPIC}, {SAYING}",
+        "vars": {
+          "TOPIC": "text:{TOPIC}",
+          "SAYING": "text:{SAYING}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "wanderer_campfire_jab_cold_shoulder",
+    "headline": "A campfire insult led to a cold silence",
+    "origin": "public",
+    "dramaWeight": 1,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "mocker": "{MOCKER}",
+      "mocked": "{MOCKED}"
+    },
+    "feelings": {
+      "mocker": "brash",
+      "mocked": "lost_face"
+    },
+    "knowingRoles": [
+      "mocker",
+      "mocked"
+    ],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WandererCampfireJabColdShoulder_Who",
+        "text": "{MOCKED} gave {MOCKER} the cold shoulder after a biting taunt",
+        "vars": {
+          "MOCKER": "hero:{MOCKER}",
+          "MOCKED": "hero:{MOCKED}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WandererCampfireJabColdShoulder_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}",
+          "PRE": "key:VividWorld_Place_In",
+          "POST": "key:VividWorld_Place_None"
+        },
+        "fragility": 2
+      },
+      {
+        "id": "culture",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_WandererCampfireJabColdShoulder_Culture",
+        "text": "making jokes about {TOPIC}, {SAYING}",
+        "vars": {
+          "TOPIC": "text:{TOPIC}",
+          "SAYING": "text:{SAYING}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "wanderer_campfire_jab_punished",
+    "headline": "A troublemaker was punished for campfire mockery",
+    "origin": "public",
+    "dramaWeight": 2,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "mocker": "{MOCKER}",
+      "mocked": "{MOCKED}",
+      "employer": "{EMPLOYER}"
+    },
+    "feelings": {
+      "mocker": "lost_face",
+      "mocked": "cared",
+      "employer": "decent"
+    },
+    "selfTell": {
+      "employer": "never"
+    },
+    "knowingRoles": [
+      "mocker",
+      "mocked",
+      "employer"
+    ],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WandererCampfireJabPunished_Who",
+        "text": "{EMPLOYER} disciplined {MOCKER} for the taunt against {MOCKED}",
+        "vars": {
+          "EMPLOYER": "hero:{EMPLOYER}",
+          "MOCKER": "hero:{MOCKER}",
+          "MOCKED": "hero:{MOCKED}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WandererCampfireJabPunished_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}",
+          "PRE": "key:VividWorld_Place_In",
+          "POST": "key:VividWorld_Place_None"
+        },
+        "fragility": 2
+      },
+      {
+        "id": "culture",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_WandererCampfireJabPunished_Culture",
+        "text": "making jokes about {TOPIC}, {SAYING}",
+        "vars": {
+          "TOPIC": "text:{TOPIC}",
+          "SAYING": "text:{SAYING}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "wanderer_campfire_jab_both_rebuked",
+    "headline": "Both companions were rebuked for campfire quarreling",
+    "origin": "public",
+    "dramaWeight": 2,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "mocker": "{MOCKER}",
+      "mocked": "{MOCKED}",
+      "employer": "{EMPLOYER}"
+    },
+    "feelings": {
+      "mocker": "lost_face",
+      "mocked": "lost_face",
+      "employer": "decent"
+    },
+    "selfTell": {
+      "employer": "never"
+    },
+    "knowingRoles": [
+      "mocker",
+      "mocked",
+      "employer"
+    ],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WandererCampfireJabBothRebuked_Who",
+        "text": "{EMPLOYER} reprimanded both {MOCKER} and {MOCKED} for quarreling at the fire",
+        "vars": {
+          "EMPLOYER": "hero:{EMPLOYER}",
+          "MOCKER": "hero:{MOCKER}",
+          "MOCKED": "hero:{MOCKED}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WandererCampfireJabBothRebuked_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}",
+          "PRE": "key:VividWorld_Place_In",
+          "POST": "key:VividWorld_Place_None"
+        },
+        "fragility": 2
+      },
+      {
+        "id": "culture",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_WandererCampfireJabBothRebuked_Culture",
+        "text": "making jokes about {TOPIC}, {SAYING}",
+        "vars": {
+          "TOPIC": "text:{TOPIC}",
+          "SAYING": "text:{SAYING}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "wanderer_teaching_completed",
+    "headline": "A companion shared their craft",
+    "origin": "public",
+    "dramaWeight": 1,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "teacher": "{TEACHER}",
+      "learner": "{LEARNER}"
+    },
+    "feelings": {
+      "teacher": "decent",
+      "learner": "cared"
+    },
+    "knowingRoles": [
+      "teacher",
+      "learner"
+    ],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WandererTeachingCompleted_Who",
+        "text": "{TEACHER} took time to teach {LEARNER} the craft",
+        "vars": {
+          "TEACHER": "hero:{TEACHER}",
+          "LEARNER": "hero:{LEARNER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WandererTeachingCompleted_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}",
+          "PRE": "key:VividWorld_Place_In",
+          "POST": "key:VividWorld_Place_None"
+        },
+        "fragility": 2
+      },
+      {
+        "id": "skill",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_WandererTeachingCompleted_Skill",
+        "text": "passing on mastery of {SKILL_NAME}",
+        "vars": {
+          "SKILL_NAME": "text:{SKILL_NAME}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "wanderer_teaching_encouraged",
+    "headline": "Training between companions was encouraged",
+    "origin": "public",
+    "dramaWeight": 1,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "teacher": "{TEACHER}",
+      "learner": "{LEARNER}",
+      "employer": "{EMPLOYER}"
+    },
+    "feelings": {
+      "teacher": "decent",
+      "learner": "cared",
+      "employer": "decent"
+    },
+    "selfTell": {
+      "employer": "never"
+    },
+    "knowingRoles": [
+      "teacher",
+      "learner",
+      "employer"
+    ],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WandererTeachingEncouraged_Who",
+        "text": "{EMPLOYER} encouraged {TEACHER} and {LEARNER} to keep training",
+        "vars": {
+          "EMPLOYER": "hero:{EMPLOYER}",
+          "TEACHER": "hero:{TEACHER}",
+          "LEARNER": "hero:{LEARNER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WandererTeachingEncouraged_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}",
+          "PRE": "key:VividWorld_Place_In",
+          "POST": "key:VividWorld_Place_None"
+        },
+        "fragility": 2
+      },
+      {
+        "id": "skill",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_WandererTeachingEncouraged_Skill",
+        "text": "in the art of {SKILL_NAME}",
+        "vars": {
+          "SKILL_NAME": "text:{SKILL_NAME}"
+        },
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "wanderer_teaching_joined",
+    "headline": "The employer joined in the training",
+    "origin": "public",
+    "dramaWeight": 1,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "teacher": "{TEACHER}",
+      "learner": "{LEARNER}",
+      "employer": "{EMPLOYER}"
+    },
+    "feelings": {
+      "teacher": "decent",
+      "learner": "cared",
+      "employer": "decent"
+    },
+    "selfTell": {
+      "employer": "never"
+    },
+    "knowingRoles": [
+      "teacher",
+      "learner",
+      "employer"
+    ],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_WandererTeachingJoined_Who",
+        "text": "{EMPLOYER} joined {LEARNER} in learning from {TEACHER}",
+        "vars": {
+          "EMPLOYER": "hero:{EMPLOYER}",
+          "TEACHER": "hero:{TEACHER}",
+          "LEARNER": "hero:{LEARNER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_WandererTeachingJoined_Where",
+        "text": "in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}",
+          "PRE": "key:VividWorld_Place_In",
+          "POST": "key:VividWorld_Place_None"
+        },
+        "fragility": 2
+      },
+      {
+        "id": "skill",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_WandererTeachingJoined_Skill",
+        "text": "studying {SKILL_NAME} together",
+        "vars": {
+          "SKILL_NAME": "text:{SKILL_NAME}"
+        },
+        "fragility": 3
+      }
+    ]
   }
 ]

@@ -128,7 +128,7 @@ namespace VividWorld.Campaign
             // 有自己每日上限的情境不佔這份額度：這份擲到 0 時，只有在沒有那種情境的情況下才整個收工
             bool hasOwnQuotaSituations = (SituationCatalogStore.Catalog?.Situations ?? new List<SituationTemplate>())
                 .Any(t => t != null && !t.DevOnly && t.IsEnabled(_config) && (t.GetMaxPerDay(_config).HasValue || t.QuotaGroup != null)
-                          && !string.Equals(t.Trigger, "afterEvent", StringComparison.OrdinalIgnoreCase));
+                          && CityScanTriggerFilter.IsCityScanTrigger(t.Trigger));
             if (quotaRoll.Quota <= 0 && hasOwnQuotaSituations)
             {
                 ModLog.Info(SituationScanLogFormatter.FormatQuotaZero(day, quotaRoll));
@@ -244,7 +244,8 @@ namespace VividWorld.Campaign
                         continue;
                     }
 
-                    if (string.Equals(template.Trigger, "afterEvent", StringComparison.OrdinalIgnoreCase))
+                    // 只收 direct：afterEvent 要等一件事件才發生，流浪者的觸發有自己的擲骰
+                    if (!CityScanTriggerFilter.IsCityScanTrigger(template.Trigger))
                     {
                         if (!skippedAfterEventIds.Contains(template.Id))
                         {
@@ -441,7 +442,7 @@ namespace VividWorld.Campaign
             // 7b. Per-situation quota planning & execution
             var perSituationStats = new List<(string SituationId, QuotaRoll Roll, int Candidates, int Triggered)>();
             var perSituationTemplates = situationTemplates
-                .Where(t => !t.DevOnly && !string.Equals(t.Trigger, "afterEvent", StringComparison.OrdinalIgnoreCase) && t.IsEnabled(_config) && t.GetMaxPerDay(_config).HasValue)
+                .Where(t => !t.DevOnly && CityScanTriggerFilter.IsCityScanTrigger(t.Trigger) && t.IsEnabled(_config) && t.GetMaxPerDay(_config).HasValue)
                 .OrderBy(t => t.Id, StringComparer.Ordinal)
                 .ToList();
 
@@ -527,7 +528,7 @@ namespace VividWorld.Campaign
             double groupElapsedMs = 0.0;
             var groupTemplates = situationTemplates
                 .Where(t => t != null && t.QuotaGroup != null && !t.DevOnly && t.IsEnabled(_config)
-                            && !string.Equals(t.Trigger, "afterEvent", StringComparison.OrdinalIgnoreCase))
+                            && CityScanTriggerFilter.IsCityScanTrigger(t.Trigger))
                 .OrderBy(t => t.Id, StringComparer.Ordinal)
                 .ToList();
             if (groupTemplates.Count > 0)

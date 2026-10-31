@@ -115,7 +115,7 @@ namespace VividWorld.Core.Situations
             if (afterEventSituationIds == null || afterEventSituationIds.Count == 0) return null;
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "  scan skipped {0} afterEvent situation(s): {1}",
+                "  scan skipped {0} situation(s) with their own trigger (not direct): {1}",
                 afterEventSituationIds.Count,
                 string.Join(", ", afterEventSituationIds));
         }

@@ -17,6 +17,9 @@ namespace VividWorld.Core.Situations
         public int? NativeGrudgeLine { get; set; }
         public Dictionary<string, int>? AnyTraitAtMost { get; set; }
 
+        /// <summary>true＝這個角色只綁玩家，不從英雄清單挑。一個情境最多一個。</summary>
+        public bool PlayerOnly { get; set; }
+
         public bool IsDerived => !string.IsNullOrEmpty(Derived);
 
         public int GetGrudgeLine(Config.VividWorldConfig? config, SituationWorldContext? context = null)
@@ -58,6 +61,13 @@ namespace VividWorld.Core.Situations
         public List<string>? SeedRoles { get; set; }
         public string? About { get; set; }
         public List<string>? EventTypes { get; set; }
+
+        /// <summary>teachableSkill 的老師與學生角色。</summary>
+        public string? Teacher { get; set; }
+        public string? Learner { get; set; }
+
+        /// <summary>skillBelow 的技能：技能名，或以 @ 開頭的綁定名（例如 @disputedRoleSkill）。</summary>
+        public string? Skill { get; set; }
 
         [JsonIgnore]
         public bool? Value { get; set; }
@@ -160,6 +170,12 @@ namespace VividWorld.Core.Situations
         /// <summary>decider 以外的一個非推導角色；分支照樣由 decider 的個性擲。</summary>
         public string? ListenerRole { get; set; }
 
+        /// <summary>true＝玩家以僱主身分裁決，只在玩家裁決時列出裁決做法（做法的 judge 標記）。</summary>
+        public bool Judge { get; set; }
+
+        /// <summary>裁決時玩家擔任的角色，必須是標了 player 的那個角色。</summary>
+        public string? JudgeRole { get; set; }
+
         /// <summary>玩家擔任其中一個角色時不檢查的條件種類。只用在那條條件對玩家沒有道理的地方：
         /// 不屬於任何王國的人馬跟領主的手下在市集打起來，用不著同一個王國。</summary>
         public List<string>? SkipConditionsWhenPlayer { get; set; }
@@ -184,6 +200,30 @@ namespace VividWorld.Core.Situations
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
     }
 
+    /// <summary>做法讓某個角色獲得技能經驗（只讀進來與檢查，執行在後續卡）。</summary>
+    public sealed class SituationSkillXpDef
+    {
+        public string Role { get; set; } = string.Empty;
+        public string Skill { get; set; } = string.Empty;
+        public int Amount { get; set; }
+    }
+
+    /// <summary>做法把某個職位交給另一個角色（只讀進來與檢查，執行在後續卡）。</summary>
+    public sealed class SituationPartyRoleChangeDef
+    {
+        public string To { get; set; } = string.Empty;
+    }
+
+    /// <summary>做法裡兩個角色的技能較量（只讀進來與檢查，執行在後續卡）。</summary>
+    public sealed class SituationContestDef
+    {
+        public string A { get; set; } = string.Empty;
+        public string B { get; set; } = string.Empty;
+        public string Skill { get; set; } = string.Empty;
+        public int RandomMax { get; set; }
+        public bool WinnerTakesRole { get; set; }
+    }
+
     public sealed class SituationBranchDef
     {
         public string Id { get; set; } = string.Empty;
@@ -194,6 +234,16 @@ namespace VividWorld.Core.Situations
         public List<SituationGrudgeDef>? Grudges { get; set; }
         public SituationMadeUpTalkDef? MadeUpTalk { get; set; }
         public SituationGrudgeWeightDef? GrudgeWeight { get; set; }
+
+        /// <summary>true＝裁決做法：只在玩家裁決時列出；沒標的做法是不插手、私下、只讓玩家看到時擲的。</summary>
+        public bool Judge { get; set; }
+
+        /// <summary>true＝不插手：裁決做法之一，自己沒有事件、沒有 playerEffects，只寫恩怨。一個情境最多一個。</summary>
+        public bool StandAside { get; set; }
+
+        public List<SituationSkillXpDef>? SkillXp { get; set; }
+        public SituationPartyRoleChangeDef? PartyRoleChange { get; set; }
+        public SituationContestDef? Contest { get; set; }
 
         /// <summary>玩家擔任做決定的角色、選了這個做法時，動到玩家自己的聲望、影響力、隊伍士氣、個性經驗值。
         /// null＝都不動。NPC 之間的情境不讀它。</summary>
@@ -241,6 +291,10 @@ namespace VividWorld.Core.Situations
         public double? MinBranchWeight { get; set; }
         public double Weight { get; set; } = 1.0;
         public bool DevOnly { get; set; }
+
+        /// <summary>true＝這個情境產生的事件不往外傳：講述者挑話題時排除，原因 NoSpread。</summary>
+        public bool NoSpread { get; set; }
+
         public string? EnabledBy { get; set; }
         public string? MaxPerDayRef { get; set; }
         public double? MaxPerDay { get; set; }
