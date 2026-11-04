@@ -462,6 +462,7 @@ namespace VividWorld.Campaign
                 PlayerCaptured = playerHero.IsPrisoner,
                 InBattle = mainParty.MapEvent != null,
                 InSiege = mainParty.SiegeEvent != null,
+                InBesiegedSettlement = mainParty.CurrentSettlement != null && mainParty.CurrentSettlement.IsUnderSiege,
                 CampaignSeed = (long)RumorSeed.Of(0, playerHero.StringId),
                 BattleSequence = 0
             };

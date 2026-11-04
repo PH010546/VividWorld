@@ -158,9 +158,34 @@ namespace VividWorld.Campaign
             var settlementPairs = new List<(Settlement Settlement, List<(Hero A, Hero B)> Pairs)>();
 
             var allSettlements = Settlement.All;
-            var eligibleSettlements = allSettlements != null
-                ? allSettlements.Where(s => s != null && (s.IsTown || s.IsCastle || s.IsVillage)).ToList()
-                : new List<Settlement>();
+
+            var besiegedSettlementIds = new List<string>();
+            var eligibleSettlements = new List<Settlement>();
+            if (allSettlements != null)
+            {
+                foreach (var s in allSettlements)
+                {
+                    if (s == null || (!s.IsTown && !s.IsCastle && !s.IsVillage)) continue;
+                    if (s.IsUnderSiege)
+                    {
+                        if (!string.IsNullOrEmpty(s.StringId))
+                        {
+                            besiegedSettlementIds.Add(s.StringId);
+                        }
+                    }
+                    else
+                    {
+                        eligibleSettlements.Add(s);
+                    }
+                }
+            }
+
+            if (besiegedSettlementIds.Count > 0)
+            {
+                besiegedSettlementIds.Sort(StringComparer.Ordinal);
+                ModLog.Info($"SituationScan: skipped {besiegedSettlementIds.Count} settlement(s) under siege [{string.Join(", ", besiegedSettlementIds)}]");
+            }
+
 
             int totalSettlements = eligibleSettlements.Count;
             int settlementsWithPairs = 0;

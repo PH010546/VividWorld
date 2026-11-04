@@ -188,6 +188,40 @@ namespace VividWorld.Core.Tests
         }
 
         [Fact]
+        public void Roll_Daily_InBesiegedSettlement_NotRolled()
+        {
+            var input = DefaultInput(WandererTrigger.Daily);
+            input.InBesiegedSettlement = true;
+
+            var r = WandererEventRoller.Roll(input, DefaultConfig(), new[] { MakeDailyTemplate("t1", true) }, new FakeWandererEvaluator(), new SplitMix64Rng());
+            Assert.Equal(WandererRollOutcome.InSiege, r.Outcome);
+            Assert.Equal("player party is inside a besieged settlement", r.Reason);
+        }
+
+        [Fact]
+        public void Roll_Battle_InBesiegedSettlement_IsAllowed()
+        {
+            var input = DefaultInput(WandererTrigger.Battle);
+            input.InBesiegedSettlement = true;
+
+            var r = WandererEventRoller.Roll(input, DefaultConfig(), new[] { MakeBattleTemplate("t1", true) }, new FakeWandererEvaluator(), new SplitMix64Rng());
+            Assert.NotEqual(WandererRollOutcome.InSiege, r.Outcome);
+            Assert.Equal(WandererRollOutcome.Happened, r.Outcome);
+        }
+
+        [Fact]
+        public void Roll_Daily_InSiege_WithoutBesiegedSettlement_ReasonIsPartyInSiege()
+        {
+            var input = DefaultInput(WandererTrigger.Daily);
+            input.InSiege = true;
+            input.InBesiegedSettlement = false;
+
+            var r = WandererEventRoller.Roll(input, DefaultConfig(), new[] { MakeDailyTemplate("t1", true) }, new FakeWandererEvaluator(), new SplitMix64Rng());
+            Assert.Equal(WandererRollOutcome.InSiege, r.Outcome);
+            Assert.Equal("player party is in a siege", r.Reason);
+        }
+
+        [Fact]
         public void Roll_Battle_InBattle_IsAllowed()
         {
             // 戰後那類不受 InBattle 阻斷（戰鬥結束當下可能仍處於戰鬥結算中）

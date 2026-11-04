@@ -168,7 +168,7 @@ namespace VividWorld.Campaign
             var input = new PlayerPresenceRollInput
             {
                 PlayerHeroId = playerId,
-                Place = new PlayerPresencePlace { SettlementId = settlement?.StringId, SettlementKind = KindOf(settlement) },
+                Place = new PlayerPresencePlace { SettlementId = settlement?.StringId, SettlementKind = KindOf(settlement), UnderSiege = settlement != null && settlement.IsUnderSiege },
                 AvailableHeroIds = heroes.Select(h => h.StringId).ToList(),
                 Today = day,
                 LastOccurrenceDay = LastOccurrenceDay,
@@ -219,7 +219,7 @@ namespace VividWorld.Campaign
             var input = new PlayerPresenceRollInput
             {
                 PlayerHeroId = playerId,
-                Place = new PlayerPresencePlace { SettlementId = settlement?.StringId, SettlementKind = KindOf(settlement) },
+                Place = new PlayerPresencePlace { SettlementId = settlement?.StringId, SettlementKind = KindOf(settlement), UnderSiege = settlement != null && settlement.IsUnderSiege },
                 AvailableHeroIds = heroes.Select(h => h.StringId).ToList(),
                 Today = day,
                 LastOccurrenceDay = LastOccurrenceDay,

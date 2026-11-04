@@ -41,6 +41,8 @@ namespace VividWorld.Core.Situations
     {
         public string? SettlementId;
         public string? SettlementKind; // "town" / "castle" / "village" / "other" / null
+        /// <summary>玩家所在的城鎮、城堡正被圍。</summary>
+        public bool UnderSiege;
     }
 
     /// <summary>
@@ -74,6 +76,7 @@ namespace VividWorld.Core.Situations
         public string? PlaceRejection(PlayerPresencePlace place)
         {
             if (place == null || string.IsNullOrEmpty(place.SettlementId)) return "not in a settlement";
+            if (place.UnderSiege) return $"{place.SettlementId} is under siege";
             string kind = place.SettlementKind ?? "null";
             if (string.Equals(kind, "town", StringComparison.OrdinalIgnoreCase)) return null;
             if (string.Equals(kind, "castle", StringComparison.OrdinalIgnoreCase)) return null;

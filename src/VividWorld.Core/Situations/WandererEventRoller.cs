@@ -64,6 +64,8 @@ namespace VividWorld.Core.Situations
         public bool PlayerCaptured;
         public bool InBattle;
         public bool InSiege;
+        /// <summary>玩家隊伍待在正被圍的城裡，也就是守城的一方。</summary>
+        public bool InBesiegedSettlement;
 
         public long CampaignSeed;
 
@@ -240,6 +242,12 @@ namespace VividWorld.Core.Situations
                 {
                     result.Outcome = WandererRollOutcome.InSiege;
                     result.Reason = "player party is in a siege";
+                    return result;
+                }
+                if (input.InBesiegedSettlement)
+                {
+                    result.Outcome = WandererRollOutcome.InSiege;
+                    result.Reason = "player party is inside a besieged settlement";
                     return result;
                 }
             }

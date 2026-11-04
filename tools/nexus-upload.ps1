@@ -12,7 +12,7 @@
       4. POST /uploads                             建上傳（帶 md5）→ PUT 到回傳的網址 → POST /uploads/{id}/finalise
       5. GET  /uploads/{id}                        等到 state = available
       6. POST /mod-files/{id}/versions             建新版本（主要檔案、設成 mod manager 預設下載、更新模組版本號；上一版不封存）
-      7. POST /mods/{id}/changelogs                追加英文那一份（只能追加，不能改）
+      7. POST /mods/{id}/changelogs                追加英文那一份（只能追加，不能改），由 nexus-changelog.ps1 送並核對
       8. GET  /mod-files/{id}/versions             讀回來，印出每一版的分類與誰是預設下載
     任何一步失敗就停，把伺服器回的原文印出來；之後那一版改由人手動上傳。
 
@@ -234,9 +234,9 @@ $created = Invoke-Nexus 'POST' "/mod-files/$($target.id)/versions" @{
 Write-Host "新版本已建立：檔案 $($created.file.name)（$($created.file.game_scoped_id)），版本 id $($created.version.id)" -ForegroundColor Green
 
 # ── 7. 追加更新紀錄 ──────────────────────────────────────────────────
+# 這裡不因為核對沒過就停：檔案已經上傳了，要讓後面的步驟做完，警告留在日誌裡
 foreach ($k in $changelogs.Keys) {
-    $null = Invoke-Nexus 'POST' "/mods/$($mod.id)/changelogs" @{ version = $k; changelog = $changelogs[$k] }
-    Write-Host "更新紀錄已追加：English，版本 $k" -ForegroundColor Green
+    & (Join-Path $PSScriptRoot 'nexus-changelog.ps1') -Version $k -Text $changelogs[$k] -GameDomain $GameDomain -ModId $ModId -ApiKeyFile $ApiKeyFile -AllowNoFile:($k -ne $nexusVersion) -Send
 }
 
 # ── 8. 讀回來核對 ────────────────────────────────────────────────────

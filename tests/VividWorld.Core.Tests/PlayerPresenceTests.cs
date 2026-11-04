@@ -197,6 +197,38 @@ namespace VividWorld.Core.Tests
         }
 
         [Fact]
+        public void PlaceRejection_UnderSiege_ReturnsSettlementIsUnderSiege()
+        {
+            var townPlace = new PlayerPresencePlace { SettlementId = "town_1", SettlementKind = "town", UnderSiege = true };
+            Assert.Equal("town_1 is under siege", TownPresenceTrigger.Instance.PlaceRejection(townPlace));
+
+            var castlePlace = new PlayerPresencePlace { SettlementId = "castle_1", SettlementKind = "castle", UnderSiege = true };
+            Assert.Equal("castle_1 is under siege", TownPresenceTrigger.Instance.PlaceRejection(castlePlace));
+
+            var notBesiegedTown = new PlayerPresencePlace { SettlementId = "town_1", SettlementKind = "town", UnderSiege = false };
+            Assert.Null(TownPresenceTrigger.Instance.PlaceRejection(notBesiegedTown));
+
+            var notBesiegedCastle = new PlayerPresencePlace { SettlementId = "castle_1", SettlementKind = "castle", UnderSiege = false };
+            Assert.Null(TownPresenceTrigger.Instance.PlaceRejection(notBesiegedCastle));
+        }
+
+        [Fact]
+        public void Roll_BesiegedSettlement_NotAllowed_EvenWhenForced()
+        {
+            var input = Input(kind: "town");
+            input.Place.UnderSiege = true;
+            var r = Roll(input, Config(chance: 1.0, cooldown: 0), Town());
+            Assert.Equal(PlayerPresenceOutcome.PlaceNotAllowed, r.Outcome);
+            Assert.Contains("under siege", r.Reason);
+
+            var forcedInput = Input(kind: "town", force: new PlayerPresenceForce { SituationId = "tavern_words", Role = PlayerPresenceRole.Decider });
+            forcedInput.Place.UnderSiege = true;
+            var rForced = Roll(forcedInput, Config(chance: 1.0, cooldown: 0), Town());
+            Assert.Equal(PlayerPresenceOutcome.PlaceNotAllowed, rForced.Outcome);
+            Assert.Contains("under siege", rForced.Reason);
+        }
+
+        [Fact]
         public void Roll_FewerThanTwoLords_NotRolled_PlayerNeverCountsAsALord()
         {
             var r = Roll(Input(lords: new[] { "lord_a", Player }), Config(), Town());
