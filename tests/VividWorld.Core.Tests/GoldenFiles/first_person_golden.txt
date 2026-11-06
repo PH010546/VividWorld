@@ -349,28 +349,36 @@ EN:  And with the whole hall watching, I did not know where to look.
 CNT: 當著那麼多人，我臉上真是掛不住。
 
 [seat_dispute_endured | slighted | who]
-EN:  I had to sit below FAVORED, and I let it pass.
-CNT: 坐在FAVORED下首這口氣，我忍了。
+EN:  I was seated below FAVORED.
+CNT: 我被排在FAVORED下首。
 
 [seat_dispute_endured | slighted | where]
 EN:  In the hall of SETTLEMENT.
 CNT: 在SETTLEMENT的大廳裡。
 
 [seat_dispute_endured | slighted | what]
-EN:  I could hardly make a scene in front of everyone, but that meal tasted of nothing.
-CNT: 當著那麼多人，我總不能當場翻臉，那頓飯吃得一點味道也沒有。
+EN:  I said not a word and bore it.
+CNT: 我當場沒說話，忍了下來。
 
 [seat_dispute_endured | favored | who]
-EN:  The time SLIGHTED sat below me, they were swallowing it the whole time. I honestly didn't notice at the time.
-CNT: SLIGHTED坐在我下首那回，那口氣他是忍下來的。我當時還真沒看出來。
+EN:  SLIGHTED was seated below me.
+CNT: SLIGHTED被排在我下首。
 
 [seat_dispute_endured | favored | where]
 EN:  In the hall of SETTLEMENT.
 CNT: 在SETTLEMENT的大廳裡。
 
 [seat_dispute_endured | favored | what]
-EN:  Not a word, but I could see on their face that they will remember it.
-CNT: 嘴上沒說什麼，臉色可難看了，我看得出來他記下了。
+EN:  Said not a word, though I could see it stung.
+CNT: 當場沒說話，但我看得出他難受。
+
+[seat_dispute_grudge_held | slighted | who]
+EN:  I held my tongue at that feast, but FAVORED does not even head a house, and to sit above me without a second thought... thinking of it now, I still can't stomach it. This stays between us.
+CNT: 席上我是沒吭聲，可FAVORED一個不當家的，就這麼心安理得坐在我上首，我現在想起來還是嚥不下這口氣。這話我只跟你說。
+
+[seat_dispute_grudge_held | favored | who]
+EN:  SLIGHTED said not a word at the feast that day. It was only later I heard they have been holding a grudge against me for sitting above them. I only thought their pride was stung at the time; I never realized they would nurse it to this day.
+CNT: SLIGHTED那天席上一句話也沒說，後來我才聽說，他心裡一直記恨我坐了他上首。我當時只當他是臉上掛不住，還真沒看出來他記到現在。
 
 [seat_dispute_yielded | slighted | who]
 EN:  I gave the seat of honor to FAVORED.
@@ -843,6 +851,26 @@ CNT: 在SETTLEMENT。
 [wager_secret_stake | challenged | what]
 EN:  And what it is... that I can't tell you.
 CNT: 押了什麼……這我可不能說。
+
+[hunt_wager_settled | winner | who]
+EN:  I matched bows against LOSER on that hunt, and when the kill was counted, the victory was mine. Not a beast in the woods escapes my bow; it was a good contest to win.
+CNT: 我跟LOSER在林子裡比了一場狩獵，獵物清點下來，是我贏了這場賭局。林子裡的獵物逃不過我的箭，這場賭局贏得痛快。
+
+[hunt_wager_settled | loser | who]
+EN:  I rode out with WINNER to settle that hunting wager, but the day went to them in the end. Luck was against me that day; my arrows flew wide, and it irks me to have lost.
+CNT: 我跟WINNER在林子裡較量了一場狩獵，最後是我輸給了他。那天手風不順，幾箭都射偏了，這場輸得實在嘔氣。
+
+[hunt_wager_staked_secret | bettor | who]
+EN:  When I struck that hunting wager with OPPONENT, I quietly put up STAKED_OWNER's secret as my stake. You use what you hold to get what you want; that is what a wager is for.
+CNT: 我跟OPPONENT賭那一場狩獵的時候，暗地裡把STAKED_OWNER的秘密給押了上去。拿手上的籌碼換自己想要的東西，賭局本來就是這樣玩的。
+
+[hunt_wager_staked_secret | opponent | who]
+EN:  When I challenged BETTOR to that hunt, silver was on the table, but in secret they wagered STAKED_OWNER's private affairs. If they dares wager with something like that, there is more at stake than silver.
+CNT: 我找BETTOR賭那一場狩獵，明面上押的是銀子，他私底下卻拿STAKED_OWNER的秘密來跟我下注。他敢拿這種事出來押，這局賭的可不是尋常銀子。
+
+[hunt_wager_staked_secret | staked_owner | who]
+EN:  When BETTOR and OPPONENT had that hunting wager, they dared put up my secret behind my back. To make my affairs into a bargaining coin behind my back... I will settle this score in time.
+CNT: BETTOR跟OPPONENT打賭狩獵，暗地裡竟然拿我的秘密當賭注。拿我的事在背地裡當籌碼，這筆帳我遲早要討回來。
 
 [conduct_spoke_against_ruler | speaker | who]
 EN:  I said that RULER wasn't fit to sit on that throne.
@@ -1927,4 +1955,68 @@ CNT: 在SETTLEMENT。
 [wanderer_teaching_joined | employer | skill]
 EN:  Studying SKILL_NAME together.
 CNT: 一起學SKILL_NAME。
+
+[prisoner_freed_secretly | freer | who]
+EN:  PRISONER didn't slip away on their own; I secretly opened the cell and let them go.
+CNT: PRISONER不是自己逃出去的，是我私下打開牢門放他走的。
+
+[prisoner_freed_secretly | freer | where]
+EN:  From the dungeons of SETTLEMENT.
+CNT: 從SETTLEMENT的地牢裡。
+
+[prisoner_freed_secretly | freer | why]
+EN:  Out of affection.
+CNT: 出於私交。
+
+[prisoner_freed_secretly | prisoner | who]
+EN:  I didn't slip away on my own; FREER secretly opened the cell and let me go.
+CNT: 我不是自己逃出去的，是FREER私下打開牢門放我走的。
+
+[prisoner_freed_secretly | prisoner | where]
+EN:  From the dungeons of SETTLEMENT.
+CNT: 從SETTLEMENT的地牢裡。
+
+[prisoner_freed_secretly | prisoner | why]
+EN:  Out of affection.
+CNT: 出於私交。
+
+[tournament_won | champion | who]
+EN:  I defeated FINAL_OPPONENT in the final bout to win the tournament.
+CNT: 我在決賽擊敗FINAL_OPPONENT贏得比武大會。
+
+[tournament_won | champion | where]
+EN:  At the arena in SETTLEMENT.
+CNT: 在SETTLEMENT的競技場。
+
+[tournament_won | champion | what]
+EN:  As cheers echoed through the stands.
+CNT: 看台上的歡呼聲此起彼落。
+
+[tournament_won | champion | outcome]
+EN:  Claiming the prize before the gathered lords and townspeople.
+CNT: 在齊聚的領主與鎮民面前接下頭獎。
+
+[tournament_won | final_opponent | who]
+EN:  CHAMPION defeated me in the final bout to win the tournament.
+CNT: CHAMPION在決賽擊敗我贏得比武大會。
+
+[tournament_won | final_opponent | where]
+EN:  At the arena in SETTLEMENT.
+CNT: 在SETTLEMENT的競技場。
+
+[tournament_won | final_opponent | what]
+EN:  As cheers echoed through the stands.
+CNT: 看台上的歡呼聲此起彼落。
+
+[tournament_won | final_opponent | outcome]
+EN:  Claiming the prize before the gathered lords and townspeople.
+CNT: 在齊聚的領主與鎮民面前接下頭獎。
+
+[tournament_final_thrown | champion | who]
+EN:  The truth about that tournament is that THROWER could well have beaten me, but I asked them in private before the final to let me have the win. I took the prize, but there is little honor in a title won with words rather than steel.
+CNT: 那場比武大會，以THROWER那天的身手本來贏得了我，是我在決賽開打前私下找他要他讓的。頭獎我拿了，但這冠軍拿得不怎麼光彩。
+
+[tournament_final_thrown | thrower | who]
+EN:  That tournament prize was mine for the taking, but CHAMPION came to me in private before the final and asked me to hand over the bout. I could have won that bout; handing the prize away leaves a bitter taste.
+CNT: 那場比武大會我本來拿得下頭獎，是CHAMPION在決賽開打前私下要我把勝負讓給他。那場比武我本來打得贏，平白把頭獎讓出去，心裡真不是滋味。
 

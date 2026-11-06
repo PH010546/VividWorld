@@ -12,6 +12,7 @@ using VividWorld.Core.Feelings;
 using VividWorld.Core.Memory;
 using VividWorld.Core.Persistence;
 using VividWorld.Core.Rumors;
+using VividWorld.Core.Secrets;
 using VividWorld.Debug;
 
 namespace VividWorld.Campaign
@@ -27,6 +28,7 @@ namespace VividWorld.Campaign
         private readonly MemoryStamper? _stamper;
         private readonly IFeelingWorld? _feelingWorld;   // 信不信的判定讀好感用；null = 好感一律查不到
         private readonly DailyRelationBudget _dailyRelationBudget = new();
+        private IConfideToPlayerSink _confideToPlayerSink = new LogConfideToPlayerSink();
 
         private readonly List<string> _activeRing = new();
         private readonly HashSet<string> _activeRingSet = new(StringComparer.OrdinalIgnoreCase);
@@ -88,6 +90,11 @@ namespace VividWorld.Campaign
 
         internal DailyRelationBudget DailyRelationBudget => _dailyRelationBudget;
         internal void ResetDailyBudget() => _dailyRelationBudget.Reset();
+        internal IConfideToPlayerSink ConfideToPlayerSink
+        {
+            get => _confideToPlayerSink;
+            set => _confideToPlayerSink = value ?? new NullConfideToPlayerSink();
+        }
 
         internal RumorPropagationScheduler(VividWorldConfig config,
                                            WorldEventStore store,
@@ -101,6 +108,7 @@ namespace VividWorld.Campaign
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _store = store ?? throw new ArgumentNullException(nameof(store));
             _engine = engine ?? throw new ArgumentNullException(nameof(engine));
+            _engine.EventLoader = id => store.Load(id);
             _knownBy = knownBy ?? throw new ArgumentNullException(nameof(knownBy));
             _heroLookup = heroLookup;
             _traitLookup = traitLookup;
@@ -492,6 +500,16 @@ namespace VividWorld.Campaign
                         _dailyRelationBudget, _config, _feelingWorld);
                 }
 
+                if (outcome.SecretReactions != null && outcome.SecretReactions.Count > 0 && _traitLookup != null)
+                {
+                    foreach (var sr in outcome.SecretReactions)
+                    {
+                        ConsequenceRunner.ApplySecretReactionOutcome(
+                            picked, sr, day,
+                            _store, _heroLookup, _traitLookup, _config, _dailyRelationBudget);
+                    }
+                }
+
                 _store.Upsert(picked);
 
                 var dormancyReason = _engine.DormancyReasonFor(picked, day);
@@ -535,6 +553,100 @@ namespace VividWorld.Campaign
             }
         }
 
+        internal static List<SecretCoLocatedContact> GetCoLocatedContacts(Hero knowerHero, string playerHeroId)
+        {
+            var list = new List<SecretCoLocatedContact>();
+            if (knowerHero == null) return list;
+
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            seen.Add(knowerHero.StringId);
+
+            void TryAddHero(Hero? other)
+            {
+                if (other == null || string.IsNullOrEmpty(other.StringId)) return;
+                if (!seen.Add(other.StringId)) return;
+
+                bool isPlayer = (other == Hero.MainHero) || (!string.IsNullOrEmpty(playerHeroId) && string.Equals(other.StringId, playerHeroId, StringComparison.Ordinal));
+                bool isLord = other.IsLord;
+                bool isKin = GameWorldChannel.IsFamilyOf(knowerHero, other);
+                int relation = (int)knowerHero.GetBaseHeroRelation(other);
+
+                list.Add(new SecretCoLocatedContact(
+                    other.StringId,
+                    isPlayer,
+                    isLord,
+                    relation,
+                    isKin));
+            }
+
+            // 1. 同部隊
+            var party = knowerHero.PartyBelongedTo;
+            if (party != null)
+            {
+                TryAddHero(party.LeaderHero);
+                var roster = party.MemberRoster?.GetTroopRoster();
+                if (roster != null)
+                {
+                    for (int i = 0; i < roster.Count; i++)
+                    {
+                        var elem = roster[i];
+                        var character = elem.Character;
+                        if (character != null && character.IsHero && character.HeroObject != null)
+                        {
+                            TryAddHero(character.HeroObject);
+                        }
+                    }
+                }
+            }
+
+            // 2. 同軍團
+            var army = party?.Army;
+            if (army != null)
+            {
+                var armyParties = army.Parties;
+                if (armyParties != null)
+                {
+                    for (int i = 0; i < armyParties.Count; i++)
+                    {
+                        var p = armyParties[i];
+                        if (p != null)
+                        {
+                            TryAddHero(p.LeaderHero);
+                        }
+                    }
+                }
+            }
+
+            // 3. 同聚落
+            var settlement = knowerHero.CurrentSettlement;
+            if (settlement != null)
+            {
+                var heroesWithoutParty = settlement.HeroesWithoutParty;
+                if (heroesWithoutParty != null)
+                {
+                    for (int i = 0; i < heroesWithoutParty.Count; i++)
+                    {
+                        TryAddHero(heroesWithoutParty[i]);
+                    }
+                }
+
+                var settlementParties = settlement.Parties;
+                if (settlementParties != null)
+                {
+                    for (int i = 0; i < settlementParties.Count; i++)
+                    {
+                        var p = settlementParties[i];
+                        if (p != null)
+                        {
+                            TryAddHero(p.LeaderHero);
+                        }
+                    }
+                }
+            }
+
+            return list;
+        }
+
         internal void DailyTick(double day)
         {
             using (DevMetrics.Measure("daily"))
@@ -557,6 +669,122 @@ namespace VividWorld.Campaign
                     if (evt == null)
                     {
                         _secretWatch.Remove(eventId);
+                        continue;
+                    }
+
+                    if (evt.SecretRetired)
+                    {
+                        _secretWatch.Remove(eventId);
+                        continue;
+                    }
+
+                    if (evt.SecretOwnerHeroIds != null)
+                    {
+                        var knowers = new List<SecretKnowerContext>();
+                        if (evt.KnownBy != null)
+                        {
+                            foreach (var k in evt.KnownBy)
+                            {
+                                if (string.IsNullOrEmpty(k.HeroId)) continue;
+                                var knowerHero = _heroLookup?.Get(k.HeroId);
+                                var contacts = knowerHero != null
+                                    ? GetCoLocatedContacts(knowerHero, _engine.PlayerHeroId)
+                                    : (IReadOnlyList<SecretCoLocatedContact>)Array.Empty<SecretCoLocatedContact>();
+
+                                var relToOwners = new Dictionary<string, int>(StringComparer.Ordinal);
+                                var kinToOwners = new Dictionary<string, bool>(StringComparer.Ordinal);
+                                if (knowerHero != null && evt.SecretOwnerHeroIds != null)
+                                {
+                                    foreach (var ownerId in evt.SecretOwnerHeroIds)
+                                    {
+                                        if (string.IsNullOrEmpty(ownerId)) continue;
+                                        var ownerHero = _heroLookup?.Get(ownerId);
+                                        if (ownerHero != null)
+                                        {
+                                            relToOwners[ownerId] = (int)knowerHero.GetBaseHeroRelation(ownerHero);
+                                            kinToOwners[ownerId] = GameWorldChannel.IsFamilyOf(knowerHero, ownerHero);
+                                        }
+                                    }
+                                }
+
+                                var traits = _traitLookup?.Of(k.HeroId);
+                                knowers.Add(new SecretKnowerContext
+                                {
+                                    HeroId = k.HeroId,
+                                    Traits = traits,
+                                    CoLocatedContacts = contacts,
+                                    RelationToOwners = relToOwners,
+                                    IsKinOfOwners = kinToOwners
+                                });
+                            }
+                        }
+
+                        var eval = SecretSpread.Evaluate(
+                            evt,
+                            day,
+                            knowers,
+                            SecretHarmEvaluation.EvaluateHarmedHeroIds(evt, EventCatalogStore.TemplateByType(evt.Type), new GameSecretRelationshipLookup(_heroLookup)),
+                            _config,
+                            _engine.Rng,
+                            _engine.CampaignSeed,
+                            _engine.PlayerHeroId);
+
+                        if (_config.Debug.LogSecretSpread || _config.Debug.VerboseTickLog)
+                        {
+                            ModLog.Info(SecretSpreadLogFormatter.FormatDailyEvaluation(eval));
+                        }
+
+                        bool anyChange = false;
+                        bool leaked = false;
+
+                        foreach (var r in eval.Results)
+                        {
+                            if (r.Action == SecretSpreadAction.Confided)
+                            {
+                                var knowerContext = knowers.FirstOrDefault(ctx => ctx.HeroId == r.KnowerHeroId);
+                                var contact = knowerContext?.CoLocatedContacts.FirstOrDefault(c => c.HeroId == r.TargetHeroId);
+
+                                if (contact != null && contact.IsPlayer)
+                                {
+                                    _confideToPlayerSink.OnConfideToPlayer(evt, r.KnowerHeroId, day);
+                                }
+                                else if (!string.IsNullOrEmpty(r.TargetHeroId))
+                                {
+                                    AddConfidedKnowerEntry(evt, r.KnowerHeroId, r.TargetHeroId!, day);
+                                    anyChange = true;
+                                }
+                            }
+                            else if (r.Action == SecretSpreadAction.Leaked)
+                            {
+                                evt.State.Leaked = true;
+                                evt.State.LeakedDay = day;
+                                evt.State.LeakerHeroId = r.KnowerHeroId;
+                                _stamper?.RestampAfterLeak(evt);
+                                _store.Upsert(evt);
+                                _secretWatch.Remove(eventId);
+                                PromoteLeakedEvent(evt);
+                                WorldEventStore.TriggerPublicEventOccurred(evt);
+                                leaked = true;
+                                leakedCount++;
+                                break;
+                            }
+                        }
+
+                        if (!leaked)
+                        {
+                            if (anyChange)
+                            {
+                                _store.Upsert(evt);
+                            }
+
+                            if ((day - evt.Day) > _config.Scheduling.SecretWatchDays)
+                            {
+                                evt.State.Dormant = true;
+                                _store.Upsert(evt);
+                                _secretWatch.Remove(eventId);
+                                dormantCount++;
+                            }
+                        }
                         continue;
                     }
 
@@ -614,6 +842,66 @@ namespace VividWorld.Campaign
                     ModLog.Info($"DailyTick at day {day:0.00}: secret watch size {_secretWatch.Count} (leaked: {leakedCount}, dormant: {dormantCount}), active ring size {_activeRing.Count}, kingdom scans today: {kingdomScans}");
                 }
             }
+        }
+
+        private void AddConfidedKnowerEntry(WorldEvent evt, string sourceHeroId, string targetHeroId, double day)
+        {
+            var knowerEntry = evt.KnownBy?.FirstOrDefault(k => k.HeroId == sourceHeroId);
+            int knowerHop = knowerEntry?.Hop ?? 0;
+            var newEntry = new KnownByEntry
+            {
+                HeroId = targetHeroId,
+                Hop = knowerHop + 1,
+                LearnedDay = day,
+                SourceHeroId = sourceHeroId
+            };
+            evt.KnownBy?.Add(newEntry);
+            _knownBy?.NoteKnower(newEntry.HeroId, evt.EventId, day);
+        }
+
+        internal void RecordConfidedKnower(WorldEvent evt, string sourceHeroId, string targetHeroId, double day)
+        {
+            AddConfidedKnowerEntry(evt, sourceHeroId, targetHeroId, day);
+            _store.Upsert(evt);
+        }
+
+        internal SecretReactionOutcome? SettleSecretReaction(WorldEvent evt, Hero hearerHero, double day)
+        {
+            if (_heroLookup == null || _traitLookup == null) return null;
+
+            var hearerEntry = evt.EntryFor(hearerHero.StringId);
+            if (hearerEntry == null)
+            {
+                hearerEntry = new KnownByEntry
+                {
+                    HeroId = hearerHero.StringId,
+                    Hop = 1,
+                    LearnedDay = day,
+                    KnownFactIds = evt.Facts != null ? evt.Facts.Select(f => f.Id).ToList() : new List<string>()
+                };
+                evt.KnownBy?.Add(hearerEntry);
+                _knownBy?.NoteKnower(hearerEntry.HeroId, evt.EventId, day);
+            }
+
+            var template = SituationCatalogStore.EventCatalog != null
+                ? SituationCatalogStore.EventCatalog.ByType(evt.Type)
+                : null;
+
+            var outcome = ConsequenceRunner.HandleSecretReaction(
+                evt,
+                hearerEntry,
+                template,
+                day,
+                _engine,
+                _traitLookup,
+                _config,
+                _feelingWorld,
+                _store,
+                _heroLookup,
+                _dailyRelationBudget);
+
+            _store.Upsert(evt);
+            return outcome;
         }
     }
 }

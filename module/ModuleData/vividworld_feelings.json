@@ -666,6 +666,83 @@
           "key": "VividWorld_Feeling_Wronged_Owe_1"
         }
       ]
+    },
+    "contest_won": {
+      "close": [
+        {
+          "key": "VividWorld_Feeling_ContestWon_Close_1"
+        },
+        {
+          "key": "VividWorld_Feeling_ContestWon_Close_2"
+        }
+      ],
+      "neutral": [
+        {
+          "key": "VividWorld_Feeling_ContestWon_Neutral_1"
+        },
+        {
+          "key": "VividWorld_Feeling_ContestWon_Neutral_2",
+          "trait": "Calculating+"
+        }
+      ],
+      "hostile": [
+        {
+          "key": "VividWorld_Feeling_ContestWon_Hostile_1"
+        },
+        {
+          "key": "VividWorld_Feeling_ContestWon_Hostile_2"
+        }
+      ],
+      "sore": [
+        {
+          "key": "VividWorld_Feeling_ContestWon_Sore_1"
+        },
+        {
+          "key": "VividWorld_Feeling_ContestWon_Sore_2"
+        }
+      ],
+      "owe": [
+        {
+          "key": "VividWorld_Feeling_ContestWon_Owe_1"
+        }
+      ]
+    },
+    "contest_lost": {
+      "close": [
+        {
+          "key": "VividWorld_Feeling_ContestLost_Close_1"
+        },
+        {
+          "key": "VividWorld_Feeling_ContestLost_Close_2"
+        }
+      ],
+      "neutral": [
+        {
+          "key": "VividWorld_Feeling_ContestLost_Neutral_1"
+        },
+        {
+          "key": "VividWorld_Feeling_ContestLost_Neutral_2",
+          "trait": "Calculating+"
+        }
+      ],
+      "hostile": [
+        {
+          "key": "VividWorld_Feeling_ContestLost_Hostile_1"
+        },
+        {
+          "key": "VividWorld_Feeling_ContestLost_Hostile_2"
+        }
+      ],
+      "sore": [
+        {
+          "key": "VividWorld_Feeling_ContestLost_Sore_1"
+        }
+      ],
+      "owe": [
+        {
+          "key": "VividWorld_Feeling_ContestLost_Owe_1"
+        }
+      ]
     }
   }
 }

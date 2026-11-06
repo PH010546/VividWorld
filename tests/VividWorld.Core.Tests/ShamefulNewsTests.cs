@@ -190,10 +190,10 @@ namespace VividWorld.Core.Tests
             switch (expectedRow)
             {
                 case ShamefulSpeakerRow.Friend:
-                    world.SetAffection(speaker, shamed, 40); // Close -> Friend
+                    world.SetAffection(speaker, shamed, 60); // Close -> Friend
                     break;
                 case ShamefulSpeakerRow.Owe:
-                    world.SetAffection(speaker, shamed, -40); // Low affection + Favor => Owe
+                    world.SetAffection(speaker, shamed, -60); // Low affection + Favor => Owe
                     world.Grudges[(speaker, shamed)] = new List<GrudgeEntry>
                     {
                         new GrudgeEntry { FromHeroId = speaker, AboutHeroId = shamed, Scope = GrudgeScope.Personal, Requested = 25.0, Delta = 25, Day = 100.0 }
@@ -203,7 +203,7 @@ namespace VividWorld.Core.Tests
                     world.SetAffection(speaker, shamed, 0);
                     break;
                 case ShamefulSpeakerRow.Enemy:
-                    world.SetAffection(speaker, shamed, -40); // Hostile -> Enemy
+                    world.SetAffection(speaker, shamed, -60); // Hostile -> Enemy
                     break;
             }
 
@@ -214,11 +214,11 @@ namespace VividWorld.Core.Tests
             }
             else if (expectedCol == ShamefulListenerCol.Friend)
             {
-                world.SetAffection(listener, shamed, 35); // >= 30 -> Friend
+                world.SetAffection(listener, shamed, 60); // > 50 -> Friend
             }
             else if (expectedCol == ShamefulListenerCol.Enemy)
             {
-                world.SetAffection(listener, shamed, -35); // <= -30 -> Enemy
+                world.SetAffection(listener, shamed, -60); // < -50 -> Enemy
             }
             else
             {
@@ -255,7 +255,7 @@ namespace VividWorld.Core.Tests
             string teller = "teller_friend";
             string player = "player";
 
-            world.SetAffection(teller, shamed, 40); // teller is Friend of shamed
+            world.SetAffection(teller, shamed, 60); // teller is Friend of shamed
             world.SetAffection(player, shamed, 0);   // player is Unrelated
 
             var evt = CreateShamefulEvent("evt1", shamed);
@@ -277,8 +277,8 @@ namespace VividWorld.Core.Tests
             string teller = "teller_friend";
             string player = "player";
 
-            world.SetAffection(teller, shamed, 40); // teller is Friend of shamed
-            world.SetAffection(player, shamed, 35); // player is Friend of shamed (affection >= 30)
+            world.SetAffection(teller, shamed, 60); // teller is Friend of shamed
+            world.SetAffection(player, shamed, 60); // player is Friend of shamed (affection > 50)
 
             var evt = CreateShamefulEvent("evt1", shamed);
             var tpl = CreateShabbyTemplate();
@@ -298,7 +298,7 @@ namespace VividWorld.Core.Tests
             string teller = "teller_enemy";
             string player = "player";
 
-            world.SetAffection(teller, shamed, -40); // teller is Enemy of shamed
+            world.SetAffection(teller, shamed, -60); // teller is Enemy of shamed
             world.SetAffection(player, shamed, 0);    // player is Unrelated
 
             var evt = CreateShamefulEvent("evt1", shamed);
@@ -320,12 +320,12 @@ namespace VividWorld.Core.Tests
             string player = "player";
 
             // teller owes shamed: low affection, but has a favor (grudgeNet >= threshold)
-            world.SetAffection(teller, shamed, -40);
+            world.SetAffection(teller, shamed, -60);
             world.Grudges[(teller, shamed)] = new List<GrudgeEntry>
             {
                 new GrudgeEntry { FromHeroId = teller, AboutHeroId = shamed, Scope = GrudgeScope.Personal, Requested = 25.0, Delta = 25, Day = 100.0 }
             };
-            world.SetAffection(player, shamed, 50); // player is close friend of shamed
+            world.SetAffection(player, shamed, 60); // player is close friend of shamed
 
             var evt = CreateShamefulEvent("evt1", shamed);
             var tpl = CreateShabbyTemplate();
@@ -346,7 +346,7 @@ namespace VividWorld.Core.Tests
             string teller = "teller_friend";
             string player = "player";
 
-            world.SetAffection(teller, shamed, 40);
+            world.SetAffection(teller, shamed, 60);
             world.PlayerSpouses.Add(shamed); // listener is player, and shamed is player's spouse
 
             var evt = CreateShamefulEvent("evt1", shamed);
@@ -421,7 +421,7 @@ namespace VividWorld.Core.Tests
             string shamed2 = "shamed2";
 
             // For shamed1: speaker is Friend (aff=40), listener is Unrelated -> Blocked!
-            world.SetAffection(speaker, shamed1, 40);
+            world.SetAffection(speaker, shamed1, 60);
             world.SetAffection(listener, shamed1, 0);
 
             // For shamed2: speaker is Neutral (aff=0), listener is Unrelated -> CanTell
@@ -487,7 +487,7 @@ namespace VividWorld.Core.Tests
             string listener = "listener_unrelated";
             string shamed = "shamed_lord";
 
-            world.SetAffection(speaker, shamed, 40);
+            world.SetAffection(speaker, shamed, 60);
             world.SetAffection(listener, shamed, 0);
 
             var evt = CreateShamefulEvent("evt1", shamed);
@@ -507,7 +507,7 @@ namespace VividWorld.Core.Tests
             string listener = "listener";
             string shamed = "shamed";
 
-            world.SetAffection(speaker, shamed, 35); // base affection >= 30 -> Close/Friend
+            world.SetAffection(speaker, shamed, 60); // base affection > 50 -> Close/Friend
 
             // Suppose this event created a huge grudge against shamed:
             world.Grudges[(speaker, shamed)] = new List<GrudgeEntry>
@@ -600,7 +600,7 @@ namespace VividWorld.Core.Tests
             string shamed = "shamed";
 
             // speaker is Friend of shamed, listener is Unrelated -> HeldBack!
-            world.SetAffection(speaker, shamed, 40);
+            world.SetAffection(speaker, shamed, 60);
             world.SetAffection(listener, shamed, 0);
 
             channel.AddLink(speaker, listener, ChannelKind.SameSettlement, 10, ownRelation: 0, isFamily: false);
@@ -665,7 +665,7 @@ namespace VividWorld.Core.Tests
             traits.Set(new TraitProfile { HeroId = speaker, IsAlive = true, IsLord = true });
 
             var world = new FakeDialogueWorld();
-            world.SetAffection(speaker, shamed, 40); // speaker is Friend of shamed
+            world.SetAffection(speaker, shamed, 60); // speaker is Friend of shamed
             world.SetAffection(player, shamed, 0);   // player is Unrelated
             world.SetAffection(speaker, player, 30); // speaker knows player well
 

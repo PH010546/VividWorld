@@ -21,6 +21,10 @@ namespace VividWorld.Core.Config
         public int DevRelationBoost { get; set; } = 20;
         public bool ListenTally { get; set; } = true;
 
+        /// <summary>true＝每次挑人把挑中那種事的全部候選逐行印出；平常只印前幾組與分布。</summary>
+        public bool LogSituationCandidates { get; set; } = false;
+        public bool LogSecretSpread { get; set; } = false;
+
         [JsonExtensionData]
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
     }

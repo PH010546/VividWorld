@@ -28,6 +28,7 @@ using VividWorld.Core.Persistence;
 using VividWorld.Core.Presentation;
 using VividWorld.Core.Rumors;
 using VividWorld.Core.Situations;
+using VividWorld.Core.Secrets;
 using VividWorld.Core.Util;
 using VividWorld.Dialogue;
 using VividWorld.Patches;
@@ -427,6 +428,46 @@ namespace VividWorld.Debug
                 Consequence_PlayerRelation,
                 DevDialoguePriority);
 
+            // 10. (dev) Secrets they know
+            starter.AddPlayerLine(
+                "vividworld_dev_secrets_they_know",
+                TokenDevPerson,
+                TokenDevResultPerson,
+                "{=VividWorld_Dev_SecretsTheyKnow}(dev) Secrets they know",
+                Condition_AlwaysAvailable,
+                Consequence_SecretsTheyKnow,
+                DevDialoguePriority);
+
+            // 11. (dev) How they would answer about secrets
+            starter.AddPlayerLine(
+                "vividworld_dev_secret_probe_preview",
+                TokenDevPerson,
+                TokenDevResultPerson,
+                "{=VividWorld_Dev_SecretProbePreview}(dev) How they would answer about secrets",
+                Condition_AlwaysAvailable,
+                Consequence_SecretProbePreview,
+                DevDialoguePriority);
+
+            // 12. (dev) Their reactions to leaked secrets
+            starter.AddPlayerLine(
+                "vividworld_dev_secret_reactions",
+                TokenDevPerson,
+                TokenDevResultPerson,
+                "{=VividWorld_Dev_SecretReactions}(dev) Their reactions to leaked secrets",
+                Condition_AlwaysAvailable,
+                Consequence_SecretReactions,
+                DevDialoguePriority);
+
+            // 13. (dev) Secrets they could stake
+            starter.AddPlayerLine(
+                "vividworld_dev_stakeable_secrets",
+                TokenDevPerson,
+                TokenDevResultPerson,
+                "{=VividWorld_Dev_StakeableSecrets}(dev) Secrets they could stake",
+                Condition_AlwaysAvailable,
+                Consequence_StakeableSecrets,
+                DevDialoguePriority);
+
             // Return from person tools to categories
             starter.AddPlayerLine(
                 "vividworld_dev_back_person",
@@ -538,6 +579,56 @@ namespace VividWorld.Debug
                 Consequence_ChronicleBlocks,
                 DevDialoguePriority);
 
+            // 10. (dev) Lords held in a town: any kin or friends there?
+            starter.AddPlayerLine(
+                "vividworld_dev_freed_prisoner_candidates",
+                TokenDevWorld,
+                TokenDevResultWorld,
+                "{=VividWorld_Dev_FreedPrisonerCandidates}(dev) Who would free the prisoners held in towns",
+                Condition_AlwaysAvailable,
+                Consequence_FreedPrisonerCandidates,
+                DevDialoguePriority);
+
+            // 11. (dev) Tournament and kin relation measurements
+            starter.AddPlayerLine(
+                "vividworld_dev_tournament_kin_measure",
+                TokenDevWorld,
+                TokenDevResultWorld,
+                "{=VividWorld_Dev_TournamentKinMeasure}(dev) Tournament and kin relation measurements",
+                Condition_AlwaysAvailable,
+                Consequence_TournamentKinMeasure,
+                DevDialoguePriority);
+
+            // 12. (dev) Secrets in the world
+            starter.AddPlayerLine(
+                "vividworld_dev_secrets_in_world",
+                TokenDevWorld,
+                TokenDevResultWorld,
+                "{=VividWorld_Dev_SecretsInWorld}(dev) Secrets in the world",
+                Condition_AlwaysAvailable,
+                Consequence_SecretsInWorld,
+                DevDialoguePriority);
+
+            // (dev) Native notification muting status
+            starter.AddPlayerLine(
+                "vividworld_dev_native_notification_status",
+                TokenDevWorld,
+                TokenDevResultWorld,
+                "{=VividWorld_Dev_NativeNotificationStatus}(dev) Native notification muting status",
+                Condition_AlwaysAvailable,
+                Consequence_NativeNotificationStatus,
+                DevDialoguePriority);
+
+            // (dev) How old secrets would be converted
+            starter.AddPlayerLine(
+                "vividworld_dev_secret_conversion_preview",
+                TokenDevWorld,
+                TokenDevResultWorld,
+                "{=VividWorld_Dev_SecretConversionPreview}(dev) How old secrets would be converted",
+                Condition_AlwaysAvailable,
+                Consequence_SecretConversionPreview,
+                DevDialoguePriority);
+
             // Return from world tools to categories
             starter.AddPlayerLine(
                 "vividworld_dev_back_world",
@@ -587,6 +678,96 @@ namespace VividWorld.Debug
                 "{=VividWorld_Dev_ForceLeak}(dev) Force the newest secret to leak",
                 Condition_AllowInjection,
                 Consequence_ForceLeak,
+                DevDialoguePriority);
+
+            // 3b. (dev) Make them leak a secret they know
+            starter.AddPlayerLine(
+                "vividworld_dev_force_secret_leak",
+                TokenDevAct,
+                TokenDevResultAct,
+                "{=VividWorld_Dev_ForceSecretLeak}(dev) Make them leak a secret they know",
+                Condition_AllowInjection,
+                Consequence_ForceSecretLeak,
+                DevDialoguePriority);
+
+            // 3c. (dev) Have them confide a secret to you
+            starter.AddPlayerLine(
+                "vividworld_dev_force_confide_to_player",
+                TokenDevAct,
+                TokenDevResultAct,
+                "{=VividWorld_Dev_ForceConfideToPlayer}(dev) Have them confide a secret to you",
+                Condition_AllowInjection,
+                Consequence_ForceConfideToPlayer,
+                DevDialoguePriority);
+
+            // 3d. (dev) Let me hear the public side of a secret they know
+            starter.AddPlayerLine(
+                "vividworld_dev_hear_public_side_of_secret",
+                TokenDevAct,
+                TokenDevResultAct,
+                "{=VividWorld_Dev_HearPublicSideOfSecret}(dev) Let me hear the public side of a secret they know",
+                Condition_AllowInjection,
+                Consequence_HearPublicSideOfSecret,
+                DevDialoguePriority);
+
+            // 3e. (dev) Let them in on a friend's secret
+            starter.AddPlayerLine(
+                "vividworld_dev_let_them_in_on_friend_secret",
+                TokenDevAct,
+                TokenDevResultAct,
+                "{=VividWorld_Dev_LetThemInOnFriendSecret}(dev) Let them in on a friend's secret",
+                Condition_AllowInjection,
+                Consequence_LetThemInOnFriendSecret,
+                DevDialoguePriority);
+
+            // 3e2. (dev) Let them in on an unrelated secret
+            starter.AddPlayerLine(
+                "vividworld_dev_let_them_in_on_unrelated_secret",
+                TokenDevAct,
+                TokenDevResultAct,
+                "{=VividWorld_Dev_LetThemInOnUnrelatedSecret}(dev) Let them in on an unrelated secret",
+                Condition_AllowInjection,
+                Consequence_LetThemInOnUnrelatedSecret,
+                DevDialoguePriority);
+
+            // 3e3. (dev) Make them trust me (relation 51)
+            starter.AddPlayerLine(
+                "vividworld_dev_make_them_trust_me",
+                TokenDevAct,
+                TokenDevResultAct,
+                "{=VividWorld_Dev_MakeThemTrustMe}(dev) Make them trust me (relation 51)",
+                Condition_AllowInjection,
+                Consequence_MakeThemTrustMe,
+                DevDialoguePriority);
+
+            // 3f. (dev) Have them hear a leaked secret
+            starter.AddPlayerLine(
+                "vividworld_dev_have_them_hear_leaked_secret",
+                TokenDevAct,
+                TokenDevResultAct,
+                "{=VividWorld_Dev_HaveThemHearLeakedSecret}(dev) Have them hear a leaked secret",
+                Condition_AllowInjection,
+                Consequence_HaveThemHearLeakedSecret,
+                DevDialoguePriority);
+
+            // 3g. (dev) Run a hunting wager staking a secret here
+            starter.AddPlayerLine(
+                "vividworld_dev_run_hunting_wager_secret",
+                TokenDevAct,
+                TokenDevResultAct,
+                "{=VividWorld_Dev_RunHuntingWagerSecret}(dev) Run a hunting wager staking a secret here",
+                Condition_AllowInjection,
+                Consequence_RunHuntingWagerSecret,
+                DevDialoguePriority);
+
+            // 3h. (dev) Have them secretly free a prisoner
+            starter.AddPlayerLine(
+                "vividworld_dev_secretly_free_prisoner",
+                TokenDevAct,
+                TokenDevResultAct,
+                "{=VividWorld_Dev_SecretlyFreePrisoner}(dev) Have them secretly free a prisoner",
+                Condition_AllowInjection,
+                Consequence_SecretlyFreePrisoner,
                 DevDialoguePriority);
 
             // 4. (dev) Make this person like me more
@@ -958,7 +1139,7 @@ namespace VividWorld.Debug
                 100,
                 null);
 
-            ModLog.Info("Registered 43 developer dialogue lines in 7 categories (person: 9, world: 8, act: 9, belief: 8, made-up talk: 4, player presence: 2, wanderer events: 3) behind main menu entry.");
+            ModLog.Info("Registered 47 developer dialogue lines in 7 categories (person: 9, world: 11, act: 10, belief: 8, made-up talk: 4, player presence: 2, wanderer events: 3) behind main menu entry.");
         }
 
         private static void SetResult(string line)
@@ -1705,6 +1886,975 @@ namespace VividWorld.Debug
             }
         }
 
+        private void Consequence_ForceSecretLeak()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                if (!_config.Debug.AllowTestEventInjection)
+                {
+                    Finish("(dev) force secret leak rejected: allowTestEventInjection is false");
+                    return;
+                }
+
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null)
+                {
+                    Finish("(dev) no conversation hero found");
+                    return;
+                }
+
+                double nowDay = CampaignTime.Now.ToDays;
+                double day = _lastSimulatedDay >= nowDay ? _lastSimulatedDay : nowDay;
+
+                var knownIds = _eventStore.KnownBy?.EventsKnownBy(hero.StringId, day);
+                if (knownIds == null || knownIds.Count == 0)
+                {
+                    string msg = $"[VW] {hero.Name} knows no events";
+                    InformationManager.DisplayMessage(new InformationMessage(msg));
+                    ModLog.Info($"[DevDialogue] {msg}");
+                    Finish($"(dev) {hero.Name} knows no events");
+                    return;
+                }
+
+                var unleakedSecrets = new List<(WorldEvent Event, double LearnedDay, bool IsOwner)>();
+                foreach (var id in knownIds)
+                {
+                    var evt = _eventStore.Load(id);
+                    if (evt == null) continue;
+                    if (evt.Origin != EventOrigin.Secret) continue;
+                    if (evt.State != null && evt.State.Leaked) continue;
+                    if (evt.SecretRetired) continue;
+
+                    bool isOwner = (evt.SecretOwnerHeroIds != null && evt.SecretOwnerHeroIds.Contains(hero.StringId))
+                                || (evt.SecretOwnerHeroIds == null && evt.OriginatorHeroId == hero.StringId);
+                    var entry = evt.KnownBy?.FirstOrDefault(k => k.HeroId == hero.StringId);
+                    double learnedDay = entry?.LearnedDay ?? evt.Day;
+
+                    unleakedSecrets.Add((evt, learnedDay, isOwner));
+                }
+
+                if (unleakedSecrets.Count == 0)
+                {
+                    string msg = $"[VW] {hero.Name} knows no unleaked secrets";
+                    InformationManager.DisplayMessage(new InformationMessage(msg));
+                    ModLog.Info($"[DevDialogue] {msg}");
+                    Finish($"(dev) {hero.Name} knows no unleaked secrets");
+                    return;
+                }
+
+                var eligible = unleakedSecrets.Where(s => !s.IsOwner).OrderBy(s => s.LearnedDay).ToList();
+                if (eligible.Count == 0)
+                {
+                    string msg = $"[VW] {hero.Name} is secret owner for all {unleakedSecrets.Count} known secret(s) and cannot leak them";
+                    InformationManager.DisplayMessage(new InformationMessage(msg));
+                    ModLog.Info($"[DevDialogue] {msg}");
+                    Finish($"(dev) {hero.Name} is secret owner for all known secrets and cannot leak them");
+                    return;
+                }
+
+                var target = eligible[0].Event;
+                string leakerHeroId = hero.StringId;
+
+                target.State.Leaked = true;
+                target.State.LeakedDay = day;
+                target.State.LeakerHeroId = leakerHeroId;
+
+                _eventStore.Stamper?.RestampAfterLeak(target);
+                _eventStore.Upsert(target);
+                _scheduler.PromoteLeakedEvent(target);
+                WorldEventStore.TriggerPublicEventOccurred(target);
+
+                string successMsg = $"[VW] Forced secret '{target.EventId}' to leak via {hero.Name} ({leakerHeroId}).";
+                InformationManager.DisplayMessage(new InformationMessage(successMsg));
+                ModLog.Info($"[DevDialogue] {successMsg}");
+                Finish($"(dev) {hero.Name} leaked {target.EventId} - now in the propagation ring");
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev force secret leak failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_ForceConfideToPlayer()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                if (!_config.Debug.AllowTestEventInjection)
+                {
+                    Finish("(dev) force confide rejected: allowTestEventInjection is false");
+                    return;
+                }
+
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null)
+                {
+                    Finish("(dev) no conversation hero found");
+                    return;
+                }
+
+                var player = Hero.MainHero;
+                if (player == null)
+                {
+                    Finish("(dev) player hero not found");
+                    return;
+                }
+
+                double nowDay = CampaignTime.Now.ToDays;
+                double day = _lastSimulatedDay >= nowDay ? _lastSimulatedDay : nowDay;
+
+                var knownIds = _eventStore.KnownBy?.EventsKnownBy(hero.StringId, day);
+                if (knownIds == null || knownIds.Count == 0)
+                {
+                    string msg = $"[VW] {hero.Name} knows no events";
+                    InformationManager.DisplayMessage(new InformationMessage(msg));
+                    ModLog.Info($"[DevDialogue] {msg}");
+                    Finish($"(dev) {hero.Name} knows no events");
+                    return;
+                }
+
+                var candidateSecrets = new List<WorldEvent>();
+                int secretCount = 0;
+                int alreadyLeakedCount = 0;
+                int playerAlreadyKnowsCount = 0;
+                int playerHarmedCount = 0;
+
+                foreach (var id in knownIds)
+                {
+                    var evt = _eventStore.Load(id);
+                    if (evt == null) continue;
+                    if (evt.Origin != EventOrigin.Secret || evt.SecretRetired) continue;
+
+                    secretCount++;
+
+                    if (evt.State != null && evt.State.Leaked)
+                    {
+                        alreadyLeakedCount++;
+                        continue;
+                    }
+
+                    if (evt.IsKnownBy(player.StringId))
+                    {
+                        playerAlreadyKnowsCount++;
+                        continue;
+                    }
+
+                    if (evt.SecretHarmedHeroIds != null && evt.SecretHarmedHeroIds.Contains(player.StringId))
+                    {
+                        playerHarmedCount++;
+                        continue;
+                    }
+
+                    candidateSecrets.Add(evt);
+                }
+
+                if (candidateSecrets.Count == 0)
+                {
+                    string reason;
+                    if (secretCount == 0)
+                    {
+                        reason = $"{hero.Name} knows no secrets";
+                    }
+                    else if (alreadyLeakedCount == secretCount)
+                    {
+                        reason = $"all {secretCount} secret(s) known by {hero.Name} have already leaked";
+                    }
+                    else if (playerAlreadyKnowsCount > 0 && playerAlreadyKnowsCount + alreadyLeakedCount == secretCount)
+                    {
+                        reason = $"player already knows all unleaked secret(s) known by {hero.Name}";
+                    }
+                    else if (playerHarmedCount > 0)
+                    {
+                        reason = $"player is in the harmed list for all eligible secret(s) known by {hero.Name}";
+                    }
+                    else
+                    {
+                        reason = $"no eligible secrets (known: {secretCount}, leaked: {alreadyLeakedCount}, player knows: {playerAlreadyKnowsCount}, harmed: {playerHarmedCount})";
+                    }
+
+                    string msg = $"[VW] Cannot confide: {reason}";
+                    InformationManager.DisplayMessage(new InformationMessage(msg));
+                    ModLog.Info($"[DevDialogue] {msg}");
+                    Finish($"(dev) {reason}");
+                    return;
+                }
+
+                var earliestSecret = candidateSecrets.OrderBy(e => e.Day).ThenBy(e => e.EventId, StringComparer.Ordinal).First();
+
+                if (_scheduler?.ConfideToPlayerSink != null)
+                {
+                    _scheduler.ConfideToPlayerSink.OnConfideToPlayer(earliestSecret, hero.StringId, day);
+                }
+                else
+                {
+                    PlayerConfideBehavior.Current?.OnConfideToPlayer(earliestSecret, hero.StringId, day);
+                }
+
+                string successMsg = $"[VW] Queued secret '{earliestSecret.EventId}' to be confided by {hero.Name} to player.";
+                InformationManager.DisplayMessage(new InformationMessage(successMsg));
+                ModLog.Info($"[DevDialogue] {successMsg}");
+                Finish($"(dev) {hero.Name} will confide {earliestSecret.EventId} - window will show when eligible");
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev force confide to player failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_HearPublicSideOfSecret()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                if (!_config.Debug.AllowTestEventInjection)
+                {
+                    Finish("(dev) Hear public side of secret rejected: allowTestEventInjection is false");
+                    return;
+                }
+
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null)
+                {
+                    Finish("(dev) no conversation hero found");
+                    return;
+                }
+
+                var player = Hero.MainHero;
+                if (player == null)
+                {
+                    Finish("(dev) player hero not found");
+                    return;
+                }
+
+                if (_dialogs == null || _dialogs.OfferSelector == null)
+                {
+                    Finish("(dev) rumor dialog behavior unavailable");
+                    return;
+                }
+
+                double nowDay = CampaignTime.Now.ToDays;
+                double day = _lastSimulatedDay >= nowDay ? _lastSimulatedDay : nowDay;
+
+                var knownIds = _eventStore.KnownBy?.EventsKnownBy(hero.StringId, day);
+                var knownEvents = new List<WorldEvent>();
+                if (knownIds != null)
+                {
+                    foreach (var id in knownIds)
+                    {
+                        var e = _eventStore.Load(id);
+                        if (e != null) knownEvents.Add(e);
+                    }
+                }
+
+                Func<string, bool> isPlayerHeard = id =>
+                    (_dialogs.PlayerHeardLog != null && _dialogs.PlayerHeardLog.Contains(id)) ||
+                    (_eventStore.KnownBy != null && _eventStore.KnownBy.EventsKnownBy(player.StringId, day).Contains(id));
+
+                var pickResult = SecretDevPicker.SelectPublicSideSecret(
+                    knownEvents,
+                    isPlayerHeard,
+                    _eventStore.Load);
+
+                if (!pickResult.IsEligible || pickResult.ChosenSecret == null || pickResult.LinkedPublicEvent == null)
+                {
+                    string failMsg = $"[VW] Cannot hear public side: {pickResult.SummaryReason}";
+                    InformationManager.DisplayMessage(new InformationMessage(failMsg));
+                    ModLog.Info($"[DevDialogue] {failMsg}");
+                    Finish($"(dev) {pickResult.SummaryReason}");
+                    return;
+                }
+
+                var secretEvt = pickResult.ChosenSecret;
+                var pubEvt = pickResult.LinkedPublicEvent;
+
+                bool heroWasAdded = false;
+                if (!pubEvt.IsKnownBy(hero.StringId))
+                {
+                    var entry = new KnownByEntry
+                    {
+                        HeroId = hero.StringId,
+                        Hop = 1,
+                        LearnedDay = day,
+                        SourceHeroId = null,
+                        KnownFactIds = pubEvt.Facts != null ? pubEvt.Facts.Select(f => f.Id).ToList() : new List<string>()
+                    };
+                    pubEvt.KnownBy.Add(entry);
+                    _eventStore.Upsert(pubEvt);
+                    _eventStore.KnownBy?.NoteKnower(hero.StringId, pubEvt.EventId, pubEvt.Day);
+                    heroWasAdded = true;
+                }
+
+                var candidate = new RumorCandidate
+                {
+                    Event = pubEvt,
+                    TellerHop = pubEvt.EntryFor(hero.StringId)?.Hop ?? 1,
+                    PlayerExistingHop = null,
+                    SourceHeroId = pubEvt.EntryFor(hero.StringId)?.SourceHeroId,
+                    IsCorrection = false
+                };
+
+                var tellerProfile = _dialogs.BuildSocialProfile(hero);
+                var offer = _dialogs.OfferSelector.BuildOffer(candidate, tellerProfile, day, VolunteerTier.Full);
+                string heroName = hero.Name?.ToString() ?? hero.StringId;
+                _dialogs.ApplyOfferAndRecord(offer, pubEvt, hero.StringId, day, heroName);
+                _dialogs.InvalidateCache();
+
+                string ownerNames = secretEvt.SecretOwnerHeroIds != null && secretEvt.SecretOwnerHeroIds.Count > 0
+                    ? string.Join(", ", secretEvt.SecretOwnerHeroIds.Select(id => _heroLookup?.Get(id)?.Name.ToString() ?? Hero.Find(id)?.Name.ToString() ?? id))
+                    : "none";
+
+                string successMsg = $"[VW] Heard public event '{pubEvt.EventId}' ({pubEvt.Type}) for secret '{secretEvt.EventId}' ({secretEvt.Type}, owners: {ownerNames}) from {heroName}{(heroWasAdded ? " (added as knower hop 1)" : "")}";
+                InformationManager.DisplayMessage(new InformationMessage(successMsg));
+                ModLog.Info($"[DevDialogue] {successMsg}");
+                Finish($"(dev) Heard public side: {pubEvt.EventId} ({pubEvt.Type}) of secret {secretEvt.EventId} ({secretEvt.Type}, owners: {ownerNames}) from {heroName}");
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev hear public side of secret failed", ex);
+                Finish($"(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_LetThemInOnFriendSecret()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                if (!_config.Debug.AllowTestEventInjection)
+                {
+                    Finish("(dev) Let them in on friend secret rejected: allowTestEventInjection is false");
+                    return;
+                }
+
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null)
+                {
+                    Finish("(dev) no conversation hero found");
+                    return;
+                }
+
+                if (_scheduler == null)
+                {
+                    Finish("(dev) propagation scheduler unavailable");
+                    return;
+                }
+
+                double nowDay = CampaignTime.Now.ToDays;
+                double day = _lastSimulatedDay >= nowDay ? _lastSimulatedDay : nowDay;
+
+                var allEvents = _eventStore.Index?.Entries != null
+                    ? _eventStore.Index.Entries.Select(entry => _eventStore.Load(entry.EventId)).Where(e => e != null && e.Origin == EventOrigin.Secret).Select(e => e!).ToList()
+                    : new List<WorldEvent>();
+
+                var secretLookup = new GameSecretRelationshipLookup(_heroLookup);
+
+                var pickResult = SecretDevPicker.SelectFriendSecret(
+                    allEvents,
+                    hero.StringId,
+                    secretLookup,
+                    _feelingWorld,
+                    SituationCatalogStore.EventCatalog != null ? type => SituationCatalogStore.EventCatalog.ByType(type) : null);
+
+                if (!pickResult.IsEligible || pickResult.ChosenSecret == null || string.IsNullOrEmpty(pickResult.SourceOwnerHeroId))
+                {
+                    string failMsg = $"[VW] Cannot let in on friend secret: {pickResult.SummaryReason}";
+                    InformationManager.DisplayMessage(new InformationMessage(failMsg));
+                    ModLog.Info($"[DevDialogue] {failMsg}");
+                    Finish($"(dev) {pickResult.SummaryReason}");
+                    return;
+                }
+
+                var secretEvt = pickResult.ChosenSecret;
+                string sourceOwnerId = pickResult.SourceOwnerHeroId!;
+                string relationBoostNote = string.Empty;
+
+                if (pickResult.RequiresRelationBoost)
+                {
+                    string targetOwnerId = pickResult.TargetOwnerHeroId ?? sourceOwnerId;
+                    var ownerHero = _heroLookup?.Get(targetOwnerId) ?? Hero.Find(targetOwnerId);
+                    if (ownerHero == null)
+                    {
+                        string failMsg = $"[VW] Cannot find owner hero '{targetOwnerId}' to boost relation";
+                        InformationManager.DisplayMessage(new InformationMessage(failMsg));
+                        ModLog.Info($"[DevDialogue] {failMsg}");
+                        Finish($"(dev) relation boost failed: owner hero '{targetOwnerId}' not found");
+                        return;
+                    }
+
+                    hero.SetPersonalRelation(ownerHero, 51);
+                    int? aff = secretLookup.GetAffection(hero.StringId, ownerHero.StringId);
+                    if (aff == null || aff.Value <= 50)
+                    {
+                        string failMsg = $"[VW] Set relation to 51 between {hero.StringId} and {ownerHero.StringId} failed: read back affection was {aff?.ToString() ?? "null"} (<= 50)";
+                        InformationManager.DisplayMessage(new InformationMessage(failMsg));
+                        ModLog.Info($"[DevDialogue] {failMsg}");
+                        Finish($"(dev) relation boost failed: read back affection was {aff?.ToString() ?? "null"} (<= 50)");
+                        return;
+                    }
+
+                    string ownerDisplayName = ownerHero.Name?.ToString() ?? ownerHero.StringId;
+                    relationBoostNote = $", relation with {ownerDisplayName} boosted to 51 (readback {aff.Value})";
+                }
+
+                _scheduler.RecordConfidedKnower(secretEvt, sourceOwnerId, hero.StringId, day);
+
+                string heroName = hero.Name?.ToString() ?? hero.StringId;
+                string sourceOwnerName = _heroLookup?.Get(sourceOwnerId)?.Name.ToString() ?? Hero.Find(sourceOwnerId)?.Name.ToString() ?? sourceOwnerId;
+                string ownerNames = secretEvt.SecretOwnerHeroIds != null && secretEvt.SecretOwnerHeroIds.Count > 0
+                    ? string.Join(", ", secretEvt.SecretOwnerHeroIds.Select(id => _heroLookup?.Get(id)?.Name.ToString() ?? Hero.Find(id)?.Name.ToString() ?? id))
+                    : sourceOwnerName;
+
+                string successMsg = $"[VW] Let {heroName} in on secret '{secretEvt.EventId}' ({secretEvt.Type}, owners: {ownerNames}) from {sourceOwnerName} (hop 1{relationBoostNote})";
+                InformationManager.DisplayMessage(new InformationMessage(successMsg));
+                ModLog.Info($"[DevDialogue] {successMsg}");
+                Finish($"(dev) {heroName} now knows secret {secretEvt.EventId} ({secretEvt.Type}, owners: {ownerNames}) from {sourceOwnerName} (hop 1{relationBoostNote})");
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev let them in on friend secret failed", ex);
+                Finish($"(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_LetThemInOnUnrelatedSecret()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                if (!_config.Debug.AllowTestEventInjection)
+                {
+                    Finish("(dev) Let them in on unrelated secret rejected: allowTestEventInjection is false");
+                    return;
+                }
+
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null)
+                {
+                    Finish("(dev) no conversation hero found");
+                    return;
+                }
+
+                if (_scheduler == null)
+                {
+                    Finish("(dev) propagation scheduler unavailable");
+                    return;
+                }
+
+                double nowDay = CampaignTime.Now.ToDays;
+                double day = _lastSimulatedDay >= nowDay ? _lastSimulatedDay : nowDay;
+
+                var allEvents = _eventStore.Index?.Entries != null
+                    ? _eventStore.Index.Entries.Select(entry => _eventStore.Load(entry.EventId)).Where(e => e != null && e.Origin == EventOrigin.Secret).Select(e => e!).ToList()
+                    : new List<WorldEvent>();
+
+                var secretLookup = new GameSecretRelationshipLookup(_heroLookup);
+
+                var pickResult = SecretDevPicker.SelectUnrelatedSecret(
+                    allEvents,
+                    hero.StringId,
+                    secretLookup,
+                    _feelingWorld,
+                    SituationCatalogStore.EventCatalog != null ? type => SituationCatalogStore.EventCatalog.ByType(type) : null);
+
+                if (!pickResult.IsEligible || pickResult.ChosenSecret == null || string.IsNullOrEmpty(pickResult.FirstOwnerHeroId))
+                {
+                    string failMsg = $"[VW] Cannot let in on unrelated secret: {pickResult.SummaryReason}";
+                    InformationManager.DisplayMessage(new InformationMessage(failMsg));
+                    ModLog.Info($"[DevDialogue] {failMsg}");
+                    Finish($"(dev) {pickResult.SummaryReason}");
+                    return;
+                }
+
+                var secretEvt = pickResult.ChosenSecret;
+                string firstOwnerId = pickResult.FirstOwnerHeroId!;
+
+                _scheduler.RecordConfidedKnower(secretEvt, firstOwnerId, hero.StringId, day);
+
+                string heroName = hero.Name?.ToString() ?? hero.StringId;
+                string firstOwnerName = _heroLookup?.Get(firstOwnerId)?.Name.ToString() ?? Hero.Find(firstOwnerId)?.Name.ToString() ?? firstOwnerId;
+                string ownerNames = secretEvt.SecretOwnerHeroIds != null && secretEvt.SecretOwnerHeroIds.Count > 0
+                    ? string.Join(", ", secretEvt.SecretOwnerHeroIds.Select(id => _heroLookup?.Get(id)?.Name.ToString() ?? Hero.Find(id)?.Name.ToString() ?? id))
+                    : firstOwnerName;
+
+                string successMsg = $"[VW] Let {heroName} in on unrelated secret '{secretEvt.EventId}' ({secretEvt.Type}, owners: {ownerNames}) from {firstOwnerName}";
+                InformationManager.DisplayMessage(new InformationMessage(successMsg));
+                ModLog.Info($"[DevDialogue] {successMsg}");
+                Finish($"(dev) {heroName} now knows secret {secretEvt.EventId} ({secretEvt.Type}, owners: {ownerNames}) from {firstOwnerName}");
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev let them in on unrelated secret failed", ex);
+                Finish($"(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_MakeThemTrustMe()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                if (!_config.Debug.AllowTestEventInjection)
+                {
+                    Finish("(dev) Make them trust me rejected: allowTestEventInjection is false");
+                    return;
+                }
+
+                var hero = Hero.OneToOneConversationHero;
+                var player = Hero.MainHero;
+                if (hero == null || player == null)
+                {
+                    Finish("(dev) no conversation hero or player found");
+                    return;
+                }
+
+                var secretLookup = new GameSecretRelationshipLookup(_heroLookup);
+                int? beforeAff = secretLookup.GetAffection(hero.StringId, player.StringId);
+
+                hero.SetPersonalRelation(player, 51);
+
+                int? afterAff = new GameSecretRelationshipLookup(_heroLookup).GetAffection(hero.StringId, player.StringId);
+
+                string heroName = hero.Name?.ToString() ?? hero.StringId;
+                string beforeStr = beforeAff.HasValue ? beforeAff.Value.ToString() : "null";
+                string afterStr = afterAff.HasValue ? afterAff.Value.ToString() : "null";
+
+                if (afterAff.HasValue && afterAff.Value > 50)
+                {
+                    string successMsg = $"[VW] Set relation to 51 on {heroName}: before={beforeStr}, after={afterStr}";
+                    InformationManager.DisplayMessage(new InformationMessage(successMsg));
+                    ModLog.Info($"[DevDialogue] {successMsg}");
+                    Finish($"(dev) {heroName} now trusts me: relation {beforeStr} -> {afterStr} (> 50)");
+                }
+                else
+                {
+                    string failMsg = $"[VW] Make {heroName} trust me failed: before={beforeStr}, read back={afterStr} (<= 50)";
+                    InformationManager.DisplayMessage(new InformationMessage(failMsg));
+                    ModLog.Info($"[DevDialogue] {failMsg}");
+                    Finish($"(dev) make {heroName} trust me failed: relation {beforeStr} -> {afterStr} (expected > 50)");
+                }
+
+                _dialogs?.InvalidateCache();
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev make them trust me failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_HaveThemHearLeakedSecret()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                if (!_config.Debug.AllowTestEventInjection)
+                {
+                    Finish("(dev) Have them hear leaked secret rejected: allowTestEventInjection is false");
+                    return;
+                }
+
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null)
+                {
+                    Finish("(dev) no conversation hero found");
+                    return;
+                }
+
+                if (_scheduler == null)
+                {
+                    Finish("(dev) propagation scheduler unavailable");
+                    return;
+                }
+
+                double nowDay = CampaignTime.Now.ToDays;
+                double day = _lastSimulatedDay >= nowDay ? _lastSimulatedDay : nowDay;
+
+                var allEvents = _eventStore.Index?.Entries != null
+                    ? _eventStore.Index.Entries.Select(entry => _eventStore.Load(entry.EventId)).Where(e => e != null && e.Origin == EventOrigin.Secret).Select(e => e!).ToList()
+                    : new List<WorldEvent>();
+
+                var secretLookup = new GameSecretRelationshipLookup(_heroLookup);
+
+                var pickResult = SecretDevPicker.SelectLeakedSecretForHearer(
+                    allEvents,
+                    hero.StringId,
+                    secretLookup,
+                    _traitLookup,
+                    SituationCatalogStore.EventCatalog != null ? type => SituationCatalogStore.EventCatalog.ByType(type) : null);
+
+                if (!pickResult.IsEligible || pickResult.ChosenSecret == null)
+                {
+                    string failMsg = $"[VW] Cannot have them hear leaked secret: {pickResult.SummaryReason}";
+                    InformationManager.DisplayMessage(new InformationMessage(failMsg));
+                    ModLog.Info($"[DevDialogue] {failMsg}");
+                    Finish($"(dev) {pickResult.SummaryReason}");
+                    return;
+                }
+
+                var secretEvt = pickResult.ChosenSecret;
+                string heroName = hero.Name?.ToString() ?? hero.StringId;
+                string ownerNames = secretEvt.SecretOwnerHeroIds != null && secretEvt.SecretOwnerHeroIds.Count > 0
+                    ? string.Join(", ", secretEvt.SecretOwnerHeroIds.Select(id => _heroLookup?.Get(id)?.Name.ToString() ?? Hero.Find(id)?.Name.ToString() ?? id))
+                    : "none";
+
+                string forcedLeakNote = string.Empty;
+                if (pickResult.WasForcedLeak)
+                {
+                    string leakerHeroId = pickResult.LeakerHeroId ?? SecretDevPicker.DetermineLeakerHeroId(secretEvt, hero.StringId);
+                    if (secretEvt.State == null)
+                    {
+                        secretEvt.State = new RumorState();
+                    }
+                    secretEvt.State.Leaked = true;
+                    secretEvt.State.LeakedDay = day;
+                    secretEvt.State.LeakerHeroId = leakerHeroId;
+
+                    _eventStore.Stamper?.RestampAfterLeak(secretEvt);
+                    _eventStore.Upsert(secretEvt);
+                    _scheduler.PromoteLeakedEvent(secretEvt);
+                    WorldEventStore.TriggerPublicEventOccurred(secretEvt);
+
+                    forcedLeakNote = ", leaked in passing by dev tool";
+                }
+
+                var outcome = _scheduler.SettleSecretReaction(secretEvt, hero, day);
+
+                string outcomeSummary;
+                if (outcome != null && outcome.Changes.Count > 0)
+                {
+                    var changeParts = outcome.Changes.Select(c =>
+                    {
+                        string targetName = _heroLookup?.Get(c.TargetHeroId)?.Name.ToString() ?? Hero.Find(c.TargetHeroId)?.Name.ToString() ?? c.TargetHeroId;
+                        return $"toward {targetName}: {c.Amount:+0.##;-0.##;0} (ledgerOnly={c.LedgerOnly})";
+                    });
+                    outcomeSummary = string.Join("; ", changeParts);
+                }
+                else if (outcome != null && outcome.Exclusions.Count > 0)
+                {
+                    outcomeSummary = $"no reaction ({string.Join(", ", outcome.Exclusions.Select(x => x.Reason))})";
+                }
+                else if (outcome != null && !string.IsNullOrEmpty(outcome.LogDetail))
+                {
+                    outcomeSummary = $"no reaction ({outcome.LogDetail})";
+                }
+                else
+                {
+                    outcomeSummary = "no reaction";
+                }
+
+                string successMsg = $"[VW] {heroName} heard leaked secret '{secretEvt.EventId}' ({secretEvt.Type}, owners: {ownerNames}{forcedLeakNote}): {outcomeSummary}";
+                InformationManager.DisplayMessage(new InformationMessage(successMsg));
+                ModLog.Info($"[DevDialogue] {successMsg}");
+                Finish($"(dev) {heroName} heard leaked {secretEvt.EventId} ({secretEvt.Type}, owners: {ownerNames}{forcedLeakNote}): {outcomeSummary}");
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev have them hear leaked secret failed", ex);
+                Finish($"(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_RunHuntingWagerSecret()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                if (!_config.Debug.AllowTestEventInjection)
+                {
+                    Finish("(dev) Run hunting wager rejected: allowTestEventInjection is false");
+                    return;
+                }
+
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null)
+                {
+                    Finish("(dev) no conversation hero found");
+                    return;
+                }
+
+                var settlement = hero.CurrentSettlement;
+                if (settlement == null)
+                {
+                    Finish($"(dev) {hero.Name} is not in a settlement");
+                    return;
+                }
+
+                var template = SituationCatalogStore.Catalog.Situations.FirstOrDefault(s => string.Equals(s.Id, "hunt_wager", StringComparison.OrdinalIgnoreCase));
+                if (template == null)
+                {
+                    Finish("(dev) Situation 'hunt_wager' not found in catalog");
+                    return;
+                }
+
+                double nowDay = CampaignTime.Now.ToDays;
+                double day = _lastSimulatedDay >= nowDay ? _lastSimulatedDay : nowDay;
+                string? playerHeroId = Hero.MainHero?.StringId;
+
+                var presentHeroes = EligibilityLabel.GetPresentHeroesAtSettlement(settlement);
+                var candidateChallengers = presentHeroes
+                    .Where(h => h != null && !string.IsNullOrEmpty(h.StringId) &&
+                                h != Hero.MainHero && h.StringId != playerHeroId &&
+                                h != hero && h.StringId != hero.StringId &&
+                                (_traitLookup != null && Eligibility.IsEligible(_traitLookup, h.StringId)))
+                    .ToList();
+
+                var knownIds = _eventStore.KnownBy?.EventsKnownBy(hero.StringId, day);
+                var bettorKnownSecrets = new List<WorldEvent>();
+                if (knownIds != null)
+                {
+                    foreach (var id in knownIds)
+                    {
+                        var e = _eventStore.Load(id);
+                        if (e != null && e.Origin == EventOrigin.Secret)
+                        {
+                            bettorKnownSecrets.Add(e);
+                        }
+                    }
+                }
+
+                var pairResult = SecretDevPicker.FindFirstStakeablePair(
+                    hero.StringId,
+                    candidateChallengers.Select(c => c.StringId),
+                    playerHeroId,
+                    bettorKnownSecrets);
+
+                if (!pairResult.IsEligible || string.IsNullOrEmpty(pairResult.ChosenOpponentHeroId) || pairResult.ChosenSecret == null)
+                {
+                    string failMsg = $"[VW] Cannot run hunting wager: {pairResult.SummaryReason}";
+                    InformationManager.DisplayMessage(new InformationMessage(failMsg));
+                    ModLog.Info($"[DevDialogue] {failMsg}");
+                    Finish($"(dev) {pairResult.SummaryReason}");
+                    return;
+                }
+
+                var opponentHero = candidateChallengers.First(c => c.StringId == pairResult.ChosenOpponentHeroId);
+                var stakedSecret = pairResult.ChosenSecret;
+
+                var nonDerived = new Dictionary<string, Hero>
+                {
+                    ["challenged"] = hero,
+                    ["challenger"] = opponentHero
+                };
+
+                var history = _eventStore.Index?.Entries != null
+                    ? new SituationHistoryIndex(_eventStore.Index.Entries, day)
+                    : null;
+
+                var eval = SituationRunner.Evaluate(
+                    template,
+                    nonDerived,
+                    day,
+                    _traitLookup,
+                    history,
+                    heroFactsCache: null,
+                    heroLookup: _heroLookup,
+                    eventStore: _eventStore,
+                    config: _config,
+                    forced: true);
+
+                var runResult = SituationRunner.Execute(
+                    template,
+                    eval,
+                    day,
+                    "forced by dev",
+                    _eventStore,
+                    _traitLookup,
+                    _config,
+                    _heroLookup,
+                    forced: true,
+                    forcedBranchId: "secret_stake");
+
+                if (!runResult.Started || runResult.EventIds.Count == 0)
+                {
+                    string reason = runResult.AbortReason ?? "unknown";
+                    string failMsg = $"[VW] Hunt wager with secret stake failed: {reason}";
+                    InformationManager.DisplayMessage(new InformationMessage(failMsg));
+                    ModLog.Info($"[DevDialogue] {failMsg}");
+                    Finish($"(dev) hunt_wager: failed ({reason}). See log.txt");
+                    return;
+                }
+
+                string heroName = hero.Name?.ToString() ?? hero.StringId;
+                string oppName = opponentHero.Name?.ToString() ?? opponentHero.StringId;
+                string stakedOwnerName = stakedSecret.SecretOwnerHeroIds != null && stakedSecret.SecretOwnerHeroIds.Count > 0
+                    ? string.Join(", ", stakedSecret.SecretOwnerHeroIds.Select(id => _heroLookup?.Get(id)?.Name.ToString() ?? Hero.Find(id)?.Name.ToString() ?? id))
+                    : "none";
+
+                string successMsg = $"[VW] Hunt wager with secret stake: challenged {heroName} vs challenger {oppName}. Staked secret: '{stakedSecret.EventId}' ({stakedSecret.Type}, owners: {stakedOwnerName})";
+                InformationManager.DisplayMessage(new InformationMessage(successMsg));
+                ModLog.Info($"[DevDialogue] {successMsg}");
+                Finish($"(dev) Hunt wager: {heroName} vs {oppName}, staked secret {stakedSecret.EventId} ({stakedSecret.Type}, owners: {stakedOwnerName})");
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev run hunting wager failed", ex);
+                Finish($"(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_SecretlyFreePrisoner()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                if (!_config.Debug.AllowTestEventInjection)
+                {
+                    Finish("(dev) Secretly free prisoner rejected: allowTestEventInjection is false");
+                    return;
+                }
+
+                var freer = Hero.OneToOneConversationHero;
+                if (freer == null)
+                {
+                    Finish("(dev) no conversation hero found");
+                    return;
+                }
+
+                var allAlive = _heroLookup?.AllAlive ?? Hero.AllAliveHeroes;
+                var prisoners = allAlive.Where(h =>
+                    h != null &&
+                    h.IsAlive &&
+                    h.IsPrisoner &&
+                    h.IsLord &&
+                    !h.IsHumanPlayerCharacter &&
+                    h != Hero.MainHero &&
+                    h != freer).ToList();
+
+                var dungeonPrisoners = new List<(Hero Prisoner, Settlement Settlement)>();
+                foreach (var p in prisoners)
+                {
+                    var party = p.PartyBelongedToAsPrisoner;
+                    if (party != null && party.IsSettlement && party.Settlement != null && (party.Settlement.IsTown || party.Settlement.IsCastle))
+                    {
+                        dungeonPrisoners.Add((p, party.Settlement));
+                    }
+                }
+
+                if (dungeonPrisoners.Count == 0)
+                {
+                    Finish("(dev) No lords imprisoned in settlement dungeons in the world.");
+                    return;
+                }
+
+                var secretLookup = new GameSecretRelationshipLookup(_heroLookup);
+
+                var candidateInfos = dungeonPrisoners.Select(dp =>
+                {
+                    bool isKin = secretLookup.IsKin(freer.StringId, dp.Prisoner.StringId);
+                    int aff = secretLookup.GetAffection(freer.StringId, dp.Prisoner.StringId) ?? _feelingWorld?.Affection(freer.StringId, dp.Prisoner.StringId) ?? 0;
+                    return new FreePrisonerCandidate
+                    {
+                        PrisonerHeroId = dp.Prisoner.StringId,
+                        SettlementId = dp.Settlement.StringId,
+                        IsKin = isKin,
+                        Relation = aff
+                    };
+                }).ToList();
+
+                var pickResult = SecretDevPicker.SelectPrisonerToFree(freer.StringId, candidateInfos);
+                if (!pickResult.IsEligible || pickResult.ChosenPrisoner == null)
+                {
+                    string failMsg = $"[VW] Cannot free prisoner: {pickResult.SummaryReason}";
+                    InformationManager.DisplayMessage(new InformationMessage(failMsg));
+                    ModLog.Info($"[DevDialogue] {failMsg}");
+                    Finish($"(dev) {pickResult.SummaryReason}");
+                    return;
+                }
+
+                var chosenPair = dungeonPrisoners.First(dp => dp.Prisoner.StringId == pickResult.ChosenPrisoner.PrisonerHeroId);
+                var chosenPrisoner = chosenPair.Prisoner;
+                var prisonerSettlement = chosenPair.Settlement;
+
+                var template = SituationCatalogStore.Catalog.Situations.FirstOrDefault(s => string.Equals(s.Id, "freed_prisoner_secretly", StringComparison.OrdinalIgnoreCase));
+                if (template == null)
+                {
+                    Finish("(dev) Situation 'freed_prisoner_secretly' not found in catalog");
+                    return;
+                }
+
+                double nowDay = CampaignTime.Now.ToDays;
+                double day = _lastSimulatedDay >= nowDay ? _lastSimulatedDay : nowDay;
+
+                var nonDerived = new Dictionary<string, Hero>
+                {
+                    ["prisoner"] = chosenPrisoner
+                };
+                var preBoundDerived = new Dictionary<string, Hero>
+                {
+                    ["freer"] = freer
+                };
+
+                var history = _eventStore.Index?.Entries != null
+                    ? new SituationHistoryIndex(_eventStore.Index.Entries, day)
+                    : null;
+
+                var conditionsOverride = template.Conditions
+                    .Where(c => !string.Equals(c.Type, "chance", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                var eval = SituationRunner.Evaluate(
+                    template,
+                    nonDerived,
+                    day,
+                    _traitLookup,
+                    history,
+                    heroFactsCache: null,
+                    heroLookup: _heroLookup,
+                    eventStore: _eventStore,
+                    config: _config,
+                    forced: true,
+                    preBoundDerivedHeroes: preBoundDerived,
+                    conditionsOverride: conditionsOverride,
+                    preResolvedSettlement: prisonerSettlement);
+
+                if (prisonerSettlement != null)
+                {
+                    eval.Settlement = prisonerSettlement;
+                    eval.SettlementId = prisonerSettlement.StringId;
+                }
+
+                var runResult = SituationRunner.Execute(
+                    template,
+                    eval,
+                    day,
+                    "forced by dev",
+                    _eventStore,
+                    _traitLookup,
+                    _config,
+                    _heroLookup,
+                    forced: true);
+
+                if (!runResult.Started || runResult.EventIds.Count == 0)
+                {
+                    string reason = runResult.AbortReason ?? "unknown";
+                    string failMsg = $"[VW] Secretly free prisoner failed: {reason}";
+                    InformationManager.DisplayMessage(new InformationMessage(failMsg));
+                    ModLog.Info($"[DevDialogue] {failMsg}");
+                    Finish($"(dev) freed_prisoner_secretly: failed ({reason}). See log.txt");
+                    return;
+                }
+
+                string freerName = freer.Name?.ToString() ?? freer.StringId;
+                string prisonerName = chosenPrisoner.Name?.ToString() ?? chosenPrisoner.StringId;
+                string settlementName = prisonerSettlement?.Name?.ToString() ?? prisonerSettlement?.StringId ?? "(settlement)";
+                string eventId = runResult.EventIds.FirstOrDefault() ?? "(event submitted)";
+
+                string forcedNote = pickResult.IsForcedNonFriend ? ", they are not kin or friends, forced by dev tool" : "";
+                string successMsg = $"[VW] Secretly freed prisoner: {freerName} freed {prisonerName} from {settlementName} (native prisoner status unchanged{forcedNote}). Secret: {eventId}";
+                InformationManager.DisplayMessage(new InformationMessage(successMsg));
+                ModLog.Info($"[DevDialogue] {successMsg}");
+                Finish($"(dev) {freerName} secretly freed {prisonerName} from {settlementName} (native prisoner status unchanged{forcedNote}). Secret: {eventId}");
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev secretly free prisoner failed", ex);
+                Finish($"(dev) failed - see log.txt");
+            }
+        }
+
         private void Consequence_WorldStatus()
         {
             SetResult("(dev) no result - see log.txt");
@@ -1830,6 +2980,285 @@ namespace VividWorld.Debug
             catch (Exception ex)
             {
                 ModLog.Error("Dev chronicle blocks failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_FreedPrisonerCandidates()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var report = FreedPrisonerCandidateSelector.EvaluateAll(_heroLookup, _traitLookup);
+
+                ModLog.Info($"=== Freed Prisoner Candidates Report ===");
+                ModLog.Info($"Total lord prisoners: {report.TotalPrisonersCount}, held in town/castle dungeons: {report.DungeonPrisonersCount}, prisoners with eligible freer: {report.FreerFoundCount}");
+
+                foreach (var item in report.Items)
+                {
+                    var p = item.Prisoner;
+                    var s = item.Settlement;
+                    var res = item.SelectionResult;
+
+                    ModLog.Info($"Prisoner {p.Name} ({p.StringId}) held in {s.Name} ({s.StringId}, faction {s.MapFaction?.Name}):");
+
+                    if (res.EligibleCandidates.Count > 0)
+                    {
+                        foreach (var c in res.EligibleCandidates)
+                        {
+                            var h = _heroLookup?.Get(c.HeroId) ?? Hero.Find(c.HeroId);
+                            string name = h?.Name?.ToString() ?? c.HeroId;
+                            bool isKin = h != null && GameWorldChannel.IsFamilyOf(h, p);
+                            int rel = h != null ? h.GetRelation(p) : 0;
+                            bool isPicked = string.Equals(c.HeroId, res.PickedHeroId, StringComparison.Ordinal);
+                            string tag = isPicked ? "[PICKED] " : "         ";
+                            ModLog.Info($"  {tag}candidate {name} ({c.HeroId}): eligible (relation {rel} > {(isKin ? 30 : 50)}, kin={isKin.ToString().ToLowerInvariant()})");
+                        }
+                    }
+
+                    if (res.Exclusions.Count > 0)
+                    {
+                        foreach (var excl in res.Exclusions)
+                        {
+                            var h = _heroLookup?.Get(excl.HeroId) ?? Hero.Find(excl.HeroId);
+                            string name = h?.Name?.ToString() ?? excl.HeroId;
+                            ModLog.Info($"           excluded {name} ({excl.HeroId}): {excl.Reason}");
+                        }
+                    }
+
+                    if (!res.IsBound)
+                    {
+                        ModLog.Info($"  -> no freer: {res.UnboundReason ?? "no candidates"}");
+                    }
+                    else
+                    {
+                        var picked = _heroLookup?.Get(res.PickedHeroId!) ?? Hero.Find(res.PickedHeroId!);
+                        ModLog.Info($"  -> picked freer: {picked?.Name?.ToString() ?? res.PickedHeroId} ({res.PickedHeroId})");
+                    }
+                }
+
+                string dialogResult = $"Found {report.DungeonPrisonersCount} lord prisoner(s) in dungeons. {report.FreerFoundCount} have lord(s) who would secretly free them. See log.txt for full details.";
+                Finish(dialogResult);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev freed prisoner candidates measure failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_PrisonVisitMeasure_Obsolete()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var allAlive = _heroLookup?.AllAlive ?? (IEnumerable<Hero>?)Hero.AllAliveHeroes ?? Array.Empty<Hero>();
+                var prisoners = allAlive.Where(h =>
+                    h != null &&
+                    h.IsAlive &&
+                    h.IsPrisoner &&
+                    h.IsLord &&
+                    !h.IsHumanPlayerCharacter &&
+                    h != Hero.MainHero).ToList();
+
+                var townPrisoners = new List<(Hero Prisoner, Settlement Town)>();
+                int heldInPartyCount = 0;
+
+                foreach (var p in prisoners)
+                {
+                    var party = p.PartyBelongedToAsPrisoner;
+                    if (party != null && party.IsSettlement && party.Settlement != null)
+                    {
+                        townPrisoners.Add((p, party.Settlement));
+                    }
+                    else
+                    {
+                        heldInPartyCount++;
+                    }
+                }
+
+                // Lords present in settlements (alive, not prisoner, lord, not player)
+                var lordsBySettlement = allAlive
+                    .Where(h => h != null &&
+                                h.IsAlive &&
+                                !h.IsPrisoner &&
+                                h.IsLord &&
+                                !h.IsHumanPlayerCharacter &&
+                                h != Hero.MainHero &&
+                                h.CurrentSettlement != null)
+                    .GroupBy(h => h.CurrentSettlement!)
+                    .ToDictionary(g => g.Key, g => g.ToList());
+
+                var townFacts = new List<TownPrisonerFact>();
+
+                if (prisoners.Count == 0)
+                {
+                    ModLog.Info("prison visit measure: no lord prisoners found in world.");
+                }
+
+                foreach (var (prisoner, town) in townPrisoners)
+                {
+                    var captorFaction = town.OwnerClan?.MapFaction;
+                    var lordsInTown = lordsBySettlement.TryGetValue(town, out var inTown)
+                        ? inTown.Where(h => h != prisoner).ToList()
+                        : new List<Hero>();
+
+                    var lordFacts = new List<PrisonVisitLordFact>();
+                    foreach (var lord in lordsInTown)
+                    {
+                        bool isCaptorSide = captorFaction != null && lord.MapFaction == captorFaction;
+                        bool isKin = GameWorldChannel.IsFamilyOf(prisoner, lord);
+                        int relation = prisoner.GetBaseHeroRelation(lord);
+
+                        var lordFact = new PrisonVisitLordFact(
+                            lord.StringId ?? string.Empty,
+                            lord.Name?.ToString() ?? "unknown",
+                            isCaptorSide,
+                            isKin,
+                            relation);
+                        lordFacts.Add(lordFact);
+                    }
+
+                    var prisonerFact = new TownPrisonerFact(
+                        prisoner.StringId ?? string.Empty,
+                        prisoner.Name?.ToString() ?? "unknown",
+                        town.StringId ?? string.Empty,
+                        town.Name?.ToString() ?? "unknown",
+                        town.OwnerClan?.Name?.ToString() ?? "none",
+                        town.OwnerClan?.MapFaction?.Name?.ToString() ?? "none",
+                        prisoner.MapFaction?.Name?.ToString() ?? "none",
+                        lordFacts);
+                    townFacts.Add(prisonerFact);
+
+                    ModLog.Info($"prison visit measure: prisoner {prisonerFact.PrisonerName} ({prisonerFact.PrisonerId}) held in {prisonerFact.SettlementName} ({prisonerFact.SettlementId}), owner clan {prisonerFact.OwnerClanName} ({prisonerFact.OwnerFactionName}), prisoner faction {prisonerFact.PrisonerFactionName}");
+
+                    if (lordFacts.Count == 0)
+                    {
+                        ModLog.Info("prison visit measure:   (no other alive non-prisoner lords in town)");
+                    }
+                    else
+                    {
+                        foreach (var lf in lordFacts)
+                        {
+                            ModLog.Info($"prison visit measure:   lord {lf.Name} ({lf.HeroId}): {PrisonVisitMeasure.DescribeLord(lf)}");
+                        }
+                    }
+                }
+
+                var tally = PrisonVisitMeasure.ComputeTally(
+                    totalLordPrisoners: prisoners.Count,
+                    heldInTownCount: townPrisoners.Count,
+                    heldInPartyCount: heldInPartyCount,
+                    townFacts: townFacts);
+
+                string summaryLine = tally.FormatSummaryLine();
+                ModLog.Info(summaryLine);
+
+                Finish(PrisonVisitMeasure.FormatDialogResult(tally));
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev prison visit measure failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_TournamentKinMeasure()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                double currentDay = CampaignTime.Now.ToDays;
+
+                // 1. 比武大會累計
+                var tournamentTally = TournamentMeasureBehavior.Tally;
+                var tournamentReportLines = tournamentTally.FormatReportLines(currentDay);
+                foreach (var line in tournamentReportLines)
+                {
+                    ModLog.Info(line);
+                }
+
+                // 2. 自家人之間的好感：活著、不是孩子的領主，兩兩配對裡是自家人的
+                var allAlive = _heroLookup?.AllAlive ?? (IEnumerable<Hero>?)Hero.AllAliveHeroes ?? Array.Empty<Hero>();
+                var aliveLords = allAlive
+                    .Where(h => h != null &&
+                                h.IsAlive &&
+                                !h.IsChild &&
+                                h.IsLord &&
+                                !h.IsHumanPlayerCharacter &&
+                                h != Hero.MainHero)
+                    .OrderBy(h => h.StringId, StringComparer.Ordinal)
+                    .ToList();
+
+                var kinPairs = new List<KinPairFact>();
+                for (int i = 0; i < aliveLords.Count; i++)
+                {
+                    var lordA = aliveLords[i];
+                    for (int j = i + 1; j < aliveLords.Count; j++)
+                    {
+                        var lordB = aliveLords[j];
+                        if (GameWorldChannel.IsFamilyOf(lordA, lordB))
+                        {
+                            int relation = lordA.GetBaseHeroRelation(lordB);
+                            int calcA = lordA.GetTraitLevel(TaleWorlds.CampaignSystem.CharacterDevelopment.DefaultTraits.Calculating);
+                            int calcB = lordB.GetTraitLevel(TaleWorlds.CampaignSystem.CharacterDevelopment.DefaultTraits.Calculating);
+                            int honorA = lordA.GetTraitLevel(TaleWorlds.CampaignSystem.CharacterDevelopment.DefaultTraits.Honor);
+                            int honorB = lordB.GetTraitLevel(TaleWorlds.CampaignSystem.CharacterDevelopment.DefaultTraits.Honor);
+
+                            kinPairs.Add(new KinPairFact(
+                                lordA.StringId ?? string.Empty,
+                                lordA.Name?.ToString() ?? "unknown",
+                                calcA,
+                                lordB.StringId ?? string.Empty,
+                                lordB.Name?.ToString() ?? "unknown",
+                                calcB,
+                                relation,
+                                honorA,
+                                honorB));
+                        }
+                    }
+                }
+
+                var kinTally = TournamentAndKinMeasure.ComputeKinTally(kinPairs);
+                var kinReportLines = kinTally.FormatReportLines();
+                foreach (var line in kinReportLines)
+                {
+                    ModLog.Info(line);
+                }
+
+                // 對話畫面上只顯示兩行總數，完整清單寫進日誌
+                string dialogLine1 = tournamentTally.FormatDialogSummary(currentDay);
+                string dialogLine2 = kinTally.FormatDialogSummary();
+                string dialogText = dialogLine1 + "\n" + dialogLine2;
+
+                Finish(dialogText);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev tournament kin measure failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_NativeNotificationStatus()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                bool enabled = SubModule.MuteNativeNotificationsEnabled;
+                bool applied = NativeNotificationMutePatch.Applied;
+                NativeNotificationMutePatch.GetStats(out int totalMuted, out int totalShown, out _);
+
+                string detailed = NativeNotificationMutePatch.FormatDetailedStats();
+                ModLog.Info($"[DevDialogue] Native notification muting status: switch={(enabled ? "on" : "off")}, patchApplied={applied}\n{detailed}");
+
+                string summary = $"(dev) Native notifications: {totalMuted} muted, {totalShown} shown.";
+                InformationManager.DisplayMessage(new InformationMessage(summary));
+                Finish(summary);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev native notification status failed", ex);
                 Finish("(dev) failed - see log.txt");
             }
         }
@@ -3799,6 +5228,145 @@ namespace VividWorld.Debug
             catch (Exception ex)
             {
                 ModLog.Error("Dev feelings dump failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_SecretsInWorld()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                string report = DevReport.FormatSecretsInWorld(_eventStore, out int totalSecrets);
+                ModLog.Info(report);
+                Finish(string.Format(CultureInfo.InvariantCulture,
+                    "(dev) Total secrets in the world: {0}. See log.txt", totalSecrets));
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev secrets in world dump failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_SecretConversionPreview()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                string report = DevReport.FormatSecretConversionPreview(_campaignId ?? string.Empty, _eventStore, out string summaryText);
+                ModLog.Info(report);
+                Finish(summaryText);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev secret conversion preview failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_SecretsTheyKnow()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null)
+                {
+                    Finish("(dev) no conversation partner. See log.txt");
+                    return;
+                }
+
+                string heroName = hero.Name?.ToString() ?? hero.StringId;
+                string report = DevReport.FormatSecretsTheyKnow(hero, _eventStore, out int totalKnown);
+                ModLog.Info(report);
+                Finish(string.Format(CultureInfo.InvariantCulture,
+                    "(dev) {0} knows {1} secret(s). See log.txt", heroName, totalKnown));
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev secrets they know dump failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_SecretProbePreview()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null)
+                {
+                    Finish("(dev) no conversation partner. See log.txt");
+                    return;
+                }
+
+                string heroName = hero.Name?.ToString() ?? hero.StringId;
+                var mainHero = Hero.MainHero;
+                var secretLookup = new VividWorld.Campaign.GameSecretRelationshipLookup(_heroLookup);
+                string report = DevReport.FormatSecretProbePreview(
+                    hero, mainHero, _eventStore, _config, _feelingWorld, secretLookup, out int totalKnown);
+                ModLog.Info(report);
+                Finish(string.Format(CultureInfo.InvariantCulture,
+                    "(dev) secret probe preview for {0} ({1} secret(s)). See log.txt", heroName, totalKnown));
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev secret probe preview failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_SecretReactions()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null)
+                {
+                    Finish("(dev) no conversation partner. See log.txt");
+                    return;
+                }
+
+                string heroName = hero.Name?.ToString() ?? hero.StringId;
+                var secretLookup = new VividWorld.Campaign.GameSecretRelationshipLookup(_heroLookup);
+                string report = DevReport.FormatSecretReactions(
+                    hero, _eventStore, _config, _traitLookup, secretLookup, out int total);
+                ModLog.Info(report);
+                Finish(string.Format(CultureInfo.InvariantCulture,
+                    "(dev) secret reactions for {0} ({1} secret(s)). See log.txt", heroName, total));
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev secret reactions dump failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_StakeableSecrets()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null)
+                {
+                    Finish("(dev) no conversation partner. See log.txt");
+                    return;
+                }
+
+                string heroName = hero.Name?.ToString() ?? hero.StringId;
+                string report = DevReport.FormatStakeableSecrets(hero, _eventStore, out int totalKnown, out int totalEligible);
+                ModLog.Info(report);
+                Finish(string.Format(CultureInfo.InvariantCulture,
+                    "(dev) {0} has {1}/{2} eligible stakeable secret(s) (see log.txt)",
+                    heroName, totalEligible, totalKnown));
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev format stakeable secrets failed", ex);
                 Finish("(dev) failed - see log.txt");
             }
         }

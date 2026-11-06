@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.Core;
 using VividWorld.Core.Catalog;
 using VividWorld.Core.Config;
 using VividWorld.Core.Events;
@@ -11,6 +12,7 @@ using VividWorld.Core.Grudges;
 using VividWorld.Core.Ingest;
 using VividWorld.Core.Memory;
 using VividWorld.Core.Rumors;
+using VividWorld.Core.Secrets;
 using VividWorld.Core.Situations;
 using VividWorld.Core.Util;
 
@@ -101,6 +103,34 @@ namespace VividWorld.Campaign
             _scanAbsentCacheSituations = null;
         }
 
+        /// <summary>
+        /// Relation, kin and liege readers for situation conditions. Reads the personal relation:
+        /// the plain relation call redirects to clan leaders. Ledger D-57.
+        /// </summary>
+        internal static void AttachHeroRelationReaders(SituationWorldContext context, HeroLookup? heroLookup)
+        {
+            Hero? Find(string id) => heroLookup?.Get(id) ?? Hero.Find(id);
+            context.RelationBetween ??= (a, b) =>
+            {
+                var ha = Find(a);
+                var hb = Find(b);
+                return ha == null || hb == null ? 0 : ha.GetBaseHeroRelation(hb);
+            };
+            context.IsKin ??= (a, b) =>
+            {
+                var ha = Find(a);
+                var hb = Find(b);
+                return ha != null && hb != null && GameWorldChannel.IsFamilyOf(ha, hb);
+            };
+            context.IsLiegeOf ??= (a, b) =>
+            {
+                var ha = Find(a);
+                var hb = Find(b);
+                if (ha == null || hb == null) return false;
+                return hb.Clan?.Leader == ha || hb.MapFaction?.Leader == ha;
+            };
+        }
+
         internal static SituationEvaluation Evaluate(
             SituationTemplate template,
             IReadOnlyDictionary<string, Hero> nonDerivedHeroes,
@@ -114,7 +144,8 @@ namespace VividWorld.Campaign
             SituationWorldContext? context = null,
             bool forced = false,
             IReadOnlyDictionary<string, Hero>? preBoundDerivedHeroes = null,
-            IReadOnlyList<SituationConditionDef>? conditionsOverride = null)
+            IReadOnlyList<SituationConditionDef>? conditionsOverride = null,
+            Settlement? preResolvedSettlement = null)
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
             if (nonDerivedHeroes == null) throw new ArgumentNullException(nameof(nonDerivedHeroes));
@@ -180,18 +211,50 @@ namespace VividWorld.Campaign
                 Config = config
             };
             if (context.Config == null) context.Config = config;
+            if (context.GetKnownSecrets == null)
+            {
+                context.GetKnownSecrets = (heroId) =>
+                {
+                    if (eventStore?.KnownBy == null) return Array.Empty<WorldEvent>();
+                    var ids = eventStore.KnownBy.EventsKnownBy(heroId, day);
+                    if (ids == null || ids.Count == 0) return Array.Empty<WorldEvent>();
+                    var list = new List<WorldEvent>(ids.Count);
+                    foreach (var id in ids)
+                    {
+                        var evt = eventStore.Load(id);
+                        if (evt != null) list.Add(evt);
+                    }
+                    return list;
+                };
+            }
+            if (context.GetSkillValue == null)
+            {
+                context.GetSkillValue = (heroId, skillName) =>
+                {
+                    var hero = heroLookup?.Get(heroId) ?? Hero.Find(heroId);
+                    if (hero == null) return 0;
+                    if (string.Equals(skillName, "Bow", StringComparison.OrdinalIgnoreCase))
+                        return hero.GetSkillValue(DefaultSkills.Bow);
+                    if (string.Equals(skillName, "Riding", StringComparison.OrdinalIgnoreCase))
+                        return hero.GetSkillValue(DefaultSkills.Riding);
+                    return 0;
+                };
+            }
+            AttachHeroRelationReaders(context, heroLookup);
             evaluation.Context = context;
 
             // 1. Resolve settlement from non-derived heroes
-            Settlement? settlement = null;
+            Settlement? settlement = preResolvedSettlement;
             foreach (var h in nonDerivedHeroes.Values)
             {
+                if (preResolvedSettlement != null) break;
                 if (h != null && h.CurrentSettlement != null)
                 {
                     settlement = h.CurrentSettlement;
                     break;
                 }
             }
+            context.CurrentSettlementFactionId = settlement?.MapFaction?.StringId;
             evaluation.Settlement = settlement;
             evaluation.SettlementId = settlement?.StringId ?? "none";
 
@@ -327,7 +390,8 @@ namespace VividWorld.Campaign
             HeroLookup? heroLookup = null,
             string? triggerEventId = null,
             bool forced = false,
-            PlayerPresenceRunOptions? presence = null)
+            PlayerPresenceRunOptions? presence = null,
+            string? forcedBranchId = null)
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
             if (evaluation == null) throw new ArgumentNullException(nameof(evaluation));
@@ -376,7 +440,29 @@ namespace VividWorld.Campaign
             long instanceId = SituationSeed.ComputeInstanceId(campaignSeed, template.Id, day, boundHeroIds);
 
             SituationDecision decision;
-            if (presence?.ChosenBranch != null)
+            if (!string.IsNullOrEmpty(forcedBranchId) && template.Branches.Any(b => string.Equals(b.Id, forcedBranchId, StringComparison.OrdinalIgnoreCase)))
+            {
+                var targetBranch = template.Branches.First(b => string.Equals(b.Id, forcedBranchId, StringComparison.OrdinalIgnoreCase));
+                decision = new SituationDecision
+                {
+                    SelectedBranchId = targetBranch.Id,
+                    SelectedBranch = targetBranch
+                };
+                var forcedHeader = SituationLogFormatter.FormatExecution(
+                    template.Id,
+                    instanceId,
+                    boundHeroIds,
+                    settlementId,
+                    conditionResults,
+                    decision);
+                foreach (var line in forcedHeader.Take(2))
+                {
+                    ModLog.Info(line);
+                }
+                ModLog.Info($"  pick: forced branch {targetBranch.Id} (via dev tool)");
+                result.SelectedBranchId = targetBranch.Id;
+            }
+            else if (presence?.ChosenBranch != null)
             {
                 // 玩家做決定：照玩家選的做法執行，不讀 decider 的個性、不擲分支
                 decision = new SituationDecision
@@ -503,7 +589,77 @@ namespace VividWorld.Campaign
             }
 
             var situationEventCatalog = SituationCatalogStore.EventCatalog;
+            var context = evaluation.Context;
 
+            WorldEvent? chosenStakedSecret = null;
+            HuntWagerContestResult? huntContestResult = null;
+            var branchCustomBindings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            if (string.Equals(template.Id, "hunt_wager", StringComparison.OrdinalIgnoreCase)
+                && string.Equals(selectedBranch.Id, "secret_stake", StringComparison.OrdinalIgnoreCase))
+            {
+                boundHeroIds.TryGetValue("challenged", out var bettorId);
+                boundHeroIds.TryGetValue("challenger", out var opponentId);
+
+                if (!string.IsNullOrEmpty(bettorId) && !string.IsNullOrEmpty(opponentId))
+                {
+                    var knownSecrets = context?.GetKnownSecrets?.Invoke(bettorId!) ?? Array.Empty<WorldEvent>();
+                    var eval = StakeableSecretEvaluation.Evaluate(bettorId!, opponentId!, context?.PlayerHeroId, knownSecrets);
+                    chosenStakedSecret = eval.ChosenSecret;
+
+                    ModLog.Info($"  hunt_wager secret_stake: evaluating {eval.Candidates.Count} known secret(s) for bettor {bettorId}:");
+                    foreach (var cand in eval.Candidates.Where(c => c.IsSecret))
+                    {
+                        string status = cand.IsEligible ? "ELIGIBLE" : $"EXCLUDED ({cand.DisqualifiedReason})";
+                        ModLog.Info($"    [{cand.Event.EventId}] weight={cand.Event.DramaWeightTen}, day={cand.Event.Day:F1}: {status}");
+                    }
+
+                    if (chosenStakedSecret == null)
+                    {
+                        ModLog.Warn($"  hunt_wager secret_stake: no eligible secret found for bettor {bettorId}, aborting branch execution");
+                        result.AbortReason = "no eligible stakeable secret";
+                        return result;
+                    }
+
+                    ModLog.Info($"  hunt_wager secret_stake: chosen secret is [{chosenStakedSecret.EventId}] (weight={chosenStakedSecret.DramaWeightTen}, day={chosenStakedSecret.Day:F1})");
+
+                    int bettorBow = context?.GetSkillValue?.Invoke(bettorId!, "Bow") ?? 0;
+                    int bettorRiding = context?.GetSkillValue?.Invoke(bettorId!, "Riding") ?? 0;
+                    long seedBettor = RumorSeed.Of(campaignSeed, instanceId, "contest", bettorId!);
+                    var rng = new SplitMix64Rng();
+                    double rollBettor = rng.NextDouble(seedBettor);
+
+                    int opponentBow = context?.GetSkillValue?.Invoke(opponentId!, "Bow") ?? 0;
+                    int opponentRiding = context?.GetSkillValue?.Invoke(opponentId!, "Riding") ?? 0;
+                    long seedOpponent = RumorSeed.Of(campaignSeed, instanceId, "contest", opponentId!);
+                    double rollOpponent = rng.NextDouble(seedOpponent);
+
+                    huntContestResult = StakeableSecretEvaluation.CalculateContest(
+                        bettorId!, bettorBow, bettorRiding, rollBettor,
+                        opponentId!, opponentBow, opponentRiding, rollOpponent);
+
+                    ModLog.Info($"  hunt_wager contest: bettor {bettorId} (Bow={bettorBow}, Riding={bettorRiding}, roll={rollBettor:F4}) -> score={huntContestResult.BettorScore:F2}");
+                    ModLog.Info($"  hunt_wager contest: opponent {opponentId} (Bow={opponentBow}, Riding={opponentRiding}, roll={rollOpponent:F4}) -> score={huntContestResult.OpponentScore:F2}");
+                    ModLog.Info($"  hunt_wager contest winner: {(huntContestResult.BettorWon ? $"bettor {bettorId}" : $"opponent {opponentId}")} (scores: {huntContestResult.BettorScore:F2} vs {huntContestResult.OpponentScore:F2})");
+
+                    string stakedOwnerId = (chosenStakedSecret.SecretOwnerHeroIds != null && chosenStakedSecret.SecretOwnerHeroIds.Count > 0)
+                        ? chosenStakedSecret.SecretOwnerHeroIds[0]
+                        : string.Empty;
+
+                    branchCustomBindings["@winner"] = huntContestResult.WinnerHeroId;
+                    branchCustomBindings["@loser"] = huntContestResult.LoserHeroId;
+                    branchCustomBindings["@stakedOwner"] = stakedOwnerId;
+                    branchCustomBindings["winner"] = huntContestResult.WinnerHeroId;
+                    branchCustomBindings["loser"] = huntContestResult.LoserHeroId;
+                    branchCustomBindings["staked_owner"] = stakedOwnerId;
+
+                    boundHeroIds["winner"] = huntContestResult.WinnerHeroId;
+                    boundHeroIds["loser"] = huntContestResult.LoserHeroId;
+                    boundHeroIds["staked_owner"] = stakedOwnerId;
+                }
+            }
+
+            var submittedEventsByType = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var bEvent in selectedBranch.Events)
             {
                 var eventTemplate = situationEventCatalog.ByType(bEvent.Type);
@@ -523,6 +679,10 @@ namespace VividWorld.Campaign
                     {
                         bindings[placeholder] = settlementId;
                     }
+                    else if (branchCustomBindings.TryGetValue(target, out var bVal))
+                    {
+                        bindings[placeholder] = bVal ?? string.Empty;
+                    }
                     else if (presence?.CustomBindings != null && presence.CustomBindings.TryGetValue(target, out var customVal))
                     {
                         bindings[placeholder] = customVal ?? string.Empty;
@@ -537,10 +697,20 @@ namespace VividWorld.Campaign
                     }
                 }
 
+                if (presence?.ChosenBranch != null && string.Equals(selectedBranch.Id, "endure", StringComparison.OrdinalIgnoreCase) && eventTemplate.Origin == EventOrigin.Secret)
+                {
+                    ModLog.Info($"  secret event '{bEvent.Type}' skipped: player chose to endure, only public event is created");
+                    continue;
+                }
+
                 string? linkedEventId = null;
                 if (string.Equals(bEvent.LinkTo, "@trigger", StringComparison.OrdinalIgnoreCase))
                 {
                     linkedEventId = triggerEventId;
+                }
+                else if (!string.IsNullOrEmpty(bEvent.LinkTo) && submittedEventsByType.TryGetValue(bEvent.LinkTo!, out var prevId))
+                {
+                    linkedEventId = prevId;
                 }
 
                 var submission = TemplateBinder.Bind(eventTemplate, bindings, day, linkedEventId, out var bindIssues);
@@ -551,7 +721,7 @@ namespace VividWorld.Campaign
                     continue;
                 }
 
-                if (eventTemplate.MadeUpBy != null && config.FalseRumors.Enabled)
+                if (eventTemplate.MadeUpBy != null && config?.FalseRumors?.Enabled == true)
                 {
                     string boundHeroId = string.Empty;
                     if (boundHeroIds.TryGetValue(eventTemplate.MadeUpBy, out var mhId) && !string.IsNullOrEmpty(mhId))
@@ -660,6 +830,48 @@ namespace VividWorld.Campaign
                     return $"{b.Key}={val ?? ""}";
                 }));
 
+                if (string.Equals(eventTemplate.Type, "prisoner_freed_secretly", StringComparison.OrdinalIgnoreCase))
+                {
+                    allHeroes.TryGetValue("freer", out var freerHero);
+                    var king = freerHero?.MapFaction?.Leader;
+                    var settlementOwner = evaluation.Settlement?.OwnerClan?.Leader ?? evaluation.Settlement?.Owner;
+
+                    var harmed = new List<string>();
+                    string? kingId = null;
+                    if (king != null && king != freerHero && !string.IsNullOrEmpty(king.StringId))
+                    {
+                        kingId = king.StringId;
+                        harmed.Add(kingId);
+                    }
+                    string? ownerId = null;
+                    if (settlementOwner != null && settlementOwner != freerHero && !string.IsNullOrEmpty(settlementOwner.StringId))
+                    {
+                        ownerId = settlementOwner.StringId;
+                        if (harmed.Contains(ownerId))
+                        {
+                            // A king who owns the town reacts once, as king.
+                            ownerId = null;
+                        }
+                        else
+                        {
+                            harmed.Add(ownerId);
+                        }
+                    }
+
+                    submission.SecretHarmedHeroIds = harmed.Count > 0 ? harmed : null;
+                    submission.Extra = new Dictionary<string, Newtonsoft.Json.Linq.JToken>();
+                    if (kingId != null) submission.Extra["secretHarmedKing"] = kingId;
+                    if (ownerId != null) submission.Extra["secretHarmedOwner"] = ownerId;
+                }
+
+                if (chosenStakedSecret != null && string.Equals(eventTemplate.Type, "hunt_wager_staked_secret", StringComparison.OrdinalIgnoreCase))
+                {
+                    submission.StakedSecretEventId = chosenStakedSecret.EventId;
+                    submission.SecretHarmedHeroIds = chosenStakedSecret.SecretOwnerHeroIds != null
+                        ? new List<string>(chosenStakedSecret.SecretOwnerHeroIds)
+                        : null;
+                }
+
                 if (eventStore == null)
                 {
                     ModLog.Warn($"  SituationRunner: event store is null, cannot submit '{bEvent.Type}'.");
@@ -698,6 +910,21 @@ namespace VividWorld.Campaign
                 {
                     EventsSubmittedThisSession++;
                     result.EventIds.Add(eventId!);
+                    submittedEventsByType[bEvent.Type] = eventId!;
+
+                    if (string.Equals(eventTemplate.Type, "prisoner_freed_secretly", StringComparison.OrdinalIgnoreCase))
+                    {
+                        allHeroes.TryGetValue("freer", out var freerHero);
+                        allHeroes.TryGetValue("prisoner", out var prisonerHero);
+                        if (freerHero != null && prisonerHero != null)
+                        {
+                            double gratitude = config?.Secrets?.FreedPrisoner?.Gratitude ?? 10.0;
+                            int before = prisonerHero.GetBaseHeroRelation(freerHero);
+                            prisonerHero.SetPersonalRelation(freerHero, before + (int)Math.Round(gratitude, MidpointRounding.AwayFromZero));
+                            int after = prisonerHero.GetBaseHeroRelation(freerHero);
+                            ModLog.Info($"  freed prisoner gratitude: {prisonerHero.StringId} toward {freerHero.StringId} +{gratitude:0.##} (relation {before} -> {after})");
+                        }
+                    }
 
                     ModLog.Info($"  bound {bEvent.Type} as {eventId} ({varsStr})");
 
@@ -731,11 +958,35 @@ namespace VividWorld.Campaign
                 }
             }
 
+            if (huntContestResult != null && chosenStakedSecret != null && eventStore != null)
+            {
+                boundHeroIds.TryGetValue("challenged", out var bettorId);
+                boundHeroIds.TryGetValue("challenger", out var opponentId);
+                if (!string.IsNullOrEmpty(bettorId) && !string.IsNullOrEmpty(opponentId))
+                {
+                    if (!huntContestResult.BettorWon)
+                    {
+                        bool added = StakeableSecretEvaluation.ApplyContestConsequence(
+                            chosenStakedSecret, bettorId!, opponentId!, huntContestResult.BettorWon, day, out var newEntry);
+                        if (added && newEntry != null)
+                        {
+                            eventStore.Upsert(chosenStakedSecret);
+                            eventStore.KnownBy.NoteKnower(opponentId!, chosenStakedSecret.EventId, day);
+                            ModLog.Info($"  hunt_wager outcome: bettor lost, staked secret {chosenStakedSecret.EventId} handed over to {opponentId} (hop={newEntry.Hop}, source={newEntry.SourceHeroId})");
+                        }
+                    }
+                    else
+                    {
+                        ModLog.Info($"  hunt_wager outcome: bettor won, staked secret {chosenStakedSecret.EventId} not handed over");
+                    }
+                }
+            }
+
             // 9. Grudge ledger & relation application (SE2)
             if (selectedBranch.Grudges != null && selectedBranch.Grudges.Count > 0 && eventStore != null)
             {
                 // 關掉時完全惰性：不載入事件、不記帳、不跳過計數，只留一行說明（卡片 §0 完成的定義 7）
-                if (config.Situations?.GrudgesEnabled == false)
+                if (config?.Situations?.GrudgesEnabled == false)
                 {
                     ModLog.Info(GrudgeLogFormatter.FormatDisabled(selectedBranch.Grudges.Count));
                     return result;
@@ -832,7 +1083,7 @@ namespace VividWorld.Campaign
 
                 foreach (var tuple in groupedByEvt.Values)
                 {
-                    GrudgeApplier.Apply(tuple.Evt, tuple.Reqs, day, eventStore, heroLookup, traitLookup ?? eventStore.Traits, config, result.PlayerRelationNotices);
+                    GrudgeApplier.Apply(tuple.Evt, tuple.Reqs, day, eventStore, heroLookup, traitLookup ?? eventStore.Traits, config ?? new VividWorldConfig(), result.PlayerRelationNotices);
                 }
             }
 
@@ -849,7 +1100,8 @@ namespace VividWorld.Campaign
             VividWorldConfig config,
             HeroLookup? heroLookup = null,
             bool forced = false,
-            IReadOnlyDictionary<string, Hero>? preBoundDerivedHeroes = null)
+            IReadOnlyDictionary<string, Hero>? preBoundDerivedHeroes = null,
+            string? forcedBranchId = null)
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
             if (nonDerivedHeroes == null) throw new ArgumentNullException(nameof(nonDerivedHeroes));
@@ -884,7 +1136,7 @@ namespace VividWorld.Campaign
                 };
             }
 
-            return Execute(template, evaluation, day, triggerSource, eventStore, traitLookup, config, heroLookup, forced: forced);
+            return Execute(template, evaluation, day, triggerSource, eventStore, traitLookup, config, heroLookup, forced: forced, forcedBranchId: forcedBranchId);
         }
 
         private static (Hero? Hero, string? FailureReason) ResolveDerivedRole(
@@ -1122,16 +1374,14 @@ namespace VividWorld.Campaign
                     continue;
                 }
 
-                var eval = Evaluate(
-                    template,
-                    roleHeroes,
-                    day,
-                    traitLookup,
-                    history,
-                    heroFactsCache: null,
-                    heroLookup: heroLookup,
-                    eventStore: eventStore,
-                    config: config);
+                if (string.Equals(template.Id, "freed_prisoner_secretly", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (eventBindings.TryGetValue("IS_DUNGEON_ESCAPE", out var isDungeonEscape) && string.Equals(isDungeonEscape, "false", StringComparison.OrdinalIgnoreCase))
+                    {
+                        results.Add($"{template.Id}: skipped (held in a party)");
+                        continue;
+                    }
+                }
 
                 string? sId = null;
                 foreach (var kvp in eventBindings)
@@ -1142,17 +1392,27 @@ namespace VividWorld.Campaign
                         break;
                     }
                 }
-                if (!string.IsNullOrEmpty(sId))
-                {
-                    var sObj = Settlement.Find(sId);
-                    if (sObj != null)
-                    {
-                        eval.Settlement = sObj;
-                        eval.SettlementId = sId!;
-                        ModLog.Info($"SituationRunner: @settlement '{sId}' resolved from trigger event");
-                    }
-                }
+                Settlement? triggerSettlement = !string.IsNullOrEmpty(sId) ? Settlement.Find(sId) : null;
 
+                var eval = Evaluate(
+                    template,
+                    roleHeroes,
+                    day,
+                    traitLookup,
+                    history,
+                    heroFactsCache: null,
+                    heroLookup: heroLookup,
+                    eventStore: eventStore,
+                    config: config,
+                    // The escaped prisoner is no longer in the town that held them, and the candidates are read from that town.
+                    preResolvedSettlement: string.Equals(template.Id, "freed_prisoner_secretly", StringComparison.OrdinalIgnoreCase) ? triggerSettlement : null);
+
+                if (triggerSettlement != null)
+                {
+                    eval.Settlement = triggerSettlement;
+                    eval.SettlementId = sId!;
+                    ModLog.Info($"SituationRunner: @settlement '{sId}' resolved from trigger event");
+                }
                 if (!eval.ConditionsPassed)
                 {
                     var firstFailed = eval.ConditionResults.FirstOrDefault(c => !c.Ok);
@@ -1548,6 +1808,7 @@ namespace VividWorld.Campaign
             }
 
             var situationEventCatalog = SituationCatalogStore.EventCatalog;
+
             var baseTemplate = situationEventCatalog?.ByType(plan.ContentType!);
             if (baseTemplate == null)
             {

@@ -13,5 +13,7 @@ namespace VividWorld.Core.Situations
         public bool IsPlayer;
         public bool IsAlive = true;
         public bool IsLord = true;
+        public bool IsPrisoner;
+        public string? MapFactionId;
     }
 }

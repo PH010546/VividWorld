@@ -1,0 +1,435 @@
+{
+  "FormatVersion": 0,
+  "Entries": [
+    {
+      "EventId": "evt_91089_ff54",
+      "Type": "seat_dispute_endured",
+      "Day": 91089.05914990162,
+      "ShardKey": "d91000-91099",
+      "Secret": true,
+      "Leaked": true,
+      "Dormant": true,
+      "MinHop": 0,
+      "MaxHop": 0,
+      "KnownByHeroIds": [
+        "lord_5_15"
+      ],
+      "ParticipantHeroIds": [
+        "lord_5_15",
+        "lord_5_21_2"
+      ],
+      "LinkedEventId": null,
+      "SituationId": "seat_dispute",
+      "HasGrudges": true,
+      "ForgetDays": {
+        "lord_5_15": 91187.28360809722
+      }
+    },
+    {
+      "EventId": "evt_91095_9fd0",
+      "Type": "wager_secret_stake",
+      "Day": 91095.12979651504,
+      "ShardKey": "d91000-91099",
+      "Secret": true,
+      "Leaked": false,
+      "Dormant": false,
+      "MinHop": 0,
+      "MaxHop": 0,
+      "KnownByHeroIds": [
+        "lord_2_10",
+        "lord_2_15"
+      ],
+      "ParticipantHeroIds": [
+        "lord_2_10",
+        "lord_2_15"
+      ],
+      "LinkedEventId": null,
+      "SituationId": "hunt_wager",
+      "HasGrudges": false
+    },
+    {
+      "EventId": "evt_91141_e1ef",
+      "Type": "wager_secret_stake",
+      "Day": 91141.95675638311,
+      "ShardKey": "d91100-91199",
+      "Secret": true,
+      "Leaked": false,
+      "Dormant": false,
+      "MinHop": 0,
+      "MaxHop": 0,
+      "KnownByHeroIds": [
+        "lord_6_101",
+        "lord_6_20"
+      ],
+      "ParticipantHeroIds": [
+        "lord_6_101",
+        "lord_6_20"
+      ],
+      "LinkedEventId": null,
+      "SituationId": "hunt_wager",
+      "HasGrudges": false
+    },
+    {
+      "EventId": "evt_91142_8c0e",
+      "Type": "seat_dispute_endured",
+      "Day": 91142.95736187616,
+      "ShardKey": "d91100-91199",
+      "Secret": true,
+      "Leaked": true,
+      "Dormant": true,
+      "MinHop": 0,
+      "MaxHop": 2,
+      "KnownByHeroIds": [
+        "lord_6_20",
+        "CharacterObject_4073",
+        "CharacterObject_4074",
+        "lord_K8_u",
+        "CharacterObject_15659"
+      ],
+      "ParticipantHeroIds": [
+        "lord_6_20",
+        "lord_6_101"
+      ],
+      "LinkedEventId": null,
+      "SituationId": "seat_dispute",
+      "HasGrudges": true,
+      "ForgetDays": {
+        "lord_6_20": 91176.6566200787,
+        "CharacterObject_4073": 91184.07631334607,
+        "CharacterObject_4074": 91171.24277811458,
+        "lord_K8_u": 91186.17631334608,
+        "CharacterObject_15659": 91201.11696838541
+      }
+    },
+    {
+      "EventId": "evt_91173_15a8",
+      "Type": "seat_dispute_endured",
+      "Day": 91173.24381167014,
+      "ShardKey": "d91100-91199",
+      "Secret": true,
+      "Leaked": true,
+      "Dormant": true,
+      "MinHop": 0,
+      "MaxHop": 0,
+      "KnownByHeroIds": [
+        "lord_NE8_l"
+      ],
+      "ParticipantHeroIds": [
+        "lord_NE8_l",
+        "lord_1_1_8"
+      ],
+      "LinkedEventId": null,
+      "SituationId": "seat_dispute",
+      "HasGrudges": true,
+      "ForgetDays": {
+        "lord_NE8_l": 91247.97115203588
+      }
+    },
+    {
+      "EventId": "evt_91188_c657",
+      "Type": "seat_dispute_endured",
+      "Day": 91188.08812051042,
+      "ShardKey": "d91100-91199",
+      "Secret": true,
+      "Leaked": false,
+      "Dormant": false,
+      "MinHop": 0,
+      "MaxHop": 0,
+      "KnownByHeroIds": [
+        "lord_S9_l"
+      ],
+      "ParticipantHeroIds": [
+        "lord_S9_l",
+        "lord_2_10"
+      ],
+      "LinkedEventId": null,
+      "SituationId": "seat_dispute",
+      "HasGrudges": true
+    },
+    {
+      "EventId": "evt_91195_5879",
+      "Type": "wager_secret_stake",
+      "Day": 91195.08740601389,
+      "ShardKey": "d91100-91199",
+      "Secret": true,
+      "Leaked": false,
+      "Dormant": false,
+      "MinHop": 0,
+      "MaxHop": 0,
+      "KnownByHeroIds": [
+        "CharacterObject_2767",
+        "lord_1_46"
+      ],
+      "ParticipantHeroIds": [
+        "CharacterObject_2767",
+        "lord_1_46"
+      ],
+      "LinkedEventId": null,
+      "SituationId": "hunt_wager",
+      "HasGrudges": false
+    },
+    {
+      "EventId": "evt_91200_f823",
+      "Type": "wager_secret_stake",
+      "Day": 91200.42856979977,
+      "ShardKey": "d91200-91299",
+      "Secret": true,
+      "Leaked": false,
+      "Dormant": false,
+      "MinHop": 0,
+      "MaxHop": 0,
+      "KnownByHeroIds": [
+        "CharacterObject_23305",
+        "lord_5_13_1"
+      ],
+      "ParticipantHeroIds": [
+        "CharacterObject_23305",
+        "lord_5_13_1"
+      ],
+      "LinkedEventId": null,
+      "SituationId": "hunt_wager",
+      "HasGrudges": false
+    },
+    {
+      "EventId": "evt_91215_3d80",
+      "Type": "seat_dispute_endured",
+      "Day": 91215.94448536921,
+      "ShardKey": "d91200-91299",
+      "Secret": true,
+      "Leaked": false,
+      "Dormant": false,
+      "MinHop": 0,
+      "MaxHop": 0,
+      "KnownByHeroIds": [
+        "lord_4_22"
+      ],
+      "ParticipantHeroIds": [
+        "lord_4_22",
+        "CharacterObject_4038"
+      ],
+      "LinkedEventId": null,
+      "SituationId": "seat_dispute",
+      "HasGrudges": true
+    },
+    {
+      "EventId": "evt_91219_3db8",
+      "Type": "seat_dispute_endured",
+      "Day": 91219.91781875347,
+      "ShardKey": "d91200-91299",
+      "Secret": true,
+      "Leaked": false,
+      "Dormant": false,
+      "MinHop": 0,
+      "MaxHop": 0,
+      "KnownByHeroIds": [
+        "CharacterObject_2803"
+      ],
+      "ParticipantHeroIds": [
+        "CharacterObject_2803",
+        "lord_5_5_1"
+      ],
+      "LinkedEventId": null,
+      "SituationId": "seat_dispute",
+      "HasGrudges": true
+    },
+    {
+      "EventId": "evt_91240_fcf5",
+      "Type": "wager_secret_stake",
+      "Day": 91240.9578194919,
+      "ShardKey": "d91200-91299",
+      "Secret": true,
+      "Leaked": false,
+      "Dormant": false,
+      "MinHop": 0,
+      "MaxHop": 0,
+      "KnownByHeroIds": [
+        "lord_5_15",
+        "lord_5_17"
+      ],
+      "ParticipantHeroIds": [
+        "lord_5_15",
+        "lord_5_17"
+      ],
+      "LinkedEventId": null,
+      "SituationId": "hunt_wager",
+      "HasGrudges": false
+    },
+    {
+      "EventId": "evt_91247_0c02",
+      "Type": "seat_dispute_endured",
+      "Day": 91247.94448642245,
+      "ShardKey": "d91200-91299",
+      "Secret": true,
+      "Leaked": false,
+      "Dormant": false,
+      "MinHop": 0,
+      "MaxHop": 0,
+      "KnownByHeroIds": [
+        "lord_6_19"
+      ],
+      "ParticipantHeroIds": [
+        "lord_6_19",
+        "lord_6_8"
+      ],
+      "LinkedEventId": null,
+      "SituationId": "seat_dispute",
+      "HasGrudges": true
+    },
+    {
+      "EventId": "evt_91249_4d04",
+      "Type": "hero_murdered",
+      "Day": 91249.97115308912,
+      "ShardKey": "d91200-91299",
+      "Secret": true,
+      "Leaked": false,
+      "Dormant": false,
+      "MinHop": 0,
+      "MaxHop": 0,
+      "KnownByHeroIds": [
+        "lord_1_17"
+      ],
+      "ParticipantHeroIds": [
+        "lord_1_9",
+        "lord_1_17"
+      ],
+      "LinkedEventId": null,
+      "SituationId": null,
+      "HasGrudges": false
+    },
+    {
+      "EventId": "evt_91253_861c",
+      "Type": "wager_secret_stake",
+      "Day": 91253.91781975579,
+      "ShardKey": "d91200-91299",
+      "Secret": true,
+      "Leaked": false,
+      "Dormant": false,
+      "MinHop": 0,
+      "MaxHop": 0,
+      "KnownByHeroIds": [
+        "CharacterObject_2763",
+        "lord_NE8_l"
+      ],
+      "ParticipantHeroIds": [
+        "CharacterObject_2763",
+        "lord_NE8_l"
+      ],
+      "LinkedEventId": null,
+      "SituationId": "hunt_wager",
+      "HasGrudges": false
+    },
+    {
+      "EventId": "evt_91255_fa32",
+      "Type": "wager_secret_stake",
+      "Day": 91255.94031221412,
+      "ShardKey": "d91200-91299",
+      "Secret": true,
+      "Leaked": true,
+      "Dormant": false,
+      "MinHop": 0,
+      "MaxHop": 0,
+      "KnownByHeroIds": [
+        "CharacterObject_23320",
+        "CharacterObject_2797"
+      ],
+      "ParticipantHeroIds": [
+        "CharacterObject_23320",
+        "CharacterObject_2797"
+      ],
+      "LinkedEventId": null,
+      "SituationId": "hunt_wager",
+      "HasGrudges": false,
+      "ForgetDays": {
+        "CharacterObject_23320": 91287.96697888078,
+        "CharacterObject_2797": 91287.96697888078
+      }
+    },
+    {
+      "EventId": "evt_91257_e49b",
+      "Type": "wager_secret_stake",
+      "Day": 91257.96697888078,
+      "ShardKey": "d91200-91299",
+      "Secret": true,
+      "Leaked": false,
+      "Dormant": false,
+      "MinHop": 0,
+      "MaxHop": 0,
+      "KnownByHeroIds": [
+        "lord_1_51",
+        "lord_NE8_l"
+      ],
+      "ParticipantHeroIds": [
+        "lord_1_51",
+        "lord_NE8_l"
+      ],
+      "LinkedEventId": null,
+      "SituationId": "hunt_wager",
+      "HasGrudges": false
+    },
+    {
+      "EventId": "evt_91258_56d0",
+      "Type": "seat_dispute_endured",
+      "Day": 91258.95364559838,
+      "ShardKey": "d91200-91299",
+      "Secret": true,
+      "Leaked": false,
+      "Dormant": false,
+      "MinHop": 0,
+      "MaxHop": 0,
+      "KnownByHeroIds": [
+        "lord_5_5"
+      ],
+      "ParticipantHeroIds": [
+        "lord_5_5",
+        "CharacterObject_23320"
+      ],
+      "LinkedEventId": null,
+      "SituationId": "seat_dispute",
+      "HasGrudges": true
+    },
+    {
+      "EventId": "evt_91265_3c72",
+      "Type": "wager_secret_stake",
+      "Day": 91265.94031252894,
+      "ShardKey": "d91200-91299",
+      "Secret": true,
+      "Leaked": false,
+      "Dormant": false,
+      "MinHop": 0,
+      "MaxHop": 0,
+      "KnownByHeroIds": [
+        "lord_3_2",
+        "CharacterObject_2773"
+      ],
+      "ParticipantHeroIds": [
+        "lord_3_2",
+        "CharacterObject_2773"
+      ],
+      "LinkedEventId": null,
+      "SituationId": "hunt_wager",
+      "HasGrudges": false
+    },
+    {
+      "EventId": "evt_91266_de77",
+      "Type": "wager_secret_stake",
+      "Day": 91266.90031252893,
+      "ShardKey": "d91200-91299",
+      "Secret": true,
+      "Leaked": false,
+      "Dormant": false,
+      "MinHop": 0,
+      "MaxHop": 0,
+      "KnownByHeroIds": [
+        "lord_4_3_1",
+        "lord_4_25_1"
+      ],
+      "ParticipantHeroIds": [
+        "lord_4_3_1",
+        "lord_4_25_1"
+      ],
+      "LinkedEventId": null,
+      "SituationId": "hunt_wager",
+      "HasGrudges": false
+    }
+  ]
+}

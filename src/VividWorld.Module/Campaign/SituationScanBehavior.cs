@@ -92,6 +92,66 @@ namespace VividWorld.Campaign
             }
         }
 
+        /// <summary>
+        /// 一組過了條件的候選：角色綁定含推導角色（求值結果），有 pickTraits 的角色順便查好個性。
+        /// Payload 留非推導角色的綁定，挑中之後重新求值用。
+        /// </summary>
+        private SituationPickCandidate BuildPickCandidate(
+            SituationPickKind kind,
+            string settlementId,
+            Dictionary<string, string> nonDerivedRoleIds,
+            IReadOnlyDictionary<string, string?> boundHeroIds,
+            string? playerHeroId)
+        {
+            var roles = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+            foreach (var kv in boundHeroIds) roles[kv.Key] = kv.Value;
+            foreach (var kv in nonDerivedRoleIds) roles[kv.Key] = kv.Value;
+
+            return new SituationPickCandidate
+            {
+                SettlementId = settlementId,
+                RoleHeroIds = roles,
+                RoleTraits = SituationPicker.LookUpRoleTraits(kind, roles, _traits, playerHeroId),
+                Payload = new SituationCandidate
+                {
+                    SituationId = kind.Id,
+                    SettlementId = settlementId,
+                    Weight = kind.Weight,
+                    RoleHeroIds = nonDerivedRoleIds
+                }
+            };
+        }
+
+        /// <summary>候選的穩定順序：聚落，再來是非推導角色的綁定（角色鍵排序後串起來），全部用 Ordinal。</summary>
+        private static List<SituationPickCandidate> StableOrder(IEnumerable<SituationPickCandidate> candidates)
+        {
+            return candidates
+                .OrderBy(c => c.SettlementId ?? string.Empty, StringComparer.Ordinal)
+                .ThenBy(c => RolesKey(((SituationCandidate)c.Payload!).RoleHeroIds), StringComparer.Ordinal)
+                .ToList();
+        }
+
+        private static string RolesKey(IReadOnlyDictionary<string, string> roleHeroes)
+        {
+            if (roleHeroes == null || roleHeroes.Count == 0) return string.Empty;
+            return string.Join(";", roleHeroes.OrderBy(kvp => kvp.Key, StringComparer.Ordinal).Select(kvp => $"{kvp.Key}={kvp.Value}"));
+        }
+
+        /// <summary>同一種事換一份候選（列舉好的結果，或重新求值失敗後的空串與原因）。</summary>
+        private static SituationPickKind CloneKind(SituationPickKind source, IReadOnlyList<SituationPickCandidate> candidates, string? noCandidateReason)
+        {
+            return new SituationPickKind
+            {
+                Id = source.Id,
+                Weight = source.Weight,
+                WeightSource = source.WeightSource,
+                PickTraitRoles = source.PickTraitRoles,
+                Candidates = candidates,
+                NoCandidateReason = noCandidateReason,
+                Payload = source.Payload
+            };
+        }
+
         public SituationScanResult ExecuteScan(bool isDryRun = false)
         {
             var result = new SituationScanResult();
@@ -193,13 +253,31 @@ namespace VividWorld.Campaign
             int maxPairsPerSettlement = scanConfig.MaxPairsPerSettlement;
             int maxCandidates = scanConfig.MaxCandidates;
 
-            var candidates = new List<SituationCandidate>();
+            // 每個模板一種「事」：候選列舉完再交給共用挑法。派生角色的綁定也跟著候選走（挑人排名單要看）
+            var kindById = new Dictionary<string, SituationPickKind>(StringComparer.Ordinal);
+            var pickCandidatesById = new Dictionary<string, List<SituationPickCandidate>>(StringComparer.Ordinal);
+            int mainCandidateCount = 0;
             var heroFactsCache = new Dictionary<string, SituationRoleFacts>(StringComparer.Ordinal);
             var rejections = new Dictionary<string, int>(StringComparer.Ordinal);
             var nearMisses = new List<(string SitId, string SetId, Dictionary<string, string> Roles, string Detail)>();
             int maxNearMisses = _config.Debug != null ? _config.Debug.DevReportMaxCrowdedOut : 5;
             bool truncated = false;
             string? mainHeroId = Hero.MainHero?.StringId;
+
+            foreach (var t in situationTemplates)
+            {
+                if (t == null || !t.IsEnabled(_config) || t.DevOnly || !CityScanTriggerFilter.IsCityScanTrigger(t.Trigger) || t.QuotaGroup != null) continue;
+                if (t.Roles.Count(r => !r.Value.IsDerived) != 2) continue;
+                kindById[t.Id] = new SituationPickKind
+                {
+                    Id = t.Id,
+                    Weight = t.Weight,
+                    WeightSource = "template weight",
+                    PickTraitRoles = SituationPickKind.TraitRolesOf(t),
+                    Payload = t
+                };
+                pickCandidatesById[t.Id] = new List<SituationPickCandidate>();
+            }
 
             foreach (var settlement in eligibleSettlements)
             {
@@ -321,32 +399,18 @@ namespace VividWorld.Campaign
 
                         if (eval.ConditionsPassed)
                         {
-                            var candidate = new SituationCandidate
+                            var roleIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                             {
-                                SituationId = template.Id,
-                                SettlementId = settlement.StringId,
-                                Weight = template.Weight,
-                                RoleHeroIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                                {
-                                    [role0] = pair.A.StringId,
-                                    [role1] = pair.B.StringId
-                                }
+                                [role0] = pair.A.StringId,
+                                [role1] = pair.B.StringId
                             };
+                            pickCandidatesById[template.Id].Add(BuildPickCandidate(kindById[template.Id], settlement.StringId, roleIds, eval.BoundHeroIds, mainHeroId));
 
-                            if (template.GetMaxPerDay(_config).HasValue)
+                            if (!template.GetMaxPerDay(_config).HasValue)
                             {
-                                if (!perSituationCandidates.TryGetValue(template.Id, out var sitList))
-                                {
-                                    sitList = new List<SituationCandidate>();
-                                    perSituationCandidates[template.Id] = sitList;
-                                }
-                                sitList.Add(candidate);
-                            }
-                            else
-                            {
-                                candidates.Add(candidate);
+                                mainCandidateCount++;
 
-                                if (candidates.Count >= maxCandidates)
+                                if (mainCandidateCount >= maxCandidates)
                                 {
                                     truncated = true;
                                     break;
@@ -390,81 +454,176 @@ namespace VividWorld.Campaign
 
             result.SettlementsWithPairs = settlementsWithPairs;
             result.PairsEvaluated = pairsEvaluated;
-            result.CandidatesPassed = candidates.Count;
+            result.CandidatesPassed = mainCandidateCount;
 
-            // 6. SituationScanPlanner.Plan(...)
-            var plan = SituationScanPlanner.Plan(
-                candidates,
-                quotaRoll.Quota,
-                rng,
-                slot => RumorSeed.Of(campaignSeed, "situation.scan", dayBucket, "pick", slot));
-
-            // 7. 對每一個 Picked：重新 Evaluate → 成立才 Execute
-            int triggered = 0;
-            if (!isDryRun)
+            // 候選照列舉的順序排穩定（聚落、再來是角色綁定），共用挑法照這個順序挑
+            foreach (var kv in kindById)
             {
-                foreach (var pick in plan.Picked)
+                kv.Value.Candidates = StableOrder(pickCandidatesById[kv.Key]);
+            }
+
+            var mainKinds = kindById.Values
+                .Where(k => !((SituationTemplate)k.Payload!).GetMaxPerDay(_config).HasValue)
+                .OrderBy(k => k.Id, StringComparer.Ordinal)
+                .ToList();
+
+            // 每種事各有幾組合格：每天的總結行用
+            var qualifiedSummaries = new List<SituationPickKindSummary>();
+            foreach (var k in mainKinds)
+            {
+                qualifiedSummaries.Add(new SituationPickKindSummary { Id = k.Id, Weight = k.Weight, Qualified = k.Candidates?.Count ?? 0 });
+            }
+
+            // 今天已經捲進事情的人：主要六種、背地說君主壞話與拒絕援手、編的話依序共用這一份，每天重算、不存
+            var roster = new SituationRoster();
+            var logOptions = SituationPickLogWriter.Options(_heroLookup, isDryRun || SituationPickLogWriter.LogAllCandidates(_config));
+
+            // 重新求值，成立才執行；真的執行了，才把實際綁到的所有人放進名單
+            SituationRunResult? ReevaluateAndRun(SituationTemplate template, SituationCandidate cand, out string skipKind, out string? failedType)
+            {
+                skipKind = string.Empty;
+                failedType = null;
+
+                var heroesForRoles = new Dictionary<string, Hero>(StringComparer.OrdinalIgnoreCase);
+                foreach (var kvp in cand.RoleHeroIds)
                 {
-                    var template = situationTemplates.FirstOrDefault(t => string.Equals(t.Id, pick.Candidate.SituationId, StringComparison.Ordinal));
-                    if (template == null) continue;
-
-                    var heroesForRoles = new Dictionary<string, Hero>(StringComparer.OrdinalIgnoreCase);
-                    foreach (var kvp in pick.Candidate.RoleHeroIds)
+                    var hero = _heroLookup.Get(kvp.Value);
+                    if (hero != null)
                     {
-                        var hero = _heroLookup.Get(kvp.Value);
-                        if (hero != null)
-                        {
-                            heroesForRoles[kvp.Key] = hero;
-                        }
-                    }
-
-                    if (heroesForRoles.Count != pick.Candidate.RoleHeroIds.Count)
-                    {
-                        ModLog.Info($"  scan pick #{pick.Slot + 1} skipped: one or more heroes no longer found.");
-                        continue;
-                    }
-
-                    var reEval = SituationRunner.Evaluate(
-                        template,
-                        heroesForRoles,
-                        day,
-                        _traits,
-                        history,
-                        heroFactsCache,
-                        _heroLookup,
-                        _eventStore,
-                        _config);
-
-                    if (!reEval.ConditionsPassed)
-                    {
-                        var failedCond = reEval.ConditionResults.FirstOrDefault(c => !c.Ok);
-                        ModLog.Info($"  scan pick #{pick.Slot + 1} skipped: condition '{failedCond?.Type}' no longer passed.");
-                        continue;
-                    }
-
-                    var runResult = SituationRunner.Execute(
-                        template,
-                        reEval,
-                        day,
-                        "daily scan",
-                        _eventStore,
-                        _traits,
-                        _config,
-                        _heroLookup);
-
-                    if (runResult.Started)
-                    {
-                        triggered++;
+                        heroesForRoles[kvp.Key] = hero;
                     }
                 }
 
+                if (heroesForRoles.Count != cand.RoleHeroIds.Count)
+                {
+                    skipKind = "heroes";
+                    return null;
+                }
+
+                var reEval = SituationRunner.Evaluate(
+                    template,
+                    heroesForRoles,
+                    day,
+                    _traits,
+                    history,
+                    heroFactsCache,
+                    _heroLookup,
+                    _eventStore,
+                    _config);
+
+                if (!reEval.ConditionsPassed)
+                {
+                    skipKind = "conditions";
+                    failedType = reEval.ConditionResults.FirstOrDefault(c => !c.Ok)?.Type;
+                    return null;
+                }
+
+                var runResult = SituationRunner.Execute(
+                    template,
+                    reEval,
+                    day,
+                    "daily scan",
+                    _eventStore,
+                    _traits,
+                    _config,
+                    _heroLookup);
+
+                if (runResult.Started)
+                {
+                    var involved = new List<string?>(reEval.BoundHeroIds.Values);
+                    involved.AddRange(cand.RoleHeroIds.Values);
+                    string eventText = runResult.EventIds.Count > 0 ? string.Join("/", runResult.EventIds) : "(no event)";
+                    roster.AddExecuted(involved, template.Id + " " + eventText);
+                }
+
+                return runResult;
+            }
+
+            // 一個名額叫一次共用挑法（重新求值不成立的那一件，它的人不會被排掉）。
+            // 回傳真的執行的件數；乾跑回傳挑中的件數（把挑中的當作都成立，名單照同一套規則長）。
+            int RunSlots(
+                string site,
+                IReadOnlyList<SituationPickKind> kinds,
+                int quota,
+                Func<int, long> kindSeed,
+                Func<int, SituationPickKind, long> personSeed,
+                bool announceSkips,
+                List<SituationCandidate>? pickedOut)
+            {
+                int count = 0;
+                for (int slot = 0; slot < quota; slot++)
+                {
+                    var pickResult = SituationPicker.Pick(new SituationPickRequest
+                    {
+                        Kinds = kinds,
+                        Count = 1,
+                        FirstSlot = slot,
+                        TotalSlots = quota,
+                        Roster = roster,
+                        Rng = rng,
+                        PlayerHeroId = mainHeroId,
+                        KindSeed = kindSeed,
+                        PersonSeed = personSeed,
+                        Site = site,
+                        Day = day
+                    });
+                    SituationPickLogWriter.Write(pickResult.Records.Count > 0 ? pickResult.Records[0] : null, logOptions);
+
+                    if (pickResult.Picks.Count == 0) break;
+
+                    var pickedKind = pickResult.Picks[0].Kind;
+                    var pickedCandidate = pickResult.Picks[0].Candidate;
+                    var scanCandidate = (SituationCandidate)pickedCandidate.Payload!;
+                    pickedOut?.Add(scanCandidate);
+
+                    if (isDryRun)
+                    {
+                        roster.AddExecuted(pickedCandidate.HeroIds(), pickedKind.Id + " (dry run)");
+                        count++;
+                        continue;
+                    }
+
+                    var template = (SituationTemplate)pickedKind.Payload!;
+                    var runResult = ReevaluateAndRun(template, scanCandidate, out string skipKind, out string? failedType);
+                    if (runResult == null)
+                    {
+                        if (announceSkips)
+                        {
+                            ModLog.Info(skipKind == "heroes"
+                                ? $"  scan pick #{slot + 1} skipped: one or more heroes no longer found."
+                                : $"  scan pick #{slot + 1} skipped: condition '{failedType}' no longer passed.");
+                        }
+                        continue;
+                    }
+
+                    if (runResult.Started)
+                    {
+                        count++;
+                    }
+                }
+                return count;
+            }
+
+            // 6. 7. 主要六種：共用挑法，一個名額挑一件，重新求值成立才執行
+            var pickedMain = new List<SituationCandidate>();
+            int triggered = RunSlots(
+                "city scan, main",
+                mainKinds,
+                quotaRoll.Quota,
+                slot => RumorSeed.Of(campaignSeed, "situation.scan", dayBucket, "pick", slot),
+                (slot, kind) => RumorSeed.Of(campaignSeed, "situation.scan", dayBucket, "pick", slot, "person"),
+                announceSkips: true,
+                pickedOut: pickedMain);
+
+            if (!isDryRun)
+            {
                 LastScanDay = day;
                 LastScanPairsEvaluated = pairsEvaluated;
-                LastScanCandidatesPassed = candidates.Count;
+                LastScanCandidatesPassed = mainCandidateCount;
                 LastScanTriggered = triggered;
             }
 
-            // 7b. Per-situation quota planning & execution
+            // 7b. Per-situation quota planning & execution（接著用主要六種留下的名單）
             var perSituationStats = new List<(string SituationId, QuotaRoll Roll, int Candidates, int Triggered)>();
             var perSituationTemplates = situationTemplates
                 .Where(t => !t.DevOnly && CityScanTriggerFilter.IsCityScanTrigger(t.Trigger) && t.IsEnabled(_config) && t.GetMaxPerDay(_config).HasValue)
@@ -477,79 +636,31 @@ namespace VividWorld.Campaign
                 long perQuotaSeed = RumorSeed.Of(campaignSeed, "situation.scan", dayBucket, "quota", template.Id);
                 var perQuotaRoll = SituationQuota.Roll(perMaxPerDay, rng, perQuotaSeed);
 
-                perSituationCandidates.TryGetValue(template.Id, out var sitCandidates);
-                sitCandidates ??= new List<SituationCandidate>();
-
-                int perTriggered = 0;
-                if (perQuotaRoll.Quota > 0 && sitCandidates.Count > 0)
+                kindById.TryGetValue(template.Id, out var perKind);
+                int perCandidateCount = perKind?.Candidates?.Count ?? 0;
+                if (perKind != null)
                 {
-                    var perPlan = SituationScanPlanner.Plan(
-                        sitCandidates,
-                        perQuotaRoll.Quota,
-                        rng,
-                        slot => RumorSeed.Of(campaignSeed, "situation.scan", dayBucket, "pick", template.Id, slot));
-
-                    if (!isDryRun)
-                    {
-                        foreach (var pick in perPlan.Picked)
-                        {
-                            var heroesForRoles = new Dictionary<string, Hero>(StringComparer.OrdinalIgnoreCase);
-                            foreach (var kvp in pick.Candidate.RoleHeroIds)
-                            {
-                                var hero = _heroLookup.Get(kvp.Value);
-                                if (hero != null)
-                                {
-                                    heroesForRoles[kvp.Key] = hero;
-                                }
-                            }
-
-                            if (heroesForRoles.Count != pick.Candidate.RoleHeroIds.Count)
-                            {
-                                continue;
-                            }
-
-                            var reEval = SituationRunner.Evaluate(
-                                template,
-                                heroesForRoles,
-                                day,
-                                _traits,
-                                history,
-                                heroFactsCache,
-                                _heroLookup,
-                                _eventStore,
-                                _config);
-
-                            if (!reEval.ConditionsPassed)
-                            {
-                                continue;
-                            }
-
-                            var runResult = SituationRunner.Execute(
-                                template,
-                                reEval,
-                                day,
-                                "daily scan",
-                                _eventStore,
-                                _traits,
-                                _config,
-                                _heroLookup);
-
-                            if (runResult.Started)
-                            {
-                                perTriggered++;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        perTriggered = perPlan.Picked.Count;
-                    }
+                    qualifiedSummaries.Add(new SituationPickKindSummary { Id = perKind.Id, Weight = perKind.Weight, Qualified = perCandidateCount });
                 }
 
-                perSituationStats.Add((template.Id, perQuotaRoll, sitCandidates.Count, perTriggered));
+                int perTriggered = 0;
+                if (perQuotaRoll.Quota > 0 && perKind != null)
+                {
+                    string perId = template.Id;
+                    perTriggered = RunSlots(
+                        "city scan, " + perId,
+                        new[] { perKind },
+                        perQuotaRoll.Quota,
+                        slot => RumorSeed.Of(campaignSeed, "situation.scan", dayBucket, "pick", perId, slot),
+                        (slot, kind) => RumorSeed.Of(campaignSeed, "situation.scan", dayBucket, "pick", perId, slot, "person"),
+                        announceSkips: false,
+                        pickedOut: null);
+                }
+
+                perSituationStats.Add((template.Id, perQuotaRoll, perCandidateCount, perTriggered));
             }
 
-            // 7c. 合計上限群組（編的話的三個起因）
+            // 7c. 合計上限群組（編的話的三個起因）：三種的候選等挑中那一種才列舉，接著用名單
             double groupElapsedMs = 0.0;
             var groupTemplates = situationTemplates
                 .Where(t => t != null && t.QuotaGroup != null && !t.DevOnly && t.IsEnabled(_config)
@@ -560,13 +671,14 @@ namespace VividWorld.Campaign
             {
                 var groupSw = Stopwatch.StartNew();
                 SituationRunner.BeginScanAbsentCache(groupTemplates.Select(t => t.Id));
+                var groupSummaryKinds = new List<SituationPickKind>();
+                var enumerated = new Dictionary<string, List<SituationPickCandidate>>(StringComparer.Ordinal);
                 try
                 {
-                    var enumerated = new Dictionary<string, List<SituationCandidate>>(StringComparer.Ordinal);
-                    List<SituationCandidate> EnumerateGroupTemplate(SituationTemplate gt)
+                    List<SituationPickCandidate> EnumerateGroupTemplate(SituationTemplate gt, SituationPickKind gtKind)
                     {
                         if (enumerated.TryGetValue(gt.Id, out var cached)) return cached;
-                        var list = new List<SituationCandidate>();
+                        var list = new List<SituationPickCandidate>();
                         enumerated[gt.Id] = list;
 
                         var gtRoles = gt.Roles.Where(r => !r.Value.IsDerived).Select(r => r.Key).ToList();
@@ -585,17 +697,12 @@ namespace VividWorld.Campaign
                                 var gEval = SituationRunner.Evaluate(gt, assignments, day, _traits, history, heroFactsCache, _heroLookup, _eventStore, _config);
                                 if (gEval.ConditionsPassed)
                                 {
-                                    list.Add(new SituationCandidate
+                                    var gRoleIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                                     {
-                                        SituationId = gt.Id,
-                                        SettlementId = sp.Settlement.StringId,
-                                        Weight = gt.Weight,
-                                        RoleHeroIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                                        {
-                                            [gtRoles[0]] = pair.A.StringId,
-                                            [gtRoles[1]] = pair.B.StringId
-                                        }
-                                    });
+                                        [gtRoles[0]] = pair.A.StringId,
+                                        [gtRoles[1]] = pair.B.StringId
+                                    };
+                                    list.Add(BuildPickCandidate(gtKind, sp.Settlement.StringId, gRoleIds, gEval.BoundHeroIds, mainHeroId));
                                 }
                                 else
                                 {
@@ -607,6 +714,10 @@ namespace VividWorld.Campaign
                                 }
                             }
                         }
+
+                        var ordered = StableOrder(list);
+                        list.Clear();
+                        list.AddRange(ordered);
                         return list;
                     }
 
@@ -620,100 +731,150 @@ namespace VividWorld.Campaign
                         string sharesText = string.Join(", ", shareList.Select(x => x.Id + "=" + x.Item2.ToString("0.##", CultureInfo.InvariantCulture)));
                         string rollText = SituationScanLogFormatter.FormatQuotaDetail(groupRoll);
 
+                        // 三種都先當作有候選參加，挑中才列舉
+                        var groupKinds = new List<SituationPickKind>();
+                        foreach (var m in members)
+                        {
+                            var memberTemplate = m;
+                            var memberKind = new SituationPickKind
+                            {
+                                Id = m.Id,
+                                Weight = m.QuotaGroup!.GetShare(_config),
+                                WeightSource = "share",
+                                PickTraitRoles = SituationPickKind.TraitRolesOf(m),
+                                Payload = m
+                            };
+                            memberKind.CandidateProvider = () => EnumerateGroupTemplate(memberTemplate, memberKind);
+                            groupKinds.Add(memberKind);
+                            groupSummaryKinds.Add(memberKind);
+                        }
+
+                        string dryRunCounts = string.Empty;
                         if (isDryRun)
                         {
                             var counts = new List<string>();
-                            foreach (var m in members)
+                            for (int mi = 0; mi < members.Count; mi++)
                             {
-                                int n = EnumerateGroupTemplate(m).Count;
-                                result.MadeUpTalkCandidateCounts[m.Id] = n;
-                                counts.Add(m.Id + "=" + n);
+                                int n = EnumerateGroupTemplate(members[mi], groupKinds[mi]).Count;
+                                result.MadeUpTalkCandidateCounts[members[mi].Id] = n;
+                                counts.Add(members[mi].Id + "=" + n);
                             }
-                            ModLog.Info($"SituationScan: quota group '{grp.Key}' (dry run): {rollText}; shares [{sharesText}]; candidates [{string.Join(", ", counts)}]");
-                            continue;
+                            dryRunCounts = $"; candidates [{string.Join(", ", counts)}]";
                         }
 
                         var slotNotes = new List<string>();
                         int groupTriggered = 0;
                         for (int slot = 0; slot < groupRoll.Quota; slot++)
                         {
-                            var failed = new List<string>();
+                            // 重新求值不成立的那一種，同一個名額再叫一次時當作沒有候選
+                            var failed = new Dictionary<string, string>(StringComparer.Ordinal);
                             int attempt = 0;
                             while (true)
                             {
-                                long groupPickSeed = RumorSeed.Of(campaignSeed, "situation.scan", dayBucket, "group", grp.Key, slot, attempt);
-                                var groupPick = SituationGroupPicker.Pick(shareList, failed, rng, groupPickSeed);
-                                if (groupPick.SelectedSituationId == null)
+                                // 已經列舉過的種類直接給列舉結果（日誌才印得出合格數），沒列舉過的仍然等挑中才列舉
+                                var requestKinds = new List<SituationPickKind>();
+                                foreach (var k in groupKinds)
                                 {
-                                    slotNotes.Add($"slot {slot + 1}: nothing to pick ({groupPick.Log})");
+                                    if (failed.TryGetValue(k.Id, out var failReason))
+                                    {
+                                        requestKinds.Add(CloneKind(k, new List<SituationPickCandidate>(), failReason));
+                                    }
+                                    else if (enumerated.TryGetValue(k.Id, out var alreadyListed))
+                                    {
+                                        requestKinds.Add(CloneKind(k, alreadyListed, null));
+                                    }
+                                    else
+                                    {
+                                        requestKinds.Add(k);
+                                    }
+                                }
+
+                                int kindAttempt = attempt;
+                                var groupPickResult = SituationPicker.Pick(new SituationPickRequest
+                                {
+                                    Kinds = requestKinds,
+                                    Count = 1,
+                                    FirstSlot = slot,
+                                    TotalSlots = groupRoll.Quota,
+                                    Roster = roster,
+                                    Rng = rng,
+                                    PlayerHeroId = mainHeroId,
+                                    KindSeed = s => RumorSeed.Of(campaignSeed, "situation.scan", dayBucket, "group", grp.Key, s, kindAttempt),
+                                    PersonSeed = (s, k) => RumorSeed.Of(campaignSeed, "situation.scan", dayBucket, "group.pick", grp.Key, s, kindAttempt + 1, 0),
+                                    Site = "city scan, made-up talk (" + grp.Key + ")",
+                                    Day = day
+                                });
+                                var groupRecord = groupPickResult.Records.Count > 0 ? groupPickResult.Records[0] : null;
+                                SituationPickLogWriter.Write(groupRecord, logOptions);
+
+                                foreach (var m in members)
+                                {
+                                    if (enumerated.TryGetValue(m.Id, out var enumeratedList))
+                                    {
+                                        result.MadeUpTalkCandidateCounts[m.Id] = enumeratedList.Count;
+                                    }
+                                }
+
+                                if (groupPickResult.Picks.Count == 0)
+                                {
+                                    slotNotes.Add($"slot {slot + 1}: nothing to pick ({groupRecord?.StopReason ?? "nothing to pick"})");
                                     break;
                                 }
                                 attempt++;
-                                int curAttempt = attempt;
+                                string repickNote = attempt > 1 ? " (repick)" : "";
 
-                                var chosenTemplate = members.First(t => string.Equals(t.Id, groupPick.SelectedSituationId, StringComparison.Ordinal));
-                                var chosenCandidates = EnumerateGroupTemplate(chosenTemplate);
-                                result.MadeUpTalkCandidateCounts[chosenTemplate.Id] = chosenCandidates.Count;
-                                string repickNote = curAttempt > 1 ? " (repick)" : "";
-                                if (chosenCandidates.Count == 0)
+                                var chosenKind = groupPickResult.Picks[0].Kind;
+                                var chosenCandidate = groupPickResult.Picks[0].Candidate;
+                                var chosenTemplate = (SituationTemplate)chosenKind.Payload!;
+                                string pickNote = $"picked {chosenKind.Id} (share {chosenKind.Weight:0.00}){repickNote}";
+                                int chosenCount = enumerated.TryGetValue(chosenTemplate.Id, out var chosenList) ? chosenList.Count : 0;
+
+                                if (isDryRun)
                                 {
-                                    failed.Add(chosenTemplate.Id);
-                                    slotNotes.Add($"slot {slot + 1}: {groupPick.Log}{repickNote}, 0 candidates");
+                                    roster.AddExecuted(chosenCandidate.HeroIds(), chosenKind.Id + " (dry run)");
+                                    groupTriggered++;
+                                    slotNotes.Add($"slot {slot + 1}: {pickNote}, {chosenCount} candidates");
+                                    break;
+                                }
+
+                                var pickedScanCandidate = (SituationCandidate)chosenCandidate.Payload!;
+                                var gRun = ReevaluateAndRun(chosenTemplate, pickedScanCandidate, out string gSkipKind, out _);
+                                if (gRun == null)
+                                {
+                                    string reason = gSkipKind == "heroes" ? "heroes no longer found" : "conditions no longer passed";
+                                    failed[chosenTemplate.Id] = reason;
+                                    slotNotes.Add($"slot {slot + 1}: {pickNote}, {reason}");
                                     continue;
                                 }
 
-                                int curSlot = slot;
-                                var groupPlan = SituationScanPlanner.Plan(
-                                    chosenCandidates,
-                                    1,
-                                    rng,
-                                    sl => RumorSeed.Of(campaignSeed, "situation.scan", dayBucket, "group.pick", grp.Key, curSlot, curAttempt, sl));
-                                if (groupPlan.Picked.Count == 0)
-                                {
-                                    failed.Add(chosenTemplate.Id);
-                                    slotNotes.Add($"slot {slot + 1}: {groupPick.Log}{repickNote}, {chosenCandidates.Count} candidates but none picked");
-                                    continue;
-                                }
-
-                                var pickedCandidate = groupPlan.Picked[0].Candidate;
-                                var heroesForRoles = new Dictionary<string, Hero>(StringComparer.OrdinalIgnoreCase);
-                                foreach (var kvp in pickedCandidate.RoleHeroIds)
-                                {
-                                    var hero = _heroLookup.Get(kvp.Value);
-                                    if (hero != null) heroesForRoles[kvp.Key] = hero;
-                                }
-                                if (heroesForRoles.Count != pickedCandidate.RoleHeroIds.Count)
-                                {
-                                    failed.Add(chosenTemplate.Id);
-                                    slotNotes.Add($"slot {slot + 1}: {groupPick.Log}{repickNote}, heroes no longer found");
-                                    continue;
-                                }
-
-                                var gReEval = SituationRunner.Evaluate(chosenTemplate, heroesForRoles, day, _traits, history, heroFactsCache, _heroLookup, _eventStore, _config);
-                                if (!gReEval.ConditionsPassed)
-                                {
-                                    failed.Add(chosenTemplate.Id);
-                                    slotNotes.Add($"slot {slot + 1}: {groupPick.Log}{repickNote}, conditions no longer passed");
-                                    continue;
-                                }
-
-                                var gRun = SituationRunner.Execute(chosenTemplate, gReEval, day, "daily scan", _eventStore, _traits, _config, _heroLookup);
                                 if (gRun.Started) groupTriggered++;
                                 string outcome = gRun.EventIds.Count > 0
                                     ? "event " + string.Join("/", gRun.EventIds)
                                     : (string.IsNullOrEmpty(gRun.SelectedBranchId)
                                         ? "no branch"
                                         : "branch " + gRun.SelectedBranchId + (string.IsNullOrEmpty(gRun.AbortReason) ? "" : ", " + gRun.AbortReason));
-                                slotNotes.Add($"slot {slot + 1}: {groupPick.Log}{repickNote}, {chosenCandidates.Count} candidates, result {outcome}");
+                                slotNotes.Add($"slot {slot + 1}: {pickNote}, {chosenCount} candidates, result {outcome}");
                                 break;
                             }
                         }
 
-                        ModLog.Info($"SituationScan: quota group '{grp.Key}': {rollText}; shares [{sharesText}]; started {groupTriggered}{(slotNotes.Count > 0 ? "; " + string.Join("; ", slotNotes) : "")}");
+                        string dryTag = isDryRun ? " (dry run)" : string.Empty;
+                        string startedWord = isDryRun ? "would start" : "started";
+                        ModLog.Info($"SituationScan: quota group '{grp.Key}'{dryTag}: {rollText}; shares [{sharesText}]{dryRunCounts}; {startedWord} {groupTriggered}{(slotNotes.Count > 0 ? "; " + string.Join("; ", slotNotes) : "")}");
                     }
                 }
                 finally
                 {
+                    foreach (var gk in groupSummaryKinds)
+                    {
+                        qualifiedSummaries.Add(new SituationPickKindSummary
+                        {
+                            Id = gk.Id,
+                            Weight = gk.Weight,
+                            Qualified = enumerated.TryGetValue(gk.Id, out var gl) ? gl.Count : -1
+                        });
+                    }
+
                     groupSw.Stop();
                     groupElapsedMs = groupSw.Elapsed.TotalMilliseconds;
                     ModLog.Info($"SituationScan: made-up talk stage took {groupElapsedMs:0.0} ms (absent-role cache: {SituationRunner.ScanAbsentCacheHits} hit(s), {SituationRunner.ScanAbsentCacheMisses} miss(es))");
@@ -724,29 +885,26 @@ namespace VividWorld.Campaign
             sw.Stop();
             double elapsedMs = sw.Elapsed.TotalMilliseconds;
 
-            int leftOver = candidates.Count - (isDryRun ? plan.Picked.Count : triggered);
+            int leftOver = mainCandidateCount - triggered;
 
             // 8. 印 §3.7 的總結行、聚合行、near-miss 行、pick 行
-            // 順序固定：pick 行 → 總結行 → 聚合行 → near-miss 行
-            foreach (var pick in plan.Picked)
-            {
-                ModLog.Info(SituationScanLogFormatter.FormatPick(pick));
-            }
-
+            // 順序固定：總結行 → 聚合行 → near-miss 行
             ModLog.Info(SituationScanLogFormatter.FormatSummary(
                 day,
                 totalSettlements,
                 settlementsWithPairs,
                 pairsEvaluated,
                 maxPairsPerSettlement,
-                candidates.Count,
+                mainCandidateCount,
                 truncated,
                 maxCandidates,
                 quotaRoll,
-                isDryRun ? plan.Picked.Count : triggered,
+                triggered,
                 leftOver,
                 elapsedMs,
                 isDryRun));
+
+            ModLog.Info("SituationScan: " + SituationPickLogFormatter.FormatQualifiedCounts(qualifiedSummaries, roster.Count));
 
             var perSituationQuotasLine = SituationScanLogFormatter.FormatPerSituationQuotas(perSituationStats);
             if (!string.IsNullOrEmpty(perSituationQuotasLine))
@@ -783,14 +941,14 @@ namespace VividWorld.Campaign
             }
 
             // Build summaries for dev dialogue
-            if (plan.Picked.Count > 0)
+            if (pickedMain.Count > 0)
             {
-                var firstPick = plan.Picked[0];
+                var firstPick = pickedMain[0];
                 // Settlement.Find 沒有帳本列（卡片 §1 的原生成員白名單）⇒ 用已經允許的 Settlement.All 反查
                 var s = Settlement.All?.FirstOrDefault(x => x != null
-                    && string.Equals(x.StringId, firstPick.Candidate.SettlementId, StringComparison.Ordinal));
-                string sName = s?.Name?.ToString() ?? firstPick.Candidate.SettlementId;
-                result.WouldTriggerSummary = $"{firstPick.Candidate.SituationId} at {sName}";
+                    && string.Equals(x.StringId, firstPick.SettlementId, StringComparison.Ordinal));
+                string sName = s?.Name?.ToString() ?? firstPick.SettlementId;
+                result.WouldTriggerSummary = $"{firstPick.SituationId} at {sName}";
             }
 
             if (rejections.Count > 0)

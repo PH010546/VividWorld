@@ -159,10 +159,10 @@ namespace VividWorld.Core.Tests
         }
 
         [Theory]
-        [InlineData(30, AffectionLevel.High)]
-        [InlineData(29, AffectionLevel.Neutral)]
-        [InlineData(-29, AffectionLevel.Neutral)]
-        [InlineData(-30, AffectionLevel.Low)]
+        [InlineData(51, AffectionLevel.High)]
+        [InlineData(50, AffectionLevel.Neutral)]
+        [InlineData(-50, AffectionLevel.Neutral)]
+        [InlineData(-51, AffectionLevel.Low)]
         [InlineData(100, AffectionLevel.High)]
         [InlineData(-100, AffectionLevel.Low)]
         public void Grid_AffectionBoundaries_AreInclusive(int affection, AffectionLevel expected)
@@ -185,21 +185,21 @@ namespace VividWorld.Core.Tests
         public void Grid_ThresholdsComeFromConfig()
         {
             var cfg = new FeelingsConfig { AffectionHigh = 10, AffectionLow = -10, GrudgeThreshold = 1.5 };
-            Assert.Equal(AffectionLevel.High, FeelingGrid.Classify(10, cfg));
-            Assert.Equal(AffectionLevel.Low, FeelingGrid.Classify(-10, cfg));
+            Assert.Equal(AffectionLevel.High, FeelingGrid.Classify(11, cfg));
+            Assert.Equal(AffectionLevel.Low, FeelingGrid.Classify(-11, cfg));
             Assert.Equal(GrudgeLevel.Favor, FeelingGrid.Classify(1.5, cfg));
         }
 
         [Theory]
-        [InlineData(30, 0, FeelingMood.Close)]      // 好感高、無恩怨
-        [InlineData(30, -6, FeelingMood.Sore)]      // 好感高、有怨
+        [InlineData(60, 0, FeelingMood.Close)]      // 好感高、無恩怨
+        [InlineData(60, -6, FeelingMood.Sore)]      // 好感高、有怨
         [InlineData(0, 0, FeelingMood.Neutral)]     // 好感普通、無恩怨
         [InlineData(0, 6, FeelingMood.Close)]       // 好感普通、有恩
         [InlineData(0, -6, FeelingMood.Hostile)]    // 好感普通、有怨
-        [InlineData(-30, 0, FeelingMood.Hostile)]   // 好感低、無恩
-        [InlineData(-30, 6, FeelingMood.Owe)]       // 好感低、有恩
-        [InlineData(-30, -6, FeelingMood.Hostile)]  // 好感低、有怨
-        [InlineData(30, 6, FeelingMood.Close)]      // 好感高、有恩
+        [InlineData(-60, 0, FeelingMood.Hostile)]   // 好感低、無恩
+        [InlineData(-60, 6, FeelingMood.Owe)]       // 好感低、有恩
+        [InlineData(-60, -6, FeelingMood.Hostile)]  // 好感低、有怨
+        [InlineData(60, 6, FeelingMood.Close)]      // 好感高、有恩
         public void Resolve_GridCells_EndToEnd(int affection, double requested, FeelingMood expected)
         {
             var rig = new Rig();
@@ -218,15 +218,15 @@ namespace VividWorld.Core.Tests
         // ───────────── 稱呼 ─────────────
 
         [Theory]
-        [InlineData(3, 2, 30, "VividWorld_Address_Higher_High")]
+        [InlineData(3, 2, 60, "VividWorld_Address_Higher_High")]
         [InlineData(3, 2, 0, "VividWorld_Address_Higher_Neutral")]
-        [InlineData(3, 2, -30, "VividWorld_Address_Higher_Low")]
-        [InlineData(2, 2, 30, "VividWorld_Address_Equal_High")]
+        [InlineData(3, 2, -60, "VividWorld_Address_Higher_Low")]
+        [InlineData(2, 2, 60, "VividWorld_Address_Equal_High")]
         [InlineData(2, 2, 0, "VividWorld_Address_Equal_Neutral")]
-        [InlineData(2, 2, -30, "VividWorld_Address_Equal_Low")]
-        [InlineData(1, 2, 30, "VividWorld_Address_Lower_High")]
+        [InlineData(2, 2, -60, "VividWorld_Address_Equal_Low")]
+        [InlineData(1, 2, 60, "VividWorld_Address_Lower_High")]
         [InlineData(1, 2, 0, "VividWorld_Address_Lower_Neutral")]
-        [InlineData(1, 2, -30, "VividWorld_Address_Lower_Low")]
+        [InlineData(1, 2, -60, "VividWorld_Address_Lower_Low")]
         public void Address_AllNineCells(int focusRank, int speakerRank, int affection, string expectedKey)
         {
             var rig = new Rig();
@@ -308,10 +308,10 @@ namespace VividWorld.Core.Tests
         }
 
         [Theory]
-        [InlineData(30, FeelingMood.Close)]
-        [InlineData(29, FeelingMood.Neutral)]
-        [InlineData(-29, FeelingMood.Neutral)]
-        [InlineData(-30, FeelingMood.Hostile)]
+        [InlineData(51, FeelingMood.Close)]
+        [InlineData(50, FeelingMood.Neutral)]
+        [InlineData(-50, FeelingMood.Neutral)]
+        [InlineData(-51, FeelingMood.Hostile)]
         public void Affection_ThresholdBoundaryThroughTheResolver(int affection, FeelingMood expected)
         {
             var rig = new Rig();
@@ -323,8 +323,8 @@ namespace VividWorld.Core.Tests
         public void Config_ChangedThresholdsMoveTheBoundaries()
         {
             var rig = new Rig();
-            rig.Cfg.Presentation.Feelings.AffectionHigh = 50;
-            rig.SetAffection(40);
+            rig.Cfg.Presentation.Feelings.AffectionHigh = 70;
+            rig.SetAffection(60);
             Assert.Equal(FeelingMood.Neutral, rig.Resolve().Mood);
 
             rig.Cfg.Presentation.Feelings.GrudgeThreshold = 1.0;
@@ -451,7 +451,7 @@ namespace VividWorld.Core.Tests
         public void Pick_WithNoTraitPreference_DifferentEventsUseBothLines()
         {
             var rig = new Rig();
-            rig.SetAffection(-50);   // 敵視：兩句，一句標心腸硬
+            rig.SetAffection(-60);   // 敵視：兩句，一句標心腸硬
             var keys = new HashSet<string>();
             for (int i = 0; i < 60; i++)
             {
@@ -464,7 +464,7 @@ namespace VividWorld.Core.Tests
         public void Pick_LineWhoseTraitTagMatchesTheSpeaker_IsAlwaysPreferred()
         {
             var rig = new Rig();
-            rig.SetAffection(-50);
+            rig.SetAffection(-60);
             rig.SetTrait(p => p.Mercy = -1);   // 標「心腸硬」的那一句是 _2
 
             for (int i = 0; i < 30; i++)
@@ -479,7 +479,7 @@ namespace VividWorld.Core.Tests
         public void Pick_LineWhoseTraitTagPointsTheOtherWay_IsAvoided()
         {
             var rig = new Rig();
-            rig.SetAffection(-50);
+            rig.SetAffection(-60);
             rig.SetTrait(p => p.Mercy = 2);    // 心腸軟的人不講「心腸硬」那一句
 
             for (int i = 0; i < 30; i++)
@@ -510,7 +510,7 @@ namespace VividWorld.Core.Tests
         public void LogLine_ShowsEveryInputAndTheChosenLine()
         {
             var rig = new Rig();
-            rig.SetAffection(45);
+            rig.SetAffection(60);
             rig.World.Rank[Victim] = 3;
             rig.World.Rank[Spk] = 2;
             rig.AddGrudge("evt_1", -6);
@@ -519,7 +519,7 @@ namespace VividWorld.Core.Tests
             var d = rig.Resolve();
 
             Assert.Contains("focus hero victim as victim", d.LogLine);
-            Assert.Contains("affection +45 -> High", d.LogLine);
+            Assert.Contains("affection +60 -> High", d.LogLine);
             Assert.Contains("grudge net -1 over 1 entry (excluded 1 from this event, -6 points) -> None", d.LogLine);
             Assert.Contains("focus rank 3 vs speaker rank 2 -> Higher, address VividWorld_Address_Higher_High", d.LogLine);
             Assert.Contains("category killed, mood close", d.LogLine);
@@ -666,7 +666,7 @@ namespace VividWorld.Core.Tests
         public void SingleLineCell_AlwaysPicksTheOnlyLine_RegardlessOfTraitsOrSeed()
         {
             var rig = new Rig();
-            rig.SetAffection(40);
+            rig.SetAffection(60);
             rig.AddGrudge("other_evt", -10);
             var evt = new WorldEvent
             {
@@ -708,7 +708,7 @@ namespace VividWorld.Core.Tests
         public void LogLine_ShowsFocusHeroGender(string expectedGenderStr, bool? isFemale)
         {
             var rig = new Rig();
-            rig.SetAffection(45);
+            rig.SetAffection(60);
             if (isFemale.HasValue)
             {
                 rig.World.Female[Victim] = isFemale.Value;
@@ -864,7 +864,7 @@ namespace VividWorld.Core.Tests
                 }
                 Assert.All(template.Feelings!.Keys, k => Assert.True(template.Roles.ContainsKey(k), $"{template.Type}: feelings names undeclared role '{k}'"));
             }
-            Assert.Equal(76, seen);
+            Assert.Equal(82, seen);
         }
 
         [Theory]
@@ -1016,7 +1016,10 @@ namespace VividWorld.Core.Tests
                 ("pending", FeelingMood.Owe),
                 ("shabby", FeelingMood.Owe),
                 ("wronged", FeelingMood.Sore),
-                ("wronged", FeelingMood.Owe)
+                ("wronged", FeelingMood.Owe),
+                ("contest_won", FeelingMood.Owe),
+                ("contest_lost", FeelingMood.Sore),
+                ("contest_lost", FeelingMood.Owe)
             };
 
             var emptyCells = new HashSet<(string category, FeelingMood mood)>();
@@ -1032,8 +1035,8 @@ namespace VividWorld.Core.Tests
                         $"{category}/{mood} must have {expected} line(s)");
                 }
             }
-            Assert.Equal(146, RealFeelings.Value.AllLines.Count());
-            Assert.Equal(146, RealFeelings.Value.AllLines.Select(l => l.Key).Distinct().Count());
+            Assert.Equal(163, RealFeelings.Value.AllLines.Count());
+            Assert.Equal(163, RealFeelings.Value.AllLines.Select(l => l.Key).Distinct().Count());
         }
 
         [Fact]
@@ -1087,8 +1090,8 @@ namespace VividWorld.Core.Tests
         {
             var f = new VividWorldConfig().Presentation.Feelings;
             Assert.True(f.Enabled);
-            Assert.Equal(30, f.AffectionHigh);
-            Assert.Equal(-30, f.AffectionLow);
+            Assert.Equal(50, f.AffectionHigh);
+            Assert.Equal(-50, f.AffectionLow);
             Assert.Equal(4.0, f.GrudgeThreshold);
         }
 

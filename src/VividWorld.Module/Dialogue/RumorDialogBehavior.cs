@@ -1590,7 +1590,8 @@ namespace VividWorld.Dialogue
                     return offer;
                 },
                 _scheduler?.FeelingWorld,
-                _traitLookup);
+                _traitLookup,
+                new VividWorld.Campaign.GameSecretRelationshipLookup(_heroLookup));
 
             return new ProbeClassification
             {
@@ -1969,6 +1970,8 @@ namespace VividWorld.Dialogue
                 var plan = made.Plan;
                 string? playerHeroId = Hero.MainHero?.StringId;
                 if (string.IsNullOrEmpty(playerHeroId)) return;
+                string? heroId = hero.StringId;
+                if (string.IsNullOrEmpty(heroId)) return;
 
                 double day = CampaignTime.Now.ToDays;
                 string tellerName = hero.Name?.ToString() ?? hero.StringId;
@@ -1989,6 +1992,23 @@ namespace VividWorld.Dialogue
                     {
                         delivery = $"could not deliver {plan.DeliverEventId} (event {(target == null ? "missing" : "loaded")}, scheduler {(_scheduler == null ? "missing" : "ready")}, already known {(target?.EntryFor(hero.StringId) != null)})";
                         ModLog.Warn("Probe: " + delivery);
+                    }
+                }
+
+                string secretEventId = plan.EventId ?? plan.Offer?.EventId ?? string.Empty;
+                if (!string.IsNullOrEmpty(secretEventId))
+                {
+                    var secretEvt = _store?.Load(secretEventId, _index);
+                    if (secretEvt != null && secretEvt.Origin == EventOrigin.Secret && secretEvt.SecretOwnerHeroIds != null && secretEvt.SecretOwnerHeroIds.Contains(heroId, StringComparer.Ordinal))
+                    {
+                        var ownerEntry = secretEvt.EntryFor(heroId);
+                        if (ownerEntry != null && string.IsNullOrEmpty(ownerEntry.OwnerReaction) && (secretEvt.State?.Leaked == true))
+                        {
+                            var pEntry = secretEvt.EntryFor(playerHeroId!);
+                            ownerEntry.OriginatorKnownOverride = pEntry != null && MadeUpTalk.KnowsOriginator(secretEvt, pEntry);
+                            _scheduler?.DeliverEventToKnowers(secretEvt, new[] { ownerEntry }, day);
+                            delivery += $"; owner {heroId} reacted to probe on {secretEvt.EventId} ({ownerEntry.OwnerReaction})";
+                        }
                     }
                 }
 

@@ -65,7 +65,15 @@ namespace VividWorld.Core.Diagnostics
                 ["teacher"] = new("Pol", "波爾"),
                 ["learner"] = new("Ergeon", "埃爾貢"),
                 ["employer"] = new("Derthert", "德瑟特"),
-                ["winner"] = new("Pol", "波爾")
+                ["winner"] = new("Pol", "波爾"),
+                ["loser"] = new("Caladog", "卡拉多格"),
+                ["bettor"] = new("Pol", "波爾"),
+                ["opponent"] = new("Caladog", "卡拉多格"),
+                ["staked_owner"] = new("Derthert", "德瑟特"),
+                ["champion"] = new("Pol", "波爾"),
+                ["thrower"] = new("Ergeon", "埃爾貢"),
+                ["finalOpponent"] = new("Caladog", "卡拉多格"),
+                ["final_opponent"] = new("Caladog", "卡拉多格")
             };
 
         // 個別消息裡同一個角色名指的人不同（例：宴會擺在誰家、難產過世的是誰）

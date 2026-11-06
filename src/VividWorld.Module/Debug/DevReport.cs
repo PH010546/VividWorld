@@ -18,6 +18,7 @@ using VividWorld.Core.Memory;
 using VividWorld.Core.Persistence;
 using VividWorld.Core.Presentation;
 using VividWorld.Core.Rumors;
+using VividWorld.Core.Secrets;
 using VividWorld.Core.Situations;
 using VividWorld.Presentation;
 
@@ -1365,8 +1366,264 @@ namespace VividWorld.Debug
         }
 
         /// <summary>
+        /// 格式化舊戰役秘密轉換的預演與現況報告。
+        /// </summary>
+        public static string FormatSecretConversionPreview(
+            string campaignId,
+            WorldEventStore store,
+            out string summaryText)
+        {
+            var sb = new StringBuilder();
+            summaryText = "(dev) no result";
+
+            if (store == null || store.Index?.Entries == null)
+            {
+                sb.AppendLine("No event store available.");
+                return sb.ToString();
+            }
+
+            var record = OldSecretConversionService.ReadConversionRecord(campaignId);
+            if (record != null)
+            {
+                sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                    "=== Secret Conversion Status for campaign_{0} ===", campaignId));
+                sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                    "Already converted on day {0:F1} (backup: {1}, total converted: {2}, total processed: {3})",
+                    record.Day, record.BackupPath ?? "none", record.TotalConverted, record.TotalProcessed));
+
+                if (record.CountsByType != null && record.CountsByType.Count > 0)
+                {
+                    sb.AppendLine("Conversion counts by type: " +
+                        string.Join(", ", record.CountsByType.Select(kv => $"{kv.Key}: {kv.Value}")));
+                }
+
+                sb.AppendLine("Current state of secret events in world:");
+                var secretEntries = store.Index.Entries.Where(e => e != null && e.Secret).ToList();
+                foreach (var entry in secretEntries)
+                {
+                    var evt = store.Load(entry.EventId);
+                    if (evt == null) continue;
+                    string owners = evt.SecretOwnerHeroIds != null && evt.SecretOwnerHeroIds.Count > 0
+                        ? string.Join(",", evt.SecretOwnerHeroIds)
+                        : "none";
+                    sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                        "  {0} {1}: Origin={2}, Retired={3}, Leaked={4}, Owners={5}",
+                        evt.EventId, evt.Type, evt.Origin, evt.SecretRetired, evt.State?.Leaked ?? false, owners));
+                }
+
+                summaryText = string.Format(CultureInfo.InvariantCulture,
+                    "(dev) Already converted on day {0:F1}. Current secrets: {1}. See log.txt",
+                    record.Day, secretEntries.Count);
+                return sb.ToString().TrimEnd();
+            }
+
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "=== Secret Conversion Preview for campaign_{0} ===", campaignId));
+
+            var oldSecretEntries = store.Index.Entries.Where(e => e != null && e.Secret).ToList();
+            var events = new List<WorldEvent>();
+            foreach (var entry in oldSecretEntries)
+            {
+                var evt = store.Load(entry.EventId);
+                if (evt != null)
+                {
+                    events.Add(evt);
+                }
+            }
+
+            var plan = OldSecretConverter.Plan(
+                events,
+                store.PlayerHeroId,
+                settlementId => TaleWorlds.CampaignSystem.Settlements.Settlement.Find(settlementId)?.OwnerClan?.Leader?.StringId,
+                EventCatalogStore.TemplateByType,
+                id => store.Index.Find(id) != null,
+                applyInPlace: false);
+
+            foreach (var item in plan.Items)
+            {
+                sb.AppendLine(item.FormatLogLine());
+            }
+
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "Summary: {0} secret(s) processed ({1} would convert, {2} would retire, {3} unchanged).",
+                plan.TotalProcessed, plan.ConvertedCount, plan.RetiredCount, plan.UnchangedCount));
+
+            summaryText = string.Format(CultureInfo.InvariantCulture,
+                "(dev) Secret conversion preview: {0} secrets ({1} would convert, {2} would retire, {3} unchanged). See log.txt",
+                plan.TotalProcessed, plan.ConvertedCount, plan.RetiredCount, plan.UnchangedCount);
+
+            return sb.ToString().TrimEnd();
+        }
+
+        /// <summary>
         /// 格式化 NPC 知道的醜事會講給誰聽的除錯報告。
         /// </summary>
+        public static string FormatSecretsInWorld(WorldEventStore store, out int totalSecrets)
+        {
+            var sb = new StringBuilder();
+            totalSecrets = 0;
+            if (store == null || store.Index?.Entries == null)
+            {
+                sb.AppendLine("No event store available.");
+                return sb.ToString();
+            }
+
+            var secretEntries = store.Index.Entries.Where(e => e != null && e.Secret).ToList();
+            totalSecrets = secretEntries.Count;
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "=== Secrets in the World (total {0}) ===", totalSecrets));
+            foreach (var entry in secretEntries)
+            {
+                var evt = store.Load(entry.EventId);
+                if (evt == null) continue;
+                FormatSingleSecret(sb, evt);
+            }
+            if (totalSecrets == 0)
+            {
+                sb.AppendLine("  (no secret events exist)");
+            }
+            return sb.ToString().TrimEnd();
+        }
+
+        public static string FormatSecretsTheyKnow(Hero hero, WorldEventStore store, out int totalKnown)
+        {
+            var sb = new StringBuilder();
+            totalKnown = 0;
+            if (hero == null || store == null || store.Index?.Entries == null)
+            {
+                sb.AppendLine("Invalid hero or event store.");
+                return sb.ToString();
+            }
+
+            string heroId = hero.StringId;
+            string heroName = hero.Name?.ToString() ?? heroId;
+            var secretEntries = store.Index.Entries.Where(e => e != null && e.Secret).ToList();
+            var matching = new List<WorldEvent>();
+            foreach (var entry in secretEntries)
+            {
+                var evt = store.Load(entry.EventId);
+                if (evt != null && evt.KnownBy != null && evt.KnownBy.Any(k => string.Equals(k?.HeroId, heroId, StringComparison.Ordinal)))
+                {
+                    matching.Add(evt);
+                }
+            }
+            totalKnown = matching.Count;
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "=== Secrets Known by {0} ({1}) (total {2}) ===", heroName, heroId, totalKnown));
+            foreach (var evt in matching)
+            {
+                FormatSingleSecret(sb, evt);
+            }
+            if (totalKnown == 0)
+            {
+                sb.AppendLine("  (knows no secret events)");
+            }
+            return sb.ToString().TrimEnd();
+        }
+
+        public static string FormatSecretProbePreview(
+            Hero hero,
+            Hero? mainHero,
+            WorldEventStore store,
+            VividWorldConfig config,
+            IFeelingWorld? feelingWorld,
+            ISecretRelationshipLookup? secretLookup,
+            out int totalKnown)
+        {
+            var sb = new StringBuilder();
+            totalKnown = 0;
+            if (hero == null || store == null || store.Index?.Entries == null)
+            {
+                sb.AppendLine("Invalid hero or event store.");
+                return sb.ToString();
+            }
+
+            string heroId = hero.StringId;
+            string heroName = hero.Name?.ToString() ?? heroId;
+            string playerHeroId = mainHero?.StringId ?? string.Empty;
+            string playerName = mainHero?.Name?.ToString() ?? playerHeroId;
+
+            var secretEntries = store.Index.Entries.Where(e => e != null && e.Secret).ToList();
+            var matching = new List<WorldEvent>();
+            foreach (var entry in secretEntries)
+            {
+                var evt = store.Load(entry.EventId);
+                if (evt != null && evt.KnownBy != null && evt.KnownBy.Any(k => string.Equals(k?.HeroId, heroId, StringComparison.Ordinal)))
+                {
+                    matching.Add(evt);
+                }
+            }
+            totalKnown = matching.Count;
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "=== Secret Probe & AI Handoff Preview for {0} ({1}) vs player {2} (total secrets {3}) ===", heroName, heroId, playerName, totalKnown));
+
+            if (totalKnown == 0)
+            {
+                sb.AppendLine("  (knows no secret events)");
+                return sb.ToString().TrimEnd();
+            }
+
+            foreach (var evt in matching)
+            {
+                var eval = SecretProbeEvaluation.Evaluate(
+                    heroId,
+                    playerHeroId,
+                    evt,
+                    config?.Secrets,
+                    secretLookup,
+                    feelingWorld,
+                    EventCatalogStore.TemplateByType);
+
+                var aiState = eval.DetermineAiMemoryState(evt, heroId);
+                bool handedToAi = eval.Decision == SecretProbeDecision.Tell && !evt.SecretRetired;
+
+                string ownerRelStr = eval.OwnerHeroIds.Count > 0
+                    ? string.Join(", ", eval.OwnerHeroIds.Select(oid =>
+                    {
+                        eval.OwnerRelations.TryGetValue(oid, out int aff);
+                        eval.OwnerKin.TryGetValue(oid, out bool kin);
+                        return $"{oid} (aff={aff}, kin={kin})";
+                    }))
+                    : "none";
+
+                sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                    "  [{0}] type={1} retired={2} leaked={3}",
+                    evt.EventId, evt.Type, evt.SecretRetired, evt.State.Leaked));
+                sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                    "    Probe answer: {0} ({1})", eval.Decision, eval.LogDetail));
+                sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                    "    Affection with player: {0} (kin={1}, line={2}, passed={3})",
+                    eval.AffectionWithPlayer, eval.IsKinWithPlayer, eval.PlayerTrustLine, eval.TrustsPlayer));
+                sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                    "    Owners: [{0}] (isOwner={1}, protectsOwner={2}, reasons=[{3}])",
+                    ownerRelStr, eval.IsOwner, eval.ProtectsOwner, string.Join("; ", eval.ProtectReasons)));
+                sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                    "    Handed to AI: {0} (decision={1}, aiState={2}, retired={3})",
+                    handedToAi ? "Yes" : "No", eval.Decision, aiState, evt.SecretRetired));
+            }
+
+            return sb.ToString().TrimEnd();
+        }
+
+        private static void FormatSingleSecret(StringBuilder sb, WorldEvent evt)
+        {
+            string owners = (evt.SecretOwnerHeroIds != null && evt.SecretOwnerHeroIds.Count > 0)
+                ? string.Join(", ", evt.SecretOwnerHeroIds)
+                : "none";
+            string linked = !string.IsNullOrEmpty(evt.LinkedEventId) ? evt.LinkedEventId! : "none";
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "  [{0}] type={1} owners=[{2}] leaked={3} retired={4} linked={5}",
+                evt.EventId, evt.Type, owners, evt.State.Leaked, evt.SecretRetired, linked));
+
+            var knowers = evt.KnownBy ?? new List<KnownByEntry>();
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture, "    knowers ({0}):", knowers.Count));
+            foreach (var k in knowers)
+            {
+                if (k == null) continue;
+                string from = !string.IsNullOrEmpty(k.SourceHeroId) ? k.SourceHeroId! : "none";
+                sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                    "      {0} (hop={1}, from={2})",
+                    k.HeroId, k.Hop, from));
+            }
+        }
+
         public static string FormatShamefulNews(
             Hero hero,
             string playerHeroId,
@@ -1470,6 +1727,221 @@ namespace VividWorld.Debug
             if (totalScandals == 0)
             {
                 sb.AppendLine("  (no scandals among known events)");
+            }
+
+            return sb.ToString().TrimEnd();
+        }
+
+        public static string FormatSecretReactions(
+            Hero hero,
+            WorldEventStore store,
+            VividWorldConfig config,
+            IHeroTraitLookup? traits,
+            ISecretRelationshipLookup? secretLookup,
+            out int total)
+        {
+            var sb = new StringBuilder();
+            total = 0;
+            if (hero == null || store == null || store.Index?.Entries == null)
+            {
+                sb.AppendLine("Invalid hero or event store.");
+                return sb.ToString();
+            }
+
+            string heroId = hero.StringId;
+            string heroName = hero.Name?.ToString() ?? heroId;
+
+            var secretEntries = store.Index.Entries.Where(e => e != null && e.Secret).ToList();
+            var ownSecrets = new List<WorldEvent>();
+            var heardSecrets = new List<WorldEvent>();
+
+            foreach (var entry in secretEntries)
+            {
+                var evt = store.Load(entry.EventId);
+                if (evt == null) continue;
+
+                bool isOwner = evt.SecretOwnerHeroIds != null && evt.SecretOwnerHeroIds.Contains(heroId, StringComparer.Ordinal);
+                bool knows = evt.KnownBy != null && evt.KnownBy.Any(k => string.Equals(k?.HeroId, heroId, StringComparison.Ordinal));
+
+                if (isOwner)
+                {
+                    ownSecrets.Add(evt);
+                }
+                else if (knows)
+                {
+                    heardSecrets.Add(evt);
+                }
+            }
+
+            total = ownSecrets.Count + heardSecrets.Count;
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "=== Reactions to Leaked Secrets for {0} ({1}) (total secrets {2}) ===", heroName, heroId, total));
+
+            sb.AppendLine();
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "--- Own Secrets ({0}) ---", ownSecrets.Count));
+
+            if (ownSecrets.Count == 0)
+            {
+                sb.AppendLine("  (no secrets owned by this hero)");
+            }
+            else
+            {
+                foreach (var evt in ownSecrets)
+                {
+                    bool leaked = evt.State?.Leaked ?? false;
+                    double leakedDay = evt.State?.LeakedDay ?? 0.0;
+                    string leaker = evt.State?.LeakerHeroId ?? "none";
+                    var entry = evt.EntryFor(heroId);
+
+                    sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                        "  [{0}] {1} (leaked: {2}{3})",
+                        evt.EventId,
+                        evt.Type,
+                        leaked ? $"yes on day {leakedDay:F1} by {leaker}" : "not yet",
+                        evt.SecretRetired ? ", RETIRED" : ""));
+
+                    if (entry != null)
+                    {
+                        string ownerReaction = entry.OwnerReaction ?? "not reacted yet";
+                        string grudge = entry.GrudgeAgainstHeroId ?? "none";
+                        string suspects = entry.SuspectedHeroIds != null && entry.SuspectedHeroIds.Count > 0
+                            ? string.Join(", ", entry.SuspectedHeroIds)
+                            : "none";
+
+                        sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                            "    reaction: {0} | grudge on originator: {1} | suspects: [{2}]",
+                            ownerReaction, grudge, suspects));
+
+                        if (entry.RelationImpacts != null && entry.RelationImpacts.Count > 0)
+                        {
+                            foreach (var ri in entry.RelationImpacts)
+                            {
+                                sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                                    "    impact: toward {0}, requested {1:+0.##;-0.##;0}, delta={2}, ledgerOnly={3}",
+                                    ri.AboutHeroId, ri.Requested, ri.Delta, ri.LedgerOnly));
+                            }
+                        }
+                    }
+                }
+            }
+
+            sb.AppendLine();
+            sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                "--- Leaked Secrets Heard ({0}) ---", heardSecrets.Count));
+
+            if (heardSecrets.Count == 0)
+            {
+                sb.AppendLine("  (no other secrets heard by this hero)");
+            }
+            else
+            {
+                foreach (var evt in heardSecrets)
+                {
+                    bool leaked = evt.State?.Leaked ?? false;
+                    var entry = evt.EntryFor(heroId);
+                    var tmpl = EventCatalogStore.TemplateByType(evt.Type);
+
+                    sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                        "  [{0}] {1} (leaked: {2})",
+                        evt.EventId,
+                        evt.Type,
+                        leaked ? $"day {evt.State?.LeakedDay:F1}" : "not leaked"));
+
+                    if (entry != null)
+                    {
+                        sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                            "    hop {0}, learned day {1:F1}, from {2}, believes: {3}",
+                            entry.Hop, entry.LearnedDay, entry.SourceHeroId ?? "witness",
+                            entry.Believes.HasValue ? (entry.Believes.Value ? "yes" : "no") : "not judged"));
+
+                        if (entry.RelationImpacts != null && entry.RelationImpacts.Count > 0)
+                        {
+                            foreach (var ri in entry.RelationImpacts)
+                            {
+                                sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                                    "    applied impact: toward {0}, requested {1:+0.##;-0.##;0}, delta={2}, ledgerOnly={3}",
+                                    ri.AboutHeroId, ri.Requested, ri.Delta, ri.LedgerOnly));
+                            }
+                        }
+                        else if (tmpl?.OnHeard != null)
+                        {
+                            sb.AppendLine("    (no relation impacts recorded for this secret)");
+                        }
+                    }
+                }
+            }
+
+            return sb.ToString().TrimEnd();
+        }
+
+        public static string FormatStakeableSecrets(Hero hero, WorldEventStore store, out int totalKnown, out int totalEligible)
+        {
+            var sb = new StringBuilder();
+            totalKnown = 0;
+            totalEligible = 0;
+            if (hero == null || store == null)
+            {
+                sb.AppendLine("Invalid hero or event store.");
+                return sb.ToString();
+            }
+
+            string heroId = hero.StringId;
+            string heroName = hero.Name?.ToString() ?? heroId;
+            var player = Hero.MainHero;
+            string? playerId = player?.StringId;
+            string opponentId = playerId ?? "unknown_opponent";
+            string opponentName = player?.Name?.ToString() ?? opponentId;
+
+            sb.AppendLine($"=== Stakeable Secrets for {heroName} ({heroId}) ===");
+            sb.AppendLine($"Opponent (in dialogue): {opponentName} ({opponentId})");
+            sb.AppendLine($"Player Hero ID: {playerId ?? "(none)"}");
+
+            double nowDay = CampaignTime.Now.ToDays;
+            var knownIds = store.KnownBy?.EventsKnownBy(heroId, nowDay);
+            var knownSecrets = new List<WorldEvent>();
+            if (knownIds != null)
+            {
+                foreach (var id in knownIds)
+                {
+                    var evt = store.Load(id);
+                    if (evt != null && evt.Origin == EventOrigin.Secret)
+                    {
+                        knownSecrets.Add(evt);
+                    }
+                }
+            }
+            totalKnown = knownSecrets.Count;
+
+            var eval = StakeableSecretEvaluation.Evaluate(heroId, opponentId, playerId, knownSecrets);
+            totalEligible = eval.Candidates.Count(c => c.IsEligible);
+
+            sb.AppendLine($"Total known secrets: {totalKnown}, Eligible: {totalEligible}");
+            sb.AppendLine("--- Candidates ---");
+
+            if (eval.Candidates.Count == 0)
+            {
+                sb.AppendLine("  (no secrets known)");
+            }
+            else
+            {
+                foreach (var cand in eval.Candidates)
+                {
+                    var evt = cand.Event;
+                    string owners = evt.SecretOwnerHeroIds != null ? string.Join(", ", evt.SecretOwnerHeroIds) : "(none)";
+                    string status = cand.IsEligible ? "ELIGIBLE" : $"DISQUALIFIED ({cand.DisqualifiedReason})";
+                    sb.AppendLine($"  [{evt.EventId}] type={evt.Type}, weight={evt.DramaWeightTen}, day={evt.Day:F1}, owners=[{owners}]: {status}");
+                }
+            }
+
+            sb.AppendLine("--- Selection ---");
+            if (eval.ChosenSecret != null)
+            {
+                sb.AppendLine($"  Chosen secret: [{eval.ChosenSecret.EventId}] (weight={eval.ChosenSecret.DramaWeightTen}, day={eval.ChosenSecret.Day:F1})");
+            }
+            else
+            {
+                sb.AppendLine($"  Chosen secret: (none) - {eval.Reason}");
             }
 
             return sb.ToString().TrimEnd();

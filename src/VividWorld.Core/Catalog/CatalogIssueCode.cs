@@ -41,6 +41,15 @@ namespace VividWorld.Core.Catalog
         MadeUpByInvalid,
 
         /// <summary>模板 response 欄位宣告無效（非 'denial'/'clarification' 或缺 linkedTemplateType）。</summary>
-        ResponseInvalid
+        ResponseInvalid,
+
+        /// <summary>模板 ownerRoles 欄位宣告無效（角色未在 roles 宣告等）。</summary>
+        OwnerRoleNotARole,
+
+        /// <summary>模板 harmed 欄位宣告無效（角色未在 roles 宣告等）。</summary>
+        HarmedInvalid,
+
+        /// <summary>模板 onHeard 欄位宣告無效。</summary>
+        OnHeardInvalid
     }
 }

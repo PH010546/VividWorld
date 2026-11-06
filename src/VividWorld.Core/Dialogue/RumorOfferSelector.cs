@@ -603,8 +603,8 @@ namespace VividWorld.Core.Dialogue
             InterestHeroFacts? tellerFacts = _dialogueWorld?.InterestFacts(tellerId);
             InterestHeroFacts? playerFacts = _dialogueWorld?.InterestFacts(_playerHeroId);
 
-            int highAffection = _config.Presentation?.Feelings?.AffectionHigh ?? 30;
-            int lowAffection = _config.Presentation?.Feelings?.AffectionLow ?? -30;
+            int highAffection = _config.Presentation?.Feelings?.AffectionHigh ?? 50;
+            int lowAffection = _config.Presentation?.Feelings?.AffectionLow ?? -50;
             double grudgeThreshold = _config.Presentation?.Feelings?.GrudgeThreshold ?? 4.0;
 
             foreach (var p in involved)
@@ -630,11 +630,11 @@ namespace VividWorld.Core.Dialogue
                     return true;
                 }
 
-                // d. 他好感 >= 30 或 <= -30 的人
+                // d. 他好感 > 50 或 < -50 的人
                 if (_dialogueWorld != null)
                 {
                     int? aff = _dialogueWorld.Affection(tellerId, p);
-                    if (aff.HasValue && (aff.Value >= highAffection || aff.Value <= lowAffection))
+                    if (aff.HasValue && (aff.Value > highAffection || aff.Value < lowAffection))
                     {
                         category = VolunteerReasonCategory.TellerRelation;
                         why = $"teller has strong feeling toward participant {p} (relation {aff.Value})";
@@ -681,11 +681,11 @@ namespace VividWorld.Core.Dialogue
                     return true;
                 }
 
-                // c. 跟玩家好感 >= 30 或 <= -30 的人
+                // c. 跟玩家好感 > 50 或 < -50 的人
                 if (_dialogueWorld != null)
                 {
                     int? aff = _dialogueWorld.Affection(_playerHeroId, p);
-                    if (aff.HasValue && (aff.Value >= highAffection || aff.Value <= lowAffection))
+                    if (aff.HasValue && (aff.Value > highAffection || aff.Value < lowAffection))
                     {
                         category = VolunteerReasonCategory.PlayerRelated;
                         why = $"participant {p} has strong relation with player ({aff.Value})";
@@ -732,6 +732,24 @@ namespace VividWorld.Core.Dialogue
             bool isRetell = candidate.PlayerExistingHop.HasValue;
             int resultingPlayerHop = candidate.TellerHop + 1;
             var retainedFacts = _engine.FactsAtHop(candidate.Event, resultingPlayerHop, teller.HeroId);
+            if (retainedFacts.Count == 0 && candidate.Event.Origin == EventOrigin.Secret)
+            {
+                var tellerEntry = candidate.Event.EntryFor(teller.HeroId);
+                if (tellerEntry?.KnownFactIds != null && tellerEntry.KnownFactIds.Count > 0)
+                {
+                    var factMap = candidate.Event.Facts.ToDictionary(f => f.Id, StringComparer.Ordinal);
+                    var list = new List<Fact>();
+                    foreach (var fid in tellerEntry.KnownFactIds)
+                    {
+                        if (factMap.TryGetValue(fid, out var f)) list.Add(f);
+                    }
+                    retainedFacts = list.Count > 0 ? list : candidate.Event.Facts;
+                }
+                else
+                {
+                    retainedFacts = candidate.Event.Facts;
+                }
+            }
             bool isParticipant = candidate.Event.RoleOf(teller.HeroId) != null;
             var prefix = RumorPrefixSelector.SelectPrefix(candidate.TellerHop, candidate.SourceHeroId, isRetell, candidate.IsCorrection, isParticipant);
             if (forProbe && prefix.Kind == RumorPrefixKind.RetellSelf)
@@ -966,6 +984,12 @@ namespace VividWorld.Core.Dialogue
         public List<string> ToldFactIdsOf(RumorOffer offer, WorldEvent evt, string tellerHeroId)
         {
             if (offer.ToldFactIds != null) return offer.ToldFactIds.ToList();
+            if (evt.Origin == EventOrigin.Secret)
+            {
+                var entry = evt.EntryFor(tellerHeroId);
+                if (entry?.KnownFactIds != null && entry.KnownFactIds.Count > 0) return entry.KnownFactIds.ToList();
+                return evt.Facts.Select(f => f.Id).ToList();
+            }
             return _engine.FactsAtHop(evt, offer.ResultingPlayerHop, tellerHeroId).Select(f => f.Id).ToList();
         }
 

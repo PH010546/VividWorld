@@ -151,6 +151,9 @@ namespace VividWorld.Core.Situations
 
         public List<WandererCandidateReport> Candidates = new();
         public WandererPick? Pick;
+
+        /// <summary>挑種類與挑人的完整紀錄（交給 <see cref="SituationPickLogFormatter"/> 印）；沒走到挑這一步是 null。</summary>
+        public SituationPickRecord? PickRecord;
     }
 
     public static class WandererEventRoller
@@ -160,7 +163,8 @@ namespace VividWorld.Core.Situations
             VividWorldConfig? config,
             IEnumerable<SituationTemplate> templates,
             IPlayerPresenceEvaluator evaluator,
-            IDeterministicRng rng)
+            IDeterministicRng rng,
+            IHeroTraitLookup? traits = null)
         {
             if (input == null) throw new ArgumentNullException(nameof(input));
             if (evaluator == null) throw new ArgumentNullException(nameof(evaluator));
@@ -347,11 +351,43 @@ namespace VividWorld.Core.Situations
                 return result;
             }
 
-            var weights = passing.Select(c => c.Weight).ToList();
-            double total = weights.Sum();
-            int pickIdx = rng.PickWeighted(weights, RumorSeed.Of(baseSeed, "pick"));
-            var picked = passing[pickIdx];
-            int assignmentIdx = rng.Pick(picked.PassingAssignments.Count, RumorSeed.Of(baseSeed, "assignment", picked.SituationId));
+            double total = passing.Sum(c => c.Weight);
+
+            // 種類＝每個情境（條件沒過的也列進去，日誌才看得到它們為什麼沒機會）；挑人照個性比重，不看今天的名單
+            var kinds = new List<SituationPickKind>();
+            foreach (var c in result.Candidates)
+            {
+                var kind = new SituationPickKind
+                {
+                    Id = c.SituationId,
+                    Weight = c.Weight,
+                    WeightSource = "template weight",
+                    PickTraitRoles = SituationPickKind.TraitRolesOf(c.Template),
+                    NoCandidateReason = c.StructuralReason ?? "no assignment passed the conditions",
+                    Payload = c
+                };
+                kind.Candidates = c.PassingAssignments
+                    .Select(a => SituationPicker.CandidateFromAssignment(kind, a.NonDerivedRoleHeroIds, a.Evaluation.BoundHeroIds, traits, playerId, a))
+                    .ToList();
+                kinds.Add(kind);
+            }
+
+            var pickResult = SituationPicker.Pick(new SituationPickRequest
+            {
+                Kinds = kinds,
+                Count = 1,
+                Roster = null,
+                Rng = rng,
+                PlayerHeroId = playerId,
+                KindSeed = _ => RumorSeed.Of(baseSeed, "pick"),
+                PersonSeed = (_, k) => RumorSeed.Of(baseSeed, "assignment", ((WandererCandidateReport)k.Payload!).SituationId),
+                Site = $"wanderer event ({triggerStr})",
+                Day = input.Today
+            });
+            result.PickRecord = pickResult.Records.Count > 0 ? pickResult.Records[0] : null;
+
+            var picked = (WandererCandidateReport)pickResult.Picks[0].Kind.Payload!;
+            var pickedAssignment = (WandererAssignment)pickResult.Picks[0].Candidate.Payload!;
 
             result.Outcome = WandererRollOutcome.Happened;
             var decisionKind = result.IsUnseen
@@ -362,7 +398,7 @@ namespace VividWorld.Core.Situations
             result.Pick = new WandererPick
             {
                 Template = picked.Template!,
-                Assignment = picked.PassingAssignments[assignmentIdx],
+                Assignment = pickedAssignment,
                 Probability = total > 0.0 ? picked.Weight / total : 0.0,
                 AssignmentChoices = picked.PassingAssignments.Count,
                 DecisionKind = decisionKind

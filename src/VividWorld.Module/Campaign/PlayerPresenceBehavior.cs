@@ -179,13 +179,14 @@ namespace VividWorld.Campaign
 
             var evaluator = new ModuleEvaluator(this, settlement, heroes, day);
             var templates = SituationCatalogStore.Catalog?.Situations ?? new List<SituationTemplate>();
-            var result = PlayerPresenceRoller.Roll(input, TownPresenceTrigger.Instance, _config, templates, evaluator, new SplitMix64Rng());
+            var result = PlayerPresenceRoller.Roll(input, TownPresenceTrigger.Instance, _config, templates, evaluator, new SplitMix64Rng(), _traits);
 
             ModLog.Info("(dev preview) " + PlayerPresenceLogFormatter.FormatRoll(result));
             foreach (var line in PlayerPresenceLogFormatter.FormatCandidates(result))
             {
                 ModLog.Info(line);
             }
+            SituationPickLogWriter.Write(result.PickRecord, SituationPickLogWriter.Options(_heroLookup, SituationPickLogWriter.LogAllCandidates(_config)));
 
             return result;
         }
@@ -230,7 +231,7 @@ namespace VividWorld.Campaign
 
             var evaluator = new ModuleEvaluator(this, settlement, heroes, day);
             var templates = SituationCatalogStore.Catalog?.Situations ?? new List<SituationTemplate>();
-            var result = PlayerPresenceRoller.Roll(input, TownPresenceTrigger.Instance, _config, templates, evaluator, new SplitMix64Rng());
+            var result = PlayerPresenceRoller.Roll(input, TownPresenceTrigger.Instance, _config, templates, evaluator, new SplitMix64Rng(), _traits);
             LastRoll = result;
             LastRollDay = day;
 
@@ -239,6 +240,7 @@ namespace VividWorld.Campaign
             {
                 ModLog.Info(line);
             }
+            SituationPickLogWriter.Write(result.PickRecord, SituationPickLogWriter.Options(_heroLookup, SituationPickLogWriter.LogAllCandidates(_config)));
 
             if (result.Outcome == PlayerPresenceOutcome.Happened && result.Pick != null)
             {

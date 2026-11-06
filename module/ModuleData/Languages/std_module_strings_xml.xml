@@ -12,6 +12,25 @@
     <string id="VividWorld_Dev_WorldStatus" text="(dev) World status" />
     <string id="VividWorld_Dev_ReloadConfig" text="(dev) Reload config.json" />
     <string id="VividWorld_Dev_ForceLeak" text="(dev) Force the newest secret to leak" />
+    <string id="VividWorld_Dev_ForceSecretLeak" text="(dev) Make them leak a secret they know" />
+    <string id="VividWorld_Dev_ForceConfideToPlayer" text="(dev) Have them confide a secret to you" />
+    <string id="VividWorld_Dev_HearPublicSideOfSecret" text="(dev) Let me hear the public side of a secret they know" />
+    <string id="VividWorld_Dev_LetThemInOnFriendSecret" text="(dev) Let them in on a friend&apos;s secret" />
+    <string id="VividWorld_Dev_LetThemInOnUnrelatedSecret" text="(dev) Let them in on an unrelated secret" />
+    <string id="VividWorld_Dev_MakeThemTrustMe" text="(dev) Make them trust me (relation 51)" />
+    <string id="VividWorld_Dev_HaveThemHearLeakedSecret" text="(dev) Have them hear a leaked secret" />
+    <string id="VividWorld_Dev_RunHuntingWagerSecret" text="(dev) Run a hunting wager staking a secret here" />
+    <string id="VividWorld_Dev_SecretlyFreePrisoner" text="(dev) Have them secretly free a prisoner" />
+    <string id="VividWorld_SecretConfide_Opening" text="{TELLER} draws you aside and lowers {TELLER.his} voice." />
+    <string id="VividWorld_SecretConfide_Ok" text="I&apos;ll remember it" />
+    <string id="VividWorld_SecretProbe_Deflect" text="Don&apos;t ask me about that" />
+    <string id="VividWorld_SecretMemory_Own" text="This is my own secret; I have only told those I trust in private, and word of it has not got out" />
+    <string id="VividWorld_SecretMemory_OwnLeaked" text="This secret of mine has got out; someone talked, and I will remember who broke my trust" />
+    <string id="VividWorld_SecretMemory_Confided" text="Someone confided this secret to me in private and asked me not to spread it; I only speak of it in strict confidence" />
+    <string id="VividWorld_Dev_SecretProbePreview" text="(dev) How they would answer about secrets" />
+    <string id="VividWorld_Dev_SecretReactions" text="(dev) Their reactions to leaked secrets" />
+    <string id="VividWorld_Dev_StakeableSecrets" text="(dev) Secrets they could stake" />
+    <string id="VividWorld_Dev_SecretConversionPreview" text="(dev) How old secrets would be converted" />
     <string id="VividWorld_Dev_ResetMetrics" text="(dev) Reset performance counters" />
     <string id="VividWorld_Dev_BoostRelation" text="(dev) Make this person like me more" />
     <string id="VividWorld_Dev_EventRoster" text="(dev) Who else knows about this?" />
@@ -109,6 +128,7 @@
     <string id="VividWorld_EventType_hero_escaped_bandits" text="Escaped from bandits" />
     <string id="VividWorld_EventType_seat_dispute_demanded" text="A seat at the high table was demanded" />
     <string id="VividWorld_EventType_seat_dispute_endured" text="A slight at the table was swallowed" />
+    <string id="VividWorld_EventType_seat_dispute_grudge_held" text="A slight was swallowed in secret" />
     <string id="VividWorld_EventType_seat_dispute_yielded" text="A seat was given up" />
     <string id="VividWorld_EventType_seat_dispute_walked_out" text="A lord walked out of the hall" />
     <string id="VividWorld_EventType_advice_given_freely" text="A veteran shared all they knew" />
@@ -145,6 +165,7 @@
     <string id="VividWorld_EventTypeNamed_child_born" text="{MOTHER} gave birth to {CHILD}" />
     <string id="VividWorld_EventTypeNamed_seat_dispute_demanded" text="{SLIGHTED} publicly demanded {FAVORED}&apos;s seat" />
     <string id="VividWorld_EventTypeNamed_seat_dispute_endured" text="{SLIGHTED} swallowed a slight at the table" />
+    <string id="VividWorld_EventTypeNamed_seat_dispute_grudge_held" text="{SLIGHTED} swallowed a slight in secret" />
     <string id="VividWorld_EventTypeNamed_seat_dispute_yielded" text="{SLIGHTED} gave up the seat to {FAVORED}" />
     <string id="VividWorld_EventTypeNamed_seat_dispute_walked_out" text="{SLIGHTED} walked out of the hall" />
     <string id="VividWorld_EventTypeNamed_advice_given_freely" text="{VETERAN} held nothing back when advising {STUDENT}" />
@@ -248,9 +269,10 @@
     <string id="VividWorld_Fact_SeatDisputeDemanded_Where" text="in the hall of {SETTLEMENT}" />
     <string id="VividWorld_Fact_SeatDisputeDemanded_Why" text="saying that, as the head of {SLIGHTED.his} house, {SLIGHTED.he} should not sit below a member of another" />
     <string id="VividWorld_Fact_SeatDisputeDemanded_Outcome" text="and the whole hall fell silent" />
-    <string id="VividWorld_Fact_SeatDisputeEndured_Who" text="{SLIGHTED} swallowed the insult of sitting below {FAVORED}" />
+    <string id="VividWorld_Fact_SeatDisputeEndured_Who" text="{SLIGHTED} was seated below {FAVORED}" />
+    <string id="VividWorld_Fact_SeatDisputeGrudgeHeld_Who" text="{SLIGHTED} says nothing openly, but holds a bitter grudge against {FAVORED}" />
     <string id="VividWorld_Fact_SeatDisputeEndured_Where" text="in the hall of {SETTLEMENT}" />
-    <string id="VividWorld_Fact_SeatDisputeEndured_What" text="and said nothing, though it plainly stung" />
+    <string id="VividWorld_Fact_SeatDisputeEndured_What" text="said not a word, though it plainly stung" />
     <string id="VividWorld_Fact_SeatDisputeYielded_Who" text="{SLIGHTED} graciously gave the seat of honor to {FAVORED}" />
     <string id="VividWorld_Fact_SeatDisputeYielded_Where" text="in the hall of {SETTLEMENT}" />
     <string id="VividWorld_Fact_SeatDisputeYielded_Outcome" text="and raised a cup to {FAVORED.him}" />
@@ -262,6 +284,8 @@
     <string id="VividWorld_Dev_Feelings" text="(dev) What would they add to each rumor they know?" />
     <string id="VividWorld_Dev_ShamefulNews" text="(dev) Who would they tell the scandals they know?" />
     <string id="VividWorld_Dev_PlayerRelation" text="(dev) Their relation with you" />
+    <string id="VividWorld_Dev_SecretsTheyKnow" text="(dev) Secrets they know" />
+    <string id="VividWorld_Dev_SecretsInWorld" text="(dev) Secrets in the world" />
     <string id="VividWorld_Dev_ScanToday" text="(dev) Today's situation scan" />
     <string id="VividWorld_Dev_Snapshots" text="(dev) Snapshot state" />
 
@@ -330,6 +354,8 @@
     <string id="VividWorld_Fact_WagerSecretStake_Who" text="{CHALLENGER} and {CHALLENGED} put more than silver on the next hunt" />
     <string id="VividWorld_Fact_WagerSecretStake_Where" text="in {SETTLEMENT}" />
     <string id="VividWorld_Fact_WagerSecretStake_What" text="and neither of them would say what it was" />
+    <string id="VividWorld_Fact_HuntWagerSettled_Who" text="{WINNER} won the hunting wager against {LOSER}" />
+    <string id="VividWorld_Fact_HuntWagerStakedSecret_Who" text="{BETTOR} staked {STAKED_OWNER}&apos;s secret on the hunt" />
 
     <!-- Chronicle interface strings -->
     <string id="VividWorld_Chronicle_Title" text="What you have seen and heard" />
@@ -394,6 +420,8 @@
     <string id="VividWorld_MCM_ChronicleMaxEntriesHint" text="Maximum number of stories shown in the &apos;What you have seen and heard&apos; window. Follow-ups and different accounts of the same story are grouped together and count as one." />
     <string id="VividWorld_MCM_EncyclopediaLinksEnabled" text="Encyclopedia links in rumors" />
     <string id="VividWorld_MCM_EncyclopediaLinksEnabledHint" text="Enables clickable links to hero and settlement encyclopedia pages within rumor text." />
+    <string id="VividWorld_MCM_MuteNativeNotifications" text="Hide native event broadcasts" />
+    <string id="VividWorld_MCM_MuteNativeNotificationsHint" text="Captures, releases and escapes, deaths, marriages, births and tournament wins no longer pop up in the bottom-left corner; you hear of them from people instead. Those involving your own clan still show." />
 
     <!-- Group 2: Propagation -->
     <string id="VividWorld_MCM_TellersPerHourlyTick" text="Tellers per hourly tick" />
@@ -550,12 +578,14 @@
     <string id="VividWorld_Fact_SeatDisputeDemanded_Where_Self_FAVORED" text="in the hall of {SETTLEMENT}" />
     <string id="VividWorld_Fact_SeatDisputeDemanded_Why_Self_FAVORED" text="saying the head of a house should not sit below the likes of me" />
     <string id="VividWorld_Fact_SeatDisputeDemanded_Outcome_Self_FAVORED" text="and with the whole hall watching, I did not know where to look" />
-    <string id="VividWorld_Fact_SeatDisputeEndured_Who_Self_SLIGHTED" text="I had to sit below {FAVORED}, and I let it pass" />
+    <string id="VividWorld_Fact_SeatDisputeEndured_Who_Self_SLIGHTED" text="I was seated below {FAVORED}" />
     <string id="VividWorld_Fact_SeatDisputeEndured_Where_Self_SLIGHTED" text="in the hall of {SETTLEMENT}" />
-    <string id="VividWorld_Fact_SeatDisputeEndured_What_Self_SLIGHTED" text="I could hardly make a scene in front of everyone, but that meal tasted of nothing" />
-    <string id="VividWorld_Fact_SeatDisputeEndured_Who_Self_FAVORED" text="{SLIGHTED} had to sit below me and let it pass" />
+    <string id="VividWorld_Fact_SeatDisputeEndured_What_Self_SLIGHTED" text="I said not a word and bore it" />
+    <string id="VividWorld_Fact_SeatDisputeEndured_Who_Self_FAVORED" text="{SLIGHTED} was seated below me" />
     <string id="VividWorld_Fact_SeatDisputeEndured_Where_Self_FAVORED" text="in the hall of {SETTLEMENT}" />
-    <string id="VividWorld_Fact_SeatDisputeEndured_What_Self_FAVORED" text="not a word, but I could see on {SLIGHTED.his} face that {SLIGHTED.he} will remember it" />
+    <string id="VividWorld_Fact_SeatDisputeEndured_What_Self_FAVORED" text="said not a word, though I could see it stung" />
+    <string id="VividWorld_Fact_SeatDisputeGrudgeHeld_Who_Self_SLIGHTED" text="I say nothing openly, but I hold a bitter grudge against {FAVORED}" />
+    <string id="VividWorld_Fact_SeatDisputeGrudgeHeld_Who_Self_FAVORED" text="{SLIGHTED} says nothing openly, but holds a bitter grudge against me" />
     <string id="VividWorld_Fact_SeatDisputeYielded_Who_Self_SLIGHTED" text="I gave the seat of honor to {FAVORED}" />
     <string id="VividWorld_Fact_SeatDisputeYielded_Where_Self_SLIGHTED" text="in the hall of {SETTLEMENT}" />
     <string id="VividWorld_Fact_SeatDisputeYielded_Outcome_Self_SLIGHTED" text="and raised a cup to {FAVORED.him}; it is only a seat, not worth a quarrel" />
@@ -949,15 +979,24 @@
     <string id="VividWorld_SelfFeeling_SeatDisputeDemanded_SLIGHTED" text="I head my house. Why should I sit below someone who doesn&apos;t even head their own?" />
     <string id="VividWorld_SelfFeeling_SeatDisputeDemanded_FAVORED" text="With all those people watching, I didn&apos;t know where to look" />
     <!-- Whole sentence templates: SeatDisputeEndured -->
-    <string id="VividWorld_Sentence_SeatDisputeEndured_Who_Where_What_From_SLIGHTED" text="at a feast in {SETTLEMENT} {SLIGHTED.he} was seated below {FAVORED}, and {SLIGHTED.he} didn&apos;t say a word. {SLIGHTED.He} just swallowed it" />
-    <string id="VividWorld_Sentence_SeatDisputeEndured_Who_Where" text="{SLIGHTED} was seated below {FAVORED} at a feast in {SETTLEMENT}, and {SLIGHTED.he} swallowed it" />
-    <string id="VividWorld_Sentence_SeatDisputeEndured_Who" text="{SLIGHTED} was seated below {FAVORED} and simply swallowed it" />
-    <string id="VividWorld_Sentence_SeatDisputeEndured_Who_Where_What_Self_SLIGHTED" text="At that feast in {SETTLEMENT} I was seated below {FAVORED}. I didn&apos;t say a word; I just swallowed it" />
-    <string id="VividWorld_Sentence_SeatDisputeEndured_Who_Where_What_Self_FAVORED" text="at that feast in {SETTLEMENT}, when {SLIGHTED} sat below me, {SLIGHTED.he} didn&apos;t say a word. {SLIGHTED.He} was swallowing it the whole time" />
-    <string id="VividWorld_Sentence_SeatDisputeEndured_Who_Where_Self_FAVORED" text="at that feast in {SETTLEMENT}, when {SLIGHTED} sat below me, {SLIGHTED.he} was swallowing it the whole time" />
-    <string id="VividWorld_Sentence_SeatDisputeEndured_Who_Self_FAVORED" text="the time {SLIGHTED} sat below me, {SLIGHTED.he} was swallowing it the whole time" />
+    <string id="VividWorld_Sentence_SeatDisputeEndured_Who_Where_What" text="at the feast in {SETTLEMENT}, {SLIGHTED} was seated below {FAVORED}; {SLIGHTED.his} face darkened, but {SLIGHTED.he} didn&apos;t say a word of protest" />
+    <string id="VividWorld_Sentence_SeatDisputeEndured_Who_Where_What_From_SLIGHTED" text="at the feast in {SETTLEMENT}, {SLIGHTED.he} was seated below {FAVORED}, and with all those people watching, {SLIGHTED.he} could only swallow {SLIGHTED.his} pride" />
+    <string id="VividWorld_Sentence_SeatDisputeEndured_Who_Where" text="at the feast in {SETTLEMENT}, {SLIGHTED} was seated below {FAVORED} and took the slight in silence" />
+    <string id="VividWorld_Sentence_SeatDisputeEndured_Who" text="{SLIGHTED} was seated below {FAVORED} at a feast and took the slight in silence" />
+    <string id="VividWorld_Sentence_SeatDisputeEndured_Who_Where_What_Self_SLIGHTED" text="At that feast in {SETTLEMENT}, I was seated below {FAVORED}; I took the insult and held my tongue" />
+    <string id="VividWorld_Sentence_SeatDisputeEndured_Who_Where_Self_SLIGHTED" text="At that feast in {SETTLEMENT}, they seated me below {FAVORED}, and I kept quiet about it" />
+    <string id="VividWorld_Sentence_SeatDisputeEndured_Who_Where_What_Self_FAVORED" text="At that feast in {SETTLEMENT}, {SLIGHTED} was seated below me and never said a word to me the whole meal" />
+    <string id="VividWorld_Sentence_SeatDisputeEndured_Who_Where_Self_FAVORED" text="At that feast in {SETTLEMENT}, {SLIGHTED} was seated below me and didn't say anything" />
+
     <string id="VividWorld_SelfFeeling_SeatDisputeEndured_SLIGHTED" text="With that many people watching, I could hardly make a scene. The food tasted of nothing" />
-    <string id="VividWorld_SelfFeeling_SeatDisputeEndured_FAVORED" text="I honestly didn&apos;t notice at the time" />
+    <string id="VividWorld_SelfFeeling_SeatDisputeEndured_FAVORED" text="I didn&apos;t arrange the seating. If {SLIGHTED.he} was displeased, {SLIGHTED.he} can hardly blame me" />
+    <!-- Whole sentence templates: SeatDisputeGrudgeHeld -->
+    <string id="VividWorld_Sentence_SeatDisputeGrudgeHeld_Who" text="though {SLIGHTED} made no protest at the feast, {SLIGHTED.he} secretly bears a bitter grudge against {FAVORED}, resentful that someone who does not even head a house should sit above {SLIGHTED.him} without a second thought" />
+    <string id="VividWorld_Sentence_SeatDisputeGrudgeHeld_Who_From_SLIGHTED" text="{SLIGHTED.he} made no scene at the feast that day, but in truth {SLIGHTED.he} still bears a bitter grudge against {FAVORED}, resentful that someone who does not even head a house should sit above {SLIGHTED.him} without a second thought" />
+    <string id="VividWorld_Sentence_SeatDisputeGrudgeHeld_Who_Self_SLIGHTED" text="I held my tongue at that feast, but {FAVORED} does not even head a house, and to sit above me without a second thought... thinking of it now, I still can&apos;t stomach it" />
+    <string id="VividWorld_Sentence_SeatDisputeGrudgeHeld_Who_Self_FAVORED" text="{SLIGHTED} said not a word at the feast that day. It was only later I heard {SLIGHTED.he} has been holding a grudge against me for sitting above {SLIGHTED.him}" />
+    <string id="VividWorld_SelfFeeling_SeatDisputeGrudgeHeld_SLIGHTED" text="This stays between us" />
+    <string id="VividWorld_SelfFeeling_SeatDisputeGrudgeHeld_FAVORED" text="I only thought {SLIGHTED.his} pride was stung at the time; I never realized {SLIGHTED.he} would nurse it to this day" />
     <!-- Whole sentence templates: SeatDisputeYielded -->
     <string id="VividWorld_Sentence_SeatDisputeYielded_Who_Where_Outcome" text="at a feast in {SETTLEMENT}, {SLIGHTED} gave the higher seat to {FAVORED} and even raised a cup to {FAVORED.him}" />
     <string id="VividWorld_Sentence_SeatDisputeYielded_Who_Where_Outcome_From_SLIGHTED" text="at a feast in {SETTLEMENT} {SLIGHTED.he} didn&apos;t argue with {FAVORED}. {SLIGHTED.He} gave up the higher seat and even raised a cup to {FAVORED.him}" />
@@ -1239,7 +1278,7 @@
     <string id="VividWorld_Feeling_Victor_Hostile_2" text="Now that {ADDRESS} has won this one, there&apos;ll be no living with that arrogance." />
     <string id="VividWorld_Feeling_Victor_Sore_1" text="{ADDRESS} fought a fine battle, and I&apos;m truly glad to hear it. Whatever grudge I held, I&apos;ll leave it unsaid today." />
     <string id="VividWorld_Feeling_Victor_Sore_2" text="{ADDRESS} fought well. {He} can be maddening at times, but on the battlefield {he} has my respect." />
-    <string id="VividWorld_Feeling_Victor_Owe_1" text="{ADDRESS} and I never got along, so I&apos;ve little reason to cheer this victory. But {he} treated me well once, so I&apos;ll grudgingly offer my congratulations." />
+    <string id="VividWorld_Feeling_Victor_Owe_1" text="{ADDRESS} and I never got along, so this victory gives me little to cheer about. But I still owe {him} a kindness, so it would hardly do to dampen {his} spirits at a time like this." />
     <string id="VividWorld_Feeling_Captured_Close_1" text="I hope {ADDRESS} is not being ill-treated in there." />
     <string id="VividWorld_Feeling_Captured_Close_2" text="If it&apos;s coin that&apos;s needed, I can spare some." />
     <string id="VividWorld_Feeling_Captured_Neutral_1" text="These days anyone on the road can meet with that." />
@@ -1298,7 +1337,7 @@
     <string id="VividWorld_Feeling_Decent_Close_1" text="That&apos;s just like {ADDRESS}." />
     <string id="VividWorld_Feeling_Decent_Close_2" text="{ADDRESS} has always been that generous, and I&apos;ve always admired it." />
     <string id="VividWorld_Feeling_Decent_Neutral_1" text="Few would do as much. It&apos;s a rare thing." />
-    <string id="VividWorld_Feeling_Decent_Neutral_2" text="A favor like that tends to be repaid in time." />
+    <string id="VividWorld_Feeling_Decent_Neutral_2" text="A favor like that from {ADDRESS} is bound to be repaid in time." />
     <string id="VividWorld_Feeling_Decent_Hostile_1" text="{ADDRESS}, so kind-hearted? There&apos;s some scheme behind it, I&apos;d say." />
     <string id="VividWorld_Feeling_Decent_Hostile_2" text="It&apos;s all for show. I don&apos;t buy it." />
     <string id="VividWorld_Feeling_Decent_Sore_1" text="It doesn&apos;t surprise me in the least that {ADDRESS} would do this; {he} has always been generous with people. It&apos;s only with me that {he} sometimes forgets that kindness." />
@@ -1412,6 +1451,25 @@
     <string id="VividWorld_Feeling_Wronged_Hostile_2" text="{ADDRESS} gets treated the way {he} treats others. {He} has no one to blame." />
     <string id="VividWorld_Feeling_Wronged_Sore_1" text="Hearing {ADDRESS} treated like this, I feel it&apos;s unfair to {him}. Still, I know what it is to be wronged; I learned it from {him}. Now it&apos;s {his} turn." />
     <string id="VividWorld_Feeling_Wronged_Owe_1" text="{ADDRESS} and I have never got on, and ordinarily I wouldn&apos;t care if {he} came off the worse. But {he} helped me once, and hearing {him} treated like this doesn&apos;t sit well with me." />
+    <!-- Feeling: contest_won -->
+    <string id="VividWorld_Feeling_ContestWon_Close_1" text="I know full well what {ADDRESS} is capable of; to see {him} take the prize warms my heart." />
+    <string id="VividWorld_Feeling_ContestWon_Close_2" text="None can doubt what {ADDRESS} can do now. When next we meet, I will have a cup with {him} to celebrate." />
+    <string id="VividWorld_Feeling_ContestWon_Neutral_1" text="{ADDRESS} won fair and square; one cannot deny the skill it took to come out ahead." />
+    <string id="VividWorld_Feeling_ContestWon_Neutral_2" text="Coming out on top in such a contest will do wonders for {ADDRESS}&apos;s standing." />
+    <string id="VividWorld_Feeling_ContestWon_Hostile_1" text="A bit of good fortune on the day, nothing more. One would think {ADDRESS} conquered a kingdom." />
+    <string id="VividWorld_Feeling_ContestWon_Hostile_2" text="It is easy enough for {ADDRESS} to look grand in a contest, but that tells you little of what {he} is truly worth." />
+    <string id="VividWorld_Feeling_ContestWon_Sore_1" text="{ADDRESS} won the contest, and I am glad for {him}. Were it not for that lingering grudge between us, I would have gone to share a drink with {him} already." />
+    <string id="VividWorld_Feeling_ContestWon_Sore_2" text="{ADDRESS} certainly made a fine showing of it. I will set my own grievances aside for today, though I wonder how long {he} will stay so proud." />
+    <string id="VividWorld_Feeling_ContestWon_Owe_1" text="I have never got along with {ADDRESS}, and {his} win gives me no joy. But I still owe {him} a kindness, so it would hardly do to go and dampen {his} spirits at a time like this." />
+    <!-- Feeling: contest_lost -->
+    <string id="VividWorld_Feeling_ContestLost_Close_1" text="It was a pity {ADDRESS} came up just short. Still, no one wins every match, and there is always next time." />
+    <string id="VividWorld_Feeling_ContestLost_Close_2" text="There is no shame in falling short at the very end. {ADDRESS} gave a good account of {himself}, and that is what matters." />
+    <string id="VividWorld_Feeling_ContestLost_Neutral_1" text="Every contest has a loser as well as a winner. {ADDRESS} was bested this time, but there is no dishonor in it." />
+    <string id="VividWorld_Feeling_ContestLost_Neutral_2" text="A fair contest was fought and settled. It remains to be seen whether {ADDRESS} can win back that pride." />
+    <string id="VividWorld_Feeling_ContestLost_Hostile_1" text="For all {ADDRESS}&apos;s grand talk of {his} prowess, when the test came, {he} was found wanting." />
+    <string id="VividWorld_Feeling_ContestLost_Hostile_2" text="To hear that {ADDRESS} lost that contest did my heart good, if you ask me." />
+    <string id="VividWorld_Feeling_ContestLost_Sore_1" text="I ought to feel for {ADDRESS} coming up short, but after the grief {he} has given me in the past, seeing {him} humbled for once does not sting so much." />
+    <string id="VividWorld_Feeling_ContestLost_Owe_1" text="I have never cared for {ADDRESS}, and by rights I ought to be pleased {he} lost this time. Yet I still owe {him} a kindness, and I cannot bring myself to laugh at {him} now." />
     <string id="VividWorld_Dev_ForceSpokeAgainstRuler" text="(dev) Make them speak ill of the ruler here" />
     <string id="VividWorld_Dev_ForceRefusedAid" text="(dev) Make them refuse a comrade&apos;s plea for aid here" />
     <string id="VividWorld_Dev_ForceRashCapture" text="(dev) Trigger a rash capture from their latest capture (either side)" />
@@ -1623,6 +1681,9 @@
     <string id="VividWorld_Dev_ResponseReachesListeners" text="(dev) The answered made-up talk they know: make everyone who still believes it hear the latest response and stop believing it" />
     <string id="VividWorld_Dev_TellMeMadeUpTalk" text="(dev) Tell me the latest made-up talk they know that I haven&apos;t heard, along with every response to it" />
     <string id="VividWorld_Dev_ChronicleBlocks" text="(dev) How is the chronicle grouped?" />
+    <string id="VividWorld_Dev_PrisonVisitMeasure" text="(dev) Lords held in a town: any kin or friends there?" />
+    <string id="VividWorld_Dev_TournamentKinMeasure" text="(dev) Tournament and kin relation measurements" />
+    <string id="VividWorld_Dev_NativeNotificationStatus" text="(dev) Native notification muting status" />
     <string id="VividWorld_Probe_Option" text="There&apos;s something I want to ask you." />
     <string id="VividWorld_Probe_Prompt" text="Go ahead. What is it?" />
     <string id="VividWorld_Probe_WindowTitle" text="What do you want to ask about?" />
@@ -1730,6 +1791,7 @@
     <string id="VividWorld_Presence_Scene_hunt_wager_Bystander" text="In the hall, {CHALLENGER} slaps the table and challenges {CHALLENGED} to a wager on who brings back more game from the next hunt." />
     <string id="VividWorld_Presence_Scene_spoke_against_ruler_Listener" text="{SPEAKER} draws you aside and, voice lowered, starts talking about {RULER}." />
     <string id="VividWorld_Presence_Outcome_seat_dispute_demand_seat" text="{SLIGHTED} sets down the cup and, in front of everyone, tells {FAVORED} to give up the higher seat. The whole hall falls silent." />
+    <string id="VividWorld_Presence_Outcome_seat_dispute_endure" text="{SLIGHTED} sets down the cup, says not a word, and swallows the slight before everyone." />
     <string id="VividWorld_Presence_Outcome_seat_dispute_yield" text="{SLIGHTED} lets it pass, gives the higher seat to {FAVORED}, and raises a cup to {FAVORED:him|her|them} as well." />
     <string id="VividWorld_Presence_Outcome_seat_dispute_walk_out" text="{SLIGHTED} gets up without a word and walks out of {HOST}&apos;s hall." />
     <string id="VividWorld_Presence_Outcome_advice_sought_teach_freely" text="{VETERAN} tells the whole story of how that battle was won, holding nothing back, not even the mistakes." />
@@ -2093,5 +2155,80 @@
     <string id="VividWorld_RoleComplaint_Message" text="{HERO} is aggrieved over being removed as {ROLE} (Relation: {BEFORE} -> {AFTER})" />
     <string id="VividWorld_WandererSkillXp_Companion" text="{LEARNER} learned {SKILL_NAME} from {TEACHER}: +{XP} experience" />
     <string id="VividWorld_WandererSkillXp_Player" text="You learned {SKILL_NAME} from {TEACHER}: +{XP} experience" />
+    <string id="VividWorld_Dev_FreedPrisonerCandidates" text="(dev) Who would free the prisoners held in towns" />
+    <string id="VividWorld_EventType_prisoner_freed_secretly" text="{FREER} secretly freed {PRISONER} from the dungeons of {SETTLEMENT}" />
+    <string id="VividWorld_Fact_PrisonerFreedSecretly_Who" text="{PRISONER} didn&apos;t slip away on {PRISONER.his} own; {FREER} secretly opened the cell and let {PRISONER.him} go" />
+    <string id="VividWorld_Fact_PrisonerFreedSecretly_Where" text="from the dungeons of {SETTLEMENT}" />
+    <string id="VividWorld_Fact_PrisonerFreedSecretly_Why" text="out of affection" />
+    <string id="VividWorld_Fact_PrisonerFreedSecretly_Who_Self_FREER" text="{PRISONER} didn&apos;t slip away on {PRISONER.his} own; I secretly opened the cell and let {PRISONER.him} go" />
+    <string id="VividWorld_Fact_PrisonerFreedSecretly_Who_Self_PRISONER" text="I didn&apos;t slip away on my own; {FREER} secretly opened the cell and let me go" />
+    <!-- Whole sentence templates: PrisonerFreedSecretly -->
+    <string id="VividWorld_Sentence_PrisonerFreedSecretly_Who" text="{PRISONER} never escaped from that cell alone; it was {FREER} who secretly opened the door and let {PRISONER.him} go" />
+    <string id="VividWorld_Sentence_PrisonerFreedSecretly_Who_Where" text="everyone believed {PRISONER} broke out of {SETTLEMENT}&apos;s dungeons on {PRISONER.his} own, but in truth {FREER} unlocked the cell and let {PRISONER.him} slip away" />
+    <string id="VividWorld_Sentence_PrisonerFreedSecretly_Who_Where_Why_From_FREER" text="{FREER.he} secretly freed {PRISONER} from the dungeons in {SETTLEMENT} for the sake of their old friendship" />
+    <string id="VividWorld_Sentence_PrisonerFreedSecretly_Who_Where_Why_From_PRISONER" text="{PRISONER.he} never broke out of the dungeons in {SETTLEMENT} by {PRISONER.himself}; it was {FREER} who remembered their friendship and quietly unlocked the gate for {PRISONER.him}" />
+    <string id="VividWorld_Sentence_PrisonerFreedSecretly_Who_Where_Why_Self_FREER" text="They all believe {PRISONER} escaped from the dungeons in {SETTLEMENT} on {PRISONER.his} own, but truth be told, I unlocked that cell and let {PRISONER.him} go out of old friendship" />
+    <string id="VividWorld_Sentence_PrisonerFreedSecretly_Who_Where_Why_Self_PRISONER" text="Folks say I broke out of the dungeons in {SETTLEMENT} on my own, but it wasn&apos;t like that at all; it was {FREER} who risked everything to unlock my cell out of old friendship" />
+    <string id="VividWorld_SelfFeeling_PrisonerFreedSecretly_FREER" text="I could not leave {PRISONER} to rot in that cell; it was a risk, but I don&apos;t regret it" />
+    <string id="VividWorld_SelfFeeling_PrisonerFreedSecretly_PRISONER" text="I owe {FREER} my freedom, and I will not forget it as long as I live" />
+    <string id="VividWorld_EventType_tournament_won" text="{CHAMPION} claimed victory in the tournament at {SETTLEMENT}" />
+    <string id="VividWorld_Fact_TournamentWon_Who" text="{CHAMPION} defeated {FINAL_OPPONENT} in the final bout to win the tournament" />
+    <string id="VividWorld_Fact_TournamentWon_WhoNoOpponent" text="{CHAMPION} won the tournament" />
+    <string id="VividWorld_Fact_TournamentWon_Where" text="at the arena in {SETTLEMENT}" />
+    <string id="VividWorld_Fact_TournamentWon_What" text="as cheers echoed through the stands" />
+    <string id="VividWorld_Fact_TournamentWon_Outcome" text="claiming the prize before the gathered lords and townspeople" />
+    <string id="VividWorld_Sentence_TournamentWon_Who_Where_What_Outcome" text="{CHAMPION} brought down {FINAL_OPPONENT} in the tournament final at {SETTLEMENT}, claiming the prize to the roar of the gathered crowd" />
+    <string id="VividWorld_Sentence_TournamentWon_Who_Where_What" text="{CHAMPION} bested {FINAL_OPPONENT} in the tournament final at {SETTLEMENT} amidst loud cheers from the arena stands" />
+    <string id="VividWorld_Sentence_TournamentWon_Who_Where" text="{CHAMPION} beat {FINAL_OPPONENT} in the tournament final at {SETTLEMENT} to take the championship" />
+    <string id="VividWorld_Sentence_TournamentWon_Who" text="{CHAMPION} won the tournament after defeating {FINAL_OPPONENT} in the final bout" />
+    <string id="VividWorld_Sentence_TournamentWon_WhoNoOpponent_Where_What_Outcome" text="{CHAMPION} won the tournament at {SETTLEMENT}, taking the champion's prize to a roaring crowd" />
+    <string id="VividWorld_Sentence_TournamentWon_WhoNoOpponent_Where_What" text="{CHAMPION} took first place at the {SETTLEMENT} tournament to endless cheers from the stands" />
+    <string id="VividWorld_Sentence_TournamentWon_WhoNoOpponent_Where" text="{CHAMPION} won the tournament held at {SETTLEMENT}" />
+    <string id="VividWorld_Sentence_TournamentWon_WhoNoOpponent" text="{CHAMPION} took the champion&apos;s title in the tournament" />
+    <string id="VividWorld_Sentence_TournamentWon_Who_Where_What_Outcome_Self_CHAMPION" text="In the tournament final at {SETTLEMENT}, I dropped {FINAL_OPPONENT} in the dirt and took the prize while the crowd went wild" />
+    <string id="VividWorld_Sentence_TournamentWon_Who_Where_Self_CHAMPION" text="I beat {FINAL_OPPONENT} in the tournament final at {SETTLEMENT} and took the prize" />
+    <string id="VividWorld_Sentence_TournamentWon_Who_Where_What_From_CHAMPION" text="{CHAMPION.he} beat {FINAL_OPPONENT} in the tournament final at {SETTLEMENT} while the whole arena cheered for {CHAMPION.him}" />
+    <string id="VividWorld_Sentence_TournamentWon_WhoNoOpponent_Where_What_Outcome_Self_CHAMPION" text="I won the tournament at {SETTLEMENT} and took the prize before the whole town" />
+    <string id="VividWorld_Sentence_TournamentWon_WhoNoOpponent_Where_Self_CHAMPION" text="I took first place in the tournament at {SETTLEMENT}" />
+    <string id="VividWorld_Sentence_TournamentWon_WhoNoOpponent_Where_What_From_CHAMPION" text="{CHAMPION.he} won the tournament at {SETTLEMENT}, with the whole arena cheering {CHAMPION.his} name" />
+    <string id="VividWorld_Sentence_TournamentWon_Who_Where_What_Outcome_Self_FINAL_OPPONENT" text="At the tournament in {SETTLEMENT}, I met {CHAMPION} in the final bout, only to see {CHAMPION.him} walk off with the prize" />
+    <string id="VividWorld_Sentence_TournamentWon_Who_Where_Self_FINAL_OPPONENT" text="I made the final in the tournament at {SETTLEMENT}, but lost to {CHAMPION}" />
+    <string id="VividWorld_Sentence_TournamentWon_Who_Where_What_From_FINAL_OPPONENT" text="{FINAL_OPPONENT.he} fell to {CHAMPION} in the tournament final at {SETTLEMENT} before a roaring crowd" />
+    <string id="VividWorld_SelfFeeling_TournamentWon_CHAMPION" text="The roar of that crowd makes every blow worth taking" />
+    <string id="VividWorld_SelfFeeling_TournamentWon_FINAL_OPPONENT" text="I was a hair&apos;s breadth away in that final; next time, it won&apos;t end like that" />
+    <string id="VividWorld_EventType_tournament_final_thrown" text="{CHAMPION} asked {THROWER} to throw the tournament final" />
+    <string id="VividWorld_Fact_TournamentFinalThrown_Who" text="{THROWER} could have beaten {CHAMPION}; {CHAMPION} asked {THROWER.him} in private to throw the final" />
+    <string id="VividWorld_Fact_TournamentFinalThrown_Who_Self_CHAMPION" text="{THROWER} could have beaten me; I asked {THROWER.him} in private to throw the final" />
+    <string id="VividWorld_Fact_TournamentFinalThrown_Who_Self_THROWER" text="I could have beaten {CHAMPION}; {CHAMPION} asked me in private to throw the final" />
+    <string id="VividWorld_Sentence_TournamentFinalThrown_Who" text="the final of that tournament was fixed: {THROWER} had the skill to beat {CHAMPION}, but {CHAMPION} asked {THROWER.him} in private to throw the bout" />
+    <string id="VividWorld_Sentence_TournamentFinalThrown_Who_Self_CHAMPION" text="The truth about that tournament is that {THROWER} could well have beaten me, but I asked {THROWER.him} in private before the final to let me have the win" />
+    <string id="VividWorld_Sentence_TournamentFinalThrown_Who_Self_THROWER" text="That tournament prize was mine for the taking, but {CHAMPION} came to me in private before the final and asked me to hand over the bout" />
+    <string id="VividWorld_Sentence_TournamentFinalThrown_Who_From_CHAMPION" text="{CHAMPION.he} privately asked {THROWER} to throw that final bout, though {THROWER} could well have beaten {CHAMPION.him} that day" />
+    <string id="VividWorld_Sentence_TournamentFinalThrown_Who_From_THROWER" text="before that tournament final, {CHAMPION} came to {THROWER.him} in private asking for the win, though {THROWER.he} had every chance of taking the prize {THROWER.himself}" />
+    <string id="VividWorld_SelfFeeling_TournamentFinalThrown_CHAMPION" text="I took the prize, but there is little honor in a title won with words rather than steel" />
+    <string id="VividWorld_SelfFeeling_TournamentFinalThrown_THROWER" text="I could have won that bout; handing the prize away leaves a bitter taste" />
+    <string id="VividWorld_EventType_hunt_wager_settled" text="{WINNER} won the hunting wager against {LOSER}" />
+    <string id="VividWorld_Fact_HuntWagerSettled_Who_Self_WINNER" text="I won the hunting wager against {LOSER}" />
+    <string id="VividWorld_Fact_HuntWagerSettled_Who_Self_LOSER" text="{WINNER} won the hunting wager against me" />
+    <string id="VividWorld_Sentence_HuntWagerSettled_Who" text="{WINNER} outhunted {LOSER} in a wager in the woods, bringing down more game by the end of the day" />
+    <string id="VividWorld_Sentence_HuntWagerSettled_Who_Self_WINNER" text="I matched bows against {LOSER} on that hunt, and when the kill was counted, the victory was mine" />
+    <string id="VividWorld_Sentence_HuntWagerSettled_Who_Self_LOSER" text="I rode out with {WINNER} to settle that hunting wager, but the day went to {WINNER.him} in the end" />
+    <string id="VividWorld_Sentence_HuntWagerSettled_Who_From_WINNER" text="{WINNER.he} had a hunting match against {LOSER} in the woods, and {WINNER.his} arrows proved sharper when the tally was made" />
+    <string id="VividWorld_Sentence_HuntWagerSettled_Who_From_LOSER" text="{LOSER.he} had a hunting wager against {WINNER} in the woods, but couldn&apos;t match the game {WINNER} brought down" />
+    <string id="VividWorld_SelfFeeling_HuntWagerSettled_WINNER" text="Not a beast in the woods escapes my bow; it was a good contest to win" />
+    <string id="VividWorld_SelfFeeling_HuntWagerSettled_LOSER" text="Luck was against me that day; my arrows flew wide, and it irks me to have lost" />
+    <string id="VividWorld_EventType_hunt_wager_staked_secret" text="{BETTOR} staked {STAKED_OWNER}&apos;s secret on the hunt" />
+    <string id="VividWorld_Fact_HuntWagerStakedSecret_Who_Self_BETTOR" text="I staked {STAKED_OWNER}&apos;s secret on the hunt" />
+    <string id="VividWorld_Fact_HuntWagerStakedSecret_Who_Self_OPPONENT" text="{BETTOR} staked {STAKED_OWNER}&apos;s secret on the hunt against me" />
+    <string id="VividWorld_Fact_HuntWagerStakedSecret_Who_Self_STAKED_OWNER" text="{BETTOR} staked my secret on the hunt" />
+    <string id="VividWorld_Sentence_HuntWagerStakedSecret_Who" text="there was more to {BETTOR}&apos;s hunting wager with {OPPONENT} than met the eye: {BETTOR.he} secretly put up {STAKED_OWNER}&apos;s secret as the stake" />
+    <string id="VividWorld_Sentence_HuntWagerStakedSecret_Who_Self_BETTOR" text="When I struck that hunting wager with {OPPONENT}, I quietly put up {STAKED_OWNER}&apos;s secret as my stake" />
+    <string id="VividWorld_Sentence_HuntWagerStakedSecret_Who_Self_OPPONENT" text="When I challenged {BETTOR} to that hunt, silver was on the table, but in secret {BETTOR.he} wagered {STAKED_OWNER}'s private affairs" />
+    <string id="VividWorld_Sentence_HuntWagerStakedSecret_Who_Self_STAKED_OWNER" text="When {BETTOR} and {OPPONENT} had that hunting wager, {BETTOR.he} dared put up my secret behind my back" />
+    <string id="VividWorld_Sentence_HuntWagerStakedSecret_Who_From_BETTOR" text="when {BETTOR.he} struck that hunting wager with {OPPONENT}, {BETTOR.he} secretly put up {STAKED_OWNER}&apos;s secret as {BETTOR.his} stake" />
+    <string id="VividWorld_Sentence_HuntWagerStakedSecret_Who_From_OPPONENT" text="when {OPPONENT.he} challenged {BETTOR} to that hunting wager, {BETTOR} quietly put up {STAKED_OWNER}'s secret as the stake" />
+    <string id="VividWorld_SelfFeeling_HuntWagerStakedSecret_BETTOR" text="You use what you hold to get what you want; that is what a wager is for" />
+    <string id="VividWorld_SelfFeeling_HuntWagerStakedSecret_OPPONENT" text="If {BETTOR.he} dares wager with something like that, there is more at stake than silver" />
+    <string id="VividWorld_SelfFeeling_HuntWagerStakedSecret_STAKED_OWNER" text="To make my affairs into a bargaining coin behind my back... I will settle this score in time" />
 </strings>
 </base>

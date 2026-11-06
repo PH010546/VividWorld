@@ -361,8 +361,8 @@ namespace VividWorld.Campaign
 
                 anyModified = true;
 
-                // 5. 升級：傳聞的好感度變化是純個人層次的印象，絕不升級為家族世仇
-                if (req.Source == GrudgeSource.Rumor)
+                // 5. 升級：傳聞的好感度變化是純個人層次的印象，絕不升級為家族世仇（除非明確要求升級）
+                if (req.Source == GrudgeSource.Rumor && !req.ForceClanEscalation)
                 {
                     continue;
                 }
@@ -396,6 +396,10 @@ namespace VividWorld.Campaign
                     {
                         string missingLeader = heroLeaderA == null ? leaderA : leaderB;
                         ModLog.Info($"escalation {req.FromHeroId} -> {req.AboutHeroId}: skipped clan relation apply, leader {missingLeader} not found");
+                    }
+                    else if (index.Between(leaderA, leaderB, GrudgeScope.Clan).Count > 0)
+                    {
+                        ModLog.Info($"escalation {req.FromHeroId} -> {req.AboutHeroId}: skipped clan relation apply, clan leaders {leaderA} and {leaderB} already escalated");
                     }
                     else
                     {

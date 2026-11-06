@@ -47,6 +47,11 @@ namespace VividWorld.Core.Config
         /// </summary>
         public bool EncyclopediaLinksEnabled { get; set; } = true;
 
+        /// <summary>
+        /// 原版左下角廣播通知是否對已有傳聞的消息種類靜音（牽涉玩家家族的照常跳；帳本 D-147、D-148）。預設 true。
+        /// </summary>
+        public bool MuteNativeNotifications { get; set; } = true;
+
         [JsonExtensionData]
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
     }

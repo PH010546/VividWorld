@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using VividWorld.Core.Config;
 using VividWorld.Core.Rumors;
+using VividWorld.Core.Secrets;
 using VividWorld.Core.Util;
 
 namespace VividWorld.Core.Situations
@@ -116,8 +118,28 @@ namespace VividWorld.Core.Situations
                     result = EvaluateWoundedInBattle(condition, factsByRole, context);
                     break;
 
+                case "relationabove":
+                    result = EvaluateRelationAbove(condition, factsByRole, boundHeroes, context);
+                    break;
+
+                case "relationbelow":
+                    result = EvaluateRelationBelow(condition, factsByRole, boundHeroes, context);
+                    break;
+
+                case "iskin":
+                    result = EvaluateIsKin(condition, factsByRole, boundHeroes, context);
+                    break;
+
+                case "isliegeof":
+                    result = EvaluateIsLiegeOf(condition, factsByRole, boundHeroes, context);
+                    break;
+
                 case "battlewon":
                     result = EvaluateBattleWon(condition, context);
+                    break;
+
+                case "hasstakeablesecret":
+                    result = EvaluateHasStakeableSecret(condition, factsByRole, boundHeroes, context);
                     break;
 
                 default:
@@ -186,8 +208,21 @@ namespace VividWorld.Core.Situations
                 case "woundedinbattle":
                     return $"{type}({condition.Role ?? "role"})";
 
+                case "relationabove":
+                case "relationbelow":
+                    return $"{type}({condition.A ?? "a"}->{condition.B ?? "b"})";
+
+                case "iskin":
+                    return $"{type}({condition.A ?? "a"}&{condition.B ?? "b"})";
+
+                case "isliegeof":
+                    return $"{type}({condition.A ?? "a"}->{condition.B ?? "b"})";
+
                 case "battlewon":
                     return type;
+
+                case "hasstakeablesecret":
+                    return $"{type}({condition.Bettor ?? "bettor"}->{condition.Opponent ?? "opponent"})";
 
                 default:
                     return type;
@@ -933,6 +968,196 @@ namespace VividWorld.Core.Situations
             };
         }
 
+        private static ConditionEvaluationResult EvaluateRelationAbove(
+            SituationConditionDef cond,
+            IReadOnlyDictionary<string, SituationRoleFacts> factsByRole,
+            IReadOnlyDictionary<string, string?>? boundHeroes,
+            SituationWorldContext? context)
+        {
+            string roleA = cond.A ?? "a";
+            string roleB = cond.B ?? "b";
+            string label = BuildLabel(cond.Type ?? "relationAbove", "relationabove", cond);
+
+            string? heroA = TryGetHeroId(roleA, factsByRole, boundHeroes);
+            if (string.IsNullOrEmpty(heroA))
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = $"{label} failed: role '{roleA}' unbound" };
+            }
+            string? heroB = TryGetHeroId(roleB, factsByRole, boundHeroes);
+            if (string.IsNullOrEmpty(heroB))
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = $"{label} failed: role '{roleB}' unbound" };
+            }
+
+            if (context?.RelationBetween == null)
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = $"{label} failed: context.RelationBetween unavailable" };
+            }
+
+            bool isKin = context.IsKin != null && context.IsKin(heroA!, heroB!);
+            double? threshold = null;
+            if (isKin && (cond.KinNumber.HasValue || !string.IsNullOrEmpty(cond.KinValueRef)))
+            {
+                threshold = ResolveThreshold(cond.KinNumber, cond.KinValueRef, context.Config);
+            }
+            else
+            {
+                threshold = ResolveThreshold(cond.Number, cond.ValueRef, context.Config);
+            }
+
+            if (!threshold.HasValue)
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = $"{label} failed: threshold could not be resolved" };
+            }
+
+            int relation = context.RelationBetween(heroA!, heroB!);
+            bool ok = relation > threshold.Value;
+
+            bool usedKinThreshold = isKin && (cond.KinNumber.HasValue || !string.IsNullOrEmpty(cond.KinValueRef));
+            string kinTag = usedKinThreshold ? " (kin threshold)" : "";
+            return new ConditionEvaluationResult
+            {
+                Ok = ok,
+                Detail = ok
+                    ? $"{label} ok: relation is {relation} > {threshold.Value.ToString("0.##", CultureInfo.InvariantCulture)}{kinTag}"
+                    : $"{label} failed: relation {relation} not > {threshold.Value.ToString("0.##", CultureInfo.InvariantCulture)}{kinTag}"
+            };
+        }
+
+        private static ConditionEvaluationResult EvaluateRelationBelow(
+            SituationConditionDef cond,
+            IReadOnlyDictionary<string, SituationRoleFacts> factsByRole,
+            IReadOnlyDictionary<string, string?>? boundHeroes,
+            SituationWorldContext? context)
+        {
+            string roleA = cond.A ?? "a";
+            string roleB = cond.B ?? "b";
+            string label = BuildLabel(cond.Type ?? "relationBelow", "relationbelow", cond);
+
+            string? heroA = TryGetHeroId(roleA, factsByRole, boundHeroes);
+            if (string.IsNullOrEmpty(heroA))
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = $"{label} failed: role '{roleA}' unbound" };
+            }
+            string? heroB = TryGetHeroId(roleB, factsByRole, boundHeroes);
+            if (string.IsNullOrEmpty(heroB))
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = $"{label} failed: role '{roleB}' unbound" };
+            }
+
+            if (context?.RelationBetween == null)
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = $"{label} failed: context.RelationBetween unavailable" };
+            }
+
+            bool isKin = context.IsKin != null && context.IsKin(heroA!, heroB!);
+            double? threshold = null;
+            if (isKin && (cond.KinNumber.HasValue || !string.IsNullOrEmpty(cond.KinValueRef)))
+            {
+                threshold = ResolveThreshold(cond.KinNumber, cond.KinValueRef, context.Config);
+            }
+            else
+            {
+                threshold = ResolveThreshold(cond.Number, cond.ValueRef, context.Config);
+            }
+
+            if (!threshold.HasValue)
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = $"{label} failed: threshold could not be resolved" };
+            }
+
+            int relation = context.RelationBetween(heroA!, heroB!);
+            bool ok = relation < threshold.Value;
+
+            bool usedKinThreshold = isKin && (cond.KinNumber.HasValue || !string.IsNullOrEmpty(cond.KinValueRef));
+            string kinTag = usedKinThreshold ? " (kin threshold)" : "";
+            return new ConditionEvaluationResult
+            {
+                Ok = ok,
+                Detail = ok
+                    ? $"{label} ok: relation is {relation} < {threshold.Value.ToString("0.##", CultureInfo.InvariantCulture)}{kinTag}"
+                    : $"{label} failed: relation {relation} not < {threshold.Value.ToString("0.##", CultureInfo.InvariantCulture)}{kinTag}"
+            };
+        }
+
+        private static ConditionEvaluationResult EvaluateIsKin(
+            SituationConditionDef cond,
+            IReadOnlyDictionary<string, SituationRoleFacts> factsByRole,
+            IReadOnlyDictionary<string, string?>? boundHeroes,
+            SituationWorldContext? context)
+        {
+            string roleA = cond.A ?? "a";
+            string roleB = cond.B ?? "b";
+            string label = BuildLabel(cond.Type ?? "isKin", "iskin", cond);
+
+            string? heroA = TryGetHeroId(roleA, factsByRole, boundHeroes);
+            if (string.IsNullOrEmpty(heroA))
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = $"{label} failed: role '{roleA}' unbound" };
+            }
+            string? heroB = TryGetHeroId(roleB, factsByRole, boundHeroes);
+            if (string.IsNullOrEmpty(heroB))
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = $"{label} failed: role '{roleB}' unbound" };
+            }
+
+            if (context?.IsKin == null)
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = $"{label} failed: context.IsKin unavailable" };
+            }
+
+            bool expected = cond.Value ?? true;
+            bool actual = context.IsKin(heroA!, heroB!);
+            bool ok = (actual == expected);
+
+            return new ConditionEvaluationResult
+            {
+                Ok = ok,
+                Detail = ok
+                    ? $"{label} ok"
+                    : (expected ? $"{label} failed: {roleA} and {roleB} are not kin" : $"{label} failed: {roleA} and {roleB} are kin")
+            };
+        }
+
+        private static ConditionEvaluationResult EvaluateIsLiegeOf(
+            SituationConditionDef cond,
+            IReadOnlyDictionary<string, SituationRoleFacts> factsByRole,
+            IReadOnlyDictionary<string, string?>? boundHeroes,
+            SituationWorldContext? context)
+        {
+            string roleA = cond.A ?? "a";
+            string roleB = cond.B ?? "b";
+            string label = BuildLabel(cond.Type ?? "isLiegeOf", "isliegeof", cond);
+
+            string? heroA = TryGetHeroId(roleA, factsByRole, boundHeroes);
+            if (string.IsNullOrEmpty(heroA))
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = $"{label} failed: role '{roleA}' unbound" };
+            }
+            string? heroB = TryGetHeroId(roleB, factsByRole, boundHeroes);
+            if (string.IsNullOrEmpty(heroB))
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = $"{label} failed: role '{roleB}' unbound" };
+            }
+
+            if (context?.IsLiegeOf == null)
+            {
+                return new ConditionEvaluationResult { Ok = false, Detail = $"{label} failed: context.IsLiegeOf unavailable" };
+            }
+
+            bool expected = cond.Value ?? true;
+            bool actual = context.IsLiegeOf(heroA!, heroB!);
+            bool ok = (actual == expected);
+
+            return new ConditionEvaluationResult
+            {
+                Ok = ok,
+                Detail = ok
+                    ? $"{label}: isLiegeOf ok"
+                    : (expected ? $"{label}: isLiegeOf failed ({roleA} is not liege of {roleB})" : $"{label}: isLiegeOf failed ({roleA} is liege of {roleB})")
+            };
+        }
+
         private static ConditionEvaluationResult EvaluateBattleWon(
             SituationConditionDef cond,
             SituationWorldContext? context)
@@ -950,6 +1175,30 @@ namespace VividWorld.Core.Situations
             };
         }
 
+        private static string? TryGetHeroId(string? role, IReadOnlyDictionary<string, SituationRoleFacts> factsByRole, IReadOnlyDictionary<string, string?>? boundHeroes)
+        {
+            if (string.IsNullOrEmpty(role)) return null;
+            if (factsByRole != null && factsByRole.TryGetValue(role!, out var f) && !string.IsNullOrEmpty(f.HeroId)) return f.HeroId;
+            if (boundHeroes != null && boundHeroes.TryGetValue(role!, out var h) && !string.IsNullOrEmpty(h)) return h;
+            return null;
+        }
+
+        private static double? ResolveThreshold(double? number, string? valueRef, VividWorldConfig? config)
+        {
+            if (number.HasValue) return number.Value;
+            if (!string.IsNullOrEmpty(valueRef))
+            {
+                var secretVal = SecretConfigResolver.ResolveDouble(valueRef, config);
+                if (secretVal.HasValue) return secretVal.Value;
+
+                if (SituationConfigResolver.IsValidChanceRef(valueRef))
+                {
+                    return SituationConfigResolver.ResolveDouble(valueRef!, config);
+                }
+            }
+            return null;
+        }
+
         public static int GetTraitValue(TraitProfile profile, string traitName)
         {
             if (profile == null || string.IsNullOrEmpty(traitName)) return 0;
@@ -961,6 +1210,84 @@ namespace VividWorld.Core.Situations
                 "calculating" => profile.Calculating,
                 "generosity" => profile.Generosity,
                 _ => 0
+            };
+        }
+
+        private static ConditionEvaluationResult EvaluateHasStakeableSecret(
+            SituationConditionDef cond,
+            IReadOnlyDictionary<string, SituationRoleFacts> factsByRole,
+            IReadOnlyDictionary<string, string?>? boundHeroes,
+            SituationWorldContext? context)
+        {
+            string bettorRole = cond.Bettor ?? "challenged";
+            string opponentRole = cond.Opponent ?? "challenger";
+
+            string? bettorId = null;
+            if (boundHeroes != null && boundHeroes.TryGetValue(bettorRole, out var bId) && !string.IsNullOrEmpty(bId))
+            {
+                bettorId = bId;
+            }
+            else if (factsByRole.TryGetValue(bettorRole, out var bFacts) && !string.IsNullOrEmpty(bFacts.HeroId))
+            {
+                bettorId = bFacts.HeroId;
+            }
+
+            string? opponentId = null;
+            if (boundHeroes != null && boundHeroes.TryGetValue(opponentRole, out var oId) && !string.IsNullOrEmpty(oId))
+            {
+                opponentId = oId;
+            }
+            else if (factsByRole.TryGetValue(opponentRole, out var oFacts) && !string.IsNullOrEmpty(oFacts.HeroId))
+            {
+                opponentId = oFacts.HeroId;
+            }
+
+            if (string.IsNullOrEmpty(bettorId) || string.IsNullOrEmpty(opponentId))
+            {
+                return new ConditionEvaluationResult
+                {
+                    Ok = false,
+                    Detail = $"hasStakeableSecret failed: bettor ('{bettorRole}') or opponent ('{opponentRole}') unbound"
+                };
+            }
+
+            if (context == null)
+            {
+                return new ConditionEvaluationResult
+                {
+                    Ok = false,
+                    Detail = "hasStakeableSecret failed: missing context"
+                };
+            }
+
+            // 玩家是做決定的那位時這個分支不成立（玩家不押秘密）
+            if (!string.IsNullOrEmpty(context.PlayerHeroId) && string.Equals(bettorId, context.PlayerHeroId, StringComparison.Ordinal))
+            {
+                return new ConditionEvaluationResult
+                {
+                    Ok = false,
+                    Detail = $"hasStakeableSecret failed: bettor '{bettorId}' is player (player does not stake secrets)"
+                };
+            }
+
+            if (context.GetKnownSecrets == null)
+            {
+                return new ConditionEvaluationResult
+                {
+                    Ok = false,
+                    Detail = "hasStakeableSecret failed: GetKnownSecrets unavailable"
+                };
+            }
+
+            var knownSecrets = context.GetKnownSecrets(bettorId!);
+            var eval = StakeableSecretEvaluation.Evaluate(bettorId!, opponentId!, context.PlayerHeroId, knownSecrets);
+
+            return new ConditionEvaluationResult
+            {
+                Ok = eval.IsEligible,
+                Detail = eval.IsEligible
+                    ? $"hasStakeableSecret ok: {bettorId} has qualified secret {eval.ChosenSecret?.EventId}"
+                    : $"hasStakeableSecret failed: {eval.Reason}"
             };
         }
     }

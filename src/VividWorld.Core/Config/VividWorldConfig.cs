@@ -9,7 +9,8 @@ namespace VividWorld.Core.Config
 {
     public sealed class VividWorldConfig
     {
-        public int ConfigVersion { get; set; } = 1;
+        public const int CurrentConfigVersion = 2;
+        public int ConfigVersion { get; set; } = CurrentConfigVersion;
         public bool Enabled { get; set; } = true;
         public string LogLevel { get; set; } = "Info";
 
@@ -23,6 +24,7 @@ namespace VividWorld.Core.Config
         public PersistenceConfig   Persistence   { get; set; } = new();
         public ConsequenceConfig   Consequences  { get; set; } = new();
         public FalseRumorsConfig   FalseRumors   { get; set; } = new();
+        public SecretsConfig       Secrets       { get; set; } = new();
         public EmbellishmentConfig Embellishment { get; set; } = new();
         public EventsConfig        Events        { get; set; } = new();
         public SituationsConfig    Situations    { get; set; } = new();
@@ -49,6 +51,7 @@ namespace VividWorld.Core.Config
             FalseRumors ??= new FalseRumorsConfig();
             FalseRumors.Belief ??= new BeliefConfig();
             FalseRumors.Reaction ??= new ReactionConfig();
+            Secrets ??= new SecretsConfig();
             Embellishment ??= new EmbellishmentConfig();
             Events ??= new EventsConfig();
             Events.Sources ??= new EventSourcesConfig();
@@ -248,6 +251,38 @@ namespace VividWorld.Core.Config
                 v => Leak.MultiplierMax = v,
                 () => Leak.MultiplierMax,
                 0.0, 100.0);
+
+            // Secrets
+            Secrets.ConfideChancePerDay = ClampTracked("secrets.confideChancePerDay", Secrets.ConfideChancePerDay, 0.0, 1.0, notices);
+            Secrets.ConfideTrustKin = (int)ClampTracked("secrets.confideTrustKin", Secrets.ConfideTrustKin, -100.0, 100.0, notices);
+            Secrets.ConfideTrustOther = (int)ClampTracked("secrets.confideTrustOther", Secrets.ConfideTrustOther, -100.0, 100.0, notices);
+            Secrets.Endured ??= new();
+            Secrets.Endured.FavoredOnHeard = ClampTracked("secrets.endured.favoredOnHeard", Secrets.Endured.FavoredOnHeard, -100.0, 100.0, notices);
+            Secrets.Poisoned ??= new();
+            Secrets.Poisoned.KinOnHeard = ClampTracked("secrets.poisoned.kinOnHeard", Secrets.Poisoned.KinOnHeard, -100.0, 100.0, notices);
+            Secrets.Poisoned.FriendOnHeard = ClampTracked("secrets.poisoned.friendOnHeard", Secrets.Poisoned.FriendOnHeard, -100.0, 100.0, notices);
+            Secrets.Owner ??= new();
+            Secrets.Owner.GrudgeOnOriginator = ClampTracked("secrets.owner.grudgeOnOriginator", Secrets.Owner.GrudgeOnOriginator, -100.0, 100.0, notices);
+            Secrets.Owner.Suspicion = ClampTracked("secrets.owner.suspicion", Secrets.Owner.Suspicion, -100.0, 100.0, notices);
+            Secrets.Owner.OpenlyValorWeight = ClampTracked("secrets.owner.openlyValorWeight", Secrets.Owner.OpenlyValorWeight, 0.0, 2.0, notices);
+            Secrets.FreedPrisoner ??= new();
+            Secrets.FreedPrisoner.Chance = ClampTracked("secrets.freedPrisoner.chance", Secrets.FreedPrisoner.Chance, 0.0, 1.0, notices);
+            Secrets.FreedPrisoner.Gratitude = ClampTracked("secrets.freedPrisoner.gratitude", Secrets.FreedPrisoner.Gratitude, -100.0, 100.0, notices);
+            Secrets.FreedPrisoner.KingOnHeard = ClampTracked("secrets.freedPrisoner.kingOnHeard", Secrets.FreedPrisoner.KingOnHeard, -100.0, 100.0, notices);
+            Secrets.FreedPrisoner.OwnerOnHeard = ClampTracked("secrets.freedPrisoner.ownerOnHeard", Secrets.FreedPrisoner.OwnerOnHeard, -100.0, 100.0, notices);
+            Secrets.TournamentThrow ??= new();
+            Secrets.TournamentThrow.Chance = ClampTracked("secrets.tournamentThrow.chance", Secrets.TournamentThrow.Chance, 0.0, 1.0, notices);
+            Secrets.TournamentThrow.ReluctantGrudge = ClampTracked("secrets.tournamentThrow.reluctantGrudge", Secrets.TournamentThrow.ReluctantGrudge, -100.0, 100.0, notices);
+            Secrets.TournamentThrow.OnHeardChampion = PadOrTruncate(
+                Secrets.TournamentThrow.OnHeardChampion,
+                new[] { -5.0, -3.0, -1.0 },
+                3,
+                -100.0, 100.0);
+            Secrets.TournamentThrow.OnHeardFriendThrower = PadOrTruncate(
+                Secrets.TournamentThrow.OnHeardFriendThrower,
+                new[] { -3.0, -2.0, 0.0 },
+                3,
+                -100.0, 100.0);
 
             // Scheduling
             Scheduling.EventsPerHourlyTick = Math.Max(1, Scheduling.EventsPerHourlyTick);

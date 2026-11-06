@@ -25,5 +25,11 @@ namespace VividWorld.Core.Situations
         public Func<string, bool>? FoughtInBattle { get; set; }
         public Func<string, bool>? WoundedInBattle { get; set; }
         public Func<bool>? BattleWon { get; set; }
+        public Func<string, string, int>? RelationBetween { get; set; }
+        public Func<string, string, bool>? IsKin { get; set; }
+        public Func<string, string, bool>? IsLiegeOf { get; set; }
+        public string? CurrentSettlementFactionId { get; set; }
+        public Func<string, IReadOnlyList<Events.WorldEvent>>? GetKnownSecrets { get; set; }
+        public Func<string, string, int>? GetSkillValue { get; set; }
     }
 }

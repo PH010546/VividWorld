@@ -591,6 +591,20 @@ namespace VividWorld.Campaign
                     }
                 }
 
+                if (string.Equals(templateType, "hero_escaped_captivity", StringComparison.Ordinal))
+                {
+                    bool isDungeonEscape = party != null && party.IsSettlement && party.Settlement != null && (party.Settlement.IsTown || party.Settlement.IsCastle);
+                    if (isDungeonEscape)
+                    {
+                        bindings["IS_DUNGEON_ESCAPE"] = "true";
+                    }
+                    else
+                    {
+                        bindings["IS_DUNGEON_ESCAPE"] = "false";
+                        ModLog.Info($"  freed prisoner situation excluded: held in a party (prisoner={prisoner.StringId})");
+                    }
+                }
+
                 var probes = new List<SettlementProbe>();
                 if (escapedFromDungeon)
                 {

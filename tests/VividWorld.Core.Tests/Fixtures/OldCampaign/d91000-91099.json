@@ -1,0 +1,190 @@
+[
+  {
+    "EventId": "evt_91089_ff54",
+    "Type": "seat_dispute_endured",
+    "Day": 91089.05914990162,
+    "Origin": 0,
+    "LinkedEventId": null,
+    "SituationId": "seat_dispute",
+    "DramaWeight": 3,
+    "DramaScale": 10,
+    "Participants": {
+      "slighted": "lord_5_15",
+      "favored": "lord_5_21_2"
+    },
+    "Facts": [
+      {
+        "Id": "who",
+        "Category": 0,
+        "TextId": "VividWorld_Fact_SeatDisputeEndured_Who",
+        "Text": "{SLIGHTED} swallowed the insult of sitting below {FAVORED}",
+        "Vars": {
+          "SLIGHTED": "hero:lord_5_15",
+          "FAVORED": "hero:lord_5_21_2"
+        },
+        "Fragility": 1,
+        "RefersTo": null,
+        "Role": null,
+        "IsFabricated": false
+      },
+      {
+        "Id": "where",
+        "Category": 1,
+        "TextId": "VividWorld_Fact_SeatDisputeEndured_Where",
+        "Text": "in the hall of {SETTLEMENT}",
+        "Vars": {
+          "SETTLEMENT": "settlement:town_B2"
+        },
+        "Fragility": 2,
+        "RefersTo": null,
+        "Role": null,
+        "IsFabricated": false
+      },
+      {
+        "Id": "what",
+        "Category": 4,
+        "TextId": "VividWorld_Fact_SeatDisputeEndured_What",
+        "Text": "and said nothing, though it plainly stung",
+        "Vars": {},
+        "Fragility": 3,
+        "RefersTo": null,
+        "Role": null,
+        "IsFabricated": false
+      }
+    ],
+    "KnownBy": [
+      {
+        "HeroId": "lord_5_15",
+        "Hop": 0,
+        "LearnedDay": 91089.05914990162,
+        "SourceHeroId": null,
+        "AddedDetail": null,
+        "Interest": 1.0,
+        "InterestSource": "participant floor via lord_5_15",
+        "ForgetDay": 91187.28360809722,
+        "LastHeardDay": null,
+        "HeardCount": null,
+        "HeardFromIds": null,
+        "KnownFactIds": null,
+        "RelationImpacts": [
+          {
+            "AboutHeroId": "lord_5_21_2",
+            "Requested": -6.0,
+            "Delta": 0,
+            "Scope": "personal",
+            "Source": "situation",
+            "LedgerOnly": true,
+            "SourceFactId": null,
+            "AppliedDay": 91089.05914990162,
+            "Contradicted": false,
+            "ContradictedDay": -1.0,
+            "Resolved": false,
+            "ResolvedDay": -1.0
+          }
+        ]
+      }
+    ],
+    "State": {
+      "Leaked": true,
+      "LeakedDay": 91157.28360809722,
+      "LeakerHeroId": "lord_5_15",
+      "LastPropagatedDay": -1.0,
+      "LastNewKnowerDay": -1.0,
+      "Dormant": true
+    }
+  },
+  {
+    "EventId": "evt_91095_9fd0",
+    "Type": "wager_secret_stake",
+    "Day": 91095.12979651504,
+    "Origin": 0,
+    "LinkedEventId": null,
+    "SituationId": "hunt_wager",
+    "DramaWeight": 4,
+    "DramaScale": 10,
+    "Participants": {
+      "challenger": "lord_2_10",
+      "challenged": "lord_2_15"
+    },
+    "Facts": [
+      {
+        "Id": "who",
+        "Category": 0,
+        "TextId": "VividWorld_Fact_WagerSecretStake_Who",
+        "Text": "{CHALLENGER} and {CHALLENGED} put more than silver on the next hunt",
+        "Vars": {
+          "CHALLENGER": "hero:lord_2_10",
+          "CHALLENGED": "hero:lord_2_15"
+        },
+        "Fragility": 1,
+        "RefersTo": null,
+        "Role": null,
+        "IsFabricated": false
+      },
+      {
+        "Id": "where",
+        "Category": 1,
+        "TextId": "VividWorld_Fact_WagerSecretStake_Where",
+        "Text": "in {SETTLEMENT}",
+        "Vars": {
+          "SETTLEMENT": "settlement:town_S1"
+        },
+        "Fragility": 2,
+        "RefersTo": null,
+        "Role": null,
+        "IsFabricated": false
+      },
+      {
+        "Id": "what",
+        "Category": 4,
+        "TextId": "VividWorld_Fact_WagerSecretStake_What",
+        "Text": "and neither of them would say what it was",
+        "Vars": {},
+        "Fragility": 3,
+        "RefersTo": null,
+        "Role": null,
+        "IsFabricated": false
+      }
+    ],
+    "KnownBy": [
+      {
+        "HeroId": "lord_2_10",
+        "Hop": 0,
+        "LearnedDay": 91095.12979651504,
+        "SourceHeroId": null,
+        "AddedDetail": null,
+        "Interest": null,
+        "InterestSource": null,
+        "ForgetDay": null,
+        "LastHeardDay": null,
+        "HeardCount": null,
+        "HeardFromIds": null,
+        "KnownFactIds": null,
+        "RelationImpacts": null
+      },
+      {
+        "HeroId": "lord_2_15",
+        "Hop": 0,
+        "LearnedDay": 91095.12979651504,
+        "SourceHeroId": null,
+        "AddedDetail": null,
+        "Interest": null,
+        "InterestSource": null,
+        "ForgetDay": null,
+        "LastHeardDay": null,
+        "HeardCount": null,
+        "HeardFromIds": null,
+        "KnownFactIds": null,
+        "RelationImpacts": null
+      }
+    ],
+    "State": {
+      "Leaked": false,
+      "LeakedDay": -1.0,
+      "LeakerHeroId": null,
+      "LastPropagatedDay": -1.0,
+      "LastNewKnowerDay": -1.0,
+      "Dormant": false
+    }
+  }
+]

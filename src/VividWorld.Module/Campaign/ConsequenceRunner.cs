@@ -8,6 +8,7 @@ using VividWorld.Core.Events;
 using VividWorld.Core.Feelings;
 using VividWorld.Core.Grudges;
 using VividWorld.Core.Rumors;
+using VividWorld.Core.Secrets;
 using VividWorld.Core.Util;
 
 namespace VividWorld.Campaign
@@ -77,7 +78,9 @@ namespace VividWorld.Campaign
                 return;
             }
 
-            if (template?.Opinions == null || template.Opinions.Count == 0)
+            bool isNewShapeSecret = evt.Origin == EventOrigin.Secret && evt.SecretOwnerHeroIds != null;
+
+            if (!isNewShapeSecret && (template?.Opinions == null || template.Opinions.Count == 0))
             {
                 return;
             }
@@ -114,10 +117,12 @@ namespace VividWorld.Campaign
                 if (hearer == null) continue;
 
                 // 玩家不會因為聽到傳聞而被改好感度（規格 §6.6、M6.5 卡 §1）
-                if (string.Equals(hearer.HeroId, store.PlayerHeroId, StringComparison.Ordinal))
+                if (CheckPlayerOrSecretReaction(evt, hearer, isNewShapeSecret, store.PlayerHeroId, template, day, engine, traits, cfg, feelingWorld, store, heroLookup, budget, ref beliefWritten, allRequests))
                 {
                     continue;
                 }
+
+                if (template?.Opinions == null || template.Opinions.Count == 0) continue;
 
                 if (MadeUpTalk.IsHearsayOnly(evt))
                 {
@@ -964,6 +969,195 @@ namespace VividWorld.Campaign
                     hearer.StepForward = "ignored";
                     ModLog.Info($"Truth knower {hearer.HeroId} ignored stepping forward with {tk.ResponseType} (chance {chance:F1}%) on {evt.EventId}");
                 }
+            }
+        }
+
+        private static bool CheckPlayerOrSecretReaction(
+            WorldEvent evt,
+            KnownByEntry hearer,
+            bool isNewShapeSecret,
+            string playerHeroId,
+            EventTemplate? template,
+            double day,
+            RumorEngine engine,
+            IHeroTraitLookup traits,
+            VividWorldConfig cfg,
+            IFeelingWorld? feelingWorld,
+            WorldEventStore store,
+            HeroLookup? heroLookup,
+            DailyRelationBudget budget,
+            ref bool beliefWritten,
+            List<GrudgeRequest> allRequests)
+        {
+            if (string.Equals(hearer.HeroId, playerHeroId, StringComparison.Ordinal))
+            {
+                if (isNewShapeSecret)
+                {
+                    ModLog.Info($"Secret reaction: {hearer.HeroId} on {evt.EventId} excluded: player");
+                }
+                return true;
+            }
+
+            if (isNewShapeSecret)
+            {
+                HandleSecretReaction(
+                    evt, hearer, template, day, engine, traits, cfg, feelingWorld, store, heroLookup, budget, ref beliefWritten, allRequests);
+                return true;
+            }
+
+            return false;
+        }
+
+        internal static SecretReactionOutcome HandleSecretReaction(
+            WorldEvent evt,
+            KnownByEntry hearer,
+            EventTemplate? template,
+            double day,
+            RumorEngine engine,
+            IHeroTraitLookup traits,
+            VividWorldConfig cfg,
+            IFeelingWorld? feelingWorld,
+            WorldEventStore store,
+            HeroLookup? heroLookup,
+            DailyRelationBudget budget,
+            ref bool beliefWritten,
+            List<GrudgeRequest>? allRequests)
+        {
+            bool isOwner = evt.SecretOwnerHeroIds != null && evt.SecretOwnerHeroIds.Contains(hearer.HeroId, StringComparer.Ordinal);
+
+            bool beliefOn = cfg.FalseRumors?.BeliefEnabled ?? false;
+            if (!isOwner && beliefOn && template?.Opinions != null && template.Opinions.Count > 0 && !hearer.Believes.HasValue)
+            {
+                bool wroteNow;
+                JudgeBelief(evt, hearer, template.Opinions, day, engine, traits, cfg, feelingWorld, store, out wroteNow);
+                beliefWritten |= wroteNow;
+            }
+
+            var secretLookup = new GameSecretRelationshipLookup(heroLookup);
+            var outcome = SecretReactionEvaluator.Evaluate(
+                evt,
+                hearer,
+                template,
+                secretLookup,
+                traits,
+                cfg,
+                engine?.Rng,
+                store.PlayerHeroId,
+                day,
+                id => store.Load(id),
+                null,
+                engine?.CampaignSeed ?? 0);
+
+            ApplySecretReactionOutcome(
+                evt, outcome, day, store, heroLookup, traits, cfg, budget, allRequests);
+
+            return outcome;
+        }
+
+        internal static SecretReactionOutcome HandleSecretReaction(
+            WorldEvent evt,
+            KnownByEntry hearer,
+            EventTemplate? template,
+            double day,
+            RumorEngine engine,
+            IHeroTraitLookup traits,
+            VividWorldConfig cfg,
+            IFeelingWorld? feelingWorld,
+            WorldEventStore store,
+            HeroLookup? heroLookup,
+            DailyRelationBudget budget)
+        {
+            bool dummy = false;
+            return HandleSecretReaction(
+                evt, hearer, template, day, engine, traits, cfg, feelingWorld, store, heroLookup, budget, ref dummy, null);
+        }
+
+        internal static void ApplySecretReactionOutcome(
+            WorldEvent evt,
+            SecretReactionOutcome outcome,
+            double day,
+            WorldEventStore store,
+            HeroLookup? heroLookup,
+            IHeroTraitLookup traits,
+            VividWorldConfig cfg,
+            DailyRelationBudget budget,
+            List<GrudgeRequest>? allRequests = null)
+        {
+            if (evt == null || outcome == null || store == null || budget == null) return;
+
+            foreach (var excl in outcome.Exclusions)
+            {
+                ModLog.Info($"Secret reaction: {excl.HeroId} on {evt.EventId} excluded: {excl.Reason}");
+            }
+
+            if (!string.IsNullOrEmpty(outcome.LogDetail))
+            {
+                ModLog.Info($"Secret reaction: {outcome.LogDetail} on {evt.EventId}");
+            }
+
+            if (outcome.Changes.Count == 0) return;
+
+            var targetList = allRequests ?? new List<GrudgeRequest>();
+            foreach (var change in outcome.Changes)
+            {
+                if (change.IsEnduredGrudgeConversion && !string.IsNullOrEmpty(evt.LinkedEventId))
+                {
+                    var linkedEvt = store.Load(evt.LinkedEventId!);
+                    if (linkedEvt != null)
+                    {
+                        var entry = linkedEvt.EntryFor(change.ObserverHeroId);
+                        var impact = entry?.RelationImpacts?.FirstOrDefault(ri => ri != null && ri.LedgerOnly);
+                        if (impact != null)
+                        {
+                            impact.LedgerOnly = false;
+                            store.Upsert(linkedEvt);
+                        }
+                    }
+                }
+
+                double requested = change.Amount;
+                if (!change.LedgerOnly)
+                {
+                    double remainingDailyBudget = budget.Remaining(change.ObserverHeroId, cfg.Consequences.MaxAbsoluteDeltaPerHeroPerDay);
+                    requested = Math.Max(-remainingDailyBudget, Math.Min(remainingDailyBudget, requested));
+                    if (Math.Abs(requested) < 1e-6)
+                    {
+                        continue;
+                    }
+                    budget.Consume(change.ObserverHeroId, Math.Abs(requested));
+                }
+
+                targetList.Add(new GrudgeRequest
+                {
+                    FromHeroId = change.ObserverHeroId,
+                    AboutHeroId = change.TargetHeroId,
+                    Requested = requested,
+                    LedgerOnly = change.LedgerOnly,
+                    ForceClanEscalation = change.EscalateClan,
+                    SourceFactId = "onHeard",
+                    FromRole = evt.RoleOf(change.ObserverHeroId) ?? (change.IsOwnerReaction ? "owner" : "observer"),
+                    ToRole = evt.RoleOf(change.TargetHeroId) ?? (change.IsOwnerReaction ? "target" : "target"),
+                    Source = GrudgeSource.Rumor,
+                    RequireHop0 = false,
+                    ObserverHop = evt.EntryFor(change.ObserverHeroId)?.Hop ?? 0,
+                    TemplateAmount = change.Amount,
+                    HopConfidence = 1.0,
+                    WitnessMultiplier = 1.0,
+                    ObserverIsParticipant = change.IsOwnerReaction,
+                    FullAmount = change.Amount,
+                    AlreadyApplied = 0.0,
+                    TraitMultiplier = 1.0,
+                    RelationMultiplier = 1.0,
+                    RelationReason = ReactionMultipliers.ReasonNone,
+                    ReceiverHeroId = string.Empty
+                });
+
+                ModLog.Info($"Secret reaction change: {change.ObserverHeroId} toward {change.TargetHeroId}: requested {requested:+0.##;-0.##;0} (ledgerOnly={change.LedgerOnly}, escalate={change.EscalateClan}) on {evt.EventId}");
+            }
+
+            if (allRequests == null && targetList.Count > 0 && heroLookup != null)
+            {
+                GrudgeApplier.Apply(evt, targetList, day, store, heroLookup, traits, cfg);
             }
         }
 

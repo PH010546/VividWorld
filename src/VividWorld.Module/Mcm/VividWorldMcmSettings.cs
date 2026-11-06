@@ -57,6 +57,11 @@ namespace VividWorld.Mcm
         [SettingPropertyGroup("{=VividWorld_MCM_Group_Interface}Interface", GroupOrder = 1)]
         public bool EncyclopediaLinksEnabled { get; set; } = true;
 
+        [SettingPropertyBool("{=VividWorld_MCM_MuteNativeNotifications}Hide native event broadcasts", Order = 4, RequireRestart = false,
+            HintText = "{=VividWorld_MCM_MuteNativeNotificationsHint}Captures, releases and escapes, deaths, marriages, births and tournament wins no longer pop up in the bottom-left corner; you hear of them from people instead. Those involving your own clan still show.")]
+        [SettingPropertyGroup("{=VividWorld_MCM_Group_Interface}Interface", GroupOrder = 1)]
+        public bool MuteNativeNotifications { get; set; } = true;
+
         // ── Group 2: Propagation ────────────────────────────────────────────────────
 
         [SettingPropertyInteger("{=VividWorld_MCM_TellersPerHourlyTick}Tellers per hourly tick", 1, 32, "0", Order = 0, RequireRestart = false,

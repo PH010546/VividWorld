@@ -78,6 +78,8 @@ namespace VividWorld.Campaign
         private readonly SituationScanBehavior? _situationScan;
         private readonly PlayerPresenceBehavior? _playerPresence;
         private readonly WandererEventBehavior? _wandererEvents;
+        private readonly PlayerConfideBehavior? _playerConfide;
+        private readonly TournamentMeasureBehavior? _tournamentMeasure;
 
         internal RumorCampaignBehavior(
             VividWorldConfig config,
@@ -86,7 +88,9 @@ namespace VividWorld.Campaign
             RealEventSourceBehavior? realEvents = null,
             SituationScanBehavior? situationScan = null,
             PlayerPresenceBehavior? playerPresence = null,
-            WandererEventBehavior? wandererEvents = null)
+            WandererEventBehavior? wandererEvents = null,
+            PlayerConfideBehavior? playerConfide = null,
+            TournamentMeasureBehavior? tournamentMeasure = null)
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
@@ -95,6 +99,8 @@ namespace VividWorld.Campaign
             _situationScan = situationScan;
             _playerPresence = playerPresence;
             _wandererEvents = wandererEvents;
+            _playerConfide = playerConfide;
+            _tournamentMeasure = tournamentMeasure;
         }
 
         public override void RegisterEvents()
@@ -214,6 +220,18 @@ namespace VividWorld.Campaign
                     ModLog.Info($"Event index: {_store.LastLoadNote}, {_index.Count} entries");
 
                     _launchDay = CampaignTime.Now.ToDays;
+
+                    OldSecretConversionService.RunIfNeeded(
+                        _campaignId,
+                        _store,
+                        _index,
+                        playerHeroId,
+                        _launchDay,
+                        MintedCampaignIdThisLoad,
+                        writer,
+                        settlementId => TaleWorlds.CampaignSystem.Settlements.Settlement.Find(settlementId)?.OwnerClan?.Leader?.StringId,
+                        EventCatalogStore.TemplateByType);
+
                     var (rollbackCount, rollbackMaxDay) = StoreTimeline.EventsAfter(_index, _launchDay);
                     _rollbackCount = rollbackCount;
                     _rollbackMaxDay = rollbackMaxDay;
@@ -263,6 +281,10 @@ namespace VividWorld.Campaign
                     _eventStore = new WorldEventStore(_config, _store, _index, _knownBy, _channel, _traitLookup, playerHeroId, campaignSeed, stamper, grudgeIndex);
                     stamper.SetStore(_eventStore);
                     _scheduler = new RumorPropagationScheduler(_config, _eventStore, _engine, _knownBy, _heroLookup, _traitLookup, stamper, feelingWorld);
+                    if (_playerConfide != null)
+                    {
+                        _scheduler.ConfideToPlayerSink = _playerConfide;
+                    }
                     stamper.SetEngineAndScheduler(_engine, _scheduler);
                     _scheduler.RebuildFrom(_index, _launchDay);
                     ModLog.Info(TellerLogFormatter.FormatRebuilt(_scheduler.TellerRingCount, _scheduler.RebuildSkippedForgotten));
@@ -391,6 +413,8 @@ namespace VividWorld.Campaign
                     _situationScan?.Initialize(_eventStore, _heroLookup, _traitLookup);
                     _playerPresence?.Initialize(_eventStore, _heroLookup, _traitLookup, () => PlayerHeardLog, () => _engine);
                     _wandererEvents?.Initialize(_eventStore, _heroLookup, _traitLookup, () => PlayerHeardLog, () => _engine, WandererRoles);
+                    _playerConfide?.Initialize(_campaignId, _eventStore, _heroLookup, _traitLookup, feelingResolver, () => PlayerHeardLog, () => _engine);
+                    _tournamentMeasure?.Initialize(_eventStore, _heroLookup, _traitLookup, _config, _eventStore.CampaignSeed, () => PlayerHeardLog, () => _engine);
                 }
 
                 if (_realEvents != null && _eventStore != null)

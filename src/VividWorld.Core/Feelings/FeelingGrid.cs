@@ -11,7 +11,7 @@ namespace VividWorld.Core.Feelings
         {
             "killed", "died", "executor", "victor", "captured", "freed", "lost_prisoner",
             "released", "lost_face", "brash", "decent", "cared", "joy", "pending",
-            "shabby", "wronged"
+            "shabby", "wronged", "contest_won", "contest_lost"
         };
 
         public static bool IsKnown(string? id)
@@ -53,8 +53,8 @@ namespace VividWorld.Core.Feelings
     {
         public static AffectionLevel Classify(int affection, FeelingsConfig cfg)
         {
-            if (affection >= cfg.AffectionHigh) return AffectionLevel.High;
-            if (affection <= cfg.AffectionLow) return AffectionLevel.Low;
+            if (affection > cfg.AffectionHigh) return AffectionLevel.High;
+            if (affection < cfg.AffectionLow) return AffectionLevel.Low;
             return AffectionLevel.Neutral;
         }
 

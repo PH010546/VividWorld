@@ -45,6 +45,9 @@
           "preconditions": [],
           "events": [
             { "type": "seat_dispute_endured",
+              "bind": { "SLIGHTED": "slighted", "FAVORED": "favored", "SETTLEMENT": "@settlement" } },
+            { "type": "seat_dispute_grudge_held",
+              "linkTo": "seat_dispute_endured",
               "bind": { "SLIGHTED": "slighted", "FAVORED": "favored", "SETTLEMENT": "@settlement" } }
           ],
           "grudges": [
@@ -77,7 +80,8 @@
           ],
           "grudges": [
             { "from": "slighted", "to": "favored", "amount": -8.0, "escalate": "clan" },
-            { "from": "host", "to": "slighted", "amount": -6.0 }
+            { "from": "host", "to": "slighted", "amount": -6.0 },
+            { "from": "slighted", "to": "host", "amount": -6.0 }
           ]
         }
       ]
@@ -119,6 +123,9 @@
           "preconditions": [],
           "events": [
             { "type": "seat_dispute_endured",
+              "bind": { "SLIGHTED": "slighted", "FAVORED": "favored", "SETTLEMENT": "@settlement" } },
+            { "type": "seat_dispute_grudge_held",
+              "linkTo": "seat_dispute_endured",
               "bind": { "SLIGHTED": "slighted", "FAVORED": "favored", "SETTLEMENT": "@settlement" } }
           ],
           "grudges": [
@@ -149,7 +156,8 @@
           ],
           "grudges": [
             { "from": "slighted", "to": "favored", "amount": -8.0, "escalate": "clan" },
-            { "from": "host", "to": "slighted", "amount": -6.0 }
+            { "from": "host", "to": "slighted", "amount": -6.0 },
+            { "from": "slighted", "to": "host", "amount": -6.0 }
           ]
         }
       ]
@@ -162,7 +170,7 @@
       "player": { "bystander": true, "deciderRole": "veteran", "listenerRole": null },
       "minBranchWeight": null,
       "roles": {
-        "student": {},
+        "student": { "pickTraits": { "calculating": 0.5 } },
         "veteran": {}
       },
       "conditions": [
@@ -292,7 +300,7 @@
     {
       "id": "tavern_words",
       "trigger": "direct",
-      "weight": 0.4,
+      "weight": 3.0,
       "decider": "speaker",
       "player": { "bystander": true, "deciderRole": "speaker", "listenerRole": null },
       "minBranchWeight": null,
@@ -410,7 +418,7 @@
     {
       "id": "victory_credit",
       "trigger": "direct",
-      "weight": 0.8,
+      "weight": 1.5,
       "decider": "claimant",
       "player": { "bystander": true, "deciderRole": null, "listenerRole": null },
       "minBranchWeight": null,
@@ -554,7 +562,7 @@
     {
       "id": "market_brawl",
       "trigger": "direct",
-      "weight": 4.0,
+      "weight": 1.0,
       "decider": "patron",
       "player": { "bystander": true, "deciderRole": "patron", "listenerRole": null, "skipConditionsWhenPlayer": ["sameKingdom"], "influenceOnlySameKingdom": true },
       "minBranchWeight": null,
@@ -687,37 +695,18 @@
               "amount": -3.0
             }
           ]
-        },
-        {
-          "id": "hush_it_up",
-          "playerEffects": { "traits": { "calculating": 100 } },
-          "base": 0.8,
-          "traits": {
-            "calculating": 0.8
-          },
-          "preconditions": [],
-          "events": [
-            {
-              "type": "brawl_hushed_up",
-              "bind": {
-                "AGGRIEVED": "aggrieved",
-                "PATRON": "patron",
-                "SETTLEMENT": "@settlement"
-              }
-            }
-          ]
         }
       ]
     },
     {
       "id": "hunt_wager",
       "trigger": "direct",
-      "weight": 0.5,
+      "weight": 2.0,
       "decider": "challenged",
       "player": { "bystander": true, "deciderRole": null, "listenerRole": null },
       "minBranchWeight": null,
       "roles": {
-        "challenger": {},
+        "challenger": { "pickTraits": { "valor": 0.5 } },
         "challenged": {}
       },
       "conditions": [
@@ -804,15 +793,32 @@
           "id": "secret_stake",
           "base": 0.7,
           "traits": {
-            "calculating": 0.8
+            "calculating": 0.8,
+            "honor": -0.5
           },
-          "preconditions": [],
+          "preconditions": [
+            {
+              "type": "hasStakeableSecret",
+              "bettor": "challenged",
+              "opponent": "challenger"
+            }
+          ],
           "events": [
             {
-              "type": "wager_secret_stake",
+              "type": "hunt_wager_settled",
               "bind": {
-                "CHALLENGER": "challenger",
-                "CHALLENGED": "challenged",
+                "WINNER": "@winner",
+                "LOSER": "@loser",
+                "SETTLEMENT": "@settlement"
+              }
+            },
+            {
+              "type": "hunt_wager_staked_secret",
+              "linkTo": "hunt_wager_settled",
+              "bind": {
+                "BETTOR": "challenged",
+                "OPPONENT": "challenger",
+                "STAKED_OWNER": "@stakedOwner",
                 "SETTLEMENT": "@settlement"
               }
             }
@@ -1321,7 +1327,7 @@
             "judgeRole": "employer"
           },
           "roles": {
-            "claimant": {},
+            "claimant": { "pickTraits": { "valor": 0.5, "honor": -0.5 } },
             "rival": {},
             "employer": {
               "player": true
@@ -1559,7 +1565,7 @@
             "bystander": true
           },
           "roles": {
-            "rescuer": {},
+            "rescuer": { "pickTraits": { "mercy": 0.5, "valor": 0.5 } },
             "rescued": {}
           },
           "conditions": [
@@ -1827,7 +1833,7 @@
             "judgeRole": "employer"
           },
           "roles": {
-            "mocker": {},
+            "mocker": { "pickTraits": { "mercy": -0.5 } },
             "mocked": {},
             "employer": {
               "player": true
@@ -2029,7 +2035,7 @@
             "judgeRole": "employer"
           },
           "roles": {
-            "teacher": {},
+            "teacher": { "pickTraits": { "generosity": 0.5 } },
             "learner": {},
             "employer": {
               "player": true
@@ -2173,6 +2179,56 @@
                     "{EMPLOYER}": "employer",
                     "{SETTLEMENT}": "@settlement"
                   }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "freed_prisoner_secretly",
+          "trigger": "afterEvent",
+          "eventTypes": [
+            "hero_escaped_captivity"
+          ],
+          "bindFromEvent": {
+            "prisoner": "PRISONER"
+          },
+          "decider": "freer",
+          "minBranchWeight": null,
+          "roles": {
+            "prisoner": {},
+            "freer": {
+              "derived": "freerOf:prisoner"
+            }
+          },
+          "conditions": [
+            {
+              "type": "roleBound",
+              "role": "freer"
+            },
+            {
+              "type": "chance",
+              "value": "@secrets.freedPrisoner.chance",
+              "seedRoles": [
+                "prisoner",
+                "freer"
+              ]
+            }
+          ],
+          "branches": [
+            {
+              "id": "freed",
+              "base": 1.0,
+              "preconditions": [],
+              "events": [
+                {
+                  "type": "prisoner_freed_secretly",
+                  "bind": {
+                    "FREER": "freer",
+                    "PRISONER": "prisoner",
+                    "SETTLEMENT": "@settlement"
+                  },
+                  "linkTo": "@trigger"
                 }
               ]
             }

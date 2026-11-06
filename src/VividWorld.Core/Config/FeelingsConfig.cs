@@ -9,11 +9,11 @@ namespace VividWorld.Core.Config
     {
         public bool Enabled { get; set; } = true;
 
-        /// <summary>好感度到這個值（含）以上算「高」。</summary>
-        public int AffectionHigh { get; set; } = 30;
+        /// <summary>好感度大於這個值算「高」。</summary>
+        public int AffectionHigh { get; set; } = 50;
 
-        /// <summary>好感度到這個值（含）以下算「低」。</summary>
-        public int AffectionLow { get; set; } = -30;
+        /// <summary>好感度小於這個值算「低」。</summary>
+        public int AffectionLow { get; set; } = -50;
 
         /// <summary>個人恩怨淨額的絕對值到這個門檻（含）才算恩或怨。</summary>
         public double GrudgeThreshold { get; set; } = 4.0;

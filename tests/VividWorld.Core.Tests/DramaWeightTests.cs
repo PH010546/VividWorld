@@ -408,12 +408,13 @@ namespace VividWorld.Core.Tests
             {
                 ["brawl_counter_accused"] = 6, ["seat_dispute_walked_out"] = 6,
                 ["seat_dispute_demanded"] = 5, ["victory_credit_claimed"] = 5, ["victory_credit_judged"] = 5, ["advice_mocked"] = 5, ["brawl_shielded_own"] = 5,
-                ["brawl_man_handed_over"] = 4, ["tavern_sour_words"] = 4, ["brawl_hushed_up"] = 4, ["wager_secret_stake"] = 4,
-                ["seat_dispute_endured"] = 3, ["seat_dispute_yielded"] = 3, ["victory_credit_deferred"] = 3, ["advice_given_freely"] = 3, ["tavern_good_word"] = 3, ["wager_struck"] = 3,
+                ["brawl_man_handed_over"] = 4, ["tavern_sour_words"] = 4, ["brawl_hushed_up"] = 4, ["wager_secret_stake"] = 4, ["hunt_wager_staked_secret"] = 4,
+                ["seat_dispute_endured"] = 3, ["seat_dispute_grudge_held"] = 3, ["seat_dispute_yielded"] = 3, ["victory_credit_deferred"] = 3, ["advice_given_freely"] = 3, ["tavern_good_word"] = 3, ["wager_struck"] = 3, ["tournament_won"] = 3, ["tournament_final_thrown"] = 3, ["hunt_wager_settled"] = 3,
                 ["advice_brushed_off"] = 2, ["wager_refused"] = 2,
                 ["tavern_boast_told"] = 1,
                 // 停用的兩種：照原本的段（3 與 3）換算 × 2；原本寫的是 2 與 3
                 ["conduct_poisoned"] = 8,
+                ["prisoner_freed_secretly"] = 8,
                 ["conduct_spoke_against_ruler"] = 6,
                 ["conduct_mistreated_prisoner"] = 5,
                 ["conduct_refused_aid"] = 4,

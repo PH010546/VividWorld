@@ -1210,7 +1210,7 @@ namespace VividWorld.Core.Tests
             var walkOut = seatDispute.Branches.FirstOrDefault(b => b.Id == "walk_out");
             Assert.NotNull(walkOut);
             Assert.NotNull(walkOut!.Grudges);
-            Assert.Equal(2, walkOut.Grudges!.Count);
+            Assert.Equal(3, walkOut.Grudges!.Count);
             Assert.Equal("slighted", walkOut.Grudges[0].From);
             Assert.Equal("favored", walkOut.Grudges[0].To);
             Assert.Equal(-8.0, walkOut.Grudges[0].Amount);
@@ -1218,6 +1218,11 @@ namespace VividWorld.Core.Tests
             Assert.Equal("host", walkOut.Grudges[1].From);
             Assert.Equal("slighted", walkOut.Grudges[1].To);
             Assert.Equal(-6.0, walkOut.Grudges[1].Amount);
+            Assert.Equal("slighted", walkOut.Grudges[2].From);
+            Assert.Equal("host", walkOut.Grudges[2].To);
+            Assert.Equal(-6.0, walkOut.Grudges[2].Amount);
+            Assert.Null(walkOut.Grudges[2].Escalate);
+            Assert.False(walkOut.Grudges[2].LedgerOnly);
         }
 
         #endregion

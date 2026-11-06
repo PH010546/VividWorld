@@ -75,6 +75,18 @@ namespace VividWorld.Core.Events
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public bool? OriginatorKnownOverride { get; set; }
 
+        /// <summary>當事人聽到自己的秘密傳開時的反應（"openly"／"hidden"／null）。規格 §5.2。</summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string? OwnerReaction { get; set; }
+
+        /// <summary>當事人懷疑洩漏自己秘密的人名單。規格 §5.2。</summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public List<string>? SuspectedHeroIds { get; set; }
+
+        /// <summary>當事人記恨的起頭者 heroId。規格 §5.2。</summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string? GrudgeAgainstHeroId { get; set; }
+
         /// <summary>規格 §5.1：<b>任何會被寫進分片的型別都必須帶未知欄位保存。</b>
         /// EventShardStore.Flush() 是整片重寫，一次 read-modify-write 就會讓舊版建置永久刪掉
         /// 它不認識的欄位。這個類別是系統裡變動最頻繁的持久化型別（v3 加了 KnownFactIds、

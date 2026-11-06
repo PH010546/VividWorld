@@ -64,6 +64,15 @@ namespace VividWorld.Core.Catalog
         [JsonProperty("selfFeelingVariants")]
         public Dictionary<string, List<SelfFeelingVariantRule>>? SelfFeelingVariants;
 
+        [JsonProperty("ownerRoles")]
+        public List<string>? OwnerRoles;
+
+        [JsonProperty("harmed")]
+        public TemplateHarmedDef? Harmed;
+
+        [JsonProperty("onHeard")]
+        public List<TemplateOnHeardRule>? OnHeard;
+
         [JsonExtensionData]
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
     }
@@ -128,5 +137,68 @@ namespace VividWorld.Core.Catalog
                 default: return null;
             }
         }
+    }
+
+    public sealed class TemplateHarmedDef
+    {
+        [JsonProperty("roles")]
+        public List<string>? Roles { get; set; }
+
+        [JsonProperty("kinOf")]
+        public List<string>? KinOf { get; set; }
+
+        [JsonProperty("friendsOf")]
+        public List<string>? FriendsOf { get; set; }
+
+        [JsonExtensionData]
+        public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
+    }
+
+    public sealed class TemplateOnHeardRule
+    {
+        [JsonProperty("listenerRole")]
+        public string? ListenerRole { get; set; }
+
+        [JsonProperty("listenerKinOf")]
+        public string? ListenerKinOf { get; set; }
+
+        [JsonProperty("listenerFriendsOf")]
+        public string? ListenerFriendsOf { get; set; }
+
+        [JsonProperty("listenerCategory")]
+        public string? ListenerCategory { get; set; }
+
+        [JsonProperty("listenerTrait")]
+        public string? ListenerTrait { get; set; }
+
+        [JsonProperty("listenerTraitSign")]
+        public string? ListenerTraitSign { get; set; }
+
+        [JsonProperty("targetRole")]
+        public string? TargetRole { get; set; }
+
+        [JsonProperty("targetCondition")]
+        public string? TargetCondition { get; set; }
+
+        [JsonProperty("amount")]
+        public double? Amount { get; set; }
+
+        [JsonProperty("amounts")]
+        public List<double>? Amounts { get; set; }
+
+        [JsonProperty("amountRef")]
+        public string? AmountRef { get; set; }
+
+        [JsonProperty("listenerHarmedIndex")]
+        public int? ListenerHarmedIndex { get; set; }
+
+        [JsonProperty("escalate")]
+        public string? Escalate { get; set; }
+
+        [JsonProperty("condition")]
+        public string? Condition { get; set; }
+
+        [JsonExtensionData]
+        public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
     }
 }

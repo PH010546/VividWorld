@@ -140,9 +140,8 @@ The rules for adding a language (every language folder must carry exactly the En
 
 In order:
 
-1. **Secrets, rebuilt**: model the secret itself (what it is, whose it is, who knows) separately from the situation that reveals it. The two existing kinds where "the secret is a piece of information" are paused until they can be converted
-2. **Third-party events and news sources**: feed other mods' events (and native ones such as defections, rebellions and fallen cities) into the same propagation pipeline
-3. **Your turn to talk**: the player retells and spreads news, under the same propagation and belief rules as NPCs
+1. **Third-party events and news sources**: feed other mods' events (and native ones such as defections, rebellions and fallen cities) into the same propagation pipeline
+2. **Your turn to talk**: the player retells and spreads news, under the same propagation and belief rules as NPCs
 
 Two more directions, not yet scheduled:
 

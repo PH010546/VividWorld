@@ -221,17 +221,17 @@ namespace VividWorld.Core.Rumors
                 return ShamefulListenerCol.Friend;
             }
 
-            // 3. Affection(聽的人, 出醜的人) >= affectionHigh => 好友或家人
-            // 4. <= affectionLow => 仇人
+            // 3. Affection(聽的人, 出醜的人) > affectionHigh => 好友或家人
+            // 4. < affectionLow => 仇人
             // 5. 其餘 => 不相干；好感讀不到當 0
             var fc = config.Presentation?.Feelings ?? new FeelingsConfig();
             int aff = world.Affection(listenerId, shamedHeroId) ?? 0;
 
-            if (aff >= fc.AffectionHigh)
+            if (aff > fc.AffectionHigh)
             {
                 return ShamefulListenerCol.Friend;
             }
-            if (aff <= fc.AffectionLow)
+            if (aff < fc.AffectionLow)
             {
                 return ShamefulListenerCol.Enemy;
             }

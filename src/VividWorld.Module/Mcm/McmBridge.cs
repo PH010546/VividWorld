@@ -255,6 +255,7 @@ namespace VividWorld.Mcm
                 case "presentation.snapshotManagerHotkey": return s.SnapshotManagerHotkey;
                 case "presentation.chronicleMaxEntries": return s.ChronicleMaxEntries;
                 case "presentation.encyclopediaLinksEnabled": return s.EncyclopediaLinksEnabled;
+                case "presentation.muteNativeNotifications": return s.MuteNativeNotifications;
                 case "scheduling.tellersPerHourlyTick": return s.TellersPerHourlyTick;
                 case "dialogue.askRelationGate": return s.AskRelationGate;
                 case "dialogue.askWillingnessThreshold": return (double)s.AskWillingnessThreshold;
@@ -319,6 +320,7 @@ namespace VividWorld.Mcm
             PushKey("presentation.snapshotManagerHotkey", () => s.SnapshotManagerHotkey = live.Presentation.SnapshotManagerHotkey ?? "F9");
             PushKey("presentation.chronicleMaxEntries", () => s.ChronicleMaxEntries = live.Presentation.ChronicleMaxEntries);
             PushKey("presentation.encyclopediaLinksEnabled", () => s.EncyclopediaLinksEnabled = live.Presentation.EncyclopediaLinksEnabled);
+            PushKey("presentation.muteNativeNotifications", () => s.MuteNativeNotifications = live.Presentation.MuteNativeNotifications);
             PushKey("scheduling.tellersPerHourlyTick", () => s.TellersPerHourlyTick = live.Scheduling.TellersPerHourlyTick);
             PushKey("dialogue.askRelationGate", () => s.AskRelationGate = live.Dialogue.AskRelationGate);
             PushKey("dialogue.askWillingnessThreshold", () => s.AskWillingnessThreshold = (float)live.Dialogue.AskWillingnessThreshold);
@@ -466,6 +468,7 @@ namespace VividWorld.Mcm
                 s.SnapshotManagerHotkey,
                 s.ChronicleMaxEntries,
                 s.EncyclopediaLinksEnabled,
+                s.MuteNativeNotifications,
                 s.TellersPerHourlyTick,
                 s.AskRelationGate,
                 s.AskWillingnessThreshold.ToString("R", CultureInfo.InvariantCulture),
@@ -502,6 +505,7 @@ namespace VividWorld.Mcm
                 live.Presentation.SnapshotManagerHotkey,
                 live.Presentation.ChronicleMaxEntries,
                 live.Presentation.EncyclopediaLinksEnabled,
+                live.Presentation.MuteNativeNotifications,
                 live.Scheduling.TellersPerHourlyTick,
                 live.Dialogue.AskRelationGate,
                 live.Dialogue.AskWillingnessThreshold.ToString("R", CultureInfo.InvariantCulture),

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using VividWorld.Core.Events;
+using VividWorld.Core.Secrets;
 
 namespace VividWorld.Core.Persistence
 {
@@ -415,7 +416,7 @@ namespace VividWorld.Core.Persistence
         public PlayerHeardRecordResult RecordTelling(WorldEvent evt, KnownByEntry playerEntry, IReadOnlyList<Fact> knownFacts, double day, PlayerHeardSource telling, Func<string, WorldEvent?>? eventLookup)
         {
             var result = new PlayerHeardRecordResult();
-            if (evt == null || !evt.IsVisibleToRumorSystem) return result;
+            if (evt == null || !SecretVisibilityPolicy.IsHiddenPartVisibleToPlayer(evt, playerEntry.HeroId)) return result;
             if (playerEntry == null || telling == null) return result;
 
             if (!_lookup.TryGetValue(evt.EventId, out var existing))

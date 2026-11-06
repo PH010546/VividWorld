@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using VividWorld.Core.Config;
+using VividWorld.Core.Rumors;
 using VividWorld.Core.Util;
 
 namespace VividWorld.Core.Situations
@@ -211,6 +212,9 @@ namespace VividWorld.Core.Situations
 
         public List<PlayerPresenceCandidateReport> Candidates = new List<PlayerPresenceCandidateReport>();
         public PlayerPresencePick? Pick;
+
+        /// <summary>挑種類與挑人的完整紀錄（交給 <see cref="SituationPickLogFormatter"/> 印）；沒走到挑這一步是 null。</summary>
+        public SituationPickRecord? PickRecord;
     }
 
     public static class PlayerPresenceRoller
@@ -221,7 +225,8 @@ namespace VividWorld.Core.Situations
             VividWorldConfig? config,
             IEnumerable<SituationTemplate> templates,
             IPlayerPresenceEvaluator evaluator,
-            IDeterministicRng rng)
+            IDeterministicRng rng,
+            IHeroTraitLookup? traits = null)
         {
             if (input == null) throw new ArgumentNullException(nameof(input));
             if (trigger == null) throw new ArgumentNullException(nameof(trigger));
@@ -326,11 +331,47 @@ namespace VividWorld.Core.Situations
                 return result;
             }
 
-            var weights = passing.Select(c => c.Weight).ToList();
-            double total = weights.Sum();
-            int pickIdx = rng.PickWeighted(weights, RumorSeed.Of(baseSeed, "pick"));
-            var picked = passing[pickIdx];
-            int assignmentIdx = rng.Pick(picked.PassingAssignments.Count, RumorSeed.Of(baseSeed, "assignment", picked.SituationId, picked.Role.ToString()));
+            double total = passing.Sum(c => c.Weight);
+
+            // 種類＝每個身分的候選（條件沒過的也列進去，日誌才看得到它們為什麼沒機會）；挑人照個性比重，不看今天的名單
+            var kinds = new List<SituationPickKind>();
+            foreach (var c in result.Candidates)
+            {
+                var kind = new SituationPickKind
+                {
+                    Id = $"{c.SituationId}/{c.Role}",
+                    Weight = c.Weight,
+                    WeightSource = "template weight",
+                    PickTraitRoles = SituationPickKind.TraitRolesOf(c.Template),
+                    NoCandidateReason = c.StructuralReason ?? "no assignment passed the conditions",
+                    Payload = c
+                };
+                kind.Candidates = c.PassingAssignments
+                    .Select(a => SituationPicker.CandidateFromAssignment(kind, a.NonDerivedRoleHeroIds, a.Evaluation.BoundHeroIds, traits, playerId, a))
+                    .ToList();
+                kinds.Add(kind);
+            }
+
+            var pickResult = SituationPicker.Pick(new SituationPickRequest
+            {
+                Kinds = kinds,
+                Count = 1,
+                Roster = null,
+                Rng = rng,
+                PlayerHeroId = playerId,
+                KindSeed = _ => RumorSeed.Of(baseSeed, "pick"),
+                PersonSeed = (_, k) =>
+                {
+                    var cr = (PlayerPresenceCandidateReport)k.Payload!;
+                    return RumorSeed.Of(baseSeed, "assignment", cr.SituationId, cr.Role.ToString());
+                },
+                Site = $"player presence ({trigger.Id}, {input.Moment})",
+                Day = input.Today
+            });
+            result.PickRecord = pickResult.Records.Count > 0 ? pickResult.Records[0] : null;
+
+            var picked = (PlayerPresenceCandidateReport)pickResult.Picks[0].Kind.Payload!;
+            var pickedAssignment = (PlayerPresenceAssignment)pickResult.Picks[0].Candidate.Payload!;
 
             result.Outcome = PlayerPresenceOutcome.Happened;
             result.Pick = new PlayerPresencePick
@@ -338,7 +379,7 @@ namespace VividWorld.Core.Situations
                 Template = picked.Template!,
                 Role = picked.Role,
                 PlayerRoleName = picked.PlayerRoleName,
-                Assignment = picked.PassingAssignments[assignmentIdx],
+                Assignment = pickedAssignment,
                 Probability = total > 0.0 ? picked.Weight / total : 0.0,
                 AssignmentChoices = picked.PassingAssignments.Count
             };

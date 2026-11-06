@@ -19,6 +19,13 @@ namespace VividWorld.Core.Tests
     {
         private const string Player = "main_hero";
 
+        private readonly Xunit.Abstractions.ITestOutputHelper _output;
+
+        public PlayerPresenceTests(Xunit.Abstractions.ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         // ── 測試用的世界 ────────────────────────────────────────────────────────────
 
         private static string FindRepoFile(params string[] parts)
@@ -154,6 +161,22 @@ namespace VividWorld.Core.Tests
         private static PlayerPresenceCandidateReport Candidate(PlayerPresenceRollResult r, string situationId, PlayerPresenceRole role)
         {
             return r.Candidates.Single(c => c.SituationId == situationId && c.Role == role);
+        }
+
+        [Fact]
+        public void LogSample_PickRecordIsPrintedWithTheSharedFormatter()
+        {
+            var ev = Town();
+            var r = PlayerPresenceRoller.Roll(Input(), TownPresenceTrigger.Instance, Config(), RepoCatalog().Situations, ev, new SplitMix64Rng(), ev.Traits);
+
+            Assert.Equal(PlayerPresenceOutcome.Happened, r.Outcome);
+            Assert.NotNull(r.PickRecord);
+            var names = new Dictionary<string, string> { ["main_hero"] = "You", ["lord_a"] = "Deshert", ["lord_b"] = "Caradog", ["lord_c"] = "Pol" };
+            var lines = SituationPickLogFormatter.Format(r.PickRecord!, new SituationPickLogOptions { NameOf = id => names.TryGetValue(id, out var n) ? n : null });
+            foreach (var l in lines) _output.WriteLine(l);
+            Assert.Contains(lines, l => l.StartsWith("Pick [player presence"));
+            Assert.Contains(lines, l => l.Contains("roster: not used here"));
+            Assert.DoesNotContain(lines, l => l.Contains("to be added if it goes ahead"));
         }
 
         // ── 不擲的原因 ──────────────────────────────────────────────────────────────
@@ -561,12 +584,15 @@ namespace VividWorld.Core.Tests
             // 從玩家出發、會升級成家族恩怨的也不記；城主對玩家的照記
             var walk = PlayerGrudgeFilter.Filter(Branch("seat_dispute", "walk_out").Grudges, bound, Player);
             Assert.Equal(new[] { "host->slighted" }, walk.Kept.Select(g => $"{g.From}->{g.To}"));
-            Assert.Single(walk.Dropped);
+            Assert.Equal(2, walk.Dropped.Count);
             Assert.Equal("clan", walk.Dropped[0].Escalate);
+            Assert.Equal("slighted", walk.Dropped[1].From);
+            Assert.Equal("host", walk.Dropped[1].To);
+            Assert.Equal(-6.0, walk.Dropped[1].Amount);
 
             string line = PlayerPresenceLogFormatter.FormatGrudgeFilter("seat_dispute", "walk_out", walk);
             Assert.Contains("kept 1 (host->slighted -6)", line);
-            Assert.Contains("from the player: 1 (slighted->favored -8 escalate:clan)", line);
+            Assert.Contains("from the player: 2 (slighted->favored -8 escalate:clan, slighted->host -6)", line);
         }
 
         [Fact]
@@ -618,9 +644,10 @@ namespace VividWorld.Core.Tests
                     if (PlayerBystanderBranches.SecretOnlyReason(b, events.ByType) != null) excluded.Add($"{t.Id}/{b.Id}");
                 }
             }
-            Assert.Equal(new[] { "seat_dispute/endure", "market_brawl/hush_it_up", "hunt_wager/secret_stake" }, excluded);
-            Assert.Equal("bystander: only secret events (seat_dispute_endured)",
-                PlayerBystanderBranches.SecretOnlyReason(Branch("seat_dispute", "endure"), events.ByType));
+            Assert.Empty(excluded);
+            Assert.Null(PlayerBystanderBranches.SecretOnlyReason(Branch("seat_dispute", "endure"), events.ByType));
+            Assert.Null(PlayerBystanderBranches.SecretOnlyReason(Branch("hunt_wager", "secret_stake"), events.ByType));
+
         }
 
         [Fact]
@@ -649,11 +676,11 @@ namespace VividWorld.Core.Tests
                 if (plain.SelectedBranchId == "endure") endureWithout++;
 
                 var watched = SituationBranchSelector.Select(seat, new Dictionary<string, SituationRoleFacts>(), bound, unbound, traits, 0.1, rng, seed,
-                    excludeBranch: b => PlayerBystanderBranches.SecretOnlyReason(b, events.ByType));
+                    excludeBranch: b => b.Id == "endure" ? "bystander: test excluded" : null);
                 Assert.NotEqual("endure", watched.SelectedBranchId);
                 var endure = watched.Branches.Single(d => d.BranchId == "endure");
                 Assert.True(endure.IsExcluded);
-                Assert.StartsWith("bystander: only secret events", endure.ExcludedReason);
+                Assert.StartsWith("bystander: test excluded", endure.ExcludedReason);
             }
             Assert.True(endureWithout > 0);
         }
@@ -727,7 +754,7 @@ namespace VividWorld.Core.Tests
                 Dirs("market_brawl", "hand_over", bound, true, true));
             Assert.Equal(new[] { "aggrieved(lord_a) pleased", "morale down", "honor up" },
                 Dirs("market_brawl", "hand_over", bound, true, false));
-            Assert.Equal(new[] { "calculating up" }, Dirs("market_brawl", "hush_it_up", bound, true, true));
+
 
             var t = RepoCatalog().ById("market_brawl")!;
             var plan = PlayerEffectsResolver.Resolve(t, t.Branches.Single(b => b.Id == "counter_accuse"), true, false);
@@ -768,7 +795,7 @@ namespace VividWorld.Core.Tests
         [InlineData("market_brawl",  "hand_over",      0,   5, -5, "honor:100")]
         [InlineData("market_brawl",  "shield_own",     0,  -5,  5, "generosity:100")]
         [InlineData("market_brawl",  "counter_accuse", 0, -10,  5, "honor:-200")]
-        [InlineData("market_brawl",  "hush_it_up",     0,   0,  0, "calculating:100")]
+
         public void DataFile_PlayerEffects_MatchTheSpecTables(string situationId, string branchId, double renown, double influence, double morale, string traits)
         {
             var fx = Branch(situationId, branchId).PlayerEffects;
@@ -797,7 +824,7 @@ namespace VividWorld.Core.Tests
         [InlineData("market_brawl",  "patron",   "hand_over",      "aggrieved:6")]
         [InlineData("market_brawl",  "patron",   "shield_own",     "aggrieved:-7:clan")]
         [InlineData("market_brawl",  "patron",   "counter_accuse", "aggrieved:-9:clan")]
-        [InlineData("market_brawl",  "patron",   "hush_it_up",     "")]
+
         public void DataFile_GrudgesTowardThePlayer_MatchTheSpecTables(string situationId, string playerRole, string branchId, string expected)
         {
             var toPlayer = (Branch(situationId, branchId).Grudges ?? new List<SituationGrudgeDef>())

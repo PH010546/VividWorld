@@ -40,7 +40,27 @@ namespace VividWorld
                 var writer = new SystemFileWriter();
                 var json = writer.ReadAllText(VividWorldPaths.ConfigFile);
                 bool fileExists = (json != null);
-                var config = (fileExists ? VividJson.Read<VividWorldConfig>(json!) : null) ?? new VividWorldConfig();
+                JObject? existingJObj = null;
+                ConfigMigrationResult? migrationResult = null;
+                if (fileExists)
+                {
+                    try
+                    {
+                        existingJObj = JObject.Parse(json!);
+                        migrationResult = ConfigMigration.Migrate(existingJObj, VividWorldConfig.CurrentConfigVersion);
+                        foreach (var line in migrationResult.LogLines)
+                        {
+                            ModLog.Info(line);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ModLog.Error("ConfigStore failed during config migration parse.", ex);
+                    }
+                }
+
+                var migratedJson = existingJObj != null ? existingJObj.ToString(Formatting.None) : json;
+                var config = (fileExists && !string.IsNullOrEmpty(migratedJson) ? VividJson.Read<VividWorldConfig>(migratedJson!) : null) ?? new VividWorldConfig();
 
                 var notices = new List<ClampNotice>();
                 config.Normalize(notices);
@@ -96,7 +116,7 @@ namespace VividWorld
 
                     try
                     {
-                        var existingJObj = JObject.Parse(json!);
+                        existingJObj ??= JObject.Parse(json!);
                         var canonicalJson = VividJson.Write(config);
                         var canonicalJObj = JObject.Parse(canonicalJson);
 
@@ -118,6 +138,10 @@ namespace VividWorld
                                 ModLog.Info($"config: added missing key {path} = {valStr}");
                             }
 
+                        }
+
+                        if ((migrationResult != null && migrationResult.HasChanges) || mergeResult.AddedPaths.Count > 0)
+                        {
                             var mergedJson = mergeResult.Merged.ToString(Formatting.Indented);
                             AtomicFile.Write(writer, VividWorldPaths.ConfigFile, mergedJson);
                         }

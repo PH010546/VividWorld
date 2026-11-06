@@ -123,7 +123,7 @@ namespace VividWorld.Core.Feelings
             int affection = affectionRaw ?? 0;
             var affectionLevel = FeelingGrid.Classify(affection, fc);
             string affectionText = string.Format(CultureInfo.InvariantCulture,
-                "affection {0}{1:+0;-0;0} -> {2} (high >= {3}, low <= {4})",
+                "affection {0}{1:+0;-0;0} -> {2} (high > {3}, low < {4})",
                 affectionRaw.HasValue ? string.Empty : "unreadable, counted as ", affection, affectionLevel, fc.AffectionHigh, fc.AffectionLow);
 
             var all = world.PersonalGrudges(speakerId, targetHeroId) ?? Array.Empty<GrudgeEntry>();

@@ -57,6 +57,9 @@ namespace VividWorld.Core.Situations
         InvalidPlayerEffects,
         InvalidSituationField,
         InvalidWandererTemplate,
-        InvalidNewEffect
+        InvalidNewEffect,
+        UnknownPickTrait,
+        InvalidPickTraitCoefficient,
+        PickTraitsOnWrongRole
     }
 }

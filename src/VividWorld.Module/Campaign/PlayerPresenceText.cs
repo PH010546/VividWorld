@@ -42,13 +42,14 @@ namespace VividWorld.Campaign
             ["tavern_words_sour_words"] = "Join in with a cutting remark about {LISTENER}",
             ["market_brawl_hand_over"] = "Hand over the men who started it and apologize to {AGGRIEVED}",
             ["market_brawl_shield_own"] = "Your men, your business: hand no one over",
-            ["market_brawl_counter_accuse"] = "Say it was the men of {AGGRIEVED} who struck first",
-            ["market_brawl_hush_it_up"] = "Agree with {AGGRIEVED} that neither house will speak of it again"
+            ["market_brawl_counter_accuse"] = "Say it was the men of {AGGRIEVED} who struck first"
+
         };
 
         private static readonly Dictionary<string, string> OutcomeFallbacks = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["seat_dispute_demand_seat"] = "{SLIGHTED} sets down the cup and, in front of everyone, tells {FAVORED} to give up the higher seat. The whole hall falls silent.",
+            ["seat_dispute_endure"] = "{SLIGHTED} sets down the cup, says not a word, and swallows the slight before everyone.",
             ["seat_dispute_yield"] = "{SLIGHTED} lets it pass, gives the higher seat to {FAVORED}, and raises a cup to {FAVORED:him|her|them} as well.",
             ["seat_dispute_walk_out"] = "{SLIGHTED} gets up without a word and walks out of {HOST}'s hall.",
             ["advice_sought_teach_freely"] = "{VETERAN} tells the whole story of how that battle was won, holding nothing back, not even the mistakes.",

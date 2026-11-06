@@ -59,6 +59,7 @@ namespace VividWorld
                 var harmony = new Harmony(HarmonyId);
                 PlayerPairEffectiveHeroesPatch.TryApply(harmony);
                 ClanLeaderChangeKeepsPlayerRelationPatch.TryApply(harmony);
+                NativeNotificationMutePatch.TryApply(harmony);
             }
             catch (Exception ex)
             {
@@ -89,6 +90,19 @@ namespace VividWorld
             {
                 var cfg = _menuConfig;
                 return cfg != null && cfg.Enabled && cfg.Relation != null && cfg.Relation.PersonalWithPlayer;
+            }
+        }
+
+        /// <summary>
+        /// 原版通知攔截開關是否開啟。只讀記憶體中的設定，避免每次檢查都存取磁碟。
+        /// 設定物件未載入或模組整體停用時視為關閉（原版行為）。
+        /// </summary>
+        internal static bool MuteNativeNotificationsEnabled
+        {
+            get
+            {
+                var cfg = _menuConfig;
+                return cfg != null && cfg.Enabled && cfg.Presentation != null && cfg.Presentation.MuteNativeNotifications;
             }
         }
 
@@ -131,13 +145,15 @@ namespace VividWorld
             var situationScan = new SituationScanBehavior(config); // SE3: 每日情境掃描
             var playerPresence = new PlayerPresenceBehavior(config); // 情境在玩家面前發生
             var wandererEvents = new WandererEventBehavior(config);
+            var tournamentMeasure = new TournamentMeasureBehavior();
+            var playerConfide = new PlayerConfideBehavior(config);
             EventCatalogStore.Load(config);
             SituationCatalogStore.Load(config);
             FeelingCatalogStore.Load();
             SituationRunner.ResetSessionCounters();
             GrudgeApplier.ResetSessionCounters();
             SituationScanBehavior.ResetSessionState();
-            _activeBehavior = new RumorCampaignBehavior(config, dialogs, producer, realEvents, situationScan, playerPresence, wandererEvents);
+            _activeBehavior = new RumorCampaignBehavior(config, dialogs, producer, realEvents, situationScan, playerPresence, wandererEvents, playerConfide, tournamentMeasure);
 
             starter.AddBehavior(_activeBehavior);
             starter.AddBehavior(dialogs);
@@ -146,10 +162,12 @@ namespace VividWorld
             starter.AddBehavior(situationScan);
             starter.AddBehavior(playerPresence);
             starter.AddBehavior(wandererEvents);
+            starter.AddBehavior(tournamentMeasure);
+            starter.AddBehavior(playerConfide);
 
             AiPushCoordinator.Initialize(config);
 
-            ModLog.Info("Registered 7 campaign behaviors on the game starter.");
+            ModLog.Info("Registered 9 campaign behaviors on the game starter.");
             ModLog.Flush();
         }
 
@@ -202,6 +220,8 @@ namespace VividWorld
                 {
                     _activeBehavior.ExecutePendingModeNotice();
                 }
+
+                PlayerConfideBehavior.Current?.TryTickQueue();
 
                 bool snapshotDown = _snapshotKey.IsPressed();
                 if (snapshotDown && !_snapshotKeyWasDown)

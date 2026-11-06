@@ -315,6 +315,175 @@ namespace VividWorld.Core.Catalog
                     }
                 }
 
+                // 6b. OwnerRoles
+                List<string>? ownerRoles = null;
+                var ownerProp = templateObj.Property("ownerRoles", StringComparison.OrdinalIgnoreCase);
+                if (ownerProp != null && ownerProp.Value.Type != JTokenType.Null)
+                {
+                    if (ownerProp.Value is not JArray ownerArr)
+                    {
+                        templateIssues.Add(new CatalogIssue
+                        {
+                            TemplateIndex = i,
+                            TemplateType = templateType,
+                            Field = "ownerRoles",
+                            Code = CatalogIssueCode.OwnerRoleNotARole,
+                            IsError = true,
+                            Detail = "ownerRoles must be a JSON array of role names."
+                        });
+                    }
+                    else
+                    {
+                        ownerRoles = new List<string>();
+                        for (int k = 0; k < ownerArr.Count; k++)
+                        {
+                            string roleName = ownerArr[k]?.Value<string>() ?? string.Empty;
+                            if (string.IsNullOrWhiteSpace(roleName) || !roles.ContainsKey(roleName))
+                            {
+                                templateIssues.Add(new CatalogIssue
+                                {
+                                    TemplateIndex = i,
+                                    TemplateType = templateType,
+                                    Field = $"ownerRoles[{k}]",
+                                    Code = CatalogIssueCode.OwnerRoleNotARole,
+                                    IsError = true,
+                                    Detail = $"OwnerRole '{roleName}' is not defined in template roles."
+                                });
+                            }
+                            else if (!ownerRoles.Contains(roleName))
+                            {
+                                ownerRoles.Add(roleName);
+                            }
+                        }
+                    }
+                }
+
+                // 6c. Harmed ({ roles, kinOf, friendsOf })
+                TemplateHarmedDef? harmed = null;
+                var harmedProp = templateObj.Property("harmed", StringComparison.OrdinalIgnoreCase);
+                if (harmedProp != null && harmedProp.Value.Type != JTokenType.Null)
+                {
+                    if (harmedProp.Value is not JObject harmedObj)
+                    {
+                        templateIssues.Add(new CatalogIssue
+                        {
+                            TemplateIndex = i,
+                            TemplateType = templateType,
+                            Field = "harmed",
+                            Code = CatalogIssueCode.HarmedInvalid,
+                            IsError = true,
+                            Detail = "harmed must be a JSON object with optional 'roles', 'kinOf', 'friendsOf' arrays."
+                        });
+                    }
+                    else
+                    {
+                        harmed = new TemplateHarmedDef();
+
+                        void ParseHarmedRoleList(string propName, Action<List<string>> setter)
+                        {
+                            var p = harmedObj.Property(propName, StringComparison.OrdinalIgnoreCase);
+                            if (p != null && p.Value.Type != JTokenType.Null)
+                            {
+                                if (p.Value is not JArray arr)
+                                {
+                                    templateIssues.Add(new CatalogIssue
+                                    {
+                                        TemplateIndex = i,
+                                        TemplateType = templateType,
+                                        Field = $"harmed.{propName}",
+                                        Code = CatalogIssueCode.HarmedInvalid,
+                                        IsError = true,
+                                        Detail = $"harmed.{propName} must be a JSON array of role names."
+                                    });
+                                }
+                                else
+                                {
+                                    var list = new List<string>();
+                                    for (int idx = 0; idx < arr.Count; idx++)
+                                    {
+                                        string roleName = arr[idx]?.Value<string>() ?? string.Empty;
+                                        if (string.IsNullOrWhiteSpace(roleName) || !roles.ContainsKey(roleName))
+                                        {
+                                            templateIssues.Add(new CatalogIssue
+                                            {
+                                                TemplateIndex = i,
+                                                TemplateType = templateType,
+                                                Field = $"harmed.{propName}[{idx}]",
+                                                Code = CatalogIssueCode.HarmedInvalid,
+                                                IsError = true,
+                                                Detail = $"Role '{roleName}' in harmed.{propName} is not defined in template roles."
+                                            });
+                                        }
+                                        else if (!list.Contains(roleName))
+                                        {
+                                            list.Add(roleName);
+                                        }
+                                    }
+                                    setter(list);
+                                }
+                            }
+                        }
+
+                        ParseHarmedRoleList("roles", list => harmed.Roles = list);
+                        ParseHarmedRoleList("kinOf", list => harmed.KinOf = list);
+                        ParseHarmedRoleList("friendsOf", list => harmed.FriendsOf = list);
+
+                        foreach (var prop in harmedObj.Properties())
+                        {
+                            if (!string.Equals(prop.Name, "roles", StringComparison.OrdinalIgnoreCase) &&
+                                !string.Equals(prop.Name, "kinOf", StringComparison.OrdinalIgnoreCase) &&
+                                !string.Equals(prop.Name, "friendsOf", StringComparison.OrdinalIgnoreCase))
+                            {
+                                harmed.Extra[prop.Name] = prop.Value;
+                            }
+                        }
+                    }
+                }
+
+                // 6d. OnHeard
+                List<TemplateOnHeardRule>? onHeard = null;
+                var onHeardProp = templateObj.Property("onHeard", StringComparison.OrdinalIgnoreCase);
+                if (onHeardProp != null && onHeardProp.Value.Type != JTokenType.Null)
+                {
+                    if (onHeardProp.Value is not JArray onHeardArr)
+                    {
+                        templateIssues.Add(new CatalogIssue
+                        {
+                            TemplateIndex = i,
+                            TemplateType = templateType,
+                            Field = "onHeard",
+                            Code = CatalogIssueCode.OnHeardInvalid,
+                            IsError = true,
+                            Detail = "onHeard must be a JSON array of rules."
+                        });
+                    }
+                    else
+                    {
+                        onHeard = new List<TemplateOnHeardRule>();
+                        for (int hIdx = 0; hIdx < onHeardArr.Count; hIdx++)
+                        {
+                            var hTok = onHeardArr[hIdx];
+                            if (hTok is JObject hObj)
+                            {
+                                var rule = hObj.ToObject<TemplateOnHeardRule>() ?? new TemplateOnHeardRule();
+                                onHeard.Add(rule);
+                            }
+                            else
+                            {
+                                templateIssues.Add(new CatalogIssue
+                                {
+                                    TemplateIndex = i,
+                                    TemplateType = templateType,
+                                    Field = $"onHeard[{hIdx}]",
+                                    Code = CatalogIssueCode.OnHeardInvalid,
+                                    IsError = true,
+                                    Detail = "onHeard entry must be a JSON object."
+                                });
+                            }
+                        }
+                    }
+                }
+
                 // 7. Facts
                 var facts = new List<TemplateFact>();
                 var factsProp = templateObj.Property("facts", StringComparison.OrdinalIgnoreCase);
@@ -1148,7 +1317,10 @@ namespace VividWorld.Core.Catalog
                         Response = response,
                         Feelings = feelings,
                         FeelingOverrides = feelingOverrides,
-                        SelfFeelingVariants = selfFeelingVariants
+                        SelfFeelingVariants = selfFeelingVariants,
+                        OwnerRoles = ownerRoles,
+                        Harmed = harmed,
+                        OnHeard = onHeard
                     });
                 }
             }

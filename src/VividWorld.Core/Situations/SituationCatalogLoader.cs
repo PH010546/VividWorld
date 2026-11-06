@@ -29,7 +29,12 @@ namespace VividWorld.Core.Situations
             "skillBelow",
             "foughtInBattle",
             "woundedInBattle",
-            "battleWon"
+            "battleWon",
+            "relationAbove",
+            "relationBelow",
+            "isKin",
+            "isLiegeOf",
+            "hasStakeableSecret"
         };
 
         private static readonly HashSet<string> ValidComparisonOps = new(StringComparer.Ordinal)
@@ -40,7 +45,7 @@ namespace VividWorld.Core.Situations
         /// <summary>事件的 bind 可以綁到、要在執行期才填的值（情境的 "@" 名）。流浪者事件用到的都列在這裡，其餘的仍當成角色名檢查。</summary>
         private static readonly HashSet<string> EventBindRuntimeNames = new(StringComparer.Ordinal)
         {
-            "@settlement", "@role", "@skill", "@winner", "@jab_topic", "@jab_saying"
+            "@settlement", "@role", "@skill", "@winner", "@loser", "@stakedOwner", "@jab_topic", "@jab_saying"
         };
 
         private static readonly HashSet<string> ValidSettlementKinds = new(StringComparer.OrdinalIgnoreCase)
@@ -61,13 +66,14 @@ namespace VividWorld.Core.Situations
 
         private static readonly HashSet<string> KnownRoleKeys = new(StringComparer.OrdinalIgnoreCase)
         {
-            "derived", "optional", "allowDead", "grudgeLine", "nativeGrudgeLine", "anyTraitAtMost", "player"
+            "derived", "optional", "allowDead", "grudgeLine", "nativeGrudgeLine", "anyTraitAtMost", "player", "pickTraits"
         };
 
         private static readonly HashSet<string> KnownConditionKeys = new(StringComparer.OrdinalIgnoreCase)
         {
             "type", "roles", "kinds", "a", "b", "role", "value", "op", "days",
-            "trait", "line", "seedRoles", "about", "eventTypes", "teacher", "learner", "skill"
+            "trait", "line", "seedRoles", "about", "eventTypes", "teacher", "learner", "skill", "kinValue",
+            "bettor", "opponent"
         };
 
         private static readonly HashSet<string> KnownBranchKeys = new(StringComparer.OrdinalIgnoreCase)
@@ -1074,6 +1080,11 @@ namespace VividWorld.Core.Situations
                             }
                         }
 
+                        if (rProp.Value is JObject pickTraitsRoleObj)
+                        {
+                            ParsePickTraits(pickTraitsRoleObj, roleName, rDef, i, situationId, situationIssues);
+                        }
+
                         if (!rDef.IsDerived)
                         {
                             nonDerivedCount++;
@@ -1609,7 +1620,7 @@ namespace VividWorld.Core.Situations
                                 if (eObj.TryGetValue("linkTo", out var linkToToken) && linkToToken.Type != JTokenType.Null)
                                 {
                                     linkTo = linkToToken.Value<string>()?.Trim();
-                                    if (!string.Equals(linkTo, "@trigger", StringComparison.Ordinal))
+                                    if (!string.Equals(linkTo, "@trigger", StringComparison.Ordinal) && !eventsList.Any(e => string.Equals(e.Type, linkTo, StringComparison.Ordinal)))
                                     {
                                         situationIssues.Add(new SituationIssue
                                         {
@@ -1618,7 +1629,7 @@ namespace VividWorld.Core.Situations
                                             Field = $"branches[{bIdx}].events[{eIdx}].linkTo",
                                             Code = SituationIssueCode.InvalidLinkTo,
                                             IsError = true,
-                                            Detail = $"linkTo must be '@trigger', got '{linkTo}'."
+                                            Detail = $"linkTo must be '@trigger' or an earlier event in the branch, got '{linkTo}'."
                                         });
                                     }
                                 }
@@ -3190,6 +3201,75 @@ namespace VividWorld.Core.Situations
                 case "battlewon":
                     ParseWandererCondition(cType.ToLowerInvariant(), cObj, sitIndex, sitId, fieldPrefix, rolesDict, roleIssueCode, condDef, situationIssues);
                     break;
+                case "relationabove":
+                case "relationbelow":
+                case "iskin":
+                case "isliegeof":
+                    ParseRelationCondition(cType.ToLowerInvariant(), cObj, sitIndex, sitId, fieldPrefix, rolesDict, roleIssueCode, condDef, situationIssues);
+                    break;
+                case "hasstakeablesecret":
+                {
+                    string bettor = cObj["bettor"]?.Value<string>()?.Trim() ?? string.Empty;
+                    string opponent = cObj["opponent"]?.Value<string>()?.Trim() ?? string.Empty;
+                    if (string.IsNullOrEmpty(bettor))
+                    {
+                        situationIssues.Add(new SituationIssue
+                        {
+                            SituationIndex = sitIndex,
+                            SituationId = sitId,
+                            Field = $"{fieldPrefix}.bettor",
+                            Code = SituationIssueCode.MissingConditionProperty,
+                            IsError = true,
+                            Detail = "hasStakeableSecret condition requires 'bettor' role property."
+                        });
+                    }
+                    else if (!rolesDict.ContainsKey(bettor))
+                    {
+                        situationIssues.Add(new SituationIssue
+                        {
+                            SituationIndex = sitIndex,
+                            SituationId = sitId,
+                            Field = $"{fieldPrefix}.bettor",
+                            Code = roleIssueCode,
+                            IsError = true,
+                            Detail = $"Role '{bettor}' in hasStakeableSecret is not declared in roles."
+                        });
+                    }
+                    else
+                    {
+                        condDef.Bettor = bettor;
+                    }
+
+                    if (string.IsNullOrEmpty(opponent))
+                    {
+                        situationIssues.Add(new SituationIssue
+                        {
+                            SituationIndex = sitIndex,
+                            SituationId = sitId,
+                            Field = $"{fieldPrefix}.opponent",
+                            Code = SituationIssueCode.MissingConditionProperty,
+                            IsError = true,
+                            Detail = "hasStakeableSecret condition requires 'opponent' role property."
+                        });
+                    }
+                    else if (!rolesDict.ContainsKey(opponent))
+                    {
+                        situationIssues.Add(new SituationIssue
+                        {
+                            SituationIndex = sitIndex,
+                            SituationId = sitId,
+                            Field = $"{fieldPrefix}.opponent",
+                            Code = roleIssueCode,
+                            IsError = true,
+                            Detail = $"Role '{opponent}' in hasStakeableSecret is not declared in roles."
+                        });
+                    }
+                    else
+                    {
+                        condDef.Opponent = opponent;
+                    }
+                    break;
+                }
             }
 
             return condDef;

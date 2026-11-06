@@ -49,6 +49,21 @@ namespace VividWorld.Core.Events
         public bool ShouldSerializeFabricated() => Fabricated;
         public bool ShouldSerializeOriginatorHeroId() => !string.IsNullOrEmpty(OriginatorHeroId);
 
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public List<string>? SecretOwnerHeroIds { get; set; }
+
+        public bool SecretRetired { get; set; }
+        public bool ShouldSerializeSecretRetired() => SecretRetired;
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public List<string>? SecretHarmedHeroIds { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string? SecretPath { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string? StakedSecretEventId { get; set; }
+
         [JsonExtensionData]
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();
 

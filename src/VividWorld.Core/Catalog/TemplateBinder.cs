@@ -202,6 +202,22 @@ namespace VividWorld.Core.Catalog
                 return null;
             }
 
+            List<string>? secretOwnerHeroIds = null;
+            if (template.Origin == EventOrigin.Secret && template.OwnerRoles != null && template.OwnerRoles.Count > 0)
+            {
+                secretOwnerHeroIds = new List<string>();
+                foreach (var role in template.OwnerRoles)
+                {
+                    if (participants.TryGetValue(role, out var boundHId) && !string.IsNullOrEmpty(boundHId))
+                    {
+                        if (!secretOwnerHeroIds.Contains(boundHId))
+                        {
+                            secretOwnerHeroIds.Add(boundHId);
+                        }
+                    }
+                }
+            }
+
             var submission = new EventSubmission
             {
                 Type = template.Type,
@@ -214,7 +230,8 @@ namespace VividWorld.Core.Catalog
                 ColocatedWitnessAsHearsay = template.ColocatedWitnessAsHearsay,
                 Participants = participants,
                 KnowingRoles = new HashSet<string>(template.KnowingRoles, StringComparer.Ordinal),
-                Facts = facts
+                Facts = facts,
+                SecretOwnerHeroIds = secretOwnerHeroIds
             };
 
             return submission;

@@ -21,7 +21,8 @@ namespace VividWorld.Core.Rumors
         LeakNotSpread,
         WontTellOwn,
         RetiredType,
-        NoSpread
+        NoSpread,
+        SecretOwner
     }
 
     public static class TellerEligibility
@@ -142,6 +143,12 @@ namespace VividWorld.Core.Rumors
                 return TellReason.Outdated;
             }
 
+            if (evt.SecretOwnerHeroIds != null && evt.SecretOwnerHeroIds.Contains(heroId))
+            {
+                exclusionDetail = "secret owner";
+                return TellReason.SecretOwner;
+            }
+
             if (entry.Hop >= maxHop)
             {
                 return TellReason.AtMaxHop;
@@ -176,6 +183,7 @@ namespace VividWorld.Core.Rumors
             TellReason.WontTellOwn => "won't tell own",
             TellReason.RetiredType => "retired type",
             TellReason.NoSpread => "no spread (the situation is not passed on between NPCs)",
+            TellReason.SecretOwner => "secret owner",
             _ => reason.ToString()
         };
     }

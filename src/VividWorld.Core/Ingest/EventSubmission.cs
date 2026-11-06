@@ -35,6 +35,11 @@ namespace VividWorld.Core.Ingest
         public bool AutoResolveWitnesses = true;                 // 僅 Public 有效
         public bool ColocatedWitnessAsHearsay = false;
         public List<string>? CaptorArmyLeaderHeroIds;
+        public List<string>? SecretOwnerHeroIds;
+        public List<string>? SecretHarmedHeroIds;
+        public string? SecretPath;
+        public string? StakedSecretEventId;
+        public IDictionary<string, Newtonsoft.Json.Linq.JToken>? Extra;
 
         public bool Fabricated;
         public string? OriginatorHeroId;

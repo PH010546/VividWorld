@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using VividWorld.Api;
 using VividWorld.Core.Channels;
 using VividWorld.Core.Config;
@@ -144,7 +145,12 @@ namespace VividWorld.Campaign
                 State = new RumorState(),
                 CaptorArmyLeaderHeroIds = submission.CaptorArmyLeaderHeroIds != null ? new List<string>(submission.CaptorArmyLeaderHeroIds) : null,
                 Fabricated = submission.Fabricated,
-                OriginatorHeroId = submission.OriginatorHeroId
+                OriginatorHeroId = submission.OriginatorHeroId,
+                SecretOwnerHeroIds = submission.SecretOwnerHeroIds != null ? new List<string>(submission.SecretOwnerHeroIds) : null,
+                SecretHarmedHeroIds = submission.SecretHarmedHeroIds != null ? new List<string>(submission.SecretHarmedHeroIds) : null,
+                SecretPath = submission.SecretPath,
+                StakedSecretEventId = submission.StakedSecretEventId,
+                Extra = submission.Extra != null ? new Dictionary<string, Newtonsoft.Json.Linq.JToken>(submission.Extra) : new Dictionary<string, Newtonsoft.Json.Linq.JToken>()
             };
 
             ModLog.Info($"WorldEventStore: {mintedId} ({submission.Type}) {DramaScales.Describe(evt.DramaWeight, evt.DramaScale)}, from {dramaSource}");
@@ -163,6 +169,18 @@ namespace VividWorld.Campaign
                 }
             }
             _scheduler?.OnIngested(evt);
+
+            if (evt.Origin == EventOrigin.Secret)
+            {
+                string ownersStr = evt.SecretOwnerHeroIds != null && evt.SecretOwnerHeroIds.Count > 0
+                    ? string.Join(", ", evt.SecretOwnerHeroIds.Select(id => $"{TaleWorlds.CampaignSystem.Hero.Find(id)?.Name.ToString() ?? id} ({id})"))
+                    : "none";
+                string knowersStr = evt.KnownBy != null && evt.KnownBy.Count > 0
+                    ? string.Join(", ", evt.KnownBy.Select(k => $"{TaleWorlds.CampaignSystem.Hero.Find(k.HeroId)?.Name.ToString() ?? k.HeroId} ({k.HeroId})"))
+                    : "none";
+                string linkedStr = !string.IsNullOrEmpty(evt.LinkedEventId) ? evt.LinkedEventId! : "none";
+                ModLog.Info($"secret created: {evt.EventId} {evt.Type} owners={ownersStr} knowers={knowersStr} linked={linkedStr}");
+            }
 
             // 6. 觸發公開 API：僅 Origin == Public
             if (evt.Origin == EventOrigin.Public)

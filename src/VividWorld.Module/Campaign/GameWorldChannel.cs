@@ -70,16 +70,6 @@ namespace VividWorld.Campaign
                 candidates.Add(new ChannelLink(contact.StringId, kind, 1.0, relation, ownRelation, IsFamilyOf(currentHero, contact)));
             }
 
-            // 自家人：同家族，或配偶、父親、母親、子女、兄弟姊妹。前配偶不算。（帳本 D-56、D-59、S-07）
-            static bool IsFamilyOf(Hero teller, Hero contact)
-            {
-                if (teller.Clan != null && teller.Clan == contact.Clan) return true;
-                if (teller.Spouse == contact || teller.Father == contact || teller.Mother == contact) return true;
-                if (teller.Children != null && teller.Children.Contains(contact)) return true;
-                if (teller.Siblings != null && teller.Siblings.Contains(contact)) return true;
-                return false;
-            }
-
             // 1. SameParty: currentHero.PartyBelongedTo -> LeaderHero + MemberRoster (D-17, D-13, D-14)
             int partyStartCount = candidates.Count;
             var party = currentHero.PartyBelongedTo;
@@ -270,6 +260,17 @@ namespace VividWorld.Campaign
                 _config.Relation,
                 selfHeroId: currentHero.StringId,
                 playerHeroId: _playerHeroId);
+        }
+
+        // 自家人：同家族，或配偶、父親、母親、子女、兄弟姊妹。前配偶不算。（帳本 D-56、D-59、S-07）
+        internal static bool IsFamilyOf(Hero teller, Hero contact)
+        {
+            if (teller == null || contact == null) return false;
+            if (teller.Clan != null && teller.Clan == contact.Clan) return true;
+            if (teller.Spouse == contact || teller.Father == contact || teller.Mother == contact) return true;
+            if (teller.Children != null && teller.Children.Contains(contact)) return true;
+            if (teller.Siblings != null && teller.Siblings.Contains(contact)) return true;
+            return false;
         }
 
         public IReadOnlyList<string> WitnessesAt(string heroId, int maxResults)

@@ -21,6 +21,9 @@ namespace VividWorld.Core.Rumors
         /// 只在 debug.logTellerTurns 開著時才收集，關著時是空清單。純診斷，不影響傳話。</summary>
         public IReadOnlyList<ContactObservation> Contacts { get; set; } = Array.Empty<ContactObservation>();
 
+        /// <summary>傳開後的秘密傳到當事人耳裡時產生的反應結果。</summary>
+        public IReadOnlyList<VividWorld.Core.Secrets.SecretReactionOutcome> SecretReactions { get; set; } = Array.Empty<VividWorld.Core.Secrets.SecretReactionOutcome>();
+
         public static PropagationOutcome Nothing { get; } = new PropagationOutcome(false, null, Array.Empty<KnownByEntry>());
 
         public PropagationOutcome(

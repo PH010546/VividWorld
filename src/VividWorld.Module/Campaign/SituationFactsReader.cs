@@ -43,7 +43,9 @@ namespace VividWorld.Campaign
                 IsKingdomLeader = hero.IsKingdomLeader,
                 IsPlayer = hero == Hero.MainHero,
                 IsAlive = hero.IsAlive,
-                IsLord = hero.IsLord
+                IsLord = hero.IsLord,
+                IsPrisoner = hero.IsPrisoner,
+                MapFactionId = hero.MapFaction?.StringId
             };
         }
     }

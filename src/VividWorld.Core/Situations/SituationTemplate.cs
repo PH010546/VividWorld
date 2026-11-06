@@ -20,6 +20,9 @@ namespace VividWorld.Core.Situations
         /// <summary>true＝這個角色只綁玩家，不從英雄清單挑。一個情境最多一個。</summary>
         public bool PlayerOnly { get; set; }
 
+        /// <summary>挑人時這個角色的個性係數（個性名 → 係數）。null＝這個角色不看個性。載入時已濾掉不合法的項目。</summary>
+        public Dictionary<string, double>? PickTraits { get; set; }
+
         public bool IsDerived => !string.IsNullOrEmpty(Derived);
 
         public int GetGrudgeLine(Config.VividWorldConfig? config, SituationWorldContext? context = null)
@@ -69,6 +72,9 @@ namespace VividWorld.Core.Situations
         /// <summary>skillBelow 的技能：技能名，或以 @ 開頭的綁定名（例如 @disputedRoleSkill）。</summary>
         public string? Skill { get; set; }
 
+        public string? Bettor { get; set; }
+        public string? Opponent { get; set; }
+
         [JsonIgnore]
         public bool? Value { get; set; }
 
@@ -77,6 +83,41 @@ namespace VividWorld.Core.Situations
 
         [JsonIgnore]
         public string? ValueRef { get; set; }
+
+        [JsonIgnore]
+        public double? KinNumber { get; set; }
+
+        [JsonIgnore]
+        public string? KinValueRef { get; set; }
+
+        [JsonProperty("kinValue")]
+        public JToken? RawKinValue
+        {
+            get
+            {
+                if (KinValueRef != null) return KinValueRef;
+                if (KinNumber.HasValue) return KinNumber.Value;
+                return null;
+            }
+            set
+            {
+                if (value == null || value.Type == JTokenType.Null)
+                {
+                    KinNumber = null;
+                    KinValueRef = null;
+                }
+                else if (value.Type == JTokenType.Integer || value.Type == JTokenType.Float)
+                {
+                    KinNumber = value.Value<double>();
+                    KinValueRef = null;
+                }
+                else if (value.Type == JTokenType.String)
+                {
+                    KinValueRef = value.Value<string>();
+                    KinNumber = null;
+                }
+            }
+        }
 
         [JsonProperty("value")]
         public JToken? RawValue

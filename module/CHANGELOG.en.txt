@@ -1,5 +1,16 @@
 Vivid World changelog
 
+v1.4.0
+New: secrets. Some things are known only to the people involved and a few others; they get passed on quietly to people they trust, and they can slip out. Someone close to you may tell you in private, and you can ask about what you have heard.
+New: when a lord or wanderer wins a tournament you didn't enter, word gets around, including whom he beat in the final.
+Changed: what happens in towns each day now follows how common it would be in real life, and who starts it fits their character better.
+Changed: NPCs now count someone as a friend or an enemy at the same point as the base game.
+Changed: other people's captures, releases, escapes, deaths, marriages and births no longer pop up in the bottom-left corner; you hear of them from people instead. Those involving your clan still show, and you can turn this off in the settings.
+Changed: a lord who walks out of a feast now also holds it against the host.
+Changed: NPC lines.
+Removed: hushing up a market brawl; murder no longer counts as a secret.
+Existing campaigns can be continued as they are; no settings need to be changed. Secrets in an existing campaign are converted automatically the first time it is loaded, after a backup is made.
+
 v1.3.1
 Fixed: While you were defending a besieged town or castle, town events and everyday companion events still appeared, and NPC happenings still arose inside besieged settlements.
 Existing campaigns can be continued as they are; no settings need to be changed.

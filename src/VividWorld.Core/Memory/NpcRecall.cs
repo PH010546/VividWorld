@@ -6,7 +6,9 @@ using System.Linq;
 using VividWorld.Core.Catalog;
 using VividWorld.Core.Config;
 using VividWorld.Core.Events;
+using VividWorld.Core.Feelings;
 using VividWorld.Core.Rumors;
+using VividWorld.Core.Secrets;
 
 namespace VividWorld.Core.Memory
 {
@@ -50,6 +52,8 @@ namespace VividWorld.Core.Memory
         public double LearnedDay { get; set; }
         public double? Interest { get; set; }
         public bool IsCorrection { get; set; }
+        public SecretMemoryState SecretState { get; set; } = SecretMemoryState.None;
+        public string? SecretSentenceKey { get; set; }
     }
 
     public sealed class NpcRecallResult
@@ -124,7 +128,10 @@ namespace VividWorld.Core.Memory
             Func<string, bool>? isEventKnown = null,
             VividWorldConfig? config = null,
             Func<string, EventTemplate?>? getTemplate = null,
-            IHeroTraitLookup? traits = null)
+            IHeroTraitLookup? traits = null,
+            string? playerHeroId = null,
+            ISecretRelationshipLookup? secretLookup = null,
+            IFeelingWorld? feelingWorld = null)
         {
             if (string.IsNullOrEmpty(heroId) || candidateEvents == null)
             {
@@ -162,8 +169,45 @@ namespace VividWorld.Core.Memory
                 var evt = candidateList[i];
                 if (evt == null) continue;
 
-                // 1. 事件對傳聞系統可見（未走漏的秘密不算）
-                if (!evt.IsVisibleToRumorSystem)
+                // 1. 事件對傳聞系統可見，或符合作為秘密交給 AI 的條件
+                SecretMemoryState secretState = SecretMemoryState.None;
+                string? secretSentenceKey = null;
+
+                if (evt.Origin == EventOrigin.Secret)
+                {
+                    if (evt.SecretRetired)
+                    {
+                        exclusions.Add(new RecallExclusion(evt.EventId, RecallExclusionReason.RetiredType, "Secret retired"));
+                        continue;
+                    }
+
+                    if (!evt.IsKnownBy(heroId))
+                    {
+                        exclusions.Add(new RecallExclusion(evt.EventId, RecallExclusionReason.NotKnown, $"Hero {heroId} has no known entry"));
+                        continue;
+                    }
+
+                    if (!string.IsNullOrEmpty(playerHeroId))
+                    {
+                        var secretEval = SecretProbeEvaluation.Evaluate(
+                            heroId, playerHeroId, evt, config?.Secrets, secretLookup, feelingWorld, getTemplate);
+
+                        if (secretEval.Decision != SecretProbeDecision.Tell)
+                        {
+                            exclusions.Add(new RecallExclusion(evt.EventId, RecallExclusionReason.NotVisible, $"Secret not told to AI: {secretEval.Decision} ({secretEval.LogDetail})"));
+                            continue;
+                        }
+
+                        secretState = secretEval.DetermineAiMemoryState(evt, heroId);
+                        secretSentenceKey = secretEval.DetermineAiSentenceKey(secretState);
+                    }
+                    else if (!evt.IsVisibleToRumorSystem)
+                    {
+                        exclusions.Add(new RecallExclusion(evt.EventId, RecallExclusionReason.NotVisible, "Secret not leaked or event not visible"));
+                        continue;
+                    }
+                }
+                else if (!evt.IsVisibleToRumorSystem)
                 {
                     exclusions.Add(new RecallExclusion(evt.EventId, RecallExclusionReason.NotVisible, "Secret not leaked or event not visible"));
                     continue;
@@ -219,6 +263,11 @@ namespace VividWorld.Core.Memory
                     facts = retentionPolicy.Retain(evt, entry.Hop, heroId);
                 }
 
+                if (facts.Count == 0 && evt.Origin == EventOrigin.Secret)
+                {
+                    facts = evt.Facts;
+                }
+
                 if (facts.Count == 0)
                 {
                     exclusions.Add(new RecallExclusion(evt.EventId, RecallExclusionReason.NoFacts, "No facts retained"));
@@ -237,7 +286,9 @@ namespace VividWorld.Core.Memory
                     SourceHeroId = entry.SourceHeroId,
                     LearnedDay = entry.LearnedDay,
                     Interest = entry.Interest,
-                    IsCorrection = isCorrection
+                    IsCorrection = isCorrection,
+                    SecretState = secretState,
+                    SecretSentenceKey = secretSentenceKey
                 });
             }
 

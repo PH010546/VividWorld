@@ -15,7 +15,7 @@ namespace VividWorld.Core.Tests
             var cfg = new VividWorldConfig();
 
             // Top level
-            Assert.Equal(1, cfg.ConfigVersion);
+            Assert.Equal(2, cfg.ConfigVersion);
             Assert.True(cfg.Enabled);
             Assert.Equal("Info", cfg.LogLevel);
 
@@ -114,6 +114,7 @@ namespace VividWorld.Core.Tests
             Assert.Equal(string.Empty, cfg.Presentation.SentenceEnd);
             Assert.True(cfg.Presentation.EncyclopediaLinksEnabled);
             Assert.True(cfg.Presentation.WholeSentences);
+            Assert.True(cfg.Presentation.MuteNativeNotifications);
 
             // Persistence
             Assert.Equal(100, cfg.Persistence.ShardDays);
@@ -221,6 +222,23 @@ namespace VividWorld.Core.Tests
             Assert.Equal("english", cfg.Ai.PushLanguage);
             Assert.Equal(2, cfg.Ai.PersistentMaxNewPerChat);
             Assert.Equal(8, cfg.Ai.ChatOnlyMaxPerChat);
+
+            // Secrets
+            Assert.NotNull(cfg.Secrets);
+            Assert.Equal(-3.0, cfg.Secrets.Endured.FavoredOnHeard);
+            Assert.Equal(-20.0, cfg.Secrets.Poisoned.KinOnHeard);
+            Assert.Equal(-8.0, cfg.Secrets.Poisoned.FriendOnHeard);
+            Assert.Equal(-6.0, cfg.Secrets.Owner.GrudgeOnOriginator);
+            Assert.Equal(-3.0, cfg.Secrets.Owner.Suspicion);
+            Assert.Equal(0.5, cfg.Secrets.Owner.OpenlyValorWeight);
+            Assert.Equal(0.5, cfg.Secrets.FreedPrisoner.Chance);
+            Assert.Equal(10.0, cfg.Secrets.FreedPrisoner.Gratitude);
+            Assert.Equal(-8.0, cfg.Secrets.FreedPrisoner.KingOnHeard);
+            Assert.Equal(-8.0, cfg.Secrets.FreedPrisoner.OwnerOnHeard);
+            Assert.Equal(1.0, cfg.Secrets.TournamentThrow.Chance);
+            Assert.Equal(-6.0, cfg.Secrets.TournamentThrow.ReluctantGrudge);
+            Assert.Equal(new[] { -5.0, -3.0, -1.0 }, cfg.Secrets.TournamentThrow.OnHeardChampion);
+            Assert.Equal(new[] { -3.0, -2.0, 0.0 }, cfg.Secrets.TournamentThrow.OnHeardFriendThrower);
         }
 
         [Fact]
@@ -794,6 +812,93 @@ namespace VividWorld.Core.Tests
             Assert.Equal(3, (int)dialogueToken!["maxVolunteersPerDay"]!);
             Assert.Equal(7.0, (double)dialogueToken!["volunteerCooldownDays"]!);
             Assert.Equal(1, (int)dialogueToken!["sharesPerHeroPerDay"]!);
+        }
+
+        [Fact]
+        public void Normalize_SecretsConfig_ClampsValuesAndPreservesUnknownFields()
+        {
+            var json = @"{
+  ""secrets"": {
+    ""endured"": {
+      ""favoredOnHeard"": -150.0,
+      ""extraEndured"": 123
+    },
+    ""poisoned"": {
+      ""kinOnHeard"": 200.0,
+      ""friendOnHeard"": -120.0
+    },
+    ""owner"": {
+      ""grudgeOnOriginator"": -500.0,
+      ""suspicion"": 150.0,
+      ""openlyValorWeight"": 5.0
+    }
+  }
+}";
+            var cfg = Newtonsoft.Json.JsonConvert.DeserializeObject<VividWorldConfig>(json);
+            Assert.NotNull(cfg);
+            cfg!.Normalize();
+
+            Assert.Equal(-100.0, cfg.Secrets.Endured.FavoredOnHeard);
+            Assert.Equal(100.0, cfg.Secrets.Poisoned.KinOnHeard);
+            Assert.Equal(-100.0, cfg.Secrets.Poisoned.FriendOnHeard);
+            Assert.Equal(-100.0, cfg.Secrets.Owner.GrudgeOnOriginator);
+            Assert.Equal(100.0, cfg.Secrets.Owner.Suspicion);
+            Assert.Equal(2.0, cfg.Secrets.Owner.OpenlyValorWeight);
+            Assert.True(cfg.Secrets.Endured.Extra.ContainsKey("extraEndured"));
+        }
+
+        [Fact]
+        public void Normalize_SecretsFreedPrisoner_ClampsValuesAndPreservesUnknownFields()
+        {
+            var json = @"{
+  ""secrets"": {
+    ""freedPrisoner"": {
+      ""chance"": 5.0,
+      ""gratitude"": 300.0,
+      ""kingOnHeard"": -500.0,
+      ""ownerOnHeard"": 250.0,
+      ""futureFreedSetting"": ""custom""
+    }
+  }
+}";
+            var cfg = Newtonsoft.Json.JsonConvert.DeserializeObject<VividWorldConfig>(json);
+            Assert.NotNull(cfg);
+            cfg!.Normalize();
+
+            Assert.Equal(1.0, cfg.Secrets.FreedPrisoner.Chance);
+            Assert.Equal(100.0, cfg.Secrets.FreedPrisoner.Gratitude);
+            Assert.Equal(-100.0, cfg.Secrets.FreedPrisoner.KingOnHeard);
+            Assert.Equal(100.0, cfg.Secrets.FreedPrisoner.OwnerOnHeard);
+            Assert.True(cfg.Secrets.FreedPrisoner.Extra.ContainsKey("futureFreedSetting"));
+        }
+
+        [Fact]
+        public void Normalize_SecretsTournamentThrow_ClampsAndPadsShortArraysAndPreservesUnknownFields()
+        {
+            var json = @"{
+  ""secrets"": {
+    ""tournamentThrow"": {
+      ""chance"": 3.5,
+      ""reluctantGrudge"": -250.0,
+      ""onHeardChampion"": [-8.0],
+      ""onHeardFriendThrower"": [-4.0, -1.0],
+      ""futureThrowSetting"": 999
+    }
+  }
+}";
+            var cfg = Newtonsoft.Json.JsonConvert.DeserializeObject<VividWorldConfig>(json);
+            Assert.NotNull(cfg);
+            cfg!.Normalize();
+
+            Assert.Equal(1.0, cfg.Secrets.TournamentThrow.Chance);
+            Assert.Equal(-100.0, cfg.Secrets.TournamentThrow.ReluctantGrudge);
+            // [-8.0] padded with last element to length 3 -> [-8.0, -8.0, -8.0]
+            Assert.Equal(3, cfg.Secrets.TournamentThrow.OnHeardChampion.Length);
+            Assert.Equal(new[] { -8.0, -8.0, -8.0 }, cfg.Secrets.TournamentThrow.OnHeardChampion);
+            // [-4.0, -1.0] padded with last element to length 3 -> [-4.0, -1.0, -1.0]
+            Assert.Equal(3, cfg.Secrets.TournamentThrow.OnHeardFriendThrower.Length);
+            Assert.Equal(new[] { -4.0, -1.0, -1.0 }, cfg.Secrets.TournamentThrow.OnHeardFriendThrower);
+            Assert.True(cfg.Secrets.TournamentThrow.Extra.ContainsKey("futureThrowSetting"));
         }
     }
 }

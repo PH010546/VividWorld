@@ -148,6 +148,38 @@ namespace VividWorld.Core.Catalog
         }
 
         /// <summary>
+        /// 比武大會英雄參賽者只有冠軍一位時，沒有決賽對手，使用不帶決賽對手的句型。
+        /// </summary>
+        public static EventTemplate TournamentWonWithoutFinalOpponent(EventTemplate baseTemplate)
+        {
+            if (baseTemplate == null) throw new ArgumentNullException(nameof(baseTemplate));
+
+            var roles = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["champion"] = "{CHAMPION}"
+            };
+
+            var facts = baseTemplate.Facts.Select(f =>
+            {
+                if (string.Equals(f.Id, "who", StringComparison.OrdinalIgnoreCase))
+                {
+                    return MakeFact(f, "VividWorld_Fact_TournamentWon_WhoNoOpponent",
+                        "{CHAMPION} won the tournament",
+                        new Dictionary<string, string> { ["CHAMPION"] = "hero:{CHAMPION}" });
+                }
+                return CopyFact(f);
+            }).ToList();
+
+            var selfTell = baseTemplate.SelfTell != null
+                ? baseTemplate.SelfTell.Where(kv => roles.ContainsKey(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.Ordinal)
+                : null;
+
+            var derived = Derive(baseTemplate, roles, facts, selfTell);
+            derived.KnowingRoles.IntersectWith(roles.Keys);
+            return derived;
+        }
+
+        /// <summary>
         /// 依放人的原因組出「被領主釋放」的碎片。
         /// 抓人的人查不到時（<paramref name="captorKnown"/> 為 false）改用「不知道誰關著他」的講法且不分原因；
         /// 例外是「關人的城鎮城堡換了主人」：遊戲給的抓人者是城主，分不出新舊主人，所以一律不提抓人的人，原因照講。
@@ -301,6 +333,10 @@ namespace VividWorld.Core.Catalog
 
             switch (template.Type)
             {
+                case "tournament_won":
+                    list.Add((template.Type, template));
+                    list.Add(("tournament_won (WhoNoOpponent)", TournamentWonWithoutFinalOpponent(template)));
+                    break;
                 case "hero_escaped_captivity":
                     list.Add((template.Type, template));
                     list.Add(("hero_escaped_captivity (WhoNoCaptor)", EscapeWithoutCaptor(template)));

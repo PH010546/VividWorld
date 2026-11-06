@@ -11,6 +11,7 @@ using VividWorld.Core.Feelings;
 using VividWorld.Core.Memory;
 using VividWorld.Core.Persistence;
 using VividWorld.Core.Presentation;
+using VividWorld.Core.Secrets;
 using VividWorld.Core.Util;
 
 namespace VividWorld.Core.Rumors
@@ -28,7 +29,9 @@ namespace VividWorld.Core.Rumors
         Tell,
         NotHeard,
         RefuseToTell,
-        AlreadyTold
+        AlreadyTold,
+        SecretTell,
+        SecretDeflect
     }
 
     /// <summary>打探的回答計畫：只描述「要怎麼答」，不改任何資料。</summary>
@@ -140,6 +143,17 @@ namespace VividWorld.Core.Rumors
             var queue = new Queue<string>();
             queue.Enqueue(rootEventId);
             result.Add(rootEventId);
+
+            if (index != null)
+            {
+                var rootEntry = index.FirstOrDefault(e => e != null && string.Equals(e.EventId, rootEventId, StringComparison.Ordinal));
+                if (rootEntry != null && !string.IsNullOrEmpty(rootEntry.LinkedEventId) && seen.Add(rootEntry.LinkedEventId!))
+                {
+                    result.Add(rootEntry.LinkedEventId!);
+                    queue.Enqueue(rootEntry.LinkedEventId!);
+                }
+            }
+
             while (queue.Count > 0)
             {
                 string cur = queue.Dequeue();
@@ -213,7 +227,8 @@ namespace VividWorld.Core.Rumors
             Func<string, CandidateRejection> canTellPredicate,
             Func<string, RumorOffer> buildOfferFunc,
             IFeelingWorld? feelingWorld,
-            IHeroTraitLookup? traitLookup)
+            IHeroTraitLookup? traitLookup,
+            ISecretRelationshipLookup? secretLookup = null)
         {
             var plan = new ProbePlan();
             string rootEventId = !string.IsNullOrEmpty(block?.EventId)
@@ -233,7 +248,7 @@ namespace VividWorld.Core.Rumors
             int eMissing = 0;
             foreach (var heard in blockEntriesE)
             {
-                if (cById.TryGetValue(heard.EventId, out var evt)) eEvents.Add((heard, evt));
+                if (cById.TryGetValue(heard.EventId, out var evt) && evt != null) eEvents.Add((heard, evt));
                 else eMissing++;
             }
 
@@ -248,7 +263,7 @@ namespace VividWorld.Core.Rumors
             {
                 if (string.IsNullOrEmpty(accusedHeroId)) return;
                 plan.AddressHeroId = accusedHeroId;
-                plan.AddressKey = FeelingResolver.ResolveAddressKey(feelingWorld, heHeroId, accusedHeroId!, config.Presentation?.Feelings);
+                plan.AddressKey = FeelingResolver.ResolveAddressKey(feelingWorld, heHeroId, accusedHeroId!, config?.Presentation?.Feelings);
                 plan.NeutralAddress = feelingWorld == null;
             }
 
@@ -262,7 +277,7 @@ namespace VividWorld.Core.Rumors
             bool IsForgotten(WorldEvent evt, string heroId)
             {
                 var entry = evt.EntryFor(heroId);
-                return entry == null || Forgetting.IsForgotten(evt, entry, today, playerHeroId, config.Memory);
+                return entry == null || Forgetting.IsForgotten(evt, entry, today, playerHeroId, config?.Memory ?? new MemoryConfig());
             }
 
             bool IsKnownAndRemembered(WorldEvent evt) => evt.IsKnownBy(heHeroId) && !IsForgotten(evt, heHeroId);
@@ -296,6 +311,38 @@ namespace VividWorld.Core.Rumors
                     : (heard.Facts ?? new List<Fact>()).Select(f => f.Id).ToList();
                 plan.DeliverKnowsOriginator = knows;
                 return knows;
+            }
+
+            // 0. 秘密打探：玩家拿公開面問，被問的人知道連到這一面的藏著的那一塊
+            var secretEvt = chainEventsC
+                .Where(e => e != null && e.Origin == EventOrigin.Secret && !e.SecretRetired && e.IsKnownBy(heHeroId))
+                .OrderByDescending(e => e.Day)
+                .ThenBy(e => e.EventId, StringComparer.Ordinal)
+                .FirstOrDefault();
+
+            if (secretEvt != null)
+            {
+                var secretEval = SecretProbeEvaluation.Evaluate(
+                    heHeroId, playerHeroId, secretEvt, config?.Secrets, secretLookup, feelingWorld, getTemplate);
+
+                if (secretEval.Decision == SecretProbeDecision.Tell)
+                {
+                    plan.ResultKind = ProbeResultKind.SecretTell;
+                    plan.ResultKindLabel = "secret-tell";
+                    plan.EventId = secretEvt.EventId;
+                    plan.Offer = buildOfferFunc(secretEvt.EventId);
+                    return Done($"secret probe of {secretEvt.EventId}: tells hidden piece ({secretEval.LogDetail})");
+                }
+                if (secretEval.Decision == SecretProbeDecision.Deflect)
+                {
+                    plan.ResultKind = ProbeResultKind.SecretDeflect;
+                    plan.ResultKindLabel = "secret-deflect";
+                    plan.EventId = secretEvt.EventId;
+                    plan.SentenceKey = "VividWorld_SecretProbe_Deflect";
+                    return Done($"secret probe of {secretEvt.EventId}: deflected ({secretEval.LogDetail})");
+                }
+
+                notes.Add($"0 secret probe: knows secret {secretEvt.EventId} but {secretEval.LogDetail}, fallback to public face");
             }
 
             // 1. 被說的人：編的話、壞話
@@ -388,7 +435,7 @@ namespace VividWorld.Core.Rumors
                 }
 
                 int calc = traitLookup?.Of(heHeroId)?.Calculating ?? 0;
-                double p = SlipChancePercent(config.FalseRumors?.Slip, calc);
+                double p = SlipChancePercent(config?.FalseRumors?.Slip, calc);
                 double roll = SlipRoll(campaignSeed, xEvt.EventId, heHeroId);
                 bool slipped = roll < p;
                 string rollText = $"slip p={p.ToString("0.##", CultureInfo.InvariantCulture)} (calculating {calc}) rolled {roll.ToString("0.##", CultureInfo.InvariantCulture)} -> {(slipped ? "slip" : "insist")}";
@@ -550,7 +597,9 @@ namespace VividWorld.Core.Rumors
             notes.Add("7 two-versions: he does not know both a made-up talk and its response");
 
             // 8. 只聽過一種說法：他知道 C 裡的某一則
-            var knownC = chainEventsC.Where(IsKnownAndRemembered).ToList();
+            var knownC = chainEventsC
+                .Where(evt => IsKnownAndRemembered(evt) && (evt.Origin != EventOrigin.Secret || evt.State.Leaked) && !evt.SecretRetired)
+                .ToList();
             var skipped = new List<string>();
             if (knownC.Count > 0)
             {

@@ -544,7 +544,26 @@ namespace VividWorld.Ai
                 isEventKnown: id => knownSet.Contains(id),
                 config: cfg,
                 getTemplate: EventCatalogStore.TemplateByType,
-                traits: store.Traits);
+                traits: store.Traits,
+                playerHeroId: Hero.MainHero?.StringId,
+                secretLookup: new VividWorld.Campaign.GameSecretRelationshipLookup());
+
+            foreach (var cand in candidateEvents)
+            {
+                if (cand.Origin == EventOrigin.Secret)
+                {
+                    var handed = recallResult.Items.FirstOrDefault(i => string.Equals(i.EventId, cand.EventId, StringComparison.Ordinal));
+                    if (handed != null)
+                    {
+                        ModLog.Info($"AI secret candidate {cand.EventId} for {hero.StringId}: handed over (state={handed.SecretState}, key={handed.SecretSentenceKey})");
+                    }
+                    else
+                    {
+                        var excl = recallResult.Exclusions.FirstOrDefault(e => string.Equals(e.EventId, cand.EventId, StringComparison.Ordinal));
+                        ModLog.Info($"AI secret candidate {cand.EventId} for {hero.StringId}: not handed over (reason={excl?.Reason.ToString() ?? "unknown"}{(excl?.Detail != null ? $": {excl.Detail}" : "")})");
+                    }
+                }
+            }
 
             if (recallResult.Items.Count == 0)
             {
@@ -569,6 +588,12 @@ namespace VividWorld.Ai
                     subset =>
                     {
                         var composed = RumorTextComposer.Compose(candidate.Event, subset, cfg.Presentation, prefix, hero.StringId, candidate.SourceHeroId);
+                        if (!string.IsNullOrEmpty(candidate.SecretSentenceKey))
+                        {
+                            string secKey = candidate.SecretSentenceKey!;
+                            composed.SentenceKeyCandidate = secKey;
+                            composed.SentenceKeyCandidates = new[] { secKey };
+                        }
                         return FallbackTextRenderer.RenderRecallMemory(composed, pushLang, cfg.Presentation);
                     });
 

@@ -47,5 +47,11 @@ namespace VividWorld
 
         internal static string AiPushedFile(string campaignId) =>
             Path.Combine(CampaignDirectory(campaignId), "ai_pushed.json");
+
+        internal static string ConfideQueueFile(string campaignId) =>
+            Path.Combine(CampaignDirectory(campaignId), "secret_confide_queue.json");
+
+        internal static string SecretConversionFile(string campaignId) =>
+            Path.Combine(CampaignDirectory(campaignId), "secret_conversion.json");
     }
 }

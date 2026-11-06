@@ -61,7 +61,7 @@
   {
     "type": "seat_dispute_endured",
     "headline": "A slight at the table was swallowed",
-    "origin": "secret",
+    "origin": "public",
     "dramaWeight": 3,
     "dramaScale": 10,
     "linkedTemplateType": null,
@@ -73,9 +73,7 @@
       "slighted": "lost_face",
       "favored": "pending"
     },
-    "knowingRoles": [
-      "slighted"
-    ],
+    "knowingRoles": [],
     "opinion": [
       { "about": "slighted", "amount": 2, "trait": "calculating" }
     ],
@@ -84,7 +82,7 @@
         "id": "who",
         "category": "WHO",
         "textId": "VividWorld_Fact_SeatDisputeEndured_Who",
-        "text": "{SLIGHTED} swallowed the insult of sitting below {FAVORED}",
+        "text": "{SLIGHTED} was seated below {FAVORED}",
         "vars": {
           "SLIGHTED": "hero:{SLIGHTED}",
           "FAVORED": "hero:{FAVORED}"
@@ -105,9 +103,57 @@
         "id": "what",
         "category": "WHAT",
         "textId": "VividWorld_Fact_SeatDisputeEndured_What",
-        "text": "and said nothing, though it plainly stung",
+        "text": "said not a word, though it plainly stung",
         "vars": {},
         "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "seat_dispute_grudge_held",
+    "headline": "A slight was swallowed in secret",
+    "origin": "secret",
+    "dramaWeight": 3,
+    "dramaScale": 10,
+    "linkedTemplateType": "seat_dispute_endured",
+    "roles": {
+      "slighted": "{SLIGHTED}",
+      "favored": "{FAVORED}"
+    },
+    "feelings": {
+      "slighted": "wronged",
+      "favored": "pending"
+    },
+    "ownerRoles": [
+      "slighted"
+    ],
+    "knowingRoles": [
+      "slighted"
+    ],
+    "harmed": {
+      "roles": [
+        "favored"
+      ]
+    },
+    "onHeard": [
+      {
+        "listenerRole": "favored",
+        "targetRole": "slighted",
+        "amountRef": "@secrets.endured.favoredOnHeard"
+      }
+    ],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_SeatDisputeGrudgeHeld_Who",
+        "text": "{SLIGHTED} says nothing openly, but holds a bitter grudge against {FAVORED}",
+        "vars": {
+          "SLIGHTED": "hero:{SLIGHTED}",
+          "FAVORED": "hero:{FAVORED}"
+        },
+        "fragility": 1
       }
     ]
   },
@@ -1197,6 +1243,80 @@
     ]
   },
   {
+    "type": "hunt_wager_settled",
+    "headline": "{WINNER} won the hunting wager against {LOSER}",
+    "origin": "public",
+    "dramaWeight": 3,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "winner": "{WINNER}",
+      "loser": "{LOSER}"
+    },
+    "feelings": {
+      "winner": "contest_won",
+      "loser": "contest_lost"
+    },
+    "knowingRoles": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_HuntWagerSettled_Who",
+        "text": "{WINNER} won the hunting wager against {LOSER}",
+        "vars": {
+          "WINNER": "hero:{WINNER}",
+          "LOSER": "hero:{LOSER}"
+        },
+        "fragility": 1
+      }
+    ]
+  },
+  {
+    "type": "hunt_wager_staked_secret",
+    "headline": "{BETTOR} staked {STAKED_OWNER}'s secret on the hunt",
+    "origin": "secret",
+    "dramaWeight": 4,
+    "dramaScale": 10,
+    "linkedTemplateType": "hunt_wager_settled",
+    "ownerRoles": [
+      "bettor"
+    ],
+    "knowingRoles": [
+      "bettor",
+      "opponent"
+    ],
+    "roles": {
+      "bettor": "{BETTOR}",
+      "opponent": "{OPPONENT}",
+      "staked_owner": "{STAKED_OWNER}"
+    },
+    "harmed": {
+      "roles": [
+        "staked_owner"
+      ]
+    },
+    "feelings": {
+      "bettor": "pending",
+      "opponent": "pending",
+      "staked_owner": "pending"
+    },
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_HuntWagerStakedSecret_Who",
+        "text": "{BETTOR} staked {STAKED_OWNER}'s secret on the hunt",
+        "vars": {
+          "BETTOR": "hero:{BETTOR}",
+          "OPPONENT": "hero:{OPPONENT}",
+          "STAKED_OWNER": "hero:{STAKED_OWNER}"
+        },
+        "fragility": 1
+      }
+    ]
+  },
+  {
     "type": "conduct_spoke_against_ruler",
     "headline": "A lord spoke ill of the ruler in private",
     "origin": "public",
@@ -1452,6 +1572,30 @@
     "dramaWeight": 8,
     "dramaScale": 10,
     "linkedTemplateType": "hero_died_of_old_age",
+    "ownerRoles": [
+      "poisoner"
+    ],
+    "harmed": {
+      "kinOf": [
+        "victim"
+      ],
+      "friendsOf": [
+        "victim"
+      ]
+    },
+    "onHeard": [
+      {
+        "listenerKinOf": "victim",
+        "targetRole": "poisoner",
+        "amountRef": "@secrets.poisoned.kinOnHeard",
+        "escalate": "clan"
+      },
+      {
+        "listenerFriendsOf": "victim",
+        "targetRole": "poisoner",
+        "amountRef": "@secrets.poisoned.friendOnHeard"
+      }
+    ],
     "roles": {
       "poisoner": "{POISONER}",
       "victim": "{VICTIM}"
@@ -3496,6 +3640,194 @@
           "SKILL_NAME": "text:{SKILL_NAME}"
         },
         "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "prisoner_freed_secretly",
+    "headline": "{FREER} secretly freed {PRISONER} from the dungeons of {SETTLEMENT}",
+    "origin": "secret",
+    "witnessSource": "none",
+    "dramaWeight": 8,
+    "dramaScale": 10,
+    "linkedTemplateType": "hero_escaped_captivity",
+    "ownerRoles": [
+      "freer"
+    ],
+    "roles": {
+      "freer": "{FREER}",
+      "prisoner": "{PRISONER}"
+    },
+    "feelings": {
+      "freer": "decent",
+      "prisoner": "freed"
+    },
+    "knowingRoles": [
+      "freer",
+      "prisoner"
+    ],
+    "onHeard": [
+      {
+        "listenerCategory": "secretHarmedKing",
+        "targetRole": "freer",
+        "amountRef": "@secrets.freedPrisoner.kingOnHeard",
+        "escalate": "clan"
+      },
+      {
+        "listenerCategory": "secretHarmedOwner",
+        "targetRole": "freer",
+        "amountRef": "@secrets.freedPrisoner.ownerOnHeard"
+      }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_PrisonerFreedSecretly_Who",
+        "text": "{PRISONER} didn't slip away on {PRISONER.his} own; {FREER} secretly opened the cell and let {PRISONER.him} go",
+        "vars": {
+          "PRISONER": "hero:{PRISONER}",
+          "FREER": "hero:{FREER}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_PrisonerFreedSecretly_Where",
+        "text": "from the dungeons of {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}",
+          "PRE": "key:VividWorld_Place_From",
+          "POST": "key:VividWorld_Place_None"
+        },
+        "fragility": 2
+      },
+      {
+        "id": "why",
+        "category": "WHY",
+        "textId": "VividWorld_Fact_PrisonerFreedSecretly_Why",
+        "text": "out of affection",
+        "vars": {},
+        "fragility": 3
+      }
+    ]
+  },
+  {
+    "type": "tournament_won",
+    "headline": "{CHAMPION} claimed victory in the tournament at {SETTLEMENT}",
+    "origin": "public",
+    "dramaWeight": 3,
+    "dramaScale": 10,
+    "linkedTemplateType": null,
+    "roles": {
+      "champion": "{CHAMPION}",
+      "final_opponent": "{FINAL_OPPONENT}"
+    },
+    "feelings": {
+      "champion": "contest_won",
+      "final_opponent": "contest_lost"
+    },
+    "knowingRoles": [],
+    "opinion": [],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TournamentWon_Who",
+        "text": "{CHAMPION} defeated {FINAL_OPPONENT} in the final bout to win the tournament",
+        "vars": {
+          "CHAMPION": "hero:{CHAMPION}",
+          "FINAL_OPPONENT": "hero:{FINAL_OPPONENT}"
+        },
+        "fragility": 1
+      },
+      {
+        "id": "where",
+        "category": "WHERE",
+        "textId": "VividWorld_Fact_TournamentWon_Where",
+        "text": "at the arena in {SETTLEMENT}",
+        "vars": {
+          "SETTLEMENT": "settlement:{SETTLEMENT}"
+        },
+        "fragility": 2
+      },
+      {
+        "id": "what",
+        "category": "WHAT",
+        "textId": "VividWorld_Fact_TournamentWon_What",
+        "text": "as cheers echoed through the stands",
+        "vars": {},
+        "fragility": 3
+      },
+      {
+        "id": "outcome",
+        "category": "OUTCOME",
+        "textId": "VividWorld_Fact_TournamentWon_Outcome",
+        "text": "claiming the prize before the gathered lords and townspeople",
+        "vars": {},
+        "fragility": 4
+      }
+    ]
+  },
+  {
+    "type": "tournament_final_thrown",
+    "headline": "{CHAMPION} asked {THROWER} to throw the tournament final",
+    "origin": "secret",
+    "witnessSource": "none",
+    "dramaWeight": 3,
+    "dramaScale": 10,
+    "linkedTemplateType": "tournament_won",
+    "ownerRoles": [
+      "champion",
+      "thrower"
+    ],
+    "roles": {
+      "champion": "{CHAMPION}",
+      "thrower": "{THROWER}"
+    },
+    "feelings": {
+      "champion": "shabby",
+      "thrower": "wronged"
+    },
+    "knowingRoles": [
+      "champion",
+      "thrower"
+    ],
+    "onHeard": [
+      {
+        "listenerCategory": "secretHarmed",
+        "targetRole": "champion",
+        "amountRef": "@secrets.tournamentThrow.onHeardChampion",
+        "amounts": [
+          -5.0,
+          -3.0,
+          -1.0
+        ]
+      },
+      {
+        "listenerCategory": "secretHarmed",
+        "targetRole": "thrower",
+        "condition": "friendship",
+        "amountRef": "@secrets.tournamentThrow.onHeardFriendThrower",
+        "amounts": [
+          -3.0,
+          -2.0,
+          0.0
+        ]
+      }
+    ],
+    "facts": [
+      {
+        "id": "who",
+        "category": "WHO",
+        "textId": "VividWorld_Fact_TournamentFinalThrown_Who",
+        "text": "{THROWER} could have beaten {CHAMPION}; {CHAMPION} asked {THROWER.him} in private to throw the final",
+        "vars": {
+          "THROWER": "hero:{THROWER}",
+          "CHAMPION": "hero:{CHAMPION}"
+        },
+        "fragility": 1
       }
     ]
   }

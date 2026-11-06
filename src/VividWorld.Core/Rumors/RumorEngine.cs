@@ -63,7 +63,12 @@ namespace VividWorld.Core.Rumors
         }
 
         public IHeroTraitLookup Traits => _traits;
+        /// <summary>讀另一則事件。當事人的反應要找公開那一面上只記帳的恩怨；沒設就找不到。</summary>
+        public Func<string, WorldEvent?>? EventLoader { get; set; }
+
+        public IDeterministicRng Rng => _rng;
         public long CampaignSeed => _campaignSeed;
+        public string PlayerHeroId => _playerHeroId;
         public Func<string, VividWorld.Core.Catalog.EventTemplate?>? TemplateProvider => _getTemplate;
 
         /// <summary>回傳某個情境代號是不是 noSpread 的查詢；null 表示沒有情境目錄，講述者輪不排除任何情境。</summary>
@@ -108,7 +113,7 @@ namespace VividWorld.Core.Rumors
 
         public LeakOutcome TryLeak(WorldEvent evt, double day)
         {
-            if (evt == null || evt.State.Leaked || evt.Origin != EventOrigin.Secret)
+            if (evt == null || evt.State.Leaked || evt.Origin != EventOrigin.Secret || evt.SecretRetired)
             {
                 return LeakOutcome.None;
             }
@@ -256,6 +261,7 @@ namespace VividWorld.Core.Rumors
             // 步驟 4：對每個接觸者依回傳順序判定
             var newKnowers = new List<KnownByEntry>();
             var reheard = new List<RehearRecord>();
+            List<VividWorld.Core.Secrets.SecretReactionOutcome>? secretReactions = null;
 
             var tellerProfile = _traits.Of(tellerId);
             double tellerTraitFactor = 1.0;
@@ -326,11 +332,34 @@ namespace VividWorld.Core.Rumors
 
                     var existing = evt.EntryFor(link.HeroId);
                     bool forgotten = existing != null && Forgetting.IsForgotten(evt, existing, day, _playerHeroId, _config.Memory);
-                    if (existing != null && !forgotten && (!_config.Memory.Enabled || existing.Interest == null))
+
+                    bool isSecretOwner = evt.Origin == EventOrigin.Secret
+                        && evt.SecretOwnerHeroIds != null
+                        && evt.SecretOwnerHeroIds.Contains(link.HeroId, StringComparer.Ordinal);
+
+                    bool isUnreactedSecretOwner = isSecretOwner
+                        && evt.State != null
+                        && evt.State.Leaked
+                        && existing != null
+                        && string.IsNullOrEmpty(existing.OwnerReaction);
+
+                    if (existing != null && !forgotten)
                     {
-                        observed?.Add(Observe(link, 0.0, ContactStatus.AlreadyKnows));
-                        continue;
+                        if (isSecretOwner)
+                        {
+                            if (!isUnreactedSecretOwner)
+                            {
+                                observed?.Add(Observe(link, 0.0, ContactStatus.AlreadyKnows));
+                                continue;
+                            }
+                        }
+                        else if (!_config.Memory.Enabled || existing.Interest == null)
+                        {
+                            observed?.Add(Observe(link, 0.0, ContactStatus.AlreadyKnows));
+                            continue;
+                        }
                     }
+
                     if (!IsEligible(link.HeroId))
                     {
                         observed?.Add(Observe(link, 0.0, ContactStatus.NotEligible));
@@ -408,7 +437,33 @@ namespace VividWorld.Core.Rumors
                         !hit ? ContactStatus.Missed : (existing != null ? ContactStatus.Reheard : ContactStatus.Told)));
                     if (hit)
                     {
-                        if (existing != null)
+                        if (isUnreactedSecretOwner)
+                        {
+                            int heardHop = tellerHop + 1;
+                            var tmpl = _getTemplate?.Invoke(evt.Type);
+                            var outcome = VividWorld.Core.Secrets.SecretReactionEvaluator.Evaluate(
+                                evt,
+                                existing!,
+                                tmpl,
+                                null,
+                                _traits,
+                                _config,
+                                _rng,
+                                _playerHeroId,
+                                day,
+                                EventLoader,
+                                heardHop,
+                                _campaignSeed);
+
+                            if (secretReactions == null)
+                            {
+                                secretReactions = new List<VividWorld.Core.Secrets.SecretReactionOutcome>();
+                            }
+                            secretReactions.Add(outcome);
+
+                            _log?.Info($"Secret reaction: owner {existing!.HeroId} heard secret from {tellerId} at hand {heardHop} on {evt.EventId}");
+                        }
+                        else if (existing != null)
                         {
                             bool toldBefore = HeardFrom.ToldBefore(existing, tellerId);
                             if (toldBefore && !forgotten)
@@ -471,16 +526,20 @@ namespace VividWorld.Core.Rumors
             }
 
             // 步驟 7：一律設 LastPropagatedDay；若有新增知情者另設 LastNewKnowerDay
-            evt.State.LastPropagatedDay = day;
-            if (newKnowers.Count > 0)
+            if (evt.State != null)
             {
-                evt.State.LastNewKnowerDay = day;
+                evt.State.LastPropagatedDay = day;
+                if (newKnowers.Count > 0)
+                {
+                    evt.State.LastNewKnowerDay = day;
+                }
             }
 
             return new PropagationOutcome(true, tellerId, newKnowers, channelKinds, reheard)
             {
                 DisbelieverMultiplier = disbelieverMultiplier,
-                Contacts = (IReadOnlyList<ContactObservation>?)observed ?? Array.Empty<ContactObservation>()
+                Contacts = (IReadOnlyList<ContactObservation>?)observed ?? Array.Empty<ContactObservation>(),
+                SecretReactions = secretReactions ?? (IReadOnlyList<VividWorld.Core.Secrets.SecretReactionOutcome>)Array.Empty<VividWorld.Core.Secrets.SecretReactionOutcome>()
             };
         }
 

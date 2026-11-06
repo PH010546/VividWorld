@@ -15,6 +15,7 @@ namespace VividWorld.Core.Situations
         public const string SlanderMaxPerDayRef = "@falseRumors.slanderMaxPerDay";
         public const string RivalryPerDayRef = "@falseRumors.rivalryPerDay";
         public const string PraisePerDayRef = "@falseRumors.praisePerDay";
+        public const string FreedPrisonerChanceRef = "@secrets.freedPrisoner.chance";
 
         public static bool IsValidMaxPerDayRef(string? reference) =>
             string.Equals(reference, MisconductPerDayRef, StringComparison.Ordinal) ||
@@ -27,7 +28,8 @@ namespace VividWorld.Core.Situations
 
         public static bool IsValidChanceRef(string? reference) =>
             string.Equals(reference, CaptureMisconductChanceRef, StringComparison.Ordinal) ||
-            string.Equals(reference, PoisonChanceRef, StringComparison.Ordinal);
+            string.Equals(reference, PoisonChanceRef, StringComparison.Ordinal) ||
+            string.Equals(reference, FreedPrisonerChanceRef, StringComparison.Ordinal);
 
         public static bool IsValidEnabledByRef(string? reference) =>
             string.Equals(reference, EnabledRef, StringComparison.Ordinal);
@@ -76,6 +78,10 @@ namespace VividWorld.Core.Situations
             if (string.Equals(reference, PoisonChanceRef, StringComparison.Ordinal))
             {
                 return config?.FalseRumors?.PoisonChance ?? 0.2;
+            }
+            if (string.Equals(reference, FreedPrisonerChanceRef, StringComparison.Ordinal))
+            {
+                return config?.Secrets?.FreedPrisoner?.Chance ?? 0.5;
             }
             return 0.0;
         }

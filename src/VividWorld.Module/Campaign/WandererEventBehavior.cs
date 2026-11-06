@@ -337,7 +337,7 @@ namespace VividWorld.Campaign
             var evaluator = new ModuleEvaluator(this, candidates, day, context);
             var rng = new SplitMix64Rng();
 
-            var roll = WandererEventRoller.Roll(input, _config, battleTemplates, evaluator, rng);
+            var roll = WandererEventRoller.Roll(input, _config, battleTemplates, evaluator, rng, _traits);
             LastRoll = roll;
             LastRollDay = day;
 
@@ -346,6 +346,7 @@ namespace VividWorld.Campaign
             {
                 ModLog.Info(line);
             }
+            SituationPickLogWriter.Write(roll.PickRecord, SituationPickLogWriter.Options(_heroLookup, SituationPickLogWriter.LogAllCandidates(_config)));
 
             if (roll.Outcome != WandererRollOutcome.Happened || roll.Pick == null)
             {
@@ -474,7 +475,7 @@ namespace VividWorld.Campaign
             var evaluator = new ModuleEvaluator(this, candidates, day, context);
             var rng = new SplitMix64Rng();
 
-            var roll = WandererEventRoller.Roll(input, _config, dailyTemplates, evaluator, rng);
+            var roll = WandererEventRoller.Roll(input, _config, dailyTemplates, evaluator, rng, _traits);
             LastRoll = roll;
             LastRollDay = day;
 
@@ -483,6 +484,7 @@ namespace VividWorld.Campaign
             {
                 ModLog.Info(line);
             }
+            SituationPickLogWriter.Write(roll.PickRecord, SituationPickLogWriter.Options(_heroLookup, SituationPickLogWriter.LogAllCandidates(_config)));
 
             if (roll.Outcome != WandererRollOutcome.Happened || roll.Pick == null)
             {
@@ -1387,11 +1389,12 @@ namespace VividWorld.Campaign
             var evaluator = new ModuleEvaluator(this, candidates, day, context);
             var rng = new SplitMix64Rng();
 
-            var roll = WandererEventRoller.Roll(input, _config, allWandererTemplates, evaluator, rng);
+            var roll = WandererEventRoller.Roll(input, _config, allWandererTemplates, evaluator, rng, _traits);
             LastRoll = roll;
             LastRollDay = day;
 
             ModLog.Info(WandererEventLogFormatter.FormatRoll(roll));
+            SituationPickLogWriter.Write(roll.PickRecord, SituationPickLogWriter.Options(_heroLookup, SituationPickLogWriter.LogAllCandidates(_config)));
 
             if (roll.Outcome == WandererRollOutcome.Happened && roll.Pick != null)
             {

@@ -39,7 +39,8 @@ namespace VividWorld.Core.Situations
             "selfOrKinOf",
             "rulerOf",
             "grudgeHolderAgainst",
-            "kinOf"
+            "kinOf",
+            "freerOf"
         };
 
         public static (string StrategyPrefix, string TargetRole)? ParseStrategy(string? derived)
@@ -206,6 +207,17 @@ namespace VividWorld.Core.Situations
                         result.Exclusions);
                     break;
 
+                case "freerof":
+                    SelectFreer(
+                        targetRoleFacts,
+                        currentSettlementId,
+                        candidatePool,
+                        boundHeroIdSet,
+                        context,
+                        eligible,
+                        result.Exclusions);
+                    break;
+
                 default:
                     result.UnboundReason = $"unsupported derived strategy prefix '{prefix}'";
                     return result;
@@ -215,13 +227,23 @@ namespace VividWorld.Core.Situations
             result.EligibleCandidates = eligible;
             if (eligible.Count == 0)
             {
-                result.UnboundReason = "no eligible candidates";
+                result.UnboundReason = (prefix == "freerof") ? "no eligible freer candidate" : "no eligible candidates";
                 return result;
             }
 
             if (eligible.Count == 1)
             {
                 result.PickedHeroFacts = eligible[0];
+                return result;
+            }
+
+            if (prefix == "freerof")
+            {
+                int GetRelation(SituationRoleFacts c) => context?.RelationBetween != null ? context.RelationBetween(c.HeroId, targetHeroId) : 0;
+                result.PickedHeroFacts = eligible
+                    .OrderByDescending(c => GetRelation(c))
+                    .ThenBy(c => c.HeroId, StringComparer.Ordinal)
+                    .First();
                 return result;
             }
 
@@ -597,6 +619,87 @@ namespace VividWorld.Core.Situations
                     string.Equals(c.SettlementId, currentSettlementId, StringComparison.OrdinalIgnoreCase))
                 {
                     exclusions.Add(new AbsentRoleCandidateExclusion { HeroId = c.HeroId, Reason = "present in settlement" });
+                    continue;
+                }
+
+                eligible.Add(c);
+            }
+        }
+
+        private static void SelectFreer(
+            SituationRoleFacts target,
+            string? currentSettlementId,
+            IReadOnlyCollection<SituationRoleFacts> pool,
+            HashSet<string> boundHeroIds,
+            SituationWorldContext? context,
+            List<SituationRoleFacts> eligible,
+            List<AbsentRoleCandidateExclusion> exclusions)
+        {
+            string? playerId = context?.PlayerHeroId;
+            string? settlementFactionId = context?.CurrentSettlementFactionId;
+
+            foreach (var c in pool)
+            {
+                if (c == null || string.IsNullOrEmpty(c.HeroId)) continue;
+
+                if (string.Equals(c.HeroId, target.HeroId, StringComparison.Ordinal))
+                {
+                    exclusions.Add(new AbsentRoleCandidateExclusion { HeroId = c.HeroId, Reason = "is target hero" });
+                    continue;
+                }
+
+                if (boundHeroIds.Contains(c.HeroId))
+                {
+                    exclusions.Add(new AbsentRoleCandidateExclusion { HeroId = c.HeroId, Reason = "already bound" });
+                    continue;
+                }
+
+                if (!string.IsNullOrEmpty(playerId) && string.Equals(c.HeroId, playerId, StringComparison.Ordinal))
+                {
+                    exclusions.Add(new AbsentRoleCandidateExclusion { HeroId = c.HeroId, Reason = "player" });
+                    continue;
+                }
+
+                if (!c.IsAlive)
+                {
+                    exclusions.Add(new AbsentRoleCandidateExclusion { HeroId = c.HeroId, Reason = "not alive" });
+                    continue;
+                }
+
+                if (c.IsPrisoner)
+                {
+                    exclusions.Add(new AbsentRoleCandidateExclusion { HeroId = c.HeroId, Reason = "is prisoner" });
+                    continue;
+                }
+
+                if (!c.IsLord)
+                {
+                    exclusions.Add(new AbsentRoleCandidateExclusion { HeroId = c.HeroId, Reason = "not a lord" });
+                    continue;
+                }
+
+                if (string.IsNullOrEmpty(currentSettlementId) || !string.Equals(c.SettlementId, currentSettlementId, StringComparison.Ordinal))
+                {
+                    exclusions.Add(new AbsentRoleCandidateExclusion { HeroId = c.HeroId, Reason = $"not in settlement {currentSettlementId}" });
+                    continue;
+                }
+
+                if (string.IsNullOrEmpty(settlementFactionId) || !string.Equals(c.MapFactionId, settlementFactionId, StringComparison.Ordinal))
+                {
+                    exclusions.Add(new AbsentRoleCandidateExclusion { HeroId = c.HeroId, Reason = "faction mismatch" });
+                    continue;
+                }
+
+                bool isKin = context?.IsKin != null && context.IsKin(c.HeroId, target.HeroId);
+                int threshold = isKin ? 30 : 50;
+                int relation = context?.RelationBetween != null ? context.RelationBetween(c.HeroId, target.HeroId) : 0;
+
+                if (relation <= threshold)
+                {
+                    string reason = isKin
+                        ? $"kin relation {relation} <= {threshold}"
+                        : $"relation {relation} <= {threshold}";
+                    exclusions.Add(new AbsentRoleCandidateExclusion { HeroId = c.HeroId, Reason = reason });
                     continue;
                 }
 

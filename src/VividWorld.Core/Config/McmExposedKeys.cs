@@ -53,6 +53,7 @@ namespace VividWorld.Core.Config
                 new McmExposedKey("presentation.snapshotManagerHotkey", McmKeyKind.Text),
                 new McmExposedKey("presentation.chronicleMaxEntries", McmKeyKind.Int, 1, 200),
                 new McmExposedKey("presentation.encyclopediaLinksEnabled", McmKeyKind.Bool),
+                new McmExposedKey("presentation.muteNativeNotifications", McmKeyKind.Bool),
 
                 // Group 2: Propagation (Scheduling)
                 new McmExposedKey("scheduling.tellersPerHourlyTick", McmKeyKind.Int, 1, 32),
@@ -120,6 +121,8 @@ namespace VividWorld.Core.Config
                     return cfg.Presentation.ChronicleMaxEntries;
                 case "presentation.encyclopediaLinksEnabled":
                     return cfg.Presentation.EncyclopediaLinksEnabled;
+                case "presentation.muteNativeNotifications":
+                    return cfg.Presentation.MuteNativeNotifications;
                 case "scheduling.tellersPerHourlyTick":
                     return cfg.Scheduling.TellersPerHourlyTick;
                 case "dialogue.askRelationGate":
@@ -202,6 +205,9 @@ namespace VividWorld.Core.Config
                             return true;
                         case "presentation.encyclopediaLinksEnabled":
                             cfg.Presentation.EncyclopediaLinksEnabled = bVal;
+                            return true;
+                        case "presentation.muteNativeNotifications":
+                            cfg.Presentation.MuteNativeNotifications = bVal;
                             return true;
                         case "consequences.enabled":
                             cfg.Consequences.Enabled = bVal;

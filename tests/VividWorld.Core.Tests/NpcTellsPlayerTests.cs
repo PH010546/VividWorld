@@ -276,8 +276,8 @@ namespace VividWorld.Core.Tests
         {
             var (selector, _, _, world, _, _) = CreateTestSetup();
             var teller = new HeroSocialProfile { HeroId = "teller", RelationWithPlayer = 20 };
-            world.Affections[("teller", "best_friend")] = 35;
-            world.Affections[("teller", "arch_nemesis")] = -35;
+            world.Affections[("teller", "best_friend")] = 55;
+            world.Affections[("teller", "arch_nemesis")] = -55;
 
             var evtFriend = CreateSampleEvent("evt_friend", actorId: "best_friend");
             var evtNemesis = CreateSampleEvent("evt_nemesis", actorId: "arch_nemesis");
