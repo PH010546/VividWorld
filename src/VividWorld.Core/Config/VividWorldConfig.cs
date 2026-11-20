@@ -816,6 +816,23 @@ namespace VividWorld.Core.Config
             Memory.ReinforceGrowth = ClampTracked("memory.reinforceGrowth", Memory.ReinforceGrowth, 1.0, 10.0, notices);
             Memory.ReinforceMaxMultiplier = ClampTracked("memory.reinforceMaxMultiplier", Memory.ReinforceMaxMultiplier, 1.0, 10.0, notices);
 
+            // 當事人天數倍率：小於 1、負數、NaN 一律讀成 1.0（不走 ClampTracked，因為 NaN 過不了 Math.Max/Min）。
+            // 每次載入最多一則通知，由 ConfigStore 印成 Warn。
+            if (double.IsNaN(Memory.ParticipantSpanMultiplier) || Memory.ParticipantSpanMultiplier < 1.0)
+            {
+                if (notices != null)
+                {
+                    notices.Add(new ClampNotice
+                    {
+                        Key = "memory.participantSpanMultiplier",
+                        Requested = Memory.ParticipantSpanMultiplier,
+                        Applied = 1.0,
+                        AllowedRange = ">= 1"
+                    });
+                }
+                Memory.ParticipantSpanMultiplier = 1.0;
+            }
+
             // AI
             if (string.Equals(Ai.PushLanguage, "game", StringComparison.OrdinalIgnoreCase))
             {

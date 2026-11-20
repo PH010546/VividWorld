@@ -82,7 +82,7 @@ Details in [`CONTRIBUTING.md`](CONTRIBUTING.md).
 ## Interfaces for other mods
 
 - **`VividWorld.Api.VividWorldEventApi`**: a static facade using only primitive types, readable by reflection with no assembly reference. An event-occurred notification, which events a hero knows, and an event's JSON. Unleaked secrets are never returned
-- **AI chat mods**: currently integrated with Calradia Remembers only. It binds to that mod's types by reflection and checks its interface version; on a mismatch it disables itself and logs why. It hands over the rumors an NPC still remembers, in the version they heard
+- **AI chat mods**: currently integrated with Calradia Remembers only. It binds to that mod's types by reflection and checks its interface version; on a mismatch it disables itself and logs why. It hands over the rumors an NPC still remembers, in the version they heard, and writes the events that NPC took part in into CR's memory
 
 ---
 
@@ -95,7 +95,7 @@ Set `debug.logTellerTurns` in `config.json` and every retelling is logged. Devel
 
 ## Building
 
-You need the .NET SDK 8.0 or newer, a local install of Bannerlord **v1.4.8**, and MCM in that same game folder.
+You need the .NET SDK 8.0 or newer, a local install of Bannerlord **v1.5.7**, and MCM in that same game folder.
 
 ```
 dotnet build VividWorld.sln -c Release
@@ -113,7 +113,7 @@ The build is expected to produce zero warnings. Pointing the build at your game 
 3. Tick **Vivid World** in the launcher, after Native, SandBoxCore, Sandbox and StoryMode
 4. Harmony is bundled
 
-Built against game **v1.4.8**. Settings are on the game's settings screen (MCM) or in `config.json`; both are the same file.
+Built against game **v1.5.7**; for game 1.4.8, use v1.4.0. Settings are on the game's settings screen (MCM) or in `config.json`; both are the same file.
 
 ---
 
@@ -140,13 +140,13 @@ The rules for adding a language (every language folder must carry exactly the En
 
 In order:
 
-1. **Third-party events and news sources**: feed other mods' events (and native ones such as defections, rebellions and fallen cities) into the same propagation pipeline
-2. **Your turn to talk**: the player retells and spreads news, under the same propagation and belief rules as NPCs
+1. **Native major events and third-party events**: native events such as wars, peace, alliances, defections, kingdoms rising and falling, new rulers, fallen cities and town rebellions, plus other mods' events (surrenders, partitioned inheritances, civil wars, prisoners stripped of their gear and so on), fed into the same propagation pipeline
+2. **Answering back**: when someone confronts you or brings up something you did, you can respond; you can also retell and spread news yourself, under the same propagation and belief rules as NPCs
+3. **Real effects on the game**: events currently touch only relations and grudges (plus the player's own renown, influence, morale and traits when they make a choice); later, outcomes reach native state, starting with money
 
-Two more directions, not yet scheduled:
+Not yet scheduled:
 
 - **More events and situations**: mostly data files and strings
-- **Real effects on the game**: events currently touch only relations and grudges (plus the player's own renown, influence, morale and traits when they make a choice); later, outcomes reaching money, renown, influence and other native state
 
 ---
 

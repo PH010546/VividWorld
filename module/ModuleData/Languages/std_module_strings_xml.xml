@@ -40,6 +40,7 @@
     <string id="VividWorld_Dev_PreviewTalkAll" text="(dev) What happens if I talk to everyone right now?" />
     <string id="VividWorld_Dev_NpcRecall" text="(dev) What does this NPC remember?" />
     <string id="VividWorld_Dev_AiPushPreview" text="(dev) AI integration: what would be handed over for this NPC" />
+    <string id="VividWorld_Dev_AiMemoryWritten" text="(dev) What Vivid World wrote into this NPC&apos;s AI memory" />
     <string id="VividWorld_Dev_CaptureByBandits" text="(dev) Have the closest bandits capture this person" />
     <string id="VividWorld_Dev_Menu" text="(dev) VW developer tools" />
     <string id="VividWorld_Dev_Menu_Person" text="(dev) About this person" />

@@ -83,6 +83,10 @@ namespace VividWorld.Debug
                 }
                 else
                 {
+                    // 當事人標記：用的是現在的設定值；讀檔不重算，早先記下的紀錄不會因此改掉忘記日子
+                    string participantPart = MemorySpan.IsParticipant(evt?.Participants, hero.StringId)
+                        ? string.Format(CultureInfo.InvariantCulture, " | participant (spans computed from now on ×{0:0.00})", store.Config.Memory.ParticipantSpanMultiplier)
+                        : string.Empty;
                     bool forgotten = evt != null && Forgetting.IsForgotten(evt, entry, currentDay, playerId, store.Config.Memory);
                     double tellFactor = Forgetting.TellFactor(entry, store.Config.Memory);
                     int heardCount = entry.HeardCount ?? 0;
@@ -93,22 +97,24 @@ namespace VividWorld.Debug
                     {
                         forgottenCount++;
                         suffix = string.Format(CultureInfo.InvariantCulture,
-                            " | interest: {0:0.00} ({1}) tell {2:0.00} heard {3} | forgets: {4:0.0} (forgotten)",
+                            " | interest: {0:0.00} ({1}) tell {2:0.00} heard {3}{5} | forgets: {4:0.0} (forgotten)",
                             entry.Interest.Value,
                             interestSource,
                             tellFactor,
                             heardCount,
-                            forgetDay);
+                            forgetDay,
+                            participantPart);
                     }
                     else
                     {
                         suffix = string.Format(CultureInfo.InvariantCulture,
-                            " | interest: {0:0.00} ({1}) tell {2:0.00} heard {3} | forgets: {4:0.0} (remembered)",
+                            " | interest: {0:0.00} ({1}) tell {2:0.00} heard {3}{5} | forgets: {4:0.0} (remembered)",
                             entry.Interest.Value,
                             interestSource,
                             tellFactor,
                             heardCount,
-                            forgetDay);
+                            forgetDay,
+                            participantPart);
                     }
                 }
 

@@ -68,9 +68,14 @@ namespace VividWorld.Core.Memory
                 ? string.Format(CultureInfo.InvariantCulture, "-> forgets on day {0:0.0} (kept; new {1:0.0})", span.ForgetDay, span.Candidate)
                 : string.Format(CultureInfo.InvariantCulture, "-> forgets on day {0:0.0}", span.ForgetDay);
 
+            // 當事人倍率只在實際乘了（不是 1.0）時才印；沒乘的那行跟以前一字不差
+            string participantPart = span.ParticipantMultiplier != 1.0
+                ? string.Format(CultureInfo.InvariantCulture, " x participant {0:0.00}", span.ParticipantMultiplier)
+                : string.Empty;
+
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "Memory: {0} {1} {2} - interest {3:0.00} {4} x drama {5}/{6} x base {7:0.0}d x reinforce {8:0.00} {9} {10}",
+                "Memory: {0} {1} {2} - interest {3:0.00} {4} x drama {5}/{6} x base {7:0.0}d x reinforce {8:0.00}{11} {9} {10}",
                 knowerId,
                 how,
                 eventId,
@@ -81,7 +86,8 @@ namespace VividWorld.Core.Memory
                 baseDays,
                 span.Reinforce,
                 daysPart,
-                forgetsPart);
+                forgetsPart,
+                participantPart);
         }
 
         public static string FormatDormancy(string eventId, DormancyReason reason)

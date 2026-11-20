@@ -424,7 +424,7 @@ namespace VividWorld.Campaign
 
                 if (_eventStore != null && !string.IsNullOrEmpty(_campaignId))
                 {
-                    AiPushCoordinator.SetSession(_eventStore, _campaignId, VividWorldPaths.AiPushedFile(_campaignId));
+                    AiPushCoordinator.SetSession(_eventStore, _campaignId, VividWorldPaths.AiPushedFile(_campaignId), VividWorldPaths.AiMemoryWrittenFile(_campaignId));
                 }
 
                 ModLog.Info($"VividWorld session launched for campaign {_campaignId}.");

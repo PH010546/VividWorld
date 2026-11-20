@@ -398,6 +398,16 @@ namespace VividWorld.Debug
                 Consequence_AiPushPreview,
                 DevDialoguePriority);
 
+            // 7b. (dev) What did Vivid World write into this NPC's AI memory?
+            starter.AddPlayerLine(
+                "vividworld_dev_ai_memory_written",
+                TokenDevPerson,
+                TokenDevResultPerson,
+                "{=VividWorld_Dev_AiMemoryWritten}(dev) What Vivid World wrote into this NPC's AI memory",
+                Condition_AlwaysAvailable,
+                Consequence_AiMemoryWritten,
+                DevDialoguePriority);
+
             // 8. (dev) What would they add to each rumor they know?
             starter.AddPlayerLine(
                 "vividworld_dev_feelings",
@@ -5592,6 +5602,26 @@ namespace VividWorld.Debug
             catch (Exception ex)
             {
                 ModLog.Error("Dev probe preview failed", ex);
+                Finish("(dev) failed - see log.txt");
+            }
+        }
+
+        private void Consequence_AiMemoryWritten()
+        {
+            SetResult("(dev) no result - see log.txt");
+            try
+            {
+                var hero = Hero.OneToOneConversationHero;
+                if (hero == null) return;
+
+                string report = AiPushCoordinator.DescribeWrittenMemories(hero, _eventStore, _config);
+                InformationManager.DisplayMessage(new InformationMessage(report));
+                ModLog.Info($"[DevDialogue]\n{report}");
+                Finish($"(dev) {hero.Name}: AI memory written list printed. See log.txt.");
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error("Dev AI memory written dump failed", ex);
                 Finish("(dev) failed - see log.txt");
             }
         }

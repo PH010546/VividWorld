@@ -16,6 +16,8 @@ namespace VividWorld.Core.Config
         public double UpgradeMinInterest { get; set; } = 0.6;
         public double ReinforceGrowth { get; set; } = 1.5;
         public double ReinforceMaxMultiplier { get; set; } = 3.0;
+        // 當事人（自己在場的人）記得的天數倍率。小於 1、負數、NaN 讀成 1.0（見 VividWorldConfig.Normalize）
+        public double ParticipantSpanMultiplier { get; set; } = 4.0;
 
         [JsonExtensionData]
         public IDictionary<string, JToken> Extra { get; set; } = new Dictionary<string, JToken>();

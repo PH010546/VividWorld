@@ -1,6 +1,7 @@
 [
   {
     "type": "hero_murdered",
+    "fromNativeEvent": true,
     "headline": "Murder",
     "origin": "secret",
     "dramaWeight": 8,
@@ -63,6 +64,7 @@
   },
   {
     "type": "hero_executed",
+    "fromNativeEvent": true,
     "headline": "Execution",
     "origin": "public",
     "dramaWeight": 8,
@@ -126,6 +128,7 @@
   },
   {
     "type": "hero_died_in_battle",
+    "fromNativeEvent": true,
     "headline": "Fallen in battle",
     "origin": "public",
     "dramaWeight": 6,
@@ -186,6 +189,7 @@
   },
   {
     "type": "hero_died_naturally",
+    "fromNativeEvent": true,
     "headline": "Passed away",
     "origin": "public",
     "dramaWeight": 4,
@@ -245,6 +249,7 @@
   },
   {
     "type": "hero_died_of_old_age",
+    "fromNativeEvent": true,
     "headline": "Died of old age",
     "origin": "public",
     "dramaWeight": 4,
@@ -296,6 +301,7 @@
   },
   {
     "type": "hero_died_in_labor",
+    "fromNativeEvent": true,
     "headline": "Died in childbirth",
     "origin": "public",
     "dramaWeight": 4,
@@ -347,6 +353,7 @@
   },
   {
     "type": "hero_taken_prisoner",
+    "fromNativeEvent": true,
     "headline": "Captivity",
     "origin": "public",
     "dramaWeight": 3,
@@ -413,6 +420,7 @@
   },
   {
     "type": "heroes_married",
+    "fromNativeEvent": true,
     "headline": "Marriage",
     "origin": "public",
     "dramaWeight": 4,
@@ -470,6 +478,7 @@
   },
   {
     "type": "child_born",
+    "fromNativeEvent": true,
     "headline": "Birth",
     "origin": "public",
     "dramaWeight": 2,
@@ -531,6 +540,7 @@
   },
   {
     "type": "hero_released",
+    "fromNativeEvent": true,
     "headline": "A prisoner was released",
     "origin": "public",
     "dramaWeight": 2,
@@ -584,6 +594,7 @@
   },
   {
     "type": "hero_escaped_captivity",
+    "fromNativeEvent": true,
     "headline": "A prisoner escaped",
     "origin": "public",
     "dramaWeight": 2,
@@ -651,6 +662,7 @@
   },
   {
     "type": "hero_captured_by_bandits",
+    "fromNativeEvent": true,
     "headline": "Captured by bandits",
     "origin": "public",
     "dramaWeight": 5,
@@ -709,6 +721,7 @@
   },
   {
     "type": "hero_rescued_from_bandits",
+    "fromNativeEvent": true,
     "headline": "Rescued from bandits",
     "origin": "public",
     "dramaWeight": 3,
@@ -767,6 +780,7 @@
   },
   {
     "type": "hero_escaped_bandits",
+    "fromNativeEvent": true,
     "headline": "Escaped from bandits",
     "origin": "public",
     "dramaWeight": 3,

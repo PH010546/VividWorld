@@ -1058,6 +1058,9 @@ namespace VividWorld.Core.Catalog
                 // 9. retired：停用的型別不再產生、已存下來的也不再傳，事件資料保留
                 bool retired = templateObj.Property("retired", StringComparison.OrdinalIgnoreCase)?.Value?.Value<bool>() ?? false;
 
+                // 9b. fromNativeEvent：原版遊戲本身就有這一則事件，AI 模組自己會記，VW 不重複寫進去
+                bool fromNativeEvent = templateObj.Property("fromNativeEvent", StringComparison.OrdinalIgnoreCase)?.Value?.Value<bool>() ?? false;
+
                 // 10. colocatedWitnessAsHearsay：同在一地的人在當地聽到消息（第 1 手、沒有指名來源），不算親眼看到
                 bool colocatedWitnessAsHearsay = templateObj.Property("colocatedWitnessAsHearsay", StringComparison.OrdinalIgnoreCase)?.Value?.Value<bool>() ?? false;
 
@@ -1311,6 +1314,7 @@ namespace VividWorld.Core.Catalog
                         Opinions = opinions,
                         SelfTell = selfTell,
                         Retired = retired,
+                        FromNativeEvent = fromNativeEvent,
                         ColocatedWitnessAsHearsay = colocatedWitnessAsHearsay,
                         WitnessSource = witnessSource ?? "colocated",
                         MadeUpBy = madeUpBy,

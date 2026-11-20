@@ -46,12 +46,6 @@ Both must be clean before you open a pull request. The build is expected to prod
 `tools/deploy.ps1` builds Release and installs it under the id `VividWorld.Dev`, so it sits
 beside a released copy instead of overwriting it.
 
-**Build a release zip**
-
-`tools/package.ps1` builds Release and produces `dist/VividWorld-<version>.zip`, laid out so a
-player can unzip it straight into the game's `Modules\` folder. It checks its own output and
-refuses to produce a package that is missing a file or carrying one that should not ship.
-
 ---
 
 ## The three rules the codebase will not bend on

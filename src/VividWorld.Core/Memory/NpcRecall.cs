@@ -20,7 +20,8 @@ namespace VividWorld.Core.Memory
         Outdated,       // 已過時（OutdatedDay 非空）
         NoFacts,        // 手上沒有保留任何碎片
         WontTellOwn,    // 當事人自己不講（selfTell 規則排除）
-        RetiredType     // 停用的事件型別：已存下來的也不再傳，事件資料保留
+        RetiredType,    // 停用的事件型別：已存下來的也不再傳，事件資料保留
+        AlreadyInAiMemory // 已經寫進 AI 對話模組的記憶：不再即時交，免得同一件事在對方那裡有兩份
     }
 
     public sealed class RecallExclusion
@@ -108,6 +109,12 @@ namespace VividWorld.Core.Memory
             if (retired > 0)
             {
                 summary += string.Format(CultureInfo.InvariantCulture, ", retiredType={0}", retired);
+            }
+
+            int written = ExclusionCountByReason(RecallExclusionReason.AlreadyInAiMemory);
+            if (written > 0)
+            {
+                summary += string.Format(CultureInfo.InvariantCulture, ", alreadyInAiMemory={0}", written);
             }
             return summary;
         }

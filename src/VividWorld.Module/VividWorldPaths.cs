@@ -48,6 +48,9 @@ namespace VividWorld
         internal static string AiPushedFile(string campaignId) =>
             Path.Combine(CampaignDirectory(campaignId), "ai_pushed.json");
 
+        internal static string AiMemoryWrittenFile(string campaignId) =>
+            Path.Combine(CampaignDirectory(campaignId), "ai_memory_written.json");
+
         internal static string ConfideQueueFile(string campaignId) =>
             Path.Combine(CampaignDirectory(campaignId), "secret_confide_queue.json");
 

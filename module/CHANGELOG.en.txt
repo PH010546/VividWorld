@@ -1,5 +1,11 @@
 Vivid World changelog
 
+v2.0.0
+New: with Calradia Remembers installed, what NPCs lived through themselves, including what they went through with you, goes into their AI memory, so they remember it when you chat with them; anything from before the update is added the next time you chat with them.
+Changed: NPCs remember what happened to them for longer than what they only heard about.
+Changed: made for game version 1.5.7. 1.4.8 is no longer guaranteed to work: it may still run, but it is no longer maintained. If you are still on 1.4.8, you can keep using Vivid World 1.4.0 (under old files on Nexus).
+Existing campaigns can be continued as they are; no settings need to be changed. The longer memory applies only to what is learned after the update.
+
 v1.4.0
 New: secrets. Some things are known only to the people involved and a few others; they get passed on quietly to people they trust, and they can slip out. Someone close to you may tell you in private, and you can ask about what you have heard.
 New: when a lord or wanderer wins a tournament you didn't enter, word gets around, including whom he beat in the final.

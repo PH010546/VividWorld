@@ -32,6 +32,11 @@ namespace VividWorld.Core.Catalog
         [JsonProperty("selfTell")]
         public Dictionary<string, SelfTellRule>? SelfTell;
 
+        /// <summary>這個型別的事件在原版遊戲裡本來就有對應的一則事件，AI 對話模組會自己記下來；
+        /// 為 true 時 VW 不再把它寫進 AI 模組的記憶，免得同一件事有兩份。沒寫就是 false。</summary>
+        [JsonProperty("fromNativeEvent")]
+        public bool FromNativeEvent { get; set; } = false;
+
         [JsonProperty("retired")]
         public bool Retired { get; set; } = false;
 

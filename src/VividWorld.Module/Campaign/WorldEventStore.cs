@@ -159,6 +159,9 @@ namespace VividWorld.Campaign
             _stamper?.StampLearned(evt, evt.KnownBy);
             _stamper?.StampOutdated(evt, evt.KnownBy, evt.Day);
 
+            // 知情紀錄剛種好：事件角色自己經歷的事，這一刻就寫進 AI 對話模組的記憶，不等玩家找他說話
+            VividWorld.Ai.AiPushCoordinator.WriteMemoriesForNewEvent(evt, this);
+
             // 5. store.Upsert(evt) -> KnownBy.NoteKnower -> scheduler.OnIngested(evt)
             _store.Upsert(evt);
             foreach (var knower in evt.KnownBy)

@@ -126,6 +126,9 @@ namespace VividWorld.Ai
             public object? Listener { get; set; }
             public bool IsLive { get; set; }
 
+            /// <summary>記憶物件上找得到的屬性（舊版對方沒有 Private、SourceMod）；沒找到的寫入時跳過。</summary>
+            public HashSet<string> EntryProperties { get; } = new HashSet<string>(StringComparer.Ordinal);
+
             public TargetBindingState(AiTargetDescription desc, AiTargetBindingResult result, MethodInfo? addMemoryMethod, Type? entryType)
             {
                 Description = desc;
@@ -153,11 +156,19 @@ namespace VividWorld.Ai
         // 清單要完整交給推送規劃，先扣「已推過的」再取上限；先截前幾筆的話，推久了前面都推過，後面的永遠輪不到
         private const int RecallAll = int.MaxValue;
 
+        private static readonly string[] MemoryEntryPropertyNames = { "NpcId", "Summary", "Kind", "DaysAgo", "Private", "SourceMod" };
+
         private static VividWorldConfig? _config;
         private static WorldEventStore? _store;
         private static string? _campaignId;
         private static string? _pushStorePath;
         private static AiPushedStore? _pushStore;
+
+        // 已經寫進 AI 模組記憶的紀錄；格式沿用推送紀錄，目標與版本欄位見 AiMemoryWritePolicy
+        private static string? _memoryWrittenPath;
+        private static AiPushedStore? _memoryWritten;
+        // 寫不了的原因每個戰役階段只印一次，不要每則事件印
+        private static string? _memoryOffReasonLogged;
 
         internal static AiPushedStore? PushStore => _pushStore;
 
@@ -192,6 +203,14 @@ namespace VividWorld.Ai
                         MethodInfo addMethod = memType.GetMethod(desc.AddMemoryMethodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!;
 
                         var state = new TargetBindingState(desc, result, addMethod, entryType);
+
+                        var missingProps = new List<string>();
+                        foreach (var propName in MemoryEntryPropertyNames)
+                        {
+                            if (entryType.GetProperty(propName) != null) state.EntryProperties.Add(propName);
+                            else missingProps.Add(propName);
+                        }
+                        ModLog.Info($"AI target '{desc.TargetId}': memory entry properties found: {string.Join(", ", MemoryEntryPropertyNames.Where(state.EntryProperties.Contains))}; missing: {(missingProps.Count == 0 ? "none" : string.Join(", ", missingProps))} (missing ones are left out when writing).");
 
                         // 每次開始或讀取戰役都會走到這裡，但對方的事件是靜態的、跟著整個遊戲程序活著；
                         // 重複訂閱會讓一次開聊天觸發兩次推送，每場對話塞進上限的兩倍
@@ -439,7 +458,7 @@ namespace VividWorld.Ai
             return true;
         }
 
-        public static void SetSession(WorldEventStore store, string campaignId, string pushStorePath)
+        public static void SetSession(WorldEventStore store, string campaignId, string pushStorePath, string memoryWrittenPath)
         {
             lock (_lock)
             {
@@ -447,6 +466,9 @@ namespace VividWorld.Ai
                 _campaignId = campaignId;
                 _pushStorePath = pushStorePath;
                 _pushStore = AiPushedStore.LoadFromFile(pushStorePath);
+                _memoryWrittenPath = memoryWrittenPath;
+                _memoryWritten = AiPushedStore.LoadFromFile(memoryWrittenPath);
+                _memoryOffReasonLogged = null;
             }
         }
 
@@ -457,6 +479,10 @@ namespace VividWorld.Ai
                 if (_pushStore != null && _pushStore.IsDirty && !string.IsNullOrEmpty(_pushStorePath))
                 {
                     _pushStore.SaveToFile(_pushStorePath!);
+                }
+                if (_memoryWritten != null && _memoryWritten.IsDirty && !string.IsNullOrEmpty(_memoryWrittenPath))
+                {
+                    _memoryWritten.SaveToFile(_memoryWrittenPath!);
                 }
             }
         }
@@ -469,6 +495,10 @@ namespace VividWorld.Ai
                 {
                     _pushStore = AiPushedStore.LoadFromFile(_pushStorePath!);
                 }
+                if (!string.IsNullOrEmpty(_memoryWrittenPath))
+                {
+                    _memoryWritten = AiPushedStore.LoadFromFile(_memoryWrittenPath!);
+                }
             }
         }
 
@@ -480,6 +510,9 @@ namespace VividWorld.Ai
                 _campaignId = null;
                 _pushStorePath = null;
                 _pushStore = null;
+                _memoryWrittenPath = null;
+                _memoryWritten = null;
+                _memoryOffReasonLogged = null;
             }
         }
 
@@ -509,20 +542,21 @@ namespace VividWorld.Ai
             }
         }
 
-        private static bool ExtractRecallNewsItems(
+        /// <summary>
+        /// 這位 NPC 在 VW 裡記得的事（已排序、已篩過知情、遺忘、過時、停用、自己不講）。
+        /// 即時交消息、對話開始補寫與開發者預覽都從這裡拿清單。
+        /// </summary>
+        private static NpcRecallResult QueryRecall(
             Hero hero,
             double currentDay,
             VividWorldConfig cfg,
             WorldEventStore store,
-            out NpcRecallResult recallResult,
-            out List<RecallRenderedItem> renderedItems)
+            bool logSecrets)
         {
-            renderedItems = new List<RecallRenderedItem>();
             var eventIds = store.KnownBy.EventsKnownBy(hero.StringId, currentDay);
             if (eventIds == null || eventIds.Count == 0)
             {
-                recallResult = new NpcRecallResult(hero.StringId, currentDay, Array.Empty<NpcRecalledMemory>(), Array.Empty<RecallExclusion>(), 0);
-                return false;
+                return new NpcRecallResult(hero.StringId, currentDay, Array.Empty<NpcRecalledMemory>(), Array.Empty<RecallExclusion>(), 0);
             }
 
             var candidateEvents = new List<WorldEvent>(eventIds.Count);
@@ -535,7 +569,7 @@ namespace VividWorld.Ai
             var knownSet = new HashSet<string>(eventIds, StringComparer.OrdinalIgnoreCase);
             var retentionPolicy = FactRetentionPolicies.Create(cfg, new SplitMix64Rng(), store.CampaignSeed);
 
-            recallResult = NpcRecallQuery.Query(
+            var recallResult = NpcRecallQuery.Query(
                 hero.StringId,
                 currentDay,
                 maxCount: RecallAll,
@@ -548,21 +582,88 @@ namespace VividWorld.Ai
                 playerHeroId: Hero.MainHero?.StringId,
                 secretLookup: new VividWorld.Campaign.GameSecretRelationshipLookup());
 
-            foreach (var cand in candidateEvents)
+            if (logSecrets)
             {
-                if (cand.Origin == EventOrigin.Secret)
+                foreach (var cand in candidateEvents)
                 {
-                    var handed = recallResult.Items.FirstOrDefault(i => string.Equals(i.EventId, cand.EventId, StringComparison.Ordinal));
-                    if (handed != null)
+                    if (cand.Origin == EventOrigin.Secret)
                     {
-                        ModLog.Info($"AI secret candidate {cand.EventId} for {hero.StringId}: handed over (state={handed.SecretState}, key={handed.SecretSentenceKey})");
-                    }
-                    else
-                    {
-                        var excl = recallResult.Exclusions.FirstOrDefault(e => string.Equals(e.EventId, cand.EventId, StringComparison.Ordinal));
-                        ModLog.Info($"AI secret candidate {cand.EventId} for {hero.StringId}: not handed over (reason={excl?.Reason.ToString() ?? "unknown"}{(excl?.Detail != null ? $": {excl.Detail}" : "")})");
+                        var handed = recallResult.Items.FirstOrDefault(i => string.Equals(i.EventId, cand.EventId, StringComparison.Ordinal));
+                        if (handed != null)
+                        {
+                            ModLog.Info($"AI secret candidate {cand.EventId} for {hero.StringId}: handed over (state={handed.SecretState}, key={handed.SecretSentenceKey})");
+                        }
+                        else
+                        {
+                            var excl = recallResult.Exclusions.FirstOrDefault(e => string.Equals(e.EventId, cand.EventId, StringComparison.Ordinal));
+                            ModLog.Info($"AI secret candidate {cand.EventId} for {hero.StringId}: not handed over (reason={excl?.Reason.ToString() ?? "unknown"}{(excl?.Detail != null ? $": {excl.Detail}" : "")})");
+                        }
                     }
                 }
+            }
+
+            return recallResult;
+        }
+
+        /// <summary>
+        /// 把一則記得的事組成交給 AI 模組的文字：開頭語照這位 NPC 是不是事件角色挑，事實超過上限時整塊拿掉。
+        /// 即時交消息、對話開始加記憶與寫進對方記憶都走這一個，當事人講的那一版才會三處一致。
+        /// </summary>
+        private static (string Text, bool IsTruncated) RenderRecallText(
+            NpcRecalledMemory candidate,
+            string heroId,
+            VividWorldConfig cfg,
+            string pushLang)
+        {
+            bool isParticipant = candidate.Event.RoleOf(heroId) != null;
+            var prefix = RumorPrefixSelector.SelectPrefix(
+                candidate.Hop,
+                candidate.SourceHeroId,
+                false,
+                candidate.IsCorrection,
+                isParticipant);
+
+            var (text, isTruncated, _) = AiPushTruncator.Truncate(
+                candidate.Facts,
+                subset =>
+                {
+                    var composed = RumorTextComposer.Compose(candidate.Event, subset, cfg.Presentation, prefix, heroId, candidate.SourceHeroId);
+                    if (!string.IsNullOrEmpty(candidate.SecretSentenceKey))
+                    {
+                        string secKey = candidate.SecretSentenceKey!;
+                        composed.SentenceKeyCandidate = secKey;
+                        composed.SentenceKeyCandidates = new[] { secKey };
+                    }
+                    return FallbackTextRenderer.RenderRecallMemory(composed, pushLang, cfg.Presentation);
+                });
+
+            return (text, isTruncated);
+        }
+
+        /// <param name="excludeWrittenMemories">
+        /// 為 true 時，已經寫進 Calradia Remembers 記憶的那幾則從清單拿掉並記下排除原因；
+        /// 只有交給它的路徑要這樣做，交給別的 AI 模組的不能因為 CR 寫過就跳過。
+        /// </param>
+        private static bool ExtractRecallNewsItems(
+            Hero hero,
+            double currentDay,
+            VividWorldConfig cfg,
+            WorldEventStore store,
+            bool excludeWrittenMemories,
+            out NpcRecallResult recallResult,
+            out List<RecallRenderedItem> renderedItems)
+        {
+            renderedItems = new List<RecallRenderedItem>();
+            recallResult = QueryRecall(hero, currentDay, cfg, store, logSecrets: true);
+
+            if (excludeWrittenMemories)
+            {
+                AiPushedStore? written;
+                lock (_lock)
+                {
+                    written = _memoryWritten;
+                }
+                recallResult = AiMemoryWritePolicy.ExcludeWritten(recallResult, written);
             }
 
             if (recallResult.Items.Count == 0)
@@ -575,27 +676,7 @@ namespace VividWorld.Ai
 
             foreach (var candidate in recallResult.Items)
             {
-                bool isParticipant = candidate.Event.RoleOf(hero.StringId) != null;
-                var prefix = RumorPrefixSelector.SelectPrefix(
-                    candidate.Hop,
-                    candidate.SourceHeroId,
-                    false,
-                    candidate.IsCorrection,
-                    isParticipant);
-
-                var (text, isTruncated, _) = AiPushTruncator.Truncate(
-                    candidate.Facts,
-                    subset =>
-                    {
-                        var composed = RumorTextComposer.Compose(candidate.Event, subset, cfg.Presentation, prefix, hero.StringId, candidate.SourceHeroId);
-                        if (!string.IsNullOrEmpty(candidate.SecretSentenceKey))
-                        {
-                            string secKey = candidate.SecretSentenceKey!;
-                            composed.SentenceKeyCandidate = secKey;
-                            composed.SentenceKeyCandidates = new[] { secKey };
-                        }
-                        return FallbackTextRenderer.RenderRecallMemory(composed, pushLang, cfg.Presentation);
-                    });
+                var (text, isTruncated) = RenderRecallText(candidate, hero.StringId, cfg, pushLang);
 
                 string kind = AiMemoryKind.For(candidate.Event, hero.StringId, mainHeroId, candidate.Hop);
                 int daysAgo = (int)Math.Max(0, Math.Floor(currentDay - candidate.LearnedDay));
@@ -605,6 +686,358 @@ namespace VividWorld.Ai
             }
 
             return true;
+        }
+
+        // ---- 把當事人自己的親身經歷寫進 Calradia Remembers 的記憶 ----
+
+        private sealed class MemoryWriteContext
+        {
+            public VividWorldConfig Config { get; }
+            public WorldEventStore Store { get; }
+            public TargetBindingState Binding { get; }
+            public AiPushedStore Written { get; }
+            public string? WrittenPath { get; }
+            public string? PlayerHeroId { get; }
+            public IFactRetentionPolicy Retention { get; }
+
+            public MemoryWriteContext(VividWorldConfig config, WorldEventStore store, TargetBindingState binding, AiPushedStore written, string? writtenPath)
+            {
+                Config = config;
+                Store = store;
+                Binding = binding;
+                Written = written;
+                WrittenPath = writtenPath;
+                PlayerHeroId = !string.IsNullOrEmpty(store.PlayerHeroId) ? store.PlayerHeroId : Hero.MainHero?.StringId;
+                Retention = FactRetentionPolicies.Create(config, new SplitMix64Rng(), store.CampaignSeed);
+            }
+        }
+
+        private static void LogMemoryWritingOffOnce(string reason)
+        {
+            lock (_lock)
+            {
+                if (_memoryOffReasonLogged != null) return;
+                _memoryOffReasonLogged = reason;
+            }
+            ModLog.Info($"AI memory writing to '{AiMemoryWritePolicy.TargetId}' is off: {reason}.");
+        }
+
+        private static MemoryWriteContext? GetMemoryWriteContext(WorldEventStore? storeOverride)
+        {
+            VividWorldConfig? cfg;
+            WorldEventStore? store;
+            AiPushedStore? written;
+            string? writtenPath;
+            TargetBindingState? binding;
+
+            lock (_lock)
+            {
+                cfg = _config;
+                store = storeOverride ?? _store;
+                written = _memoryWritten;
+                writtenPath = _memoryWrittenPath;
+                _bindings.TryGetValue(AiMemoryWritePolicy.TargetId, out binding);
+            }
+
+            string? off = null;
+            if (cfg == null || !cfg.Enabled || !cfg.Ai.Enabled)
+            {
+                off = "VividWorld or AI integration is off in config";
+            }
+            else if (binding == null || !binding.Result.IsEnabled || binding.AddMemoryMethod == null || binding.MemoryEntryType == null)
+            {
+                off = "Calradia Remembers is not bound";
+            }
+            else if (store == null || written == null)
+            {
+                off = "no campaign session yet";
+            }
+
+            if (off != null)
+            {
+                LogMemoryWritingOffOnce(off);
+                return null;
+            }
+
+            return new MemoryWriteContext(cfg!, store!, binding!, written!, writtenPath);
+        }
+
+        /// <summary>
+        /// 他知情紀錄上保留的那幾塊事實；紀錄沒有明列時照保留規則算，跟回想查詢的算法一樣。
+        /// 沒有紀錄、或一塊事實都沒有就回傳 null。
+        /// </summary>
+        private static NpcRecalledMemory? BuildMemoryCandidate(WorldEvent evt, string heroId, MemoryWriteContext ctx)
+        {
+            var entry = evt.EntryFor(heroId);
+            if (entry == null) return null;
+
+            IReadOnlyList<Fact> facts;
+            if (entry.KnownFactIds != null)
+            {
+                var factSet = new HashSet<string>(entry.KnownFactIds, StringComparer.OrdinalIgnoreCase);
+                facts = evt.Facts.Where(f => factSet.Contains(f.Id)).ToList();
+            }
+            else
+            {
+                facts = ctx.Retention.Retain(evt, entry.Hop, heroId);
+            }
+
+            if (facts.Count == 0) return null;
+
+            bool isCorrection = false;
+            if (!string.IsNullOrEmpty(evt.LinkedEventId))
+            {
+                isCorrection = ctx.Store.Load(evt.LinkedEventId!)?.IsKnownBy(heroId) == true;
+            }
+
+            return new NpcRecalledMemory
+            {
+                EventId = evt.EventId,
+                Event = evt,
+                Entry = entry,
+                Facts = facts,
+                Hop = entry.Hop,
+                SourceHeroId = entry.SourceHeroId,
+                LearnedDay = entry.LearnedDay,
+                Interest = entry.Interest,
+                IsCorrection = isCorrection
+            };
+        }
+
+        private static void SetEntryProperty(TargetBindingState binding, object entry, string name, object? value)
+        {
+            if (!binding.EntryProperties.Contains(name)) return;
+            binding.MemoryEntryType!.GetProperty(name)?.SetValue(entry, value);
+        }
+
+        /// <summary>
+        /// 判斷一位英雄要不要寫、能寫就寫進對方的記憶。
+        /// </summary>
+        /// <param name="recalled">對話開始補寫時，回想查詢已經交出來的那一則；沒有就照知情紀錄現組。</param>
+        /// <param name="when">"at event" 或 "backfill"，只用在日誌。</param>
+        private static void WriteMemoryForHero(MemoryWriteContext ctx, WorldEvent evt, string heroId, NpcRecalledMemory? recalled, double currentDay, string when)
+        {
+            string head = $"AI memory for '{heroId}' to '{AiMemoryWritePolicy.TargetId}': {evt.EventId}";
+
+            var decision = AiMemoryWritePolicy.Decide(
+                evt,
+                heroId,
+                ctx.PlayerHeroId,
+                EventCatalogStore.TemplateByType,
+                (h, e) => ctx.Written.HasPushedVersion(AiMemoryWritePolicy.TargetId, h, e, AiMemoryWritePolicy.RecordVersion));
+
+            if (!decision.Write)
+            {
+                // 事件當下每位知情者都會碰到「不是角色」，印出來只是雜訊
+                if (!(decision.Reason == AiMemorySkipReason.NotParticipant && when == "at event"))
+                {
+                    ModLog.Info($"{head} skipped: {decision.ReasonText}");
+                }
+                return;
+            }
+
+            Hero? hero = Hero.Find(heroId);
+            if (hero == null)
+            {
+                ModLog.Info($"{head} skipped: hero not found");
+                return;
+            }
+
+            string? rejectReason = EligibilityLabel.GetRejectionReason(hero, ctx.Store.Traits);
+            if (rejectReason != null)
+            {
+                ModLog.Info($"{head} skipped: {rejectReason}");
+                return;
+            }
+
+            var candidate = recalled ?? BuildMemoryCandidate(evt, heroId, ctx);
+            if (candidate == null)
+            {
+                ModLog.Info($"{head} skipped: no facts retained");
+                return;
+            }
+
+            string pushLang = ctx.Config.Ai.PushLanguage ?? "english";
+            var (text, isTruncated) = RenderRecallText(candidate, heroId, ctx.Config, pushLang);
+            if (string.IsNullOrEmpty(text))
+            {
+                ModLog.Info($"{head} skipped: empty text");
+                return;
+            }
+
+            string kind = AiMemoryKind.For(evt, heroId, ctx.PlayerHeroId, 0);
+            bool isPrivate = AiMemoryWritePolicy.IsPrivate(evt, heroId, EventCatalogStore.TemplateByType, ctx.Store.Traits);
+            int daysAgo = AiMemoryWritePolicy.DaysAgo(currentDay, candidate.LearnedDay);
+
+            string resStr;
+            bool succeeded;
+            try
+            {
+                var binding = ctx.Binding;
+                object entry = Activator.CreateInstance(binding.MemoryEntryType!);
+                SetEntryProperty(binding, entry, "NpcId", heroId);
+                SetEntryProperty(binding, entry, "Summary", text);
+                SetEntryProperty(binding, entry, "Kind", kind);
+                SetEntryProperty(binding, entry, "DaysAgo", daysAgo);
+                SetEntryProperty(binding, entry, "Private", isPrivate);
+                SetEntryProperty(binding, entry, "SourceMod", "VividWorld");
+
+                object? invokeResult = binding.AddMemoryMethod!.Invoke(null, new object[] { entry });
+                resStr = invokeResult?.ToString() ?? "Unknown";
+                succeeded = string.Equals(resStr, "Added", StringComparison.OrdinalIgnoreCase) ||
+                            (invokeResult is int intRes && intRes == 0);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error($"{head} write threw ({when})", ex);
+                return;
+            }
+
+            string detail = string.Format(CultureInfo.InvariantCulture,
+                "({0}), kind={1}, private={2}, chars={3}, truncated={4}, result={5}",
+                when, kind, isPrivate.ToString().ToLowerInvariant(), text.Length, isTruncated.ToString().ToLowerInvariant(), resStr);
+
+            if (!succeeded)
+            {
+                ModLog.Info($"{head} not written {detail}; it will be tried again at the next chance.");
+                return;
+            }
+
+            ctx.Written.Record(AiMemoryWritePolicy.TargetId, heroId, evt.EventId, AiMemoryWritePolicy.RecordVersion, currentDay);
+            if (!string.IsNullOrEmpty(ctx.WrittenPath))
+            {
+                ctx.Written.SaveToFile(ctx.WrittenPath!);
+            }
+            ModLog.Info($"{head} written {detail}");
+        }
+
+        /// <summary>
+        /// 事件剛進事件庫、當事人的知情紀錄剛種下的那一刻：把每位事件角色自己講的那一版寫進他的記憶。
+        /// </summary>
+        internal static void WriteMemoriesForNewEvent(WorldEvent evt, WorldEventStore store)
+        {
+            if (evt == null) return;
+            try
+            {
+                var ctx = GetMemoryWriteContext(store);
+                if (ctx == null) return;
+
+                double currentDay = CampaignTime.Now.ToDays;
+                var seen = new HashSet<string>(StringComparer.Ordinal);
+                foreach (var heroId in evt.Participants.Values.ToList())
+                {
+                    if (string.IsNullOrEmpty(heroId) || !seen.Add(heroId)) continue;
+                    WriteMemoryForHero(ctx, evt, heroId, null, currentDay, "at event");
+                }
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error($"AI memory write for new event {evt.EventId} failed", ex);
+            }
+        }
+
+        /// <summary>
+        /// 玩家用 Calradia Remembers 找這位 NPC 說話時，補寫他還記得、自己是角色、還沒寫過的事
+        /// （更新前發生的，或當時 CR 沒綁上而沒寫成的）。
+        /// 回想查詢把「自己不講」的事擋在清單外，但那一類正是要標成私下才講寫進去的，所以也一併補。
+        /// </summary>
+        private static void BackfillMemories(string npcId)
+        {
+            try
+            {
+                var ctx = GetMemoryWriteContext(null);
+                if (ctx == null) return;
+
+                Hero? hero = Hero.Find(npcId);
+                if (hero == null)
+                {
+                    ModLog.Info($"AI memory backfill for '{npcId}' to '{AiMemoryWritePolicy.TargetId}': hero not found.");
+                    return;
+                }
+
+                double currentDay = CampaignTime.Now.ToDays;
+                var recall = QueryRecall(hero, currentDay, ctx.Config, ctx.Store, logSecrets: false);
+
+                foreach (var item in recall.Items)
+                {
+                    if (item.Event.RoleOf(npcId) == null) continue;
+                    WriteMemoryForHero(ctx, item.Event, npcId, item, currentDay, "backfill");
+                }
+
+                foreach (var exc in recall.Exclusions)
+                {
+                    if (exc.Reason != RecallExclusionReason.WontTellOwn) continue;
+                    var evt = ctx.Store.Load(exc.EventId);
+                    if (evt == null || evt.RoleOf(npcId) == null) continue;
+                    WriteMemoryForHero(ctx, evt, npcId, null, currentDay, "backfill");
+                }
+            }
+            catch (Exception ex)
+            {
+                ModLog.Error($"AI memory backfill for '{npcId}' failed", ex);
+            }
+        }
+
+        /// <summary>開發者工具用：VW 寫進這位 NPC 的 Calradia Remembers 記憶的每一則，文字是現在照知情紀錄重新組出來的。</summary>
+        internal static string DescribeWrittenMemories(Hero hero, WorldEventStore store, VividWorldConfig cfg)
+        {
+            AiPushedStore? written;
+            TargetBindingState? binding;
+            string? writtenPath;
+            lock (_lock)
+            {
+                written = _memoryWritten;
+                writtenPath = _memoryWrittenPath;
+                _bindings.TryGetValue(AiMemoryWritePolicy.TargetId, out binding);
+            }
+
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"What Vivid World wrote into the '{AiMemoryWritePolicy.TargetId}' memory of {hero.Name} ({hero.StringId}):");
+
+            var records = written?.GetPushedForHero(AiMemoryWritePolicy.TargetId, hero.StringId)
+                          ?? new Dictionary<string, AiPushRecord>();
+            if (records.Count == 0)
+            {
+                sb.AppendLine("  none");
+                return sb.ToString().TrimEnd();
+            }
+
+            MemoryWriteContext? ctx = null;
+            if (written != null && binding != null)
+            {
+                ctx = new MemoryWriteContext(cfg, store, binding, written, writtenPath);
+            }
+
+            string pushLang = cfg.Ai.PushLanguage ?? "english";
+            foreach (var kv in records.OrderBy(r => r.Value.PushedDay).ThenBy(r => r.Key, StringComparer.Ordinal))
+            {
+                var evt = store.Load(kv.Key);
+                if (evt == null)
+                {
+                    sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                        "  {0}: written on day {1:F1}; the event is no longer in the store", kv.Key, kv.Value.PushedDay));
+                    continue;
+                }
+
+                string kind = AiMemoryKind.For(evt, hero.StringId, Hero.MainHero?.StringId, 0);
+                bool isPrivate = AiMemoryWritePolicy.IsPrivate(evt, hero.StringId, EventCatalogStore.TemplateByType, store.Traits);
+                string textLine = "(text could not be rebuilt)";
+                if (ctx != null)
+                {
+                    var candidate = BuildMemoryCandidate(evt, hero.StringId, ctx);
+                    if (candidate != null)
+                    {
+                        textLine = RenderRecallText(candidate, hero.StringId, cfg, pushLang).Text;
+                    }
+                }
+
+                sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                    "  {0}: kind={1}, private={2}, written on day {3:F1}",
+                    kv.Key, kind, isPrivate.ToString().ToLowerInvariant(), kv.Value.PushedDay));
+                sb.AppendLine($"    {textLine}");
+            }
+
+            return sb.ToString().TrimEnd();
         }
 
         private static void HandleConversationStarted(string targetId, string npcId)
@@ -624,6 +1057,13 @@ namespace VividWorld.Ai
                 pushStore = _pushStore;
                 pushStorePath = _pushStorePath;
                 _bindings.TryGetValue(targetId, out binding);
+            }
+
+            // 補寫在「即時模式就跳過」之前：即時模式只是不再另外加記憶，
+            // 當事人自己的親身經歷 CR 記不到，每個版本都要寫
+            if (string.Equals(targetId, AiMemoryWritePolicy.TargetId, StringComparison.OrdinalIgnoreCase))
+            {
+                BackfillMemories(npcId);
             }
 
             if (cfg == null || !cfg.Enabled || !cfg.Ai.Enabled) return;
@@ -648,9 +1088,22 @@ namespace VividWorld.Ai
                 }
 
                 double currentDay = CampaignTime.Now.ToDays;
-                if (!ExtractRecallNewsItems(hero!, currentDay, cfg, store, out var recallResult, out var renderedItems))
+                bool excludeWritten = string.Equals(targetId, AiMemoryWritePolicy.TargetId, StringComparison.OrdinalIgnoreCase);
+                if (!ExtractRecallNewsItems(hero!, currentDay, cfg, store, excludeWritten, out var recallResult, out var renderedItems))
                 {
-                    ModLog.Info($"AI push for '{hero!.StringId}' to '{targetId}': 0 candidates, 0 pushed, 0 excluded, elapsed {sw.Elapsed.TotalMilliseconds:F1}ms.");
+                    var emptySb = new System.Text.StringBuilder();
+                    emptySb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                        "AI push for '{0}' to '{1}': {2} candidates, 0 pushed, {3} excluded, elapsed {4:F1}ms.",
+                        hero!.StringId, targetId, recallResult.CandidateCount, recallResult.Exclusions.Count, sw.Elapsed.TotalMilliseconds));
+                    if (recallResult.Exclusions.Count > 0)
+                    {
+                        emptySb.AppendLine("  Excluded:");
+                        foreach (var exc in recallResult.Exclusions)
+                        {
+                            emptySb.AppendLine($"    {exc}");
+                        }
+                    }
+                    ModLog.Info(emptySb.ToString().TrimEnd());
                     return;
                 }
 
@@ -837,9 +1290,21 @@ namespace VividWorld.Ai
                 double currentDay = CampaignTime.Now.ToDays;
                 int maxCharLimit = AiLiveNewsBlock.GetMaxChars(variableName, lean);
 
-                if (!ExtractRecallNewsItems(hero, currentDay, cfg, store, out var recallResult, out var renderedItems) || renderedItems.Count == 0)
+                if (!ExtractRecallNewsItems(hero, currentDay, cfg, store, true, out var recallResult, out var renderedItems) || renderedItems.Count == 0)
                 {
-                    ModLog.Info($"AI live news for '{npcId}' [{variableName}] (lean={lean.ToString().ToLowerInvariant()}): 0 candidates, 0 given, 0 excluded, 0 chars of {maxCharLimit}, elapsed {sw.Elapsed.TotalMilliseconds:F1}ms.");
+                    var emptySb = new System.Text.StringBuilder();
+                    emptySb.AppendLine(string.Format(CultureInfo.InvariantCulture,
+                        "AI live news for '{0}' [{1}] (lean={2}): {3} candidates, 0 given, {4} excluded, 0 chars of {5}, elapsed {6:F1}ms.",
+                        npcId, variableName, lean.ToString().ToLowerInvariant(), recallResult.CandidateCount, recallResult.Exclusions.Count, maxCharLimit, sw.Elapsed.TotalMilliseconds));
+                    if (recallResult.Exclusions.Count > 0)
+                    {
+                        emptySb.AppendLine("  Excluded:");
+                        foreach (var exc in recallResult.Exclusions)
+                        {
+                            emptySb.AppendLine($"    {exc}");
+                        }
+                    }
+                    ModLog.Info(emptySb.ToString().TrimEnd());
                     return string.Empty;
                 }
 
@@ -940,7 +1405,7 @@ namespace VividWorld.Ai
                     Array.Empty<AiTargetPreviewData>());
             }
 
-            ExtractRecallNewsItems(hero, currentDay, config, store, out var recallResult, out var renderedItems);
+            ExtractRecallNewsItems(hero, currentDay, config, store, true, out var recallResult, out var renderedItems);
 
             var liveItems = new List<AiLiveNewsItem>(renderedItems.Count);
             for (int i = 0; i < renderedItems.Count; i++)

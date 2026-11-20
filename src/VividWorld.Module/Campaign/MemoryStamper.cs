@@ -228,7 +228,8 @@ namespace VividWorld.Campaign
             }
 
             var interestRes = InterestCalculator.Compute(knowerFacts, entry.HeroId, participants, evt.DramaBand, _config.Memory);
-            var spanRes = MemorySpan.Compute(startDay, interestRes.Interest, evt.DramaBand, heardCount, oldForgetDay, _config.Memory);
+            bool knowerIsParticipant = MemorySpan.IsParticipant(evt.Participants, entry.HeroId);
+            var spanRes = MemorySpan.Compute(startDay, interestRes.Interest, evt.DramaBand, heardCount, oldForgetDay, _config.Memory, knowerIsParticipant);
 
             entry.Interest = interestRes.Interest;
             entry.InterestSource = interestRes.InterestSource;
